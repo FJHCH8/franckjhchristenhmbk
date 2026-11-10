@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { T, useLocale } from "@/components/Locale";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TopBlur } from "@/components/TopBlur";
 
@@ -16,6 +18,7 @@ const LINKS = [
 
 export function Header() {
   const pathname = usePathname();
+  const { locale } = useLocale();
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
   const ready = useRef(false);
@@ -44,7 +47,7 @@ export function Header() {
     const observer = new ResizeObserver(() => place(false));
     observer.observe(nav);
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [pathname, locale]);
 
   return (
     <>
@@ -69,11 +72,14 @@ export function Header() {
           <span className="nav-pill" ref={pillRef} aria-hidden="true" />
           {LINKS.map((link) => (
             <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
-              {link.label}
+              <T>{link.label}</T>
             </Link>
           ))}
         </nav>
-        <ThemeToggle />
+        <div className="header-tools">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </header>
     </>
   );

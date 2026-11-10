@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Glass } from "@/components/Glass";
+import { T } from "@/components/Locale";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
@@ -11,15 +12,21 @@ export default function ContactPage() {
     <main id="contenu">
       <section className="section shell page-solo" id="contact" aria-labelledby="titre-contact">
         <Reveal>
-          <p className="kicker">03 — Seuil</p>
-          <h1 id="titre-contact">Contact</h1>
+          <p className="kicker">
+            <T width="9em">03 — Seuil</T>
+          </p>
+          <h1 id="titre-contact">
+            <T>Contact</T>
+          </h1>
         </Reveal>
         <Reveal delay={120}>
           <Glass>
             <div className="contact-links">
-              <a href="mailto:franckjhchristen@gmail.com">franckjhchristen@gmail.com</a>
+              <a href="mailto:franckjhchristen@gmail.com" translate="no">
+                franckjhchristen@gmail.com
+              </a>
               <a href="https://instagram.com/fjhchristenhmbk" rel="noopener noreferrer" target="_blank">
-                Instagram : @fjhchristenhmbk
+                <T width="8em">Instagram :</T> <span translate="no">@fjhchristenhmbk</span>
               </a>
             </div>
           </Glass>

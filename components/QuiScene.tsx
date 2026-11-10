@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { T } from "@/components/Locale";
 
 function readNight() {
   return document.documentElement.dataset.theme === "sombre";
@@ -167,12 +168,9 @@ export function QuiScene() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let alive = true;
 
-    const resize = () => {
+    const paintTitle = () => {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.max(1, Math.round(rect.width * dpr));
-      canvas.height = Math.max(1, Math.round(rect.height * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const style = getComputedStyle(title);
       const width = Math.max(1, Math.round(rect.width * dpr));
       const height = Math.max(1, Math.round(title.getBoundingClientRect().height * dpr));
@@ -184,7 +182,17 @@ export function QuiScene() {
       textCtx.fillStyle = "#f7fbff";
       textCtx.textAlign = "center";
       textCtx.textBaseline = "middle";
-      textCtx.fillText(title.textContent ?? "Qui suis-je", width / 2, height / 2);
+      const label = title.textContent?.trim() || "Qui suis-je";
+      textCtx.fillText(label, width / 2, height / 2);
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paintTitle();
     };
 
     const tick = (now: number) => {
@@ -203,10 +211,17 @@ export function QuiScene() {
       ctx.setTransform(canvas.width / w, 0, 0, canvas.height / h, 0, 0);
       ctx.clearRect(0, 0, w, h);
       paintSky(ctx, w, h, horizon, night);
-      if (night < 0.55) drawCloud(ctx, w * 0.5, horizon * 0.34, time);
-      if (night > 0.45) {
+      const cloudVeil = Math.max(0, Math.min(1, 1 - night * 1.35));
+      const starVeil = Math.max(0, Math.min(1, (night - 0.12) / 0.78));
+      if (cloudVeil > 0.01) {
         ctx.save();
-        ctx.globalAlpha = night;
+        ctx.globalAlpha = cloudVeil;
+        drawCloud(ctx, w * 0.5, horizon * 0.34, time);
+        ctx.restore();
+      }
+      if (starVeil > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = starVeil;
         drawStar(ctx, w * 0.5, h * 0.16, time);
         ctx.restore();
       }
@@ -229,6 +244,10 @@ export function QuiScene() {
     };
 
     resize();
+    const titleObserver = new MutationObserver(() => {
+      if (alive) paintTitle();
+    });
+    titleObserver.observe(title, { childList: true, characterData: true, subtree: true });
     document.fonts?.ready.then(() => {
       if (alive) resize();
     }).catch(() => undefined);
@@ -240,6 +259,7 @@ export function QuiScene() {
     window.addEventListener("themechange", onTheme);
     return () => {
       alive = false;
+      titleObserver.disconnect();
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
       window.removeEventListener("themechange", onTheme);
@@ -250,7 +270,7 @@ export function QuiScene() {
     <section className="qui-sea" aria-labelledby="titre-qui">
       <canvas ref={canvasRef} aria-hidden="true" />
       <h1 id="titre-qui" ref={titleRef}>
-        Qui suis-je
+        <T>Qui suis-je</T>
       </h1>
     </section>
   );

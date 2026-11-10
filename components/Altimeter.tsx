@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Block } from "@/components/Locale";
 
 const formatter = new Intl.NumberFormat("fr-FR");
 
@@ -46,9 +47,13 @@ export function Altimeter() {
       </div>
       <div className="alt-readout">
         <span className="alt-kicker">
-          Altitude
-          <br />
-          de la page
+          <Block lines={["6.2em", "5.4em"]}>
+            <>
+              Altitude
+              <br />
+              de la page
+            </>
+          </Block>
         </span>
         <span ref={valueRef} className="alt-value">
           2 400

@@ -5,9 +5,11 @@ import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
+import { LocaleProvider, T } from "@/components/Locale";
 import { PageSky } from "@/components/PageSky";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
+import { localeInitScript } from "@/lib/locale";
 import { googleSiteVerification, isPreviewDeployment, PERSON_NAME, SITE_DESCRIPTION, siteUrl, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
@@ -77,33 +79,44 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
+        <Script id="locale-init" strategy="beforeInteractive">
+          {localeInitScript}
+        </Script>
         <style>{`
           /* Chrome ignores the prefixed backdrop-filter that the CSS compiler emits alone. */
           .glass { backdrop-filter: blur(28px) saturate(1.85); }
-          .nav, .toggle { backdrop-filter: blur(22px) saturate(1.75); }
+          .nav, .toggle, .lang { backdrop-filter: blur(22px) saturate(1.75); }
           .top-frost-layer { backdrop-filter: blur(var(--blur)) saturate(1.45); }
           @media (prefers-reduced-transparency: reduce) {
-            .glass, .nav, .toggle, .top-frost-layer { backdrop-filter: none; }
+            .glass, .nav, .toggle, .lang, .top-frost-layer { backdrop-filter: none; }
           }
         `}</style>
-        <ThemeBoot />
-        <a className="skip" href="#contenu">
-          Aller au contenu
-        </a>
-        <PageSky />
-        <Sky />
-        <p className="rail">Bienvenue</p>
-        <Altimeter />
-        <Header />
-        {children}
-        <footer className="footer">
-          <div className="shell footer-inner">
-            <p translate="no">© {new Date().getFullYear()} Franck J.H. CHRISTEN H.M.B.K.</p>
-            <p>Bienvenue</p>
-            <Link href="/">Accueil</Link>
-          </div>
-        </footer>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <LocaleProvider>
+          <ThemeBoot />
+          <a className="skip" href="#contenu">
+            <T width="9em">Aller au contenu</T>
+          </a>
+          <PageSky />
+          <Sky />
+          <p className="rail">
+            <T width="8em">Bienvenue</T>
+          </p>
+          <Altimeter />
+          <Header />
+          {children}
+          <footer className="footer">
+            <div className="shell footer-inner">
+              <p translate="no">© {new Date().getFullYear()} Franck J.H. CHRISTEN H.M.B.K.</p>
+              <p>
+                <T width="7em">Bienvenue</T>
+              </p>
+              <Link href="/">
+                <T>Accueil</T>
+              </Link>
+            </div>
+          </footer>
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        </LocaleProvider>
       </body>
     </html>
   );

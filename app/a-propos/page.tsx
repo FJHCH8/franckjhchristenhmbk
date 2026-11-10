@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Glass } from "@/components/Glass";
+import { Block, T } from "@/components/Locale";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
@@ -11,27 +12,51 @@ export default function AboutPage() {
     <main id="contenu">
       <section className="section shell page-solo" id="a-propos" aria-labelledby="titre-apropos">
         <Reveal>
-          <p className="kicker">02 — Réserve</p>
-          <h1 id="titre-apropos">À propos</h1>
+          <p className="kicker">
+            <T width="11em">02 — Réserve</T>
+          </p>
+          <h1 id="titre-apropos">
+            <T>À propos</T>
+          </h1>
         </Reveal>
         <Reveal delay={120}>
           <Glass>
             <p className="prose">
-              Cette page est laissée en réserve. Rien n’y figure encore{"\u202F"}: ni présentation, ni parcours, ni
-              projets. Lorsque des mots seront choisis, ils prendront place ici.
+              <Block lines={["100%", "94%", "62%"]}>
+                <>
+                  Cette page est laissée en réserve. Rien n’y figure encore{"\u202F"}: ni présentation, ni parcours, ni
+                  projets. Lorsque des mots seront choisis, ils prendront place ici.
+                </>
+              </Block>
             </p>
             <dl className="reserve">
               <div>
-                <dt>Présentation</dt>
-                <dd>Texte à venir.</dd>
+                <dt>
+                  <T width="8.5em">Présentation</T>
+                </dt>
+                <dd>
+                  <T width="8em">Texte à venir.</T>
+                </dd>
               </div>
               <div>
-                <dt>Repères</dt>
-                <dd>Aucune information n’est publiée pour le moment.</dd>
+                <dt>
+                  <T width="5.5em">Repères</T>
+                </dt>
+                <dd>
+                  <Block lines={["100%", "72%"]}>
+                    <>Aucune information n’est publiée pour le moment.</>
+                  </Block>
+                </dd>
               </div>
               <div>
-                <dt>Horizon</dt>
-                <dd>D’autres sections pourront s’ajouter, le moment venu.</dd>
+                <dt>
+                  <T width="5.5em">Horizon</T>
+                </dt>
+                <dd>
+                  <Block lines={["100%", "78%"]}>
+                    <>D’autres sections pourront s’ajouter, le moment venu.</>
+                  </Block>
+                </dd>
               </div>
             </dl>
           </Glass>
