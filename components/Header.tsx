@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TopBlur } from "@/components/TopBlur";
 
@@ -15,6 +16,35 @@ const LINKS = [
 
 export function Header() {
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const ready = useRef(false);
+
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const pill = pillRef.current;
+    if (!nav || !pill) return;
+
+    const place = (animate: boolean) => {
+      const current = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!current) return;
+      const navBox = nav.getBoundingClientRect();
+      const box = current.getBoundingClientRect();
+      pill.style.transitionProperty = animate ? "" : "none";
+      pill.style.width = `${box.width}px`;
+      pill.style.transform = `translate3d(${box.left - navBox.left}px, 0, 0)`;
+      if (!animate) {
+        pill.getBoundingClientRect();
+        pill.style.transitionProperty = "";
+      }
+    };
+
+    place(ready.current);
+    ready.current = true;
+    const observer = new ResizeObserver(() => place(false));
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [pathname]);
 
   return (
     <>
@@ -35,7 +65,8 @@ export function Header() {
             Franck J.H. CHRISTEN H.M.B.K.
           </span>
         </Link>
-        <nav className="nav" aria-label="Navigation principale">
+        <nav className="nav" aria-label="Navigation principale" ref={navRef}>
+          <span className="nav-pill" ref={pillRef} aria-hidden="true" />
           {LINKS.map((link) => (
             <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
               {link.label}

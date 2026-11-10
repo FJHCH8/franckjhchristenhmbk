@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LifeTree } from "@/components/LifeTree";
+import { QuiScene } from "@/components/QuiScene";
 
 export const metadata: Metadata = {
   title: "Qui suis-je",
@@ -9,12 +9,7 @@ export const metadata: Metadata = {
 export default function QuiSuisJePage() {
   return (
     <main id="contenu" className="qui">
-      <section className="qui-stage" aria-labelledby="titre-qui">
-        <div className="qui-pin">
-          <h1 id="titre-qui">Qui suis-je</h1>
-          <LifeTree />
-        </div>
-      </section>
+      <QuiScene />
     </main>
   );
 }
