@@ -6,6 +6,7 @@ import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
+import { googleSiteVerification, isPreviewDeployment, PERSON_NAME, SITE_DESCRIPTION, siteUrl, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -23,42 +24,39 @@ const sans = Outfit({
   variable: "--font-sans",
 });
 
-function resolveSiteUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
-}
-
-const siteUrl = resolveSiteUrl();
-const title = "Bienvenue — Franck J.H. CHRISTEN H.M.B.K.";
-const description = "Bienvenue. Franck J.H. CHRISTEN H.M.B.K. Polyhymate.";
+const origin = siteUrl();
+const title = `Bienvenue — ${PERSON_NAME}`;
+const description = SITE_DESCRIPTION;
+const googleVerification = googleSiteVerification();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl || "http://localhost:3000"),
+  metadataBase: new URL(origin),
   title: {
     default: title,
-    template: "%s — Franck J.H. CHRISTEN H.M.B.K.",
+    template: `%s — ${PERSON_NAME}`,
   },
   description,
-  applicationName: "Franck J.H. CHRISTEN H.M.B.K.",
-  authors: [{ name: "Franck J.H. CHRISTEN H.M.B.K." }],
-  keywords: ["Franck J.H. CHRISTEN H.M.B.K.", "Polyhymate", "Bienvenue"],
-  alternates: { canonical: "/" },
+  applicationName: PERSON_NAME,
+  authors: [{ name: PERSON_NAME }],
+  keywords: [PERSON_NAME, "Polyhymate", "Bienvenue"],
+  alternates: { canonical: origin },
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: "/",
+    url: origin,
     title,
     description,
-    siteName: "Franck J.H. CHRISTEN H.M.B.K.",
+    siteName: PERSON_NAME,
   },
   twitter: {
     card: "summary_large_image",
     title,
     description,
   },
-  robots: { index: true, follow: true },
+  robots: isPreviewDeployment()
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
 };
 
 export const viewport: Viewport = {
@@ -68,14 +66,7 @@ export const viewport: Viewport = {
   themeColor: "#8ebfe6",
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Franck J.H. CHRISTEN H.M.B.K.",
-  description,
-  inLanguage: "fr",
-  ...(siteUrl ? { url: siteUrl } : {}),
-};
+const jsonLd = structuredData();
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
