@@ -152,6 +152,10 @@ export function Album() {
   useEffect(() => {
     paint();
     const stage = stageRef.current;
+    const blockScroll = (event: TouchEvent) => {
+      event.preventDefault();
+    };
+    stage?.addEventListener("touchmove", blockScroll, { passive: false });
     const videos = stage?.querySelectorAll("video") ?? [];
     videos.forEach((video) => {
       video.muted = true;
@@ -175,6 +179,7 @@ export function Album() {
     };
     window.addEventListener("keydown", onKey);
     return () => {
+      stage?.removeEventListener("touchmove", blockScroll);
       window.removeEventListener("keydown", onKey);
       stop();
     };
@@ -186,6 +191,7 @@ export function Album() {
     const front = order.current[0] ?? 0;
     const node = event.currentTarget;
     if (Number(node.dataset.card) !== front) return;
+    event.preventDefault();
     node.setPointerCapture(event.pointerId);
     const now = performance.now();
     pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, lx: event.clientX, ly: event.clientY, lt: now, vx: 0, vy: 0 };
@@ -197,6 +203,7 @@ export function Album() {
 
   const onPointerMove = (event: React.PointerEvent<HTMLElement>) => {
     if (pointer.current.id !== event.pointerId || mode.current !== "drag") return;
+    event.preventDefault();
     const now = performance.now();
     const dt = Math.max(8, now - pointer.current.lt);
     const instX = ((event.clientX - pointer.current.lx) / dt) * 1000;

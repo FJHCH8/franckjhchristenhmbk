@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Album } from "@/components/Album";
 import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
@@ -11,10 +10,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main id="contenu">
-      <section className="section shell page-solo about-page" id="a-propos" aria-labelledby="titre-apropos">
-        <div className="album-stage">
-          <Album />
-        </div>
+      <section className="section shell page-solo" id="a-propos" aria-labelledby="titre-apropos">
         <Descend>
           <p className="kicker">
             <T width="11em">02 — Réserve</T>

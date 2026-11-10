@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Album } from "@/components/Album";
 import { T } from "@/components/Locale";
 
 function readNight() {
@@ -272,6 +273,7 @@ export function QuiScene() {
       <h1 id="titre-qui" ref={titleRef}>
         <T>Qui suis-je</T>
       </h1>
+      <Album />
     </section>
   );
 }
