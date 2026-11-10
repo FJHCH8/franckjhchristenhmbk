@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { TopBlur } from "@/components/TopBlur";
 
 const LINKS = [
   { href: "#accueil", id: "accueil", label: "Accueil" },
@@ -39,13 +41,22 @@ export function Header() {
   }, []);
 
   return (
-    <header className="header">
-      <a className="brand" href="#accueil">
-        <span className="seal" aria-hidden="true">
-          F
+    <>
+      <TopBlur />
+      <header className="header">
+      <a className="brand" href="#accueil" aria-label="Franck J.H. CHRISTEN H.M.B.K.">
+        <span className="seal">
+          <Image
+            src="/portrait-enfance.jpg"
+            alt=""
+            fill
+            priority
+            sizes="48px"
+            style={{ objectFit: "cover", objectPosition: "center 12%" }}
+          />
         </span>
         <span className="brand-name" translate="no">
-          Franck J.H. Christen H.M.B.K.
+          Franck J.H. CHRISTEN H.M.B.K.
         </span>
       </a>
       <nav className="nav" aria-label="Navigation principale">
@@ -56,6 +67,7 @@ export function Header() {
         ))}
       </nav>
       <ThemeToggle />
-    </header>
+      </header>
+    </>
   );
 }

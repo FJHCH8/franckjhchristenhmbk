@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Franck J.H. Christen H.M.B.K. — Site personnel";
+export const alt = "Bienvenue — Franck J.H. CHRISTEN H.M.B.K.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,11 +20,11 @@ export default function OpenGraphImage() {
           fontFamily: "Georgia, serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 22, letterSpacing: 6, textTransform: "uppercase" }}>
-          Site personnel
+        <div style={{ display: "flex", fontSize: 28, letterSpacing: 0.4 }}>Bienvenue</div>
+        <div style={{ display: "flex", marginTop: 18, fontSize: 52, lineHeight: 1.05, maxWidth: 1040 }}>
+          Franck J.H. CHRISTEN H.M.B.K.
         </div>
-        <div style={{ display: "flex", marginTop: 18, fontSize: 84, lineHeight: 0.9 }}>Franck</div>
-        <div style={{ display: "flex", marginTop: 8, fontSize: 48 }}>J.H. Christen H.M.B.K.</div>
+        <div style={{ display: "flex", marginTop: 16, fontSize: 28 }}>Polyhymate</div>
       </div>
     ),
     { ...size },

@@ -1,3 +1,4 @@
+import { Crests } from "@/components/Crests";
 import { Glass } from "@/components/Glass";
 import { ChevronIcon } from "@/components/Icons";
 import { Reveal } from "@/components/Reveal";
@@ -9,23 +10,30 @@ export default function HomePage() {
     <>
       <main id="contenu">
         <section className="hero shell" id="accueil" aria-labelledby="titre-accueil">
-          <div className="hero-copy">
-            <p className="kicker">Site personnel</p>
-            <h1 id="titre-accueil" translate="no">
-              <span className="name-first">Franck</span>
-              <span className="name-mid">J.H. Christen</span>
-              <span className="name-sig">
-                <span className="sig-rule" aria-hidden="true" />
-                H.M.B.K.
-              </span>
-            </h1>
-            <p className="lead">Le ciel accompagne la descente et la remontée.</p>
-            <p className="sub">Ce site sera complété lorsque son contenu aura été choisi.</p>
-            <a className="descend" href="#a-propos">
-              <span className="descend-line" aria-hidden="true" />
-              Continuer
-              <ChevronIcon />
-            </a>
+          <div className="hero-layout">
+            <div className="hero-copy">
+              <p className="welcome">Bienvenue</p>
+              <h1 id="titre-accueil" translate="no">
+                Franck J.H. CHRISTEN H.M.B.K.
+              </h1>
+              <p className="epithet" translate="no">
+                Polyhymate
+              </p>
+              <Glass className="motto-glass">
+                <figure className="motto">
+                  <blockquote>
+                    <p>« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »</p>
+                  </blockquote>
+                  <figcaption>— Raphaëlle Giordano</figcaption>
+                </figure>
+              </Glass>
+              <a className="descend" href="#a-propos">
+                <span className="descend-line" aria-hidden="true" />
+                Continuer
+                <ChevronIcon />
+              </a>
+            </div>
+            <Crests />
           </div>
         </section>
 
@@ -65,15 +73,12 @@ export default function HomePage() {
           </Reveal>
           <Reveal delay={120}>
             <Glass>
-              <p className="write">Écrire</p>
-              <p className="prose">
-                Une adresse de correspondance sera indiquée à cet endroit. D’ici là, la page demeure un seuil, sans
-                message à envoyer.
-              </p>
-              <p className="status">
-                <span className="status-dot" aria-hidden="true" />
-                Adresse à venir
-              </p>
+              <div className="contact-links">
+                <a href="mailto:franckjhchristen@gmail.com">franckjhchristen@gmail.com</a>
+                <a href="https://instagram.com/fjhchristenhmbk" rel="noopener noreferrer" target="_blank">
+                  Instagram : @fjhchristenhmbk
+                </a>
+              </div>
             </Glass>
           </Reveal>
         </section>
@@ -81,8 +86,8 @@ export default function HomePage() {
 
       <footer className="footer">
         <div className="shell footer-inner">
-          <p translate="no">© {year} Franck J.H. Christen H.M.B.K.</p>
-          <p>Site personnel</p>
+          <p translate="no">© {year} Franck J.H. CHRISTEN H.M.B.K.</p>
+          <p>Bienvenue</p>
           <a href="#accueil">Haut de page</a>
         </div>
       </footer>

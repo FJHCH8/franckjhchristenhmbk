@@ -1,6 +1,6 @@
-# Site personnel — Franck J.H. Christen H.M.B.K.
+# Bienvenue — Franck J.H. CHRISTEN H.M.B.K.
 
-Site personnel en français, construit avec Next.js (App Router). Il est prévu pour être déployé sur Vercel.
+Site en français, construit avec Next.js (App Router). Il est prévu pour être déployé sur Vercel.
 
 Deux thèmes persistent dans le navigateur :
 
