@@ -39,7 +39,7 @@ Aucune configuration supplémentaire n’est requise : Vercel reconnaît le proj
 
 L’adresse publique est [https://franckjhchristenhmbk.vercel.app](https://franckjhchristenhmbk.vercel.app). Le fichier `robots.txt` autorise l’exploration et indique `https://franckjhchristenhmbk.vercel.app/sitemap.xml`.
 
-Le site est une seule page : les ancres `#accueil`, `#a-propos` et `#contact` restent sur `/` dans le sitemap. Une nouvelle page publique est ajoutée toute seule au prochain build dès qu’elle a un fichier de page, par exemple `app/langues/page.tsx`. Les dossiers `(groupe)` ne créent pas de segment d’adresse. Une route dynamique (`[slug]`) se déclare dans `extraPublicPaths` (`lib/site.ts`).
+Les onglets sont des pages : `/`, `/qui-suis-je`, `/a-propos` et `/contact`. Le sitemap les liste. Une nouvelle page publique est ajoutée toute seule au prochain build dès qu’elle a un fichier de page, par exemple `app/langues/page.tsx`. Les dossiers `(groupe)` ne créent pas de segment d’adresse. Une route dynamique (`[slug]`) se déclare dans `extraPublicPaths` (`lib/site.ts`).
 
 Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production est indexable.
 

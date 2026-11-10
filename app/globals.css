@@ -201,6 +201,39 @@ html[data-theme="sombre"] .sky-gradient-sombre {
   opacity: 1;
 }
 
+html[data-page="qui-suis-je"] .sky-gradient-clair {
+  background:
+    radial-gradient(820px 480px at 74% 6%, rgba(255, 236, 196, 0.55), transparent 42%),
+    radial-gradient(640px 420px at 12% -8%, rgba(150, 190, 255, 0.5), transparent 48%),
+    linear-gradient(180deg, #123488 0%, #1a46b8 22%, #2458d4 48%, #4d78e4 74%, #b9cff8 100%);
+}
+
+html[data-page="qui-suis-je"] .sky-gradient-sombre {
+  background:
+    radial-gradient(760px 420px at 80% -6%, rgba(88, 112, 210, 0.38), transparent 52%),
+    radial-gradient(520px 360px at 18% 0%, rgba(40, 70, 160, 0.35), transparent 50%),
+    linear-gradient(180deg, #040712 0%, #081433 36%, #10245a 72%, #18306e 100%);
+}
+
+html[data-page="qui-suis-je"] .header,
+html[data-page="qui-suis-je"] .brand,
+html[data-page="qui-suis-je"] .rail {
+  color: #f4f7ff;
+}
+
+html[data-page="qui-suis-je"] .toggle button {
+  color: #e7eefc;
+}
+
+html[data-page="qui-suis-je"][data-theme="clair"] .opt-clair,
+html[data-page="qui-suis-je"][data-theme="sombre"] .opt-sombre {
+  color: #102033;
+}
+
+html[data-page="qui-suis-je"][data-theme="sombre"] .footer {
+  color: #e7eefc;
+}
+
 .sky-vignette-clair {
   opacity: 1;
   background: radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(36, 88, 132, 0.14) 100%);
@@ -334,7 +367,7 @@ html[data-theme="sombre"] .sky-vignette-sombre {
     scale 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.nav a[aria-current="true"] {
+.nav a[aria-current="page"] {
   background: var(--nav-active);
   color: var(--text);
 }
@@ -584,6 +617,7 @@ main {
   scroll-margin-top: 0;
 }
 
+.section h1,
 .section h2 {
   margin: 0.7rem 0 1.15rem;
   font-family: var(--font-display), Georgia, serif;
@@ -856,42 +890,16 @@ html:not([data-theme="sombre"]) .aurora {
   opacity: 0;
 }
 
-.aurora span {
-  position: absolute;
-  inset: -8% 0;
+.aurora svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.aurora span:nth-child(1) {
-  background:
-    radial-gradient(38% 90% at 18% 60%, rgba(96, 255, 196, 0.62), transparent 70%),
-    radial-gradient(34% 100% at 52% 42%, rgba(126, 176, 255, 0.5), transparent 72%),
-    radial-gradient(28% 90% at 80% 58%, rgba(198, 140, 255, 0.48), transparent 70%);
-  filter: blur(10px);
-}
-
-.aurora span:nth-child(2) {
-  background: repeating-linear-gradient(
-    102deg,
-    transparent 0 14px,
-    rgba(140, 255, 214, 0.22) 20px,
-    transparent 34px,
-    rgba(160, 186, 255, 0.2) 42px,
-    transparent 62px
-  );
-  filter: blur(1.5px);
-  opacity: 0.9;
-}
-
-.aurora span:nth-child(3) {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(186, 255, 226, 0.28),
-    transparent 42%,
-    rgba(176, 150, 255, 0.3),
-    transparent
-  );
-  filter: blur(14px);
+.aurora-ribbon {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .night-stars {
@@ -997,6 +1005,115 @@ html[data-sky="cloud"] body {
 .footer a:hover {
   text-decoration: underline;
   text-underline-offset: 0.28em;
+}
+
+.page-solo {
+  min-height: 100svh;
+}
+
+.qui-stage {
+  min-height: 180svh;
+  padding: calc(env(safe-area-inset-top) + 5.5rem) 1.2rem 8rem;
+}
+
+.qui-pin {
+  position: sticky;
+  top: calc(env(safe-area-inset-top) + 11vh);
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+.qui-pin h1 {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 520;
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-align: center;
+  text-shadow: 0 12px 32px rgba(8, 20, 70, 0.35);
+  color: #f5f8ff;
+}
+
+.life-tree {
+  width: min(86vw, 460px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 24px rgba(8, 20, 60, 0.28));
+}
+
+.tree-shadow {
+  fill: rgba(6, 16, 48, 0.22);
+}
+
+.tree-trunk {
+  fill: #3b2918;
+}
+
+.tree-root {
+  fill: none;
+  stroke: #3b2918;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.tree-bark {
+  stroke: rgba(255, 228, 190, 0.35);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.tree-limb {
+  fill: #4e3824;
+}
+
+.tree-twig {
+  fill: #5c4330;
+}
+
+.tree-leaf {
+  fill: #2f7a3e;
+}
+
+.tree-leaf.alt {
+  fill: #3e9450;
+}
+
+.tree-leaf.deep {
+  fill: #1d5a2e;
+}
+
+html[data-theme="sombre"] .tree-trunk {
+  fill: #d9c4a4;
+}
+
+html[data-theme="sombre"] .tree-root {
+  stroke: #e7d3b4;
+}
+
+html[data-theme="sombre"] .tree-limb {
+  fill: #f3e6d2;
+}
+
+html[data-theme="sombre"] .tree-twig {
+  fill: #e7d3b4;
+}
+
+html[data-theme="sombre"] .tree-leaf {
+  fill: #b7e3b4;
+}
+
+html[data-theme="sombre"] .tree-leaf.alt {
+  fill: #8fd0a0;
+}
+
+html[data-theme="sombre"] .tree-leaf.deep {
+  fill: #d7f3cf;
+}
+
+html[data-theme="sombre"] .tree-shadow {
+  fill: rgba(0, 0, 0, 0.35);
 }
 
 .missing {
@@ -1114,9 +1231,13 @@ html[data-sky="cloud"] body {
     margin-inline: auto;
   }
 
+  .nav {
+    width: min(calc(100% - 1rem), max-content);
+  }
+
   .nav a {
-    padding: 0.48rem 0.72rem;
-    font-size: 0.8rem;
+    padding: 0.46rem 0.48rem;
+    font-size: 0.74rem;
   }
 
   .toggle button {
@@ -1130,8 +1251,8 @@ html[data-sky="cloud"] body {
 
 @media (max-width: 360px) {
   .nav a {
-    padding: 0.46rem 0.48rem;
-    font-size: 0.72rem;
+    padding: 0.42rem 0.32rem;
+    font-size: 0.66rem;
   }
 }
 
@@ -1350,16 +1471,23 @@ html[data-sky="cloud"] body {
     animation: star-twinkle 3.6s ease-in-out infinite;
   }
 
-  .aurora span:nth-child(1) {
-    animation: aurora-drift 9s ease-in-out infinite alternate;
+  .aurora-ribbon {
+    animation: aurora-wave 6.5s ease-in-out infinite alternate;
   }
 
-  .aurora span:nth-child(2) {
-    animation: aurora-drift 7.5s ease-in-out infinite alternate-reverse;
+  .aurora-ribbon:nth-child(2) {
+    animation-duration: 8s;
+    animation-delay: -1.4s;
   }
 
-  .aurora span:nth-child(3) {
-    animation: aurora-shift 8s ease-in-out infinite alternate;
+  .aurora-ribbon:nth-child(3) {
+    animation-duration: 7.2s;
+    animation-direction: alternate-reverse;
+  }
+
+  .aurora-ribbon:nth-child(4) {
+    animation-duration: 9s;
+    animation-delay: -2s;
   }
 }
 
@@ -1470,23 +1598,13 @@ html[data-sky="cloud"] body {
   }
 }
 
-@keyframes aurora-drift {
+@keyframes aurora-wave {
   from {
-    transform: translateX(-5%) skewX(-7deg);
+    transform: translate3d(-2.5%, 0, 0) skewX(-6deg) scaleY(0.92);
   }
 
   to {
-    transform: translateX(6%) skewX(6deg);
-  }
-}
-
-@keyframes aurora-shift {
-  from {
-    transform: translateX(4%) scaleX(1);
-  }
-
-  to {
-    transform: translateX(-5%) scaleX(1.08);
+    transform: translate3d(3%, -6px, 0) skewX(5deg) scaleY(1.08);
   }
 }
 

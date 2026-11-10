@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { VISIT_AURORA, visitHas, visitSet } from "@/lib/visit";
 
 const STARS = [
   { x: 18, y: 20, s: 1 },
@@ -19,12 +20,38 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function ribbon(y: number, amplitude: number, phase: number, weight: number) {
+  const steps = 48;
+  let top = "";
+  let bottom = "";
+  for (let step = 0; step <= steps; step += 1) {
+    const x = (step / steps) * 1200;
+    const wave =
+      Math.sin(step * 0.42 + phase) * amplitude + Math.sin(step * 0.19 + phase * 1.4) * amplitude * 0.42;
+    const fold = Math.sin(step * 0.73 + phase) * 5;
+    const yTop = y + wave;
+    const yBottom = yTop + weight + fold;
+    top += `${step === 0 ? "M" : "L"} ${x.toFixed(1)} ${yTop.toFixed(1)} `;
+    bottom = `L ${x.toFixed(1)} ${yBottom.toFixed(1)} ` + bottom;
+  }
+  return `${top}${bottom}Z`;
+}
+
+const AURORA_BANDS = [
+  { d: ribbon(46, 18, 0.4, 16), color: "rgba(88, 255, 186, 0.55)" },
+  { d: ribbon(70, 22, 1.7, 18), color: "rgba(120, 196, 255, 0.42)" },
+  { d: ribbon(96, 16, 2.8, 14), color: "rgba(186, 140, 255, 0.4)" },
+  { d: ribbon(58, 26, 4.1, 12), color: "rgba(210, 255, 220, 0.28)" },
+];
+
 export function Aurora({ on }: { on: boolean }) {
   return (
     <div className={on ? "aurora is-on" : "aurora"} aria-hidden="true">
-      <span />
-      <span />
-      <span />
+      <svg viewBox="0 0 1200 180" preserveAspectRatio="none">
+        {AURORA_BANDS.map((band) => (
+          <path key={band.color} className="aurora-ribbon" d={band.d} fill={band.color} />
+        ))}
+      </svg>
     </div>
   );
 }
@@ -59,8 +86,9 @@ export function NightStars({ onAurora }: { onAurora: (on: boolean) => void }) {
   useEffect(() => {
     if (cycle.current !== "idle") return;
     if (!stars.every((state) => state === "leaving" || state === "gone")) return;
-    if (cycle.current !== "idle") return;
+    if (visitHas(VISIT_AURORA)) return;
     cycle.current = "busy";
+    visitSet(VISIT_AURORA);
     const reduce = prefersReducedMotion();
     const fadeIn = reduce ? 0 : 1000;
     const fadeOut = reduce ? 0 : 1200;
@@ -79,7 +107,7 @@ export function NightStars({ onAurora }: { onAurora: (on: boolean) => void }) {
   }, [onAurora, stars]);
 
   const choose = (index: number) => {
-    if (cycle.current !== "idle") return;
+    if (cycle.current !== "idle" || visitHas(VISIT_AURORA)) return;
     setStars((current) => {
       if (current[index] !== "present") return current;
       const next = current.slice();

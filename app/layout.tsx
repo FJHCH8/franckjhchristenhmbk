@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import { Fraunces, Outfit } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
+import { PageSky } from "@/components/PageSky";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { googleSiteVerification, isPreviewDeployment, PERSON_NAME, SITE_DESCRIPTION, siteUrl, structuredData } from "@/lib/site";
@@ -88,11 +90,19 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <a className="skip" href="#contenu">
           Aller au contenu
         </a>
+        <PageSky />
         <Sky />
         <p className="rail">Bienvenue</p>
         <Altimeter />
         <Header />
         {children}
+        <footer className="footer">
+          <div className="shell footer-inner">
+            <p translate="no">© {new Date().getFullYear()} Franck J.H. CHRISTEN H.M.B.K.</p>
+            <p>Bienvenue</p>
+            <Link href="/">Accueil</Link>
+          </div>
+        </footer>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </body>
     </html>

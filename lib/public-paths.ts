@@ -32,7 +32,7 @@ function walk(dir: string, url: string, found: Set<string>) {
   }
 }
 
-/** Real public routes. Hash sections of the homepage (#accueil, #a-propos, #contact) stay on `/`. */
+/** Real public routes. Each menu tab is its own page. */
 export function publicPaths() {
   const found = new Set<string>();
   walk(path.join(process.cwd(), "app"), "", found);

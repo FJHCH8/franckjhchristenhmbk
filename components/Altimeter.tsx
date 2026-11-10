@@ -21,12 +21,21 @@ export function Altimeter() {
       dot.style.translate = `-50% ${progress * 112}px`;
     };
 
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        render();
+      });
+    };
     render();
-    window.addEventListener("scroll", render, { passive: true });
-    window.addEventListener("resize", render);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", render);
-      window.removeEventListener("resize", render);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 

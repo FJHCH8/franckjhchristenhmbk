@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Aurora, NightStars } from "@/components/NightStars";
 import { collectObstacles, createDrop, stepDrop, type Drop, type Obstacle, type Splash } from "@/lib/rain";
+import { VISIT_RAINBOW, visitHas, visitSet } from "@/lib/visit";
 import {
   cloudSize,
   createBodies,
@@ -60,12 +61,12 @@ const THEME_MS = 1150;
 const RAINBOW_ON = 3400;
 const RAINBOW_FADE = 900;
 const RAINBOW_BANDS = [
-  { r: 348, color: "rgba(196, 52, 52, 0.5)" },
-  { r: 334, color: "rgba(214, 118, 46, 0.48)" },
-  { r: 320, color: "rgba(214, 186, 72, 0.46)" },
-  { r: 306, color: "rgba(78, 164, 96, 0.44)" },
-  { r: 292, color: "rgba(62, 132, 198, 0.46)" },
-  { r: 278, color: "rgba(98, 90, 186, 0.4)" },
+  { r: 346, color: "rgba(196, 52, 52, 0.55)" },
+  { r: 339, color: "rgba(214, 118, 46, 0.52)" },
+  { r: 332, color: "rgba(214, 186, 72, 0.5)" },
+  { r: 325, color: "rgba(78, 164, 96, 0.5)" },
+  { r: 318, color: "rgba(62, 132, 198, 0.52)" },
+  { r: 311, color: "rgba(98, 90, 186, 0.46)" },
 ];
 
 function arcPath(radius: number) {
@@ -101,7 +102,7 @@ function Rainbow({ on }: { on: boolean }) {
     <div className={on ? "rainbow is-on" : "rainbow"} aria-hidden="true">
       <svg viewBox="0 0 800 420" role="presentation">
         {RAINBOW_BANDS.map((band) => (
-          <path key={band.r} d={arcPath(band.r)} fill="none" stroke={band.color} strokeWidth="9" strokeLinecap="round" />
+          <path key={band.r} d={arcPath(band.r)} fill="none" stroke={band.color} strokeWidth="5" strokeLinecap="round" />
         ))}
       </svg>
     </div>
@@ -191,17 +192,28 @@ export function Sky() {
       nodeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
+    let builtW = 0;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      viewW = Math.max(1, rect.width);
-      viewH = Math.max(1, rect.height);
+      const nextW = Math.max(1, rect.width);
+      const nextH = Math.max(1, rect.height);
+      const widthShift = Math.abs(nextW - viewW);
+      const heightShift = Math.abs(nextH - viewH);
+      if (builtW > 0 && widthShift < 2 && heightShift < 72) return;
+      const rebuild = builtW === 0 || widthShift >= 2;
+      viewW = nextW;
+      viewH = nextH;
       resizeCanvas(canvas, ctx);
       resizeCanvas(rainCanvas, rctx);
-      const bodies = createBodies(viewW);
-      clouds = bodies.clouds;
-      stars = bodies.stars;
-      cloudFx = clouds.map(() => ({ phase: "idle", at: 0 }));
-      if (weather.phase !== "idle") cancelWeather();
+      if (rebuild) {
+        builtW = nextW;
+        const bodies = createBodies(viewW);
+        clouds = bodies.clouds;
+        stars = bodies.stars;
+        cloudFx = clouds.map(() => ({ phase: "idle", at: 0 }));
+        if (weather.phase !== "idle") cancelWeather();
+      }
+      draw();
     };
 
     const farShift = (depth: number, scrollMotion: number, pointerMotion: number) => {
@@ -422,6 +434,8 @@ export function Sky() {
     const startRain = (hit: Hit) => {
       const fx = cloudFx[hit.index];
       if (!fx || weather.phase !== "idle") return;
+      if (visitHas(VISIT_RAINBOW)) return;
+      visitSet(VISIT_RAINBOW);
       const now = performance.now();
       weather = {
         phase: reduce ? "rainbow" : "raining",
@@ -510,11 +524,13 @@ export function Sky() {
         themeMix = themeFrom + (themeTo - themeFrom) * easeInOut(t);
         if (t >= 1) themeMix = themeTo;
       }
-      const follow = reduce ? 1 : 0.16;
-      scroll += (scrollTarget - scroll) * follow;
-      pointer.x += (pointerTarget.x - pointer.x) * (reduce ? 1 : 0.065);
-      pointer.y += (pointerTarget.y - pointer.y) * (reduce ? 1 : 0.065);
-      if (Math.abs(scrollTarget - scroll) < 0.15) scroll = scrollTarget;
+      scrollTarget = window.scrollY;
+      const scrollBlend = reduce ? 1 : 1 - Math.exp(-dt / 0.085);
+      scroll += (scrollTarget - scroll) * scrollBlend;
+      const pointerBlend = reduce ? 1 : 1 - Math.exp(-dt / 0.12);
+      pointer.x += (pointerTarget.x - pointer.x) * pointerBlend;
+      pointer.y += (pointerTarget.y - pointer.y) * pointerBlend;
+      if (Math.abs(scrollTarget - scroll) < 0.2) scroll = scrollTarget;
       advanceWeather(dt, now);
       draw(now);
       const themeSettled = themeMix === themeTo;
