@@ -570,8 +570,9 @@ export function Sky() {
         wake();
       }
       const blocked = isBlockedTarget(event.target);
+      const onSea = document.documentElement.dataset.page === "qui-suis-je";
       const hovered =
-        mode === "clair" && themeMix < 0.45 && weather.phase === "idle" && !blocked
+        !onSea && mode === "clair" && themeMix < 0.45 && weather.phase === "idle" && !blocked
           ? pickCloud(event.clientX, event.clientY)
           : null;
       if (hovered) document.documentElement.dataset.sky = "cloud";
@@ -597,6 +598,7 @@ export function Sky() {
 
     const onClick = (event: MouseEvent) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (document.documentElement.dataset.page === "qui-suis-je") return;
       if (mode !== "clair" || themeMix > 0.4 || weather.phase !== "idle") return;
       if (isBlockedTarget(event.target)) return;
       const hit = pickCloud(event.clientX, event.clientY);

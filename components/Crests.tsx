@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useRef } from "react";
 
 export function CrestFilters() {
   return (
@@ -34,16 +37,40 @@ const starCrop = {
   top: "-70.315%",
 };
 
+function lightCrest(node: HTMLButtonElement | null) {
+  if (!node) return;
+  node.classList.add("is-lit");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  node.classList.remove("is-lighting");
+  void node.offsetWidth;
+  node.classList.add("is-lighting");
+}
+
 export function Crests() {
+  const blasonRef = useRef<HTMLButtonElement>(null);
+  const starsRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div className="crests">
       <CrestFilters />
-      <span className="crest crest-blason">
-        <Image className="for-clair" src="/blason-christen.jpg" alt="Blason Christen" fill sizes="320px" quality={95} priority />
+      <button
+        ref={blasonRef}
+        type="button"
+        className="crest crest-blason"
+        aria-label="Blason Christen"
+        onClick={() => lightCrest(blasonRef.current)}
+      >
+        <Image className="for-clair" src="/blason-christen.jpg" alt="" fill sizes="320px" quality={95} priority />
         <Image className="for-sombre" src="/blason-christen.jpg" alt="" aria-hidden fill sizes="320px" quality={95} priority />
-      </span>
-      <span className="crest crest-stars">
-        <Image className="for-clair" src="/logo-etoiles.jpg" alt="Étoiles" width={1500} height={1500} sizes="360px" quality={95} priority style={starCrop} />
+      </button>
+      <button
+        ref={starsRef}
+        type="button"
+        className="crest crest-stars"
+        aria-label="Étoiles"
+        onClick={() => lightCrest(starsRef.current)}
+      >
+        <Image className="for-clair" src="/logo-etoiles.jpg" alt="" width={1500} height={1500} sizes="360px" quality={95} priority style={starCrop} />
         <Image
           className="for-sombre"
           src="/logo-etoiles.jpg"
@@ -55,7 +82,7 @@ export function Crests() {
           quality={95}
           style={starCrop}
         />
-      </span>
+      </button>
     </div>
   );
 }

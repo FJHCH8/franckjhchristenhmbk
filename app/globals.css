@@ -201,18 +201,18 @@ html[data-theme="sombre"] .sky-gradient-sombre {
   opacity: 1;
 }
 
-html[data-page="qui-suis-je"] .sky-gradient-clair {
-  background:
-    radial-gradient(820px 480px at 74% 6%, rgba(255, 236, 196, 0.55), transparent 42%),
-    radial-gradient(640px 420px at 12% -8%, rgba(150, 190, 255, 0.5), transparent 48%),
-    linear-gradient(180deg, #123488 0%, #1a46b8 22%, #2458d4 48%, #4d78e4 74%, #b9cff8 100%);
+html[data-page="qui-suis-je"] .sky,
+html[data-page="qui-suis-je"] .night-stars,
+html[data-page="qui-suis-je"] .rain-layer,
+html[data-page="qui-suis-je"] .footer,
+html[data-page="qui-suis-je"] .altimeter,
+html[data-page="qui-suis-je"] .rail {
+  display: none;
 }
 
-html[data-page="qui-suis-je"] .sky-gradient-sombre {
-  background:
-    radial-gradient(760px 420px at 80% -6%, rgba(88, 112, 210, 0.38), transparent 52%),
-    radial-gradient(520px 360px at 18% 0%, rgba(40, 70, 160, 0.35), transparent 50%),
-    linear-gradient(180deg, #040712 0%, #081433 36%, #10245a 72%, #18306e 100%);
+html[data-page="qui-suis-je"],
+html[data-page="qui-suis-je"] body {
+  overflow: hidden;
 }
 
 html[data-page="qui-suis-je"] .header,
@@ -768,6 +768,19 @@ main {
   position: relative;
   display: block;
   flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.crest.is-lit img.for-clair {
+  filter: url(#crest-ink) drop-shadow(0 0 3px rgba(255, 246, 214, 0.95)) drop-shadow(0 0 11px rgba(255, 186, 64, 0.9));
+}
+
+.crest.is-lit img.for-sombre {
+  filter: url(#crest-glow) drop-shadow(0 0 4px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 13px rgba(186, 210, 255, 0.85));
 }
 
 .crest-filters {
@@ -1029,169 +1042,36 @@ html[data-sky="cloud"] body {
   min-height: 100svh;
 }
 
-.qui-run {
-  height: 220vh;
-}
-
-.qui-stage {
-  position: sticky;
-  top: 0;
+.qui-sea {
+  position: relative;
   height: 100svh;
   overflow: hidden;
 }
 
-.qui-stage h1 {
+.qui-sea canvas {
   position: absolute;
-  z-index: 5;
-  top: calc(env(safe-area-inset-top) + 5.6rem);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.qui-sea h1 {
+  position: absolute;
+  z-index: 2;
+  top: 30%;
   left: 0;
   right: 0;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   font-weight: 520;
-  font-size: clamp(2.6rem, 7vw, 4.6rem);
+  font-size: clamp(2.8rem, 7vw, 5rem);
   letter-spacing: -0.04em;
   line-height: 0.95;
   text-align: center;
-  text-shadow: 0 12px 32px rgba(8, 20, 70, 0.35);
-  color: #f5f8ff;
+  color: #f7fbff;
+  text-shadow: 0 10px 28px rgba(8, 28, 58, 0.28);
   pointer-events: none;
-}
-
-.qui-anchor {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  bottom: 16%;
-  width: min(94vw, 720px);
-  translate: -50% 0;
-}
-
-.qui-world {
-  transform-origin: 50% 100%;
-  will-change: transform;
-}
-
-.qui-grass,
-.qui-grass-zoom {
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.qui-grass.mid {
-  z-index: 1;
-  height: 34vh;
-}
-
-.qui-grass-zoom {
-  z-index: 4;
-  height: 46vh;
-  transform-origin: 50% 100%;
-  will-change: transform;
-}
-
-.qui-grass.front {
-  position: absolute;
-  inset: 0;
-}
-
-.blade {
-  position: absolute;
-  bottom: 0;
-  border-radius: 999px;
-  transform-origin: 50% 100%;
-  background: linear-gradient(to top, var(--g1), var(--g2));
-  animation: grass-sway ease-in-out infinite;
-}
-
-.tone-0 { --g1: #1a4324; --g2: #8fce68; }
-.tone-1 { --g1: #234c28; --g2: #d5dc78; }
-.tone-2 { --g1: #14361e; --g2: #4e8c42; }
-.tone-3 { --g1: #2a5530; --g2: #efe7a4; }
-
-html[data-theme="sombre"] .tone-0 { --g1: #0c2414; --g2: #3f7d4c; }
-html[data-theme="sombre"] .tone-1 { --g1: #102818; --g2: #6a8f48; }
-html[data-theme="sombre"] .tone-2 { --g1: #08180e; --g2: #2f6840; }
-html[data-theme="sombre"] .tone-3 { --g1: #163222; --g2: #9aaa62; }
-
-.life-tree {
-  --bark-dark: #24160e;
-  --bark-mid: #6d4a30;
-  --bark-light: #c49262;
-  --limb-light: #9a6844;
-  --limb-dark: #3a2416;
-  --leaf-light: #b6e07a;
-  --leaf-dark: #1d6a34;
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  filter: drop-shadow(0 22px 18px rgba(8, 20, 50, 0.28));
-}
-
-html[data-theme="sombre"] .life-tree {
-  --bark-dark: #3e2c1e;
-  --bark-mid: #c9aa86;
-  --bark-light: #f4e4cc;
-  --limb-light: #f7ecdc;
-  --limb-dark: #a88464;
-  --leaf-light: #e4f6cf;
-  --leaf-dark: #5ea86c;
-}
-
-.tree-shadow {
-  fill: rgba(6, 16, 48, 0.22);
-}
-
-.tree-trunk {
-  fill: url(#bark);
-}
-
-.tree-root {
-  fill: none;
-  stroke: #3b2918;
-  stroke-width: 5;
-  stroke-linecap: round;
-}
-
-.tree-bark {
-  stroke: rgba(255, 228, 190, 0.35);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.tree-limb,
-.tree-twig {
-  fill: url(#limb-shade);
-}
-
-.tree-leaf {
-  fill: url(#leaf-face);
-}
-
-.tree-leaf.deep {
-  opacity: 0.88;
-}
-
-.tree-vein {
-  fill: none;
-  stroke: rgba(20, 50, 24, 0.35);
-  stroke-width: 1;
-}
-
-html[data-theme="sombre"] .tree-root {
-  stroke: #e7d3b4;
-}
-
-html[data-theme="sombre"] .tree-vein {
-  stroke: rgba(230, 245, 220, 0.45);
-}
-
-html[data-theme="sombre"] .tree-shadow {
-  fill: rgba(0, 0, 0, 0.35);
 }
 
 .page-enter {
@@ -1228,17 +1108,6 @@ html[data-theme="sombre"] .page-veil {
 
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes grass-sway {
-  0%,
-  100% {
-    transform: rotate(calc(var(--lean) - 3.5deg));
-  }
-
-  50% {
-    transform: rotate(calc(var(--lean) + 4.5deg));
   }
 }
 
@@ -1525,6 +1394,14 @@ html[data-theme="sombre"] .page-veil {
     transition: opacity 1.15s ease;
   }
 
+  .crest.is-lighting img.for-clair {
+    animation: crest-ink-light 0.9s ease;
+  }
+
+  .crest.is-lighting img.for-sombre {
+    animation: crest-glow-light 0.9s ease;
+  }
+
   .welcome,
   .hero h1,
   .epithet,
@@ -1648,6 +1525,34 @@ html[data-theme="sombre"] .page-veil {
 
   .top-frost-tint {
     background: linear-gradient(to bottom, var(--glass-solid), transparent);
+  }
+}
+
+@keyframes crest-ink-light {
+  0% {
+    filter: url(#crest-ink);
+  }
+
+  42% {
+    filter: url(#crest-ink) drop-shadow(0 0 2px #fff) drop-shadow(0 0 16px #ffe09a);
+  }
+
+  100% {
+    filter: url(#crest-ink) drop-shadow(0 0 3px rgba(255, 246, 214, 0.95)) drop-shadow(0 0 11px rgba(255, 186, 64, 0.9));
+  }
+}
+
+@keyframes crest-glow-light {
+  0% {
+    filter: url(#crest-glow);
+  }
+
+  42% {
+    filter: url(#crest-glow) drop-shadow(0 0 3px #fff) drop-shadow(0 0 18px #d7e6ff);
+  }
+
+  100% {
+    filter: url(#crest-glow) drop-shadow(0 0 4px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 13px rgba(186, 210, 255, 0.85));
   }
 }
 
