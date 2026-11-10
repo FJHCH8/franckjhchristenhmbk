@@ -7,6 +7,7 @@ import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
 import { LocaleProvider, T } from "@/components/Locale";
 import { PageSky } from "@/components/PageSky";
+import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           }
         `}</style>
         <LocaleProvider>
+          <RouteTransition />
           <ThemeBoot />
           <a className="skip" href="#contenu">
             <T width="9em">Aller au contenu</T>

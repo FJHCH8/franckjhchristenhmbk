@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useSyncExternalStore, type ReactNode } from "react";
 
 export type LocaleName = "fr" | "lassavi";
 
@@ -26,29 +26,38 @@ function applyLocale(locale: LocaleName) {
   else delete document.documentElement.dataset.locale;
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<LocaleName>("fr");
+function subscribeLocale(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener("fjch-lang", onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener("fjch-lang", onStoreChange);
+  };
+}
 
-  useLayoutEffect(() => {
-    try {
-      if (localStorage.getItem(LOCALE_KEY) === "lassavi") setLocaleState("lassavi");
-    } catch {
-      /* private mode */
-    }
-  }, []);
+function readLocale(): LocaleName {
+  try {
+    return localStorage.getItem(LOCALE_KEY) === "lassavi" ? "lassavi" : "fr";
+  } catch {
+    return "fr";
+  }
+}
+
+export function LocaleProvider({ children }: { children: ReactNode }) {
+  const locale = useSyncExternalStore(subscribeLocale, readLocale, () => "fr" as LocaleName);
 
   useLayoutEffect(() => {
     applyLocale(locale);
   }, [locale]);
 
   const setLocale = (next: LocaleName) => {
-    setLocaleState(next);
-    applyLocale(next);
     try {
       localStorage.setItem(LOCALE_KEY, next);
     } catch {
       /* private mode */
     }
+    applyLocale(next);
+    window.dispatchEvent(new Event("fjch-lang"));
   };
 
   return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>;

@@ -57,7 +57,7 @@ type Weather = {
   originW: number;
 };
 
-const THEME_MS = 1150;
+const THEME_MS = 1080;
 const RAINBOW_ON = 3400;
 const RAINBOW_FADE = 900;
 const RAINBOW_BANDS = [

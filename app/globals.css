@@ -1309,40 +1309,187 @@ html[data-sky="cloud"] body {
   pointer-events: none;
 }
 
-.page-enter {
-  animation: page-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+.page-enter.is-same {
+  animation: page-rise 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.page-veil {
+.page-enter.is-forward {
+  animation: page-rise 0.66s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-enter.is-back {
+  animation: page-rise-back 0.66s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html.nav-vt .page-enter {
+  animation: none;
+}
+
+.theme-veil {
   position: fixed;
-  z-index: 15;
+  z-index: 19;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(180, 210, 235, 0.05) 46%, transparent);
-  animation: page-veil 0.72s ease both;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--theme-x) var(--theme-y),
+    transparent calc(var(--reveal) - 32px),
+    #000 var(--reveal)
+  );
+  mask-image: radial-gradient(
+    circle at var(--theme-x) var(--theme-y),
+    transparent calc(var(--reveal) - 32px),
+    #000 var(--reveal)
+  );
 }
 
-html[data-theme="sombre"] .page-veil {
-  background: linear-gradient(180deg, rgba(8, 14, 32, 0.55), rgba(10, 18, 40, 0.08) 50%, transparent);
+html.nav-vt .page-enter {
+  view-transition-name: page;
 }
 
-@keyframes page-in {
+html.nav-vt .header {
+  view-transition-name: site-header;
+}
+
+html.nav-vt .nav-pill {
+  view-transition-name: nav-pill;
+}
+
+html.nav-vt .sky {
+  view-transition-name: site-sky;
+}
+
+html.nav-vt .top-frost {
+  view-transition-name: site-frost;
+}
+
+html.nav-vt .rail {
+  view-transition-name: site-rail;
+}
+
+html.nav-vt .altimeter {
+  view-transition-name: site-alt;
+}
+
+html.nav-vt::view-transition-group(root),
+html.nav-vt::view-transition-old(root),
+html.nav-vt::view-transition-new(root),
+html.nav-vt::view-transition-group(site-header),
+html.nav-vt::view-transition-old(site-header),
+html.nav-vt::view-transition-new(site-header),
+html.nav-vt::view-transition-group(site-sky),
+html.nav-vt::view-transition-old(site-sky),
+html.nav-vt::view-transition-new(site-sky),
+html.nav-vt::view-transition-group(site-frost),
+html.nav-vt::view-transition-old(site-frost),
+html.nav-vt::view-transition-new(site-frost),
+html.nav-vt::view-transition-group(site-rail),
+html.nav-vt::view-transition-old(site-rail),
+html.nav-vt::view-transition-new(site-rail),
+html.nav-vt::view-transition-group(site-alt),
+html.nav-vt::view-transition-old(site-alt),
+html.nav-vt::view-transition-new(site-alt),
+html.nav-vt::view-transition-group(page) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.nav-vt::view-transition-old(root),
+html.nav-vt::view-transition-old(site-header),
+html.nav-vt::view-transition-old(site-sky),
+html.nav-vt::view-transition-old(site-frost),
+html.nav-vt::view-transition-old(site-rail),
+html.nav-vt::view-transition-old(site-alt) {
+  display: none;
+}
+
+html.nav-vt::view-transition-old(page) {
+  z-index: 2;
+  animation: vt-leave 0.58s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+html.nav-vt::view-transition-new(page) {
+  z-index: 1;
+  animation: vt-arrive 0.66s cubic-bezier(0.22, 1, 0.36, 1) both;
+  mix-blend-mode: normal;
+}
+
+html.nav-vt[data-nav="back"]::view-transition-old(page) {
+  animation-name: vt-leave-back;
+}
+
+html.nav-vt[data-nav="back"]::view-transition-new(page) {
+  animation-name: vt-arrive-back;
+}
+
+html.nav-vt::view-transition-group(nav-pill) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes page-rise {
   from {
     opacity: 0;
+    transform: translateY(26px);
   }
 
   to {
     opacity: 1;
+    transform: none;
   }
 }
 
-@keyframes page-veil {
-  0% {
-    opacity: 0.85;
+@keyframes page-rise-back {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
 
-  100% {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vt-leave {
+  to {
     opacity: 0;
+    filter: blur(9px);
+    transform: translateY(-18px) scale(0.982);
+  }
+}
+
+@keyframes vt-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes vt-leave-back {
+  to {
+    opacity: 0;
+    filter: blur(9px);
+    transform: translateY(16px) scale(0.982);
+  }
+}
+
+@keyframes vt-arrive-back {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

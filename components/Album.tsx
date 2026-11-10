@@ -36,6 +36,7 @@ export function Album() {
   const raf = useRef(0);
   const last = useRef(0);
   const hovered = useRef(false);
+  const releaseRef = useRef<(passed: boolean, vx: number, vy: number) => void>(() => undefined);
 
   const paint = () => {
     const stage = stageRef.current;
@@ -145,6 +146,10 @@ export function Album() {
   };
 
   useEffect(() => {
+    releaseRef.current = release;
+  });
+
+  useEffect(() => {
     paint();
     const stage = stageRef.current;
     const videos = stage?.querySelectorAll("video") ?? [];
@@ -166,7 +171,7 @@ export function Album() {
         current.x = dir * 28;
         current.r = dir * 6;
       }
-      release(true, dir * 980, 40);
+      releaseRef.current(true, dir * 980, 40);
     };
     window.addEventListener("keydown", onKey);
     return () => {
