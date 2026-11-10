@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Album } from "@/components/Album";
+import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
-import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -10,16 +11,19 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main id="contenu">
-      <section className="section shell page-solo" id="a-propos" aria-labelledby="titre-apropos">
-        <Reveal>
+      <section className="section shell page-solo about-page" id="a-propos" aria-labelledby="titre-apropos">
+        <div className="album-stage">
+          <Album />
+        </div>
+        <Descend>
           <p className="kicker">
             <T width="11em">02 — Réserve</T>
           </p>
           <h1 id="titre-apropos">
             <T>À propos</T>
           </h1>
-        </Reveal>
-        <Reveal delay={120}>
+        </Descend>
+        <Descend>
           <Glass>
             <p className="prose">
               <Block lines={["100%", "94%", "62%"]}>
@@ -60,7 +64,7 @@ export default function AboutPage() {
               </div>
             </dl>
           </Glass>
-        </Reveal>
+        </Descend>
       </section>
     </main>
   );
