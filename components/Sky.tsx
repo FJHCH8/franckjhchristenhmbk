@@ -598,7 +598,8 @@ export function Sky() {
 
     const onClick = (event: MouseEvent) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey) return;
-      if (document.documentElement.dataset.page === "qui-suis-je") return;
+      const page = document.documentElement.dataset.page;
+      if (page === "qui-suis-je" || page === "projets") return;
       if (mode !== "clair" || themeMix > 0.4 || weather.phase !== "idle") return;
       if (isBlockedTarget(event.target)) return;
       const hit = pickCloud(event.clientX, event.clientY);

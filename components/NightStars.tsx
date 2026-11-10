@@ -107,7 +107,8 @@ export function NightStars({ onAurora }: { onAurora: (on: boolean) => void }) {
   }, [onAurora, stars]);
 
   const choose = (index: number) => {
-    if (document.documentElement.dataset.page === "qui-suis-je") return;
+    const page = document.documentElement.dataset.page;
+    if (page === "qui-suis-je" || page === "projets") return;
     if (cycle.current !== "idle" || visitHas(VISIT_AURORA)) return;
     setStars((current) => {
       if (current[index] !== "present") return current;

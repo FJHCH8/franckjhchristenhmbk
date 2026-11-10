@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact"];
+const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
 let previousPath = "";
 let pendingDir = "same";

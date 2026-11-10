@@ -1,19 +1,20 @@
 import { Crests } from "@/components/Crests";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
+import { ScrollTitle } from "@/components/ScrollTitle";
 
 export default function HomePage() {
   return (
     <main id="contenu">
-      <section className="hero shell" id="accueil" aria-labelledby="titre-accueil">
+      <ScrollTitle id="titre-accueil" max={3.35} min={1.65}>
+        <span translate="no">Franck J.H. CHRISTEN H.M.B.K.</span>
+      </ScrollTitle>
+      <section className="hero shell scroll-reveal" id="accueil" aria-labelledby="titre-accueil">
         <div className="hero-layout">
           <div className="hero-copy">
             <p className="welcome">
               <T width="7.2em">Bienvenue</T>
             </p>
-            <h1 id="titre-accueil" translate="no">
-              Franck J.H. CHRISTEN H.M.B.K.
-            </h1>
             <p className="epithet">
               <T width="9em">Polyhymate</T>
             </p>

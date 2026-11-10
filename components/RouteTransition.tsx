@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact"];
+const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
 type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void> };
 

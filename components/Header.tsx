@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/qui-suis-je", id: "qui-suis-je", label: "Qui suis-je" },
   { href: "/a-propos", id: "a-propos", label: "À propos" },
   { href: "/contact", id: "contact", label: "Contact" },
+  { href: "/projets", id: "projets", label: "Projets" },
 ];
 
 export function Header() {

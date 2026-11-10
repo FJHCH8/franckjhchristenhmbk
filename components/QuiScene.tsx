@@ -2,7 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { Album } from "@/components/Album";
-import { T } from "@/components/Locale";
+import { InfoNote } from "@/components/InfoNote";
+import { Block, T } from "@/components/Locale";
+import { ScrollTitle } from "@/components/ScrollTitle";
+import { DropsMark } from "@/components/TitleMarks";
+
+const BIO =
+  "Bonjour, je m’appelle Franck J. H. Christen H. M. B. K. Je suis né en 2007 en France. Je suis né différent, avec le syndrome du THPI. Depuis toujours, je me suis intéressé à ce que personne ne voulait ou ne pouvait regarder. Depuis toujours, je vis, je vois, je mange, je fais, je parle, je pense et je rêve différemment — je fais tout différemment. Ce site, il sert à quoi ? À publier ce que je fais, à montrer à des gens qui veulent comprendre ce que je fais en tant que polymath au quotidien.";
 
 function readNight() {
   return document.documentElement.dataset.theme === "sombre";
@@ -223,7 +229,7 @@ export function QuiScene() {
       if (starVeil > 0.01) {
         ctx.save();
         ctx.globalAlpha = starVeil;
-        drawStar(ctx, w * 0.5, h * 0.16, time);
+        drawStar(ctx, w * 0.5, h * 0.11, time);
         ctx.restore();
       }
       paintSea(ctx, w, h, horizon, time, night);
@@ -268,12 +274,22 @@ export function QuiScene() {
   }, []);
 
   return (
-    <section className="qui-sea" aria-labelledby="titre-qui">
-      <canvas ref={canvasRef} aria-hidden="true" />
-      <h1 id="titre-qui" ref={titleRef}>
-        <T>Qui suis-je</T>
-      </h1>
-      <Album />
-    </section>
+    <>
+      <section className="qui-sea" aria-labelledby="titre-qui">
+        <canvas ref={canvasRef} aria-hidden="true" />
+        <ScrollTitle id="titre-qui" titleRef={titleRef} tone="sea" icon={<DropsMark />} max={5.4} min={2.15}>
+          <T>Qui suis-je</T>
+        </ScrollTitle>
+      </section>
+      <section className="qui-follow scroll-reveal">
+        <Album />
+        <div className="qui-note">
+          <p>
+            <Block lines={["100%", "98%", "96%", "94%", "90%", "84%", "62%"]}>{BIO}</Block>
+          </p>
+        </div>
+        <InfoNote />
+      </section>
+    </>
   );
 }

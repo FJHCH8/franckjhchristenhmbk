@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
+import { ScrollTitle } from "@/components/ScrollTitle";
+import { InfinityMark } from "@/components/TitleMarks";
 
 export const metadata: Metadata = {
   title: "À propos",
@@ -10,23 +12,20 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main id="contenu">
-      <section className="section shell page-solo" id="a-propos" aria-labelledby="titre-apropos">
+      <ScrollTitle id="titre-apropos" icon={<InfinityMark />}>
+        <T>À propos</T>
+      </ScrollTitle>
+      <section className="section shell page-solo" aria-labelledby="titre-apropos">
         <Descend>
           <p className="kicker">
-            <T width="11em">02 — Réserve</T>
+            <T width="9em">02 — Le site</T>
           </p>
-          <h1 id="titre-apropos">
-            <T>À propos</T>
-          </h1>
         </Descend>
         <Descend>
           <Glass>
             <p className="prose">
-              <Block lines={["100%", "94%", "62%"]}>
-                <>
-                  Cette page est laissée en réserve. Rien n’y figure encore{"\u202F"}: ni présentation, ni parcours, ni
-                  projets. Lorsque des mots seront choisis, ils prendront place ici.
-                </>
+              <Block lines={["100%", "86%"]}>
+                <>Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck.</>
               </Block>
             </p>
             <dl className="reserve">
@@ -35,16 +34,8 @@ export default function AboutPage() {
                   <T width="8.5em">Présentation</T>
                 </dt>
                 <dd>
-                  <T width="8em">Texte à venir.</T>
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  <T width="5.5em">Repères</T>
-                </dt>
-                <dd>
-                  <Block lines={["100%", "72%"]}>
-                    <>Aucune information n’est publiée pour le moment.</>
+                  <Block lines={["100%", "78%"]}>
+                    <>La vie, les projets et les annonces de Franck y prennent place.</>
                   </Block>
                 </dd>
               </div>
@@ -53,8 +44,11 @@ export default function AboutPage() {
                   <T width="5.5em">Horizon</T>
                 </dt>
                 <dd>
-                  <Block lines={["100%", "78%"]}>
-                    <>D’autres sections pourront s’ajouter, le moment venu.</>
+                  <Block lines={["100%", "92%", "70%"]}>
+                    <>
+                      Le site évolue, et des posts paraissent régulièrement, avec des mises à jour environ tous les 7
+                      jours.
+                    </>
                   </Block>
                 </dd>
               </div>

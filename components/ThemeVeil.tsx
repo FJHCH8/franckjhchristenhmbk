@@ -6,7 +6,9 @@ export function holdPreviousTheme(origin: HTMLElement | null) {
   const previous = document.querySelector<HTMLCanvasElement>(".theme-veil");
   previous?.remove();
   const night = document.documentElement.dataset.theme === "sombre";
-  const qui = document.querySelector<HTMLCanvasElement>(".qui-sea canvas");
+  const page = document.documentElement.dataset.page;
+  const qui = page === "qui-suis-je" ? document.querySelector<HTMLCanvasElement>(".qui-sea canvas") : null;
+  const projets = page === "projets" ? document.querySelector<HTMLCanvasElement>(".projets-sky canvas") : null;
   const sky = document.querySelector<HTMLCanvasElement>(".sky canvas");
   const rain = document.querySelector<HTMLCanvasElement>(".rain-layer");
   const width = window.innerWidth;
@@ -20,7 +22,11 @@ export function holdPreviousTheme(origin: HTMLElement | null) {
   const ctx = veil.getContext("2d");
   if (!ctx) return;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  if (qui && qui.width > 0) {
+  if (projets && projets.width > 0) {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(projets, 0, 0, width, height);
+  } else if (qui && qui.width > 0) {
     ctx.drawImage(qui, 0, 0, width, height);
   } else {
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
