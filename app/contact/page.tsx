@@ -11,9 +11,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main id="contenu">
-      <ScrollTitle id="titre-contact" icon={<ParchmentMark />}>
-        <T>Contact</T>
-      </ScrollTitle>
+      <ScrollTitle id="titre-contact" text="Contact" icon={<ParchmentMark />} />
       <section className="section shell page-solo scroll-reveal" aria-labelledby="titre-contact">
         <Glass>
           <div className="contact-links">

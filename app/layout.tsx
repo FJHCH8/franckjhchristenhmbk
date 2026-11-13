@@ -7,6 +7,7 @@ import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
 import { LocaleProvider, T } from "@/components/Locale";
 import { PageSky } from "@/components/PageSky";
+import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </a>
           <PageSky />
           <Sky />
+          <ProjetsSky />
           <p className="rail">
             <T width="8em">Bienvenue</T>
           </p>

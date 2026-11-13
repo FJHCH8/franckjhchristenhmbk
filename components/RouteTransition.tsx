@@ -7,9 +7,22 @@ const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
 type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void> };
 
+function iosBrowser() {
+  const ua = navigator.userAgent;
+  return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 function viewTransition(): StartViewTransition | null {
+  if (iosBrowser()) return null;
   const start = (document as Document & { startViewTransition?: StartViewTransition }).startViewTransition;
   return typeof start === "function" ? start.bind(document) : null;
+}
+
+function clearNav() {
+  const root = document.documentElement;
+  root.classList.remove("nav-vt");
+  delete root.dataset.nav;
+  document.querySelector(".theme-veil")?.remove();
 }
 
 export function RouteTransition() {
@@ -22,6 +35,16 @@ export function RouteTransition() {
     pending.current = null;
     resolve?.();
   }, [pathname]);
+
+  useEffect(() => {
+    const onShow = () => clearNav();
+    window.addEventListener("pageshow", onShow);
+    document.addEventListener("visibilitychange", onShow);
+    return () => {
+      window.removeEventListener("pageshow", onShow);
+      document.removeEventListener("visibilitychange", onShow);
+    };
+  }, []);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -54,10 +77,6 @@ export function RouteTransition() {
       root.classList.add("nav-vt");
       document.querySelector(".theme-veil")?.remove();
       const destination = `${url.pathname}${url.search}${url.hash}`;
-      const clear = () => {
-        root.classList.remove("nav-vt");
-        delete root.dataset.nav;
-      };
       const navigate = () =>
         new Promise<void>((resolve) => {
           const timer = window.setTimeout(resolve, 800);
@@ -67,11 +86,16 @@ export function RouteTransition() {
           };
           router.push(destination);
         });
+      const failSafe = window.setTimeout(clearNav, 1400);
       try {
         const transition = start(navigate);
-        transition.finished.finally(clear);
+        transition.finished.finally(() => {
+          window.clearTimeout(failSafe);
+          clearNav();
+        });
       } catch {
-        clear();
+        window.clearTimeout(failSafe);
+        clearNav();
         router.push(destination);
       }
     };

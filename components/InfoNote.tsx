@@ -10,6 +10,8 @@ export function InfoNote() {
   const [hover, setHover] = useState(false);
   const [focus, setFocus] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleId = useId();
   const open = hover || focus || pinned;
@@ -45,7 +47,10 @@ export function InfoNote() {
       className="info-note"
       ref={wrapRef}
       onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseLeave={() => {
+        setHover(false);
+        setPressed(false);
+      }}
       onFocus={() => setFocus(true)}
       onBlur={(event) => {
         if (!wrapRef.current?.contains(event.relatedTarget as Node)) setFocus(false);
@@ -53,14 +58,28 @@ export function InfoNote() {
     >
       <button
         type="button"
-        className="info-dot"
+        className={pressed ? "info-dot is-pressed" : "info-dot"}
         aria-expanded={open}
         aria-controls={bubbleId}
         onClick={() => setPinned((value) => !value)}
+        onPointerDown={(event) => {
+          setPressed(true);
+          const box = event.currentTarget.getBoundingClientRect();
+          const id = performance.now();
+          setRipples((current) => [...current, { id, x: event.clientX - box.left, y: event.clientY - box.top }]);
+          window.setTimeout(() => {
+            setRipples((current) => current.filter((ripple) => ripple.id !== id));
+          }, 700);
+        }}
+        onPointerUp={() => setPressed(false)}
+        onPointerCancel={() => setPressed(false)}
       >
         i
+        {ripples.map((ripple) => (
+          <span key={ripple.id} className="info-ripple" style={{ left: ripple.x, top: ripple.y }} />
+        ))}
       </button>
-      <div className={open ? "info-bubble is-open" : "info-bubble"} id={bubbleId} role="region" hidden={!open}>
+      <div className={open ? "info-bubble is-open" : "info-bubble"} id={bubbleId} role="region" aria-hidden={!open} inert={open ? undefined : true}>
         <p>
           <Block lines={["100%", "96%", "88%", "70%"]}>{BUBBLE}</Block>
         </p>

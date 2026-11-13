@@ -12,9 +12,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <main id="contenu">
-      <ScrollTitle id="titre-apropos" icon={<InfinityMark />}>
-        <T>À propos</T>
-      </ScrollTitle>
+      <ScrollTitle id="titre-apropos" text="À propos" icon={<InfinityMark />} />
       <section className="section shell page-solo" aria-labelledby="titre-apropos">
         <Descend>
           <p className="kicker">

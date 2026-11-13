@@ -55,12 +55,19 @@ export function holdPreviousTheme(origin: HTMLElement | null) {
   document.body.appendChild(veil);
   const start = performance.now();
   const duration = 1080;
+  const kill = window.setTimeout(() => veil.remove(), duration + 240);
   const tick = (now: number) => {
-    if (!veil.isConnected) return;
+    if (!veil.isConnected) {
+      window.clearTimeout(kill);
+      return;
+    }
     const t = Math.min(1, (now - start) / duration);
     veil.style.setProperty("--reveal", `${ease(t) * radius}px`);
     if (t < 1) requestAnimationFrame(tick);
-    else veil.remove();
+    else {
+      window.clearTimeout(kill);
+      veil.remove();
+    }
   };
   requestAnimationFrame(tick);
 }

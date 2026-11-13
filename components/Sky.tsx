@@ -199,7 +199,7 @@ export function Sky() {
       const nextH = Math.max(1, rect.height);
       const widthShift = Math.abs(nextW - viewW);
       const heightShift = Math.abs(nextH - viewH);
-      if (builtW > 0 && widthShift < 2 && heightShift < 72) return;
+      if (builtW > 0 && widthShift < 2 && heightShift < 16) return;
       const rebuild = builtW === 0 || widthShift >= 2;
       viewW = nextW;
       viewH = nextH;
@@ -633,13 +633,28 @@ export function Sky() {
     };
 
     const onVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(raf);
-        return;
-      }
+      running = false;
+      cancelAnimationFrame(raf);
+      if (document.hidden) return;
+      if (performance.now() - themeStart > THEME_MS) themeMix = themeTo;
+      last = performance.now();
+      draw(last);
       wake();
     };
+
+    const watchdog = window.setInterval(() => {
+      if (document.hidden) return;
+      const now = performance.now();
+      const stalled = running && now - last > 400;
+      const unfinished = themeMix !== themeTo && now - themeStart > THEME_MS + 40;
+      if (!stalled && !unfinished) return;
+      running = false;
+      cancelAnimationFrame(raf);
+      if (unfinished || now - themeStart > THEME_MS) themeMix = themeTo;
+      last = now;
+      draw(now);
+      wake();
+    }, 500);
 
     resize();
     draw();
@@ -657,6 +672,7 @@ export function Sky() {
     window.addEventListener("resize", resize);
     window.visualViewport?.addEventListener("resize", resize);
     window.addEventListener("themechange", syncMode);
+    window.addEventListener("pageshow", onVisibility);
     document.addEventListener("mouseout", onMouseOut);
     document.addEventListener("visibilitychange", onVisibility);
     motionQuery.addEventListener("change", onMotion);
@@ -664,6 +680,7 @@ export function Sky() {
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      window.clearInterval(watchdog);
       themeObserver.disconnect();
       for (const id of timers) window.clearTimeout(id);
       timers.clear();
@@ -676,6 +693,7 @@ export function Sky() {
       window.removeEventListener("resize", resize);
       window.visualViewport?.removeEventListener("resize", resize);
       window.removeEventListener("themechange", syncMode);
+      window.removeEventListener("pageshow", onVisibility);
       document.removeEventListener("mouseout", onMouseOut);
       document.removeEventListener("visibilitychange", onVisibility);
       motionQuery.removeEventListener("change", onMotion);

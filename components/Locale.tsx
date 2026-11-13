@@ -67,6 +67,11 @@ export function useLocale() {
   return useContext(LocaleContext);
 }
 
+export function titleLabel(locale: LocaleName, text: string, keep = false) {
+  if (keep || locale !== "lassavi") return text;
+  return LASSAVI[text] ?? null;
+}
+
 export function T({ children, width }: { children: string; width?: string }) {
   const { locale } = useLocale();
   if (locale !== "lassavi") return <>{children}</>;

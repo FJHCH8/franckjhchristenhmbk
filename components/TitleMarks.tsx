@@ -15,55 +15,13 @@ export function DropsMark() {
 }
 
 export function InfinityMark() {
-  return (
-    <svg className="mark mark-infinity" viewBox="0 0 64 32" aria-hidden="true">
-      <path pathLength="100" d="M32 16C32 9 25 6 18 10c-6 3.4-8 10-4 14 4 4 10 2 14-2 4-4 10-6 14-2 5 5 2 12-4 14-7 4-14 1-14-6" />
-    </svg>
-  );
+  return <span className="mark mark-infini" aria-hidden="true" />;
 }
 
 export function ParchmentMark() {
-  return (
-    <svg className="mark mark-scroll" viewBox="0 0 48 48" aria-hidden="true">
-      <g className="scroll-paper">
-        <path d="M14 16h20v16H14Z" />
-        <path d="M16 20h16M16 24h12M16 28h14" className="scroll-lines" />
-      </g>
-      <g className="scroll-rods">
-        <rect x="10" y="13" width="28" height="5" rx="2.5" />
-        <rect x="10" y="30" width="28" height="5" rx="2.5" className="scroll-rod-bottom" />
-      </g>
-    </svg>
-  );
+  return <span className="mark mark-parchemin" aria-hidden="true" />;
 }
 
 export function SmileyMark() {
-  return (
-    <svg className="mark mark-smiley" viewBox="0 0 48 48" aria-hidden="true">
-      <g className="face face-smile">
-        <circle cx="24" cy="24" r="14" />
-        <circle cx="18.5" cy="21" r="1.4" className="eye" />
-        <circle cx="29.5" cy="21" r="1.4" className="eye" />
-        <path d="M17.5 27.5c1.8 2.6 4 3.8 6.5 3.8s4.7-1.2 6.5-3.8" />
-      </g>
-      <g className="face face-wink">
-        <circle cx="24" cy="24" r="14" />
-        <path d="M16.2 21.2h4.6" />
-        <circle cx="29.5" cy="21" r="1.4" className="eye" />
-        <path d="M17.5 27.5c1.8 2.6 4 3.8 6.5 3.8s4.7-1.2 6.5-3.8" />
-      </g>
-      <g className="face face-grin">
-        <circle cx="24" cy="24" r="14" />
-        <circle cx="18.5" cy="20.5" r="1.4" className="eye" />
-        <circle cx="29.5" cy="20.5" r="1.4" className="eye" />
-        <path d="M16.5 26.5c2.2 4.2 5 6 7.5 6s5.3-1.8 7.5-6" />
-        <path d="M21 31.2c.8 1.6 2 2.4 3 2.4s2.2-.8 3-2.4" className="tongue" />
-      </g>
-      <g className="face face-joy">
-        <circle cx="24" cy="24" r="14" />
-        <path d="M15.8 20.2c1.2-1.4 2.8-1.2 3.6.4M28.6 20.6c1.2-1.4 2.8-1.2 3.6.4" />
-        <path d="M16.2 26.2c2.4 4.8 5.2 6.8 7.8 6.8s5.4-2 7.8-6.8" />
-      </g>
-    </svg>
-  );
+  return <span className="mark mark-sourire" aria-hidden="true" />;
 }

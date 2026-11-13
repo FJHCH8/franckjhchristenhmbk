@@ -3,16 +3,12 @@
 import { useEffect, useRef } from "react";
 import { Album } from "@/components/Album";
 import { InfoNote } from "@/components/InfoNote";
-import { Block, T } from "@/components/Locale";
+import { Block } from "@/components/Locale";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { DropsMark } from "@/components/TitleMarks";
 
 const BIO =
   "Bonjour, je m’appelle Franck J. H. Christen H. M. B. K. Je suis né en 2007 en France. Je suis né différent, avec le syndrome du THPI. Depuis toujours, je me suis intéressé à ce que personne ne voulait ou ne pouvait regarder. Depuis toujours, je vis, je vois, je mange, je fais, je parle, je pense et je rêve différemment — je fais tout différemment. Ce site, il sert à quoi ? À publier ce que je fais, à montrer à des gens qui veulent comprendre ce que je fais en tant que polymath au quotidien.";
-
-function readNight() {
-  return document.documentElement.dataset.theme === "sombre";
-}
 
 function mix(a: number, b: number, t: number) {
   return a + (b - a) * t;
@@ -35,16 +31,16 @@ function drawCloud(ctx: CanvasRenderingContext2D, cx: number, cy: number, time: 
     const ox = puff.x + Math.sin(time * 0.21 + puff.p) * 3.5;
     const oy = puff.y + Math.cos(time * 0.19 + puff.p) * 2.2;
     const shade = ctx.createRadialGradient(ox - rx * 0.2, oy + ry * 0.35, rx * 0.1, ox, oy, rx);
-    shade.addColorStop(0, "rgba(176, 196, 214, 0.35)");
-    shade.addColorStop(1, "rgba(176, 196, 214, 0)");
+    shade.addColorStop(0, "rgba(120, 48, 28, 0.28)");
+    shade.addColorStop(1, "rgba(120, 48, 28, 0)");
     ctx.fillStyle = shade;
     ctx.beginPath();
     ctx.ellipse(ox, oy + ry * 0.28, rx, ry * 0.82, 0, 0, Math.PI * 2);
     ctx.fill();
     const body = ctx.createRadialGradient(ox - rx * 0.25, oy - ry * 0.3, rx * 0.05, ox, oy, Math.max(rx, ry));
-    body.addColorStop(0, "rgba(255,255,255,0.98)");
-    body.addColorStop(0.45, "rgba(255,255,255,0.86)");
-    body.addColorStop(1, "rgba(236,244,250,0)");
+    body.addColorStop(0, "rgba(255, 236, 214, 0.9)");
+    body.addColorStop(0.45, "rgba(255, 214, 176, 0.62)");
+    body.addColorStop(1, "rgba(255, 160, 96, 0)");
     ctx.fillStyle = body;
     ctx.beginPath();
     ctx.ellipse(ox, oy, rx, ry, 0, 0, Math.PI * 2);
@@ -57,16 +53,16 @@ function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, time: num
   const twinkle = 0.62 + 0.38 * Math.sin(time * 2.4) * Math.sin(time * 0.7 + 0.6);
   ctx.save();
   ctx.translate(x, y);
-  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 28);
-  glow.addColorStop(0, `rgba(255,255,255,${0.85 * twinkle})`);
-  glow.addColorStop(0.18, `rgba(214,226,255,${0.45 * twinkle})`);
-  glow.addColorStop(1, "rgba(214,226,255,0)");
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16);
+  glow.addColorStop(0, `rgba(255, 236, 210, ${0.8 * twinkle})`);
+  glow.addColorStop(0.22, `rgba(255, 186, 120, ${0.28 * twinkle})`);
+  glow.addColorStop(1, "rgba(255, 186, 120, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(0, 0, 28, 0, Math.PI * 2);
+  ctx.arc(0, 0, 16, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 0.75 + 0.25 * twinkle;
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#fff6ea";
   ctx.beginPath();
   ctx.moveTo(0, -13);
   ctx.quadraticCurveTo(1.4, -1.4, 13, 0);
@@ -77,21 +73,30 @@ function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, time: num
   ctx.restore();
 }
 
-function paintSky(ctx: CanvasRenderingContext2D, w: number, h: number, horizon: number, night: number) {
+function paintSky(ctx: CanvasRenderingContext2D, w: number, horizon: number, time: number) {
   const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-  sky.addColorStop(0, `rgb(${mix(92, 7, night)}, ${mix(158, 12, night)}, ${mix(214, 28, night)})`);
-  sky.addColorStop(0.55, `rgb(${mix(168, 16, night)}, ${mix(204, 28, night)}, ${mix(232, 52, night)})`);
-  sky.addColorStop(1, `rgb(${mix(226, 28, night)}, ${mix(236, 42, night)}, ${mix(244, 68, night)})`);
+  sky.addColorStop(0, "#000000");
+  sky.addColorStop(0.38, "#120306");
+  sky.addColorStop(0.66, "#6a140c");
+  sky.addColorStop(0.84, "#c24112");
+  sky.addColorStop(1, "#f0a15a");
   ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, horizon + 2);
+  const pulse = 0.86 + 0.14 * Math.sin(time * 0.21) * Math.sin(time * 0.053 + 1.2);
+  const glow = ctx.createRadialGradient(w * 0.5, horizon + 6, 8, w * 0.5, horizon * 0.92, w * 0.58);
+  glow.addColorStop(0, `rgba(255, 176, 92, ${0.5 * pulse})`);
+  glow.addColorStop(0.38, `rgba(180, 42, 16, ${0.22 * pulse})`);
+  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = glow;
   ctx.fillRect(0, 0, w, horizon + 2);
 }
 
-function paintSea(ctx: CanvasRenderingContext2D, w: number, h: number, horizon: number, time: number, night: number) {
+function paintSea(ctx: CanvasRenderingContext2D, w: number, h: number, horizon: number, time: number) {
   const water = ctx.createLinearGradient(0, horizon, 0, h);
-  water.addColorStop(0, `rgb(${mix(126, 36, night)}, ${mix(186, 58, night)}, ${mix(204, 84, night)})`);
-  water.addColorStop(0.18, `rgb(${mix(32, 12, night)}, ${mix(112, 32, night)}, ${mix(168, 58, night)})`);
-  water.addColorStop(0.55, `rgb(${mix(12, 6, night)}, ${mix(72, 20, night)}, ${mix(128, 40, night)})`);
-  water.addColorStop(1, `rgb(${mix(6, 4, night)}, ${mix(40, 12, night)}, ${mix(78, 26, night)})`);
+  water.addColorStop(0, "#1a3e68");
+  water.addColorStop(0.16, "#0d2748");
+  water.addColorStop(0.52, "#071833");
+  water.addColorStop(1, "#040c1c");
   ctx.fillStyle = water;
   ctx.fillRect(0, horizon - 6, w, h - horizon + 8);
 
@@ -111,8 +116,8 @@ function paintSea(ctx: CanvasRenderingContext2D, w: number, h: number, horizon: 
     }
     ctx.lineTo(w, h);
     ctx.closePath();
-    const alpha = 0.05 + depth * 0.05;
-    ctx.fillStyle = `rgba(${mix(255, 186, night)}, ${mix(255, 206, night)}, ${mix(255, 226, night)}, ${alpha})`;
+    const alpha = 0.045 + depth * 0.05;
+    ctx.fillStyle = `rgba(148, 186, 214, ${alpha})`;
     ctx.fill();
   }
 
@@ -126,7 +131,7 @@ function paintSea(ctx: CanvasRenderingContext2D, w: number, h: number, horizon: 
     if (x === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
-  ctx.strokeStyle = `rgba(255,255,255,${mix(0.55, 0.28, night)})`;
+  ctx.strokeStyle = "rgba(240, 168, 96, 0.55)";
   ctx.lineWidth = 1.4;
   ctx.stroke();
 }
@@ -167,11 +172,11 @@ export function QuiScene() {
     const textCtx = textCanvas.getContext("2d");
     if (!textCtx) return;
 
-    let night = readNight() ? 1 : 0;
-    let nightTarget = night;
     let time = 0;
     let last = performance.now();
     let frame = 0;
+    let paintedH = 0;
+    let paintedLabel = "";
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let alive = true;
 
@@ -179,18 +184,21 @@ export function QuiScene() {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const style = getComputedStyle(title);
+      const visual = parseFloat(title.style.getPropertyValue("--visual")) || parseFloat(style.fontSize);
       const width = Math.max(1, Math.round(rect.width * dpr));
       const height = Math.max(1, Math.round(title.getBoundingClientRect().height * dpr));
       textCanvas.width = width;
       textCanvas.height = height;
       textCtx.setTransform(1, 0, 0, 1, 0, 0);
       textCtx.clearRect(0, 0, width, height);
-      textCtx.font = `${style.fontWeight} ${parseFloat(style.fontSize) * dpr}px ${style.fontFamily}`;
-      textCtx.fillStyle = "#f7fbff";
+      textCtx.font = `${style.fontWeight} ${visual * dpr}px ${style.fontFamily}`;
+      textCtx.fillStyle = "#fff6ea";
       textCtx.textAlign = "center";
       textCtx.textBaseline = "middle";
-      const label = title.textContent?.trim() || "Qui suis-je";
+      const label = title.textContent?.replace(/\s+/g, " ").trim() || "Qui suis-je";
       textCtx.fillText(label, width / 2, height / 2);
+      paintedH = title.getBoundingClientRect().height;
+      paintedLabel = label;
     };
 
     const resize = () => {
@@ -206,10 +214,10 @@ export function QuiScene() {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!reduce.matches) time += dt;
-      nightTarget = readNight() ? 1 : 0;
-      const blend = reduce.matches ? 1 : 1 - Math.exp(-dt / 0.45);
-      night += (nightTarget - night) * blend;
-      if (Math.abs(nightTarget - night) < 0.002) night = nightTarget;
+
+      const box = title.getBoundingClientRect();
+      const label = title.textContent?.replace(/\s+/g, " ").trim() || "";
+      if (Math.abs(box.height - paintedH) > 0.6 || label !== paintedLabel) paintTitle();
 
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
@@ -217,37 +225,15 @@ export function QuiScene() {
       const horizon = h * 0.47;
       ctx.setTransform(canvas.width / w, 0, 0, canvas.height / h, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      paintSky(ctx, w, h, horizon, night);
-      const cloudVeil = Math.max(0, Math.min(1, 1 - night * 1.35));
-      const starVeil = Math.max(0, Math.min(1, (night - 0.12) / 0.78));
-      if (cloudVeil > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = cloudVeil;
-        drawCloud(ctx, w * 0.5, horizon * 0.34, time);
-        ctx.restore();
-      }
-      if (starVeil > 0.01) {
-        ctx.save();
-        ctx.globalAlpha = starVeil;
-        drawStar(ctx, w * 0.5, h * 0.11, time);
-        ctx.restore();
-      }
-      paintSea(ctx, w, h, horizon, time, night);
+      paintSky(ctx, w, horizon, time);
+      drawCloud(ctx, w * 0.24, horizon * 0.28, time);
+      drawStar(ctx, w * 0.8, h * 0.09, time);
+      paintSea(ctx, w, h, horizon, time);
 
-      const titleBox = title.getBoundingClientRect();
-      const titleBottom = titleBox.bottom - rect.top;
+      const titleBottom = box.bottom - rect.top;
       const gap = Math.max(10, horizon - titleBottom);
-      drawReflection(
-        ctx,
-        textCanvas,
-        w / 2,
-        horizon + gap * 0.35,
-        titleBox.width,
-        titleBox.height,
-        time,
-        night,
-      );
-      frame = window.requestAnimationFrame(tick);
+      drawReflection(ctx, textCanvas, w / 2, horizon + gap * 0.35, box.width, box.height, time, 0);
+      if (!document.hidden) frame = window.requestAnimationFrame(tick);
     };
 
     resize();
@@ -259,17 +245,20 @@ export function QuiScene() {
       if (alive) resize();
     }).catch(() => undefined);
     frame = window.requestAnimationFrame(tick);
-    const onTheme = () => {
-      nightTarget = readNight() ? 1 : 0;
+    const onVisibility = () => {
+      window.cancelAnimationFrame(frame);
+      if (document.hidden) return;
+      last = performance.now();
+      frame = window.requestAnimationFrame(tick);
     };
     window.addEventListener("resize", resize);
-    window.addEventListener("themechange", onTheme);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       alive = false;
       titleObserver.disconnect();
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
-      window.removeEventListener("themechange", onTheme);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
@@ -277,9 +266,7 @@ export function QuiScene() {
     <>
       <section className="qui-sea" aria-labelledby="titre-qui">
         <canvas ref={canvasRef} aria-hidden="true" />
-        <ScrollTitle id="titre-qui" titleRef={titleRef} tone="sea" icon={<DropsMark />} max={5.4} min={2.15}>
-          <T>Qui suis-je</T>
-        </ScrollTitle>
+        <ScrollTitle id="titre-qui" text="Qui suis-je" titleRef={titleRef} tone="sea" icon={<DropsMark />} max={5.4} min={2.15} />
       </section>
       <section className="qui-follow scroll-reveal">
         <Album />

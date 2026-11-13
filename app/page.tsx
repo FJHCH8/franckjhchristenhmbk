@@ -6,9 +6,7 @@ import { ScrollTitle } from "@/components/ScrollTitle";
 export default function HomePage() {
   return (
     <main id="contenu">
-      <ScrollTitle id="titre-accueil" max={3.35} min={1.65}>
-        <span translate="no">Franck J.H. CHRISTEN H.M.B.K.</span>
-      </ScrollTitle>
+      <ScrollTitle id="titre-accueil" text="Franck J.H. CHRISTEN H.M.B.K." keep max={3.35} min={1.65} />
       <section className="hero shell scroll-reveal" id="accueil" aria-labelledby="titre-accueil">
         <div className="hero-layout">
           <div className="hero-copy">
