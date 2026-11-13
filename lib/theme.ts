@@ -2,7 +2,7 @@ export const THEME_STORAGE_KEY = "fjch-theme";
 
 export type ThemeName = "clair" | "sombre";
 
-export const themeInitScript = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)};var t=localStorage.getItem(k);if(t!=="clair"&&t!=="sombre"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"sombre":"clair";}var d=document.documentElement;d.dataset.theme=t;d.classList.add("js");var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="sombre"?"#07091a":"#8ebfe6");}catch(e){document.documentElement.dataset.theme="clair";document.documentElement.classList.add("js");}})();`;
+export const themeInitScript = `(function(){try{localStorage.removeItem(${JSON.stringify(THEME_STORAGE_KEY)});}catch(e){}var d=document.documentElement;if(d.dataset.theme)delete d.dataset.theme;d.classList.add("js");var p=location.pathname;d.dataset.page=p==="/qui-suis-je"?"qui-suis-je":"etoile";var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#000000");})();`;
 
 export function resolveInitialTheme(): ThemeName {
   try {

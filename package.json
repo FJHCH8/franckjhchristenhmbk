@@ -2,6 +2,12 @@
   "name": "franckjhchristenhmbk",
   "version": "1.0.0",
   "private": true,
+  "browserslist": [
+    "chrome >= 120",
+    "edge >= 120",
+    "firefox >= 120",
+    "safari >= 17.4"
+  ],
   "engines": {
     "node": ">=20"
   },
@@ -12,6 +18,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@vercel/blob": "^2.3.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

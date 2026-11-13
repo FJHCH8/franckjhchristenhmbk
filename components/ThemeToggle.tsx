@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { persistTheme, type ThemeName } from "@/lib/theme";
 import { CloudIcon, StarIcon } from "@/components/Icons";
+import { holdPreviousTheme } from "@/components/ThemeVeil";
+import { persistTheme, type ThemeName } from "@/lib/theme";
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<ThemeName>("clair");
@@ -18,7 +19,10 @@ export function ThemeToggle() {
     return () => window.removeEventListener("themechange", read);
   }, []);
 
-  const choose = (next: ThemeName) => {
+  const choose = (next: ThemeName, origin?: HTMLElement | null) => {
+    const current = document.documentElement.dataset.theme === "sombre" ? "sombre" : "clair";
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce && next !== current) holdPreviousTheme(origin ?? null);
     persistTheme(next);
     setTheme(next);
   };
@@ -30,7 +34,7 @@ export function ThemeToggle() {
     event.preventDefault();
     const next: ThemeName =
       event.key === "ArrowRight" || event.key === "ArrowDown" ? "sombre" : "clair";
-    choose(next);
+    choose(next, (next === "clair" ? clairRef : sombreRef).current);
     (next === "clair" ? clairRef : sombreRef).current?.focus();
   };
 
@@ -44,7 +48,7 @@ export function ThemeToggle() {
         className="opt-clair"
         aria-checked={theme === "clair"}
         tabIndex={theme === "clair" ? 0 : -1}
-        onClick={() => choose("clair")}
+        onClick={(event) => choose("clair", event.currentTarget)}
       >
         <CloudIcon />
         <span>Clair</span>
@@ -56,7 +60,7 @@ export function ThemeToggle() {
         className="opt-sombre"
         aria-checked={theme === "sombre"}
         tabIndex={theme === "sombre" ? 0 : -1}
-        onClick={() => choose("sombre")}
+        onClick={(event) => choose("sombre", event.currentTarget)}
       >
         <StarIcon />
         <span>Sombre</span>

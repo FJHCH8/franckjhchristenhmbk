@@ -423,8 +423,11 @@ export function projectBody(
   const ny = (y - viewH * 0.5) / viewH;
   y += ny * depth * viewH * 0.07 * scrollMotion;
 
-  const drift = Math.sin(time * body.drift + body.phase) * (10 + depth * 26) * ambient;
+  const drift =
+    Math.sin(time * body.drift + body.phase) * (10 + depth * 26) * ambient +
+    Math.sin(time * body.drift * 0.37 + body.phase * 1.7) * (4 + depth * 8) * ambient;
   let x = body.x * (viewW + 160) - 80 + drift;
+  y += Math.cos(time * (0.13 + body.drift * 0.21) + body.phase) * (3 + depth * 6) * ambient;
   x += pointerX * (16 + depth * 78) * pointerMotion;
   y += pointerY * (10 + depth * 42) * pointerMotion;
   x += (body.x - 0.5) * depth * Math.abs(ny) * viewW * 0.1 * scrollMotion;

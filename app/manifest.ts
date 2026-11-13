@@ -1,14 +1,15 @@
 import type { MetadataRoute } from "next";
+import { PERSON_NAME, SITE_DESCRIPTION } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Franck J.H. Christen H.M.B.K.",
-    short_name: "Franck J.H.",
-    description: "Site personnel de Franck J.H. Christen H.M.B.K.",
+    name: PERSON_NAME,
+    short_name: "Bienvenue",
+    description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
-    background_color: "#8ec4ee",
-    theme_color: "#8ebfe6",
+    background_color: "#000000",
+    theme_color: "#000000",
     lang: "fr",
   };
 }
