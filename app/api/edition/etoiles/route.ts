@@ -1,6 +1,6 @@
 import { avecEcriture, reponse } from "@/lib/edit/http";
 import { clampNumber, fontOf, plainText, randomId, styleOf } from "@/lib/edit/securite";
-import { SIGNATURE } from "@/lib/etoiles/semence";
+import { SIGNATURE, placerDansPegase } from "@/lib/etoiles/semence";
 import type { Etoile, Media } from "@/lib/etoiles/types";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,8 @@ export async function POST(req: Request) {
     const known = new Set(Object.keys(etat.medias));
     const champs = lireChamps(body, known);
     if (!champs) return { body: { erreur: "Le texte manque." }, status: 400 };
-    const etoile: Etoile = { id: randomId(9), ...champs };
+    const place = placerDansPegase(champs.ra, champs.dec);
+    const etoile: Etoile = { id: randomId(9), ...champs, ...place };
     etat.etoiles.push(etoile);
     return { body: { etoile } };
   });

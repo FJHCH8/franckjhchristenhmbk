@@ -29,7 +29,14 @@ function empty(): Etat {
 
 function normalize(value: Etat): Etat {
   return {
-    etoiles: Array.isArray(value.etoiles) ? value.etoiles.map((etoile) => ({ ...etoile, auteur: SIGNATURE })) : semence(),
+    etoiles: Array.isArray(value.etoiles)
+      ? value.etoiles.map((etoile) => {
+          const base = { ...etoile, auteur: SIGNATURE };
+          if (base.id === "citation-2026-05-26") return { ...base, ra: 349, dec: 26 };
+          if (base.id === "endurreisen") return { ...base, titre: "Endurreisen" };
+          return base;
+        })
+      : semence(),
     coeurs: value.coeurs ?? {},
     sessions: value.sessions ?? {},
     totpStep: value.totpStep ?? 0,

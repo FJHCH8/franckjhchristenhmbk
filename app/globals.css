@@ -3082,9 +3082,11 @@ html.nav-vt::view-transition-group(nav-pill) {
   height: 100lvh;
 }
 
-.projets-copy {
+.projets-copy,
+.projets .scroll-stage {
   position: relative;
   z-index: 2;
+  pointer-events: none;
 }
 
 .sky-sticky {

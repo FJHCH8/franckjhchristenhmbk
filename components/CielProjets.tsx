@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Countdown } from "@/components/Countdown";
 import { Planetarium } from "@/components/Planetarium";
 import { VentNordique } from "@/components/VentNordique";
 import type { Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
@@ -117,7 +118,14 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                   {chosen.texte}
                 </blockquote>
               ) : null}
-              {chosen.titre ? <p className="etoile-titre">{chosen.titre}</p> : null}
+              {chosen.id === "endurreisen" ? (
+                <>
+                  <p className="etoile-titre">Endurreisen</p>
+                  <Countdown />
+                </>
+              ) : chosen.titre ? (
+                <p className="etoile-titre">{chosen.titre}</p>
+              ) : null}
               {chosen.medias.map((media) =>
                 media.kind === "photo" ? (
                   // The file is served by our own checked route.
