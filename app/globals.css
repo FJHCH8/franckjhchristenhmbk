@@ -1085,6 +1085,13 @@ html[data-theme="sombre"] .night-stars {
   opacity: 1;
 }
 
+html[data-page="qui-suis-je"] .night-stars,
+html[data-page="etoile"] .night-stars,
+html[data-theme="sombre"][data-page="qui-suis-je"] .night-stars,
+html[data-theme="sombre"][data-page="etoile"] .night-stars {
+  opacity: 0;
+}
+
 .night-star {
   position: absolute;
   display: grid;
