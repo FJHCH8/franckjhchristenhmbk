@@ -179,7 +179,7 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
 
   function request(level: number, ipix: number) {
     const id = key(level, ipix);
-    if (cache.has(id) || inflight > 5) return;
+    if (cache.has(id) || inflight > 12) return;
     cache.set(id, "loading");
     inflight += 1;
     const image = new Image();
