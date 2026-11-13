@@ -159,6 +159,7 @@ html[data-theme="sombre"] ::selection {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sky-gradient,
@@ -201,13 +202,19 @@ html[data-theme="sombre"] .sky-gradient-sombre {
   opacity: 1;
 }
 
-html[data-page="qui-suis-je"] .sky,
-html[data-page="qui-suis-je"] .night-stars,
-html[data-page="qui-suis-je"] .rain-layer,
 html[data-page="qui-suis-je"] .footer,
 html[data-page="qui-suis-je"] .altimeter,
 html[data-page="qui-suis-je"] .rail {
   display: none;
+}
+
+html[data-page="qui-suis-je"] .sky,
+html[data-page="qui-suis-je"] .night-stars,
+html[data-page="qui-suis-je"] .rain-layer,
+html[data-page="etoile"] .sky,
+html[data-page="etoile"] .night-stars,
+html[data-page="etoile"] .rain-layer {
+  opacity: 0;
 }
 
 html[data-page="qui-suis-je"] {
@@ -427,8 +434,14 @@ html[data-theme="sombre"] .sky-vignette-sombre {
   color: var(--text);
 }
 
-.nav a:active {
-  scale: 0.97;
+.nav a:active,
+.toggle button:active,
+.lang button:active,
+.album-nav button:active,
+.brand:active,
+.info-dot:active,
+.info-dot.is-pressed {
+  transform: scale(0.96);
 }
 
 .toggle {
@@ -1278,8 +1291,15 @@ html[data-sky="cloud"] body {
   cursor: pointer;
 }
 
-.album-nav button:active {
-  scale: 0.96;
+.album-nav button,
+.nav a,
+.toggle button,
+.lang button,
+.brand {
+  transition:
+    transform 0.48s cubic-bezier(0.22, 1.5, 0.36, 1),
+    color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .album-nav svg {
@@ -1433,7 +1453,7 @@ html[data-theme="sombre"][data-page="qui-suis-je"] .info-bubble {
   visibility: hidden;
 }
 
-html[data-page="projets"] .title-dock-pill {
+html[data-page="etoile"] .title-dock-pill {
   color: #f4f7ff;
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.18);
@@ -1507,11 +1527,13 @@ html[data-theme="sombre"] .tone-sea .mark-drops {
 
 .scroll-reveal {
   opacity: var(--scroll-title, 0);
+  transform: translate3d(0, calc((1 - var(--scroll-title, 0)) * 16px), 0);
   pointer-events: none;
 }
 
 html.title-settled .scroll-reveal {
   opacity: 1;
+  transform: none;
   pointer-events: auto;
 }
 
@@ -1602,7 +1624,7 @@ html.title-settled .scroll-reveal {
 }
 
 .info-dot.is-pressed {
-  transform: scale(0.84);
+  transform: scale(0.96);
 }
 
 .info-ripple {
@@ -1637,17 +1659,38 @@ html.title-settled .scroll-reveal {
   backdrop-filter: blur(16px);
   opacity: 0;
   pointer-events: none;
-  transform: translate3d(-50%, -8px, 0) scale(0.96);
-  transform-origin: top center;
+  transform: translate3d(-50%, 0, 0) scale(0.72);
+  transform-origin: 50% 0;
   transition:
-    opacity 0.32s ease,
-    transform 0.5s cubic-bezier(0.22, 1.25, 0.36, 1);
+    opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.58s cubic-bezier(0.22, 1.45, 0.36, 1);
+}
+
+.info-bubble::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 250, 244, 0.72);
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .info-bubble.is-open {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(-50%, 0, 0) scale(1);
+}
+
+.info-bubble.is-open::before {
+  opacity: 0;
+}
+
+.info-bubble p,
+.info-bubble a {
+  position: relative;
+  z-index: 1;
 }
 
 .info-bubble p {
@@ -1678,9 +1721,11 @@ html[data-theme="sombre"] .info-bubble {
   pointer-events: none;
   touch-action: none;
   overscroll-behavior: none;
+  opacity: 0;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   contain: layout paint style;
+  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .projets-sky canvas {
@@ -1690,37 +1735,58 @@ html[data-theme="sombre"] .info-bubble {
   transform: translate3d(0, 0, 0);
 }
 
-html[data-page="projets"],
-html[data-page="projets"] body {
+html[data-page="etoile"] {
+  color-scheme: dark;
+  --text: #f4f7ff;
+  --text-soft: #d7e0ee;
+  --line: rgba(244, 247, 255, 0.16);
+  --line-strong: rgba(244, 247, 255, 0.42);
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-solid: rgba(10, 12, 18, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-sheen: rgba(255, 255, 255, 0.16);
+  --glass-shade: rgba(255, 255, 255, 0.04);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.28);
+  --nav-active: rgba(255, 255, 255, 0.16);
+  --toggle-bg: rgba(255, 255, 255, 0.08);
+  --inset: rgba(255, 255, 255, 0.18);
+  --header-fade: transparent;
+  --hero-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --spot: rgba(255, 255, 255, 0.16);
+  --inactive: #d5deea;
+  --active-label: #101826;
+}
+
+html[data-page="etoile"],
+html[data-page="etoile"] body {
   background: #000;
   overscroll-behavior: none;
 }
 
-html[data-page="projets"] .sky,
-html[data-page="projets"] .night-stars,
-html[data-page="projets"] .rain-layer {
-  display: none;
+html[data-page="etoile"] .projets-sky {
+  opacity: 1;
 }
 
-html[data-page="projets"] .header,
-html[data-page="projets"] .brand,
-html[data-page="projets"] .nav a,
-html[data-page="projets"] .footer,
-html[data-page="projets"] .rail,
-html[data-page="projets"] .altimeter,
-html[data-page="projets"] .scroll-cue {
+html[data-page="etoile"] .header,
+html[data-page="etoile"] .brand,
+html[data-page="etoile"] .nav a,
+html[data-page="etoile"] .footer,
+html[data-page="etoile"] .rail,
+html[data-page="etoile"] .altimeter,
+html[data-page="etoile"] .scroll-cue {
   color: #f4f7ff;
 }
 
-html[data-page="projets"] .toggle button,
-html[data-page="projets"] .lang button {
+html[data-page="etoile"] .toggle button,
+html[data-page="etoile"] .lang button {
   color: #e7eefc;
 }
 
-html[data-page="projets"][data-theme="clair"] .opt-clair,
-html[data-page="projets"][data-theme="sombre"] .opt-sombre,
-html[data-page="projets"]:not([data-locale="lassavi"]) .lang-fr,
-html[data-page="projets"][data-locale="lassavi"] .lang-lassavi {
+html[data-page="etoile"][data-theme="clair"] .opt-clair,
+html[data-page="etoile"][data-theme="sombre"] .opt-sombre,
+html[data-page="etoile"]:not([data-locale="lassavi"]) .lang-fr,
+html[data-page="etoile"][data-locale="lassavi"] .lang-lassavi {
   color: #102033;
 }
 
@@ -1740,6 +1806,29 @@ html[data-page="projets"][data-locale="lassavi"] .lang-lassavi {
   letter-spacing: 0.48em;
   text-indent: 0.48em;
   animation: endur-breathe 4.8s ease-in-out infinite;
+}
+
+.ice,
+.qui-note {
+  position: relative;
+}
+
+.ice::before,
+.qui-note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(260px circle at var(--mx, 40%) var(--my, 20%), rgba(255, 255, 255, 0.22), transparent 48%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.ice.is-lit::before,
+.qui-note.is-lit::before,
+.glass.is-lit::before {
+  opacity: 1;
 }
 
 .ice {
@@ -2024,6 +2113,18 @@ html.nav-vt::view-transition-group(nav-pill) {
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -2436,15 +2537,39 @@ html.nav-vt::view-transition-group(nav-pill) {
 
   .descend-only {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translate3d(0, 16px, 0);
     transition:
-      opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.82s cubic-bezier(0.22, 1.35, 0.36, 1);
   }
 
   .descend-only.is-visible {
     opacity: 1;
     transform: none;
+  }
+
+  .descend-only.is-visible .prose,
+  .descend-only.is-visible .reserve div,
+  html.title-settled .ice p,
+  html.title-settled .contact-links a,
+  html.title-settled .qui-follow .album,
+  html.title-settled .qui-note {
+    animation: line-in 0.78s cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  }
+
+  .descend-only.is-visible .reserve div + div,
+  html.title-settled .ice p + p,
+  html.title-settled .contact-links a + a,
+  html.title-settled .qui-note {
+    animation-delay: 0.1s;
+  }
+
+  .glass,
+  .ice,
+  .qui-note,
+  .scroll-mark,
+  .album-card {
+    transition: transform 0.7s cubic-bezier(0.22, 1.4, 0.36, 1);
   }
 
   .rainbow {

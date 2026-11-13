@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 type Star = {
@@ -30,14 +29,12 @@ function createStars(width: number, height: number) {
 }
 
 export function ProjetsSky() {
-  const pathname = usePathname();
   const layerRef = useRef<HTMLDivElement>(null);
-  const active = pathname === "/projets";
 
   useEffect(() => {
     const layer = layerRef.current;
     const canvas = layer?.querySelector("canvas");
-    if (!active || !layer || !canvas) return;
+    if (!layer || !canvas) return;
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) return;
     const ctx = context;
@@ -49,6 +46,9 @@ export function ProjetsSky() {
     let last = performance.now();
     let frame = 0;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const pointer = { x: -9999, y: -9999, life: 0, hot: false };
+
+    const playing = () => document.documentElement.dataset.page === "etoile" && !document.hidden;
 
     const lockSize = () => {
       const nextW = Math.max(1, Math.round(layer.clientWidth));
@@ -67,7 +67,8 @@ export function ProjetsSky() {
     const draw = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      if (!reduce.matches) time += dt;
+      if (!reduce.matches && playing()) time += dt;
+      if (!pointer.hot) pointer.life *= 0.94;
       ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#000";
@@ -76,6 +77,7 @@ export function ProjetsSky() {
       const poleX = width * 0.5;
       const poleY = height * 0.42;
       const spin = reduce.matches ? 0 : time * 0.045;
+      const ring = 36 + (1 - pointer.life) * 120;
       for (const star of stars) {
         const angle = star.angle + spin * (0.9 + star.depth * 0.1);
         const orbit = 18 + star.radius * reach;
@@ -88,28 +90,72 @@ export function ProjetsSky() {
             0.38 *
               Math.sin(time * (0.55 + star.depth * 0.35) + star.phase) *
               Math.sin(time * 0.17 + star.phase * 1.7);
-        ctx.globalAlpha = Math.max(0.18, star.alpha * twinkle);
+        let boost = 0;
+        if (!reduce.matches && pointer.life > 0.03) {
+          const distance = Math.hypot(x - pointer.x, y - pointer.y);
+          const near = Math.max(0, 1 - distance / 170);
+          const ripple = Math.max(0, 1 - Math.abs(distance - ring) / 26);
+          boost = pointer.life * (near * 0.62 + ripple * 0.4);
+        }
+        ctx.globalAlpha = Math.min(1, Math.max(0.18, star.alpha * twinkle) + boost);
         ctx.fillStyle = star.depth > 0.72 ? "#fff4e4" : "#f4f7ff";
         ctx.beginPath();
         ctx.arc(x, y, star.size, 0, Math.PI * 2);
         ctx.fill();
       }
+      if (!reduce.matches && pointer.life > 0.04) {
+        const glow = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 150);
+        glow.addColorStop(0, `rgba(255, 252, 245, ${0.14 * pointer.life})`);
+        glow.addColorStop(1, "rgba(255, 252, 245, 0)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, 150, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.globalAlpha = 1;
-      if (!reduce.matches && !document.hidden) frame = window.requestAnimationFrame(draw);
+      const alive = playing() && !reduce.matches;
+      const fading = pointer.life > 0.04;
+      if (alive || fading) frame = window.requestAnimationFrame(draw);
+      else frame = 0;
+    };
+
+    const wake = () => {
+      if (frame || document.hidden) return;
+      if (!playing() && pointer.life <= 0.04) return;
+      last = performance.now();
+      frame = window.requestAnimationFrame(draw);
+    };
+
+    const placePointer = (event: PointerEvent) => {
+      if (reduce.matches || document.documentElement.dataset.page !== "etoile") return;
+      const rect = layer.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.life = 1;
+      pointer.hot = true;
+      wake();
+    };
+
+    const releasePointer = () => {
+      pointer.hot = false;
+      wake();
     };
 
     const onOrientation = () => {
       const nextW = Math.round(layer.clientWidth);
       if (Math.abs(nextW - width) < 48) return;
       lockSize();
+      wake();
     };
 
-    const onVisibility = () => {
-      window.cancelAnimationFrame(frame);
-      frame = 0;
-      if (document.hidden || reduce.matches) return;
-      last = performance.now();
-      frame = window.requestAnimationFrame(draw);
+    const onPage = () => {
+      if (!playing()) {
+        pointer.hot = false;
+        pointer.life = 0;
+        return;
+      }
+      wake();
     };
 
     let boot = 0;
@@ -120,21 +166,30 @@ export function ProjetsSky() {
         width = 1;
         height = 1;
         lockSize();
+        wake();
       });
     }
-    last = performance.now();
-    frame = window.requestAnimationFrame(draw);
+    wake();
+    const pageObserver = new MutationObserver(onPage);
+    pageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-page"] });
+    window.addEventListener("pointermove", placePointer, { passive: true });
+    window.addEventListener("pointerdown", placePointer, { passive: true });
+    window.addEventListener("pointerup", releasePointer, { passive: true });
+    window.addEventListener("pointercancel", releasePointer, { passive: true });
     window.addEventListener("orientationchange", onOrientation);
-    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("visibilitychange", onPage);
     return () => {
       window.cancelAnimationFrame(boot);
       window.cancelAnimationFrame(frame);
+      pageObserver.disconnect();
+      window.removeEventListener("pointermove", placePointer);
+      window.removeEventListener("pointerdown", placePointer);
+      window.removeEventListener("pointerup", releasePointer);
+      window.removeEventListener("pointercancel", releasePointer);
       window.removeEventListener("orientationchange", onOrientation);
-      document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("visibilitychange", onPage);
     };
-  }, [active]);
-
-  if (!active) return null;
+  }, []);
 
   return (
     <div ref={layerRef} className="projets-sky" aria-hidden="true">

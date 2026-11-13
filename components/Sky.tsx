@@ -658,11 +658,21 @@ export function Sky() {
 
     resize();
     draw();
-    raf = requestAnimationFrame(tick);
+    if (!document.documentElement.dataset.page) raf = requestAnimationFrame(tick);
 
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const themeObserver = new MutationObserver(syncMode);
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    const onPage = () => {
+      if (document.documentElement.dataset.page || document.hidden) {
+        running = false;
+        cancelAnimationFrame(raf);
+        return;
+      }
+      wake();
+    };
+    const pageObserver = new MutationObserver(onPage);
+    pageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-page"] });
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
@@ -682,6 +692,7 @@ export function Sky() {
       cancelAnimationFrame(raf);
       window.clearInterval(watchdog);
       themeObserver.disconnect();
+      pageObserver.disconnect();
       for (const id of timers) window.clearTimeout(id);
       timers.clear();
       clearSkyCursor();

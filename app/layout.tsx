@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
 import { Header } from "@/components/Header";
 import { LocaleProvider, T } from "@/components/Locale";
+import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
 import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
@@ -99,9 +100,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <a className="skip" href="#contenu">
             <T width="9em">Aller au contenu</T>
           </a>
+          <Lux />
           <PageSky />
-          <Sky />
           <ProjetsSky />
+          <Sky />
           <p className="rail">
             <T width="8em">Bienvenue</T>
           </p>

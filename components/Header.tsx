@@ -79,7 +79,7 @@ export function Header() {
         </nav>
         <div className="header-tools">
           <LanguageToggle />
-          <ThemeToggle />
+          {pathname === "/" ? <ThemeToggle /> : null}
         </div>
       </header>
     </>
