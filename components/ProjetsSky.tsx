@@ -48,7 +48,10 @@ export function ProjetsSky() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     const pointer = { x: -9999, y: -9999, life: 0, hot: false };
 
-    const playing = () => document.documentElement.dataset.page === "etoile" && !document.hidden;
+    const playing = () => {
+      const page = document.documentElement.dataset.page;
+      return (page === "etoile" || page === "qui-suis-je") && !document.hidden;
+    };
 
     const lockSize = () => {
       const nextW = Math.max(1, Math.round(layer.clientWidth));

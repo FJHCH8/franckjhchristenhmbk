@@ -237,7 +237,7 @@ html[data-page="qui-suis-je"] {
 
 html[data-page="qui-suis-je"],
 html[data-page="qui-suis-je"] body {
-  background: #c6956a;
+  background: #000;
   overscroll-behavior: none;
 }
 
@@ -1328,7 +1328,18 @@ html[data-sky="cloud"] body {
   overflow: hidden;
   background: #c6956a;
   pointer-events: none;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) scale(var(--qui-zoom, 1));
+  transform-origin: center center;
+  opacity: 1;
+}
+
+.skin-field picture,
+.skin-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .skin-field img {
@@ -1337,6 +1348,18 @@ html[data-sky="cloud"] body {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.skin-sharp {
+  opacity: var(--qui-sharp, 1);
+}
+
+.skin-mid {
+  opacity: var(--qui-mid, 0);
+}
+
+.skin-far {
+  opacity: var(--qui-far, 0);
 }
 
 .qui-follow {
@@ -1773,6 +1796,10 @@ html[data-page="etoile"] body {
 
 html[data-page="etoile"] .projets-sky {
   opacity: 1;
+}
+
+html[data-page="qui-suis-je"] .projets-sky {
+  transition: none;
 }
 
 html[data-page="etoile"] .header,
