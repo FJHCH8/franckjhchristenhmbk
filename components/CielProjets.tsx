@@ -192,7 +192,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             </article>
           ) : null}
           <p className="sky-credit">
-            Étoiles jusqu’à la magnitude 6 : catalogue HYG. Figures : d3-celestial, Olaf Frohn. La bande claire suit la densité de ces étoiles, le long de la Voie lactée.
+            Étoiles jusqu’à la magnitude 6 : catalogue HYG. Au zoom, des étoiles plus faibles suivent la densité de la Voie lactée. Figures : d3-celestial, Olaf Frohn.
           </p>
         </div>
         <ul className="ciel-index">
@@ -209,6 +209,19 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
         {jeton && menu ? (
           <form className="edition-menu" onSubmit={(event) => void sauver(event)}>
             <p>Étoiles des projets</p>
+            <blockquote className="etoile-texte edition-apercu" data-police={form.police} data-style={form.style}>
+              {form.texte || form.titre || "Aperçu"}
+            </blockquote>
+            <p className="etoile-signature">
+              <span>Franck J.H. Christen</span>
+            </p>
+            <div className="police-choix" role="group" aria-label="Police">
+              {(["fraunces", "outfit", "georgia"] as Police[]).map((police) => (
+                <button key={police} type="button" data-police={police} aria-pressed={form.police === police} onClick={() => setForm({ ...form, police })}>
+                  {police === "fraunces" ? "Fraunces" : police === "outfit" ? "Outfit" : "Georgia"}
+                </button>
+              ))}
+            </div>
             <label>
               Titre
               <input value={form.titre} onChange={(event) => setForm({ ...form, titre: event.target.value })} />
@@ -222,14 +235,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               <input value={form.date} placeholder="2026-05-26" onChange={(event) => setForm({ ...form, date: event.target.value })} />
             </label>
             <label>
-              Police
-              <select value={form.police} onChange={(event) => setForm({ ...form, police: event.target.value as Police })}>
-                <option value="fraunces">Fraunces</option>
-                <option value="outfit">Outfit</option>
-                <option value="georgia">Georgia</option>
-              </select>
-            </label>
-            <label>
               Style
               <select value={form.style} onChange={(event) => setForm({ ...form, style: event.target.value as StyleTexte })}>
                 <option value="italic">Italique</option>
@@ -240,8 +245,8 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               Apparition au zoom
               <input type="range" min="0" max="1" step="0.05" value={form.seuil} onChange={(event) => setForm({ ...form, seuil: Number(event.target.value) })} />
             </label>
-            <label>
-              Fichier
+            <label className="fichier-bouton">
+              Ajouter un fichier
               <input
                 type="file"
                 accept="image/*,video/*,audio/*,application/pdf"

@@ -100,8 +100,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <PageSky />
           <ProjetsSky />
           <Sky />
-          <p className="rail">
-            <T width="8em">Bienvenue</T>
+          <p className="rail" translate="no">
+            © Franck J.H. Christen
           </p>
           <Altimeter />
           <Header />

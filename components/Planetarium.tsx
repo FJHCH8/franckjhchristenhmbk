@@ -58,6 +58,7 @@ uniform vec2 uRes;
 uniform float uTime;
 uniform float uTwinkle;
 uniform float uGold;
+uniform float uLimit;
 varying vec3 vColor;
 varying float vAlpha;
 vec3 tone(float bv) {
@@ -68,17 +69,25 @@ vec3 tone(float bv) {
   return vec3(r, g, b);
 }
 void main() {
+  if (aMag > uLimit) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    gl_PointSize = 0.0;
+    vAlpha = 0.0;
+    vColor = vec3(1.0);
+    return;
+  }
   float z = dot(aPos, uF);
   float x = dot(aPos, uR);
   float y = dot(aPos, uU);
   float f = (uRes.y * 0.5) / tan(uFov * 0.00872665);
   vec2 p = vec2(x / max(z, 0.02), y / max(z, 0.02)) * f;
-  gl_Position = vec4(p.x / (uRes.x * 0.5), p.y / (uRes.y * 0.5), z <= 0.02 ? 2.0 : 0.0, 1.0);
-  float bright = clamp((6.15 - aMag) / 6.15, 0.0, 1.0);
-  float tw = uTwinkle > 0.5 ? 0.86 + 0.14 * sin(uTime * (1.4 + fract(aMag) * 5.0) + aPos.x * 20.0) : 1.0;
-  gl_PointSize = mix(1.1, uGold > 0.5 ? 9.0 : 3.4, bright) * (520.0 / uFov) * tw;
+  gl_Position = vec4(p.x / (uRes.x * 0.5), p.y / (uRes.y * 0.5), z <= 0.02 ? 2.0 : 0.5, 1.0);
+  float px = clamp((12.6 - aMag) * (36.0 / max(uFov, 8.0)), 0.0, 30.0);
+  if (uGold > 0.5) px *= 1.45;
+  float tw = uTwinkle > 0.5 ? 0.88 + 0.12 * sin(uTime * (1.4 + fract(aMag) * 5.0) + aPos.x * 20.0) : 1.0;
+  gl_PointSize = px * tw;
   vColor = uGold > 0.5 ? vec3(1.0, 0.86, 0.55) : tone(aBv);
-  vAlpha = (0.35 + bright * 0.65) * tw * (z > 0.02 ? 1.0 : 0.0);
+  vAlpha = clamp(0.28 + (7.2 - aMag) * 0.12, 0.18, 1.0) * tw * (z > 0.02 ? 1.0 : 0.0);
 }
 `;
 
@@ -170,30 +179,48 @@ function program(gl: WebGLRenderingContext, vs: string, fs: string) {
 function horse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, small: boolean) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.strokeStyle = "rgba(255, 236, 214, 0.82)";
-  ctx.shadowColor = "rgba(255, 214, 150, 0.85)";
-  ctx.shadowBlur = small ? 0 : 14;
-  ctx.lineWidth = small ? 1.1 : 1.35;
+  ctx.strokeStyle = "rgba(255, 244, 224, 0.9)";
+  ctx.shadowColor = "rgba(255, 214, 150, 0.9)";
+  ctx.shadowBlur = small ? 6 : 16;
+  ctx.lineWidth = small ? 1.05 : 1.25;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   ctx.beginPath();
   if (small) {
-    ctx.moveTo(-w * 0.2, h * 0.15);
-    ctx.quadraticCurveTo(0, -h * 0.45, w * 0.28, -h * 0.05);
-    ctx.quadraticCurveTo(w * 0.08, h * 0.05, -w * 0.05, h * 0.28);
+    ctx.moveTo(-w * 0.35, h * 0.2);
+    ctx.quadraticCurveTo(-w * 0.05, -h * 0.55, w * 0.32, -h * 0.08);
+    ctx.quadraticCurveTo(w * 0.08, h * 0.02, -w * 0.12, h * 0.32);
+    ctx.moveTo(w * 0.05, -h * 0.18);
+    ctx.quadraticCurveTo(w * 0.28, -h * 0.42, w * 0.16, -h * 0.02);
   } else {
-    ctx.moveTo(-w * 0.35, h * 0.05);
-    ctx.quadraticCurveTo(-w * 0.1, -h * 0.35, w * 0.18, -h * 0.42);
-    ctx.quadraticCurveTo(w * 0.42, -h * 0.2, w * 0.28, h * 0.02);
-    ctx.quadraticCurveTo(w * 0.05, -h * 0.08, -w * 0.22, h * 0.16);
-    ctx.moveTo(-w * 0.05, h * 0.12);
-    ctx.lineTo(-w * 0.08, h * 0.42);
-    ctx.moveTo(w * 0.16, h * 0.08);
-    ctx.lineTo(w * 0.2, h * 0.4);
+    ctx.moveTo(-w * 0.42, h * 0.08);
+    ctx.quadraticCurveTo(-w * 0.2, -h * 0.22, w * 0.02, -h * 0.38);
+    ctx.quadraticCurveTo(w * 0.28, -h * 0.55, w * 0.4, -h * 0.12);
+    ctx.quadraticCurveTo(w * 0.18, -h * 0.18, w * 0.02, h * 0.02);
+    ctx.quadraticCurveTo(-w * 0.22, h * 0.16, -w * 0.36, h * 0.22);
+    ctx.moveTo(-w * 0.02, -h * 0.28);
+    ctx.quadraticCurveTo(-w * 0.28, -h * 0.62, -w * 0.08, -h * 0.08);
+    ctx.moveTo(w * 0.16, -h * 0.22);
+    ctx.quadraticCurveTo(w * 0.42, -h * 0.48, w * 0.22, -h * 0.02);
+    ctx.moveTo(-w * 0.18, h * 0.12);
+    ctx.lineTo(-w * 0.22, h * 0.42);
+    ctx.moveTo(w * 0.12, h * 0.08);
+    ctx.lineTo(w * 0.16, h * 0.4);
   }
   ctx.stroke();
   ctx.restore();
 }
+
+const NOMS = [
+  { nom: "Markab", ra: 346.19, dec: 15.21 },
+  { nom: "Scheat", ra: 345.94, dec: 28.08 },
+  { nom: "Algenib", ra: 3.31, dec: 15.18 },
+  { nom: "Enif", ra: 326.05, dec: 9.88 },
+  { nom: "Kitalpha", ra: 318.96, dec: 5.25 },
+  { nom: "Caph", ra: 2.29, dec: 59.15 },
+  { nom: "Schedar", ra: 10.13, dec: 56.54 },
+  { nom: "Ruchbah", ra: 21.45, dec: 60.24 },
+];
 
 export function Planetarium({
   etoiles,
@@ -251,6 +278,9 @@ export function Planetarium({
     const starPos = gl.createBuffer();
     const starMag = gl.createBuffer();
     const starBv = gl.createBuffer();
+    const faintPos = gl.createBuffer();
+    const faintMag = gl.createBuffer();
+    const faintBv = gl.createBuffer();
     const goldPos = gl.createBuffer();
     const goldMag = gl.createBuffer();
     const goldBv = gl.createBuffer();
@@ -258,6 +288,7 @@ export function Planetarium({
     const domeBuf = gl.createBuffer();
     const domeIdx = gl.createBuffer();
     let starCount = 0;
+    let faintCount = 0;
     let lineCount = 0;
     let domeCount = 0;
     let figures: Figure[] = [];
@@ -281,13 +312,25 @@ export function Planetarium({
     observer.observe(wrap);
 
     const fovNow = () => {
-      const base = 16 + openRef.current * 58;
-      return Math.min(86, Math.max(7, base * user));
+      const base = 40 + openRef.current * 34;
+      return Math.min(86, Math.max(8, base * user));
     };
     const openRef = { current: open };
 
     const draw = (now: number) => {
       if (dead) return;
+      if (location.hash === "#pegase" && wrap.dataset.lock !== "1") {
+        aim.ra = 341.6;
+        aim.dec = 19.5;
+        user = 0.48;
+        wrap.dataset.lock = "1";
+      }
+      if (location.hash === "#petit-cheval" && wrap.dataset.lock !== "1") {
+        aim.ra = 318.4;
+        aim.dec = 8.5;
+        user = 0.36;
+        wrap.dataset.lock = "1";
+      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!reduce) {
@@ -296,8 +339,13 @@ export function Planetarium({
         const damp = lite ? 0.86 : 0.92;
         yawV *= damp;
         pitchV *= damp;
+        if (Math.abs(zoomV) > 0.0002) {
+          user = Math.min(1.05, Math.max(0.18, user * Math.exp(zoomV)));
+          zoomV *= reduce ? 0 : 0.88;
+        }
       }
       view.current = { ra: ((aim.ra % 360) + 360) % 360, dec: aim.dec };
+      wrap.dataset.ra = view.current.ra.toFixed(1);
       const fov = fovNow();
       const cam = basis(aim.ra, aim.dec);
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -343,6 +391,7 @@ export function Planetarium({
       gl.uniform1f(gl.getUniformLocation(starsProg, "uTime"), now / 1000);
       gl.uniform1f(gl.getUniformLocation(starsProg, "uTwinkle"), reduce || lite ? 0 : 1);
       gl.uniform1f(gl.getUniformLocation(starsProg, "uGold"), 0);
+      gl.uniform1f(gl.getUniformLocation(starsProg, "uLimit"), Math.min(10.4, 6.05 + Math.max(0, 72 - fov) * 0.12));
       const bindStars = (posBuf: WebGLBuffer | null, magBuf: WebGLBuffer | null, bvBuf: WebGLBuffer | null, count: number) => {
         const p = gl.getAttribLocation(starsProg, "aPos");
         const m = gl.getAttribLocation(starsProg, "aMag");
@@ -359,6 +408,7 @@ export function Planetarium({
         gl.drawArrays(gl.POINTS, 0, count);
       };
       if (starCount) bindStars(starPos, starMag, starBv, starCount);
+      if (faintCount) bindStars(faintPos, faintMag, faintBv, faintCount);
       const zoom = Math.max(0, Math.min(1, (78 - fov) / 70));
       const gold = etoilesRef.current.filter((item) => zoom + 0.001 >= item.seuil);
       if (gold.length) {
@@ -393,27 +443,65 @@ export function Planetarium({
       ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx2.clearRect(0, 0, width, height);
       labels.replaceChildren();
-      if (lineAlpha > 0.08) {
+      const figureAlpha = Math.max(0, Math.min(1, (68 - fov) / 26));
+      if (figureAlpha > 0.05) {
+        ctx2.lineWidth = Math.max(1.8, Math.min(width, height) / 220);
+        ctx2.strokeStyle = `rgba(226, 236, 255, ${Math.min(1, figureAlpha + 0.25)})`;
+        ctx2.shadowColor = "rgba(186, 210, 255, 0.85)";
+        ctx2.shadowBlur = 6;
+        ctx2.beginPath();
+        for (const figure of figures) {
+          for (const segment of figure.segments) {
+            let pen = false;
+            for (const pair of segment) {
+              const point = project(sph(pair[0], pair[1]), cam, fov, width, height);
+              if (!point) {
+                pen = false;
+                continue;
+              }
+              if (!pen) ctx2.moveTo(point.x, point.y);
+              else ctx2.lineTo(point.x, point.y);
+              pen = true;
+            }
+          }
+        }
+        ctx2.stroke();
         for (const figure of figures) {
           const center = project(sph(figure.ra, figure.dec), cam, fov, width, height);
           if (!center) continue;
-          const near = Math.hypot(center.x - width / 2, center.y - height / 2) < Math.min(width, height) * 0.42;
-          if (figure.cheval && fov < 42 && near && !lite) {
+          const dist = Math.hypot(center.x - width / 2, center.y - height / 2);
+          const near = dist < Math.min(width, height) * 0.46;
+          if (figure.cheval && near) {
             const pts = figure.segments.flat().map((pair) => project(sph(pair[0], pair[1]), cam, fov, width, height)).filter(Boolean) as { x: number; y: number }[];
             if (pts.length) {
               const minX = Math.min(...pts.map((p) => p.x));
               const maxX = Math.max(...pts.map((p) => p.x));
               const minY = Math.min(...pts.map((p) => p.y));
               const maxY = Math.max(...pts.map((p) => p.y));
-              horse(ctx2, (minX + maxX) / 2, (minY + maxY) / 2, Math.max(36, maxX - minX), Math.max(28, maxY - minY), figure.id === "Equ");
+              ctx2.save();
+              ctx2.globalAlpha = Math.max(0.45, figureAlpha) * (1 - dist / (Math.min(width, height) * 0.9));
+              horse(ctx2, (minX + maxX) / 2, (minY + maxY) / 2, Math.max(48, maxX - minX), Math.max(36, maxY - minY), figure.id === "Equ");
+              ctx2.restore();
             }
           }
           if (near) {
             const node = document.createElement("span");
             node.className = "const-nom";
             node.style.transform = `translate3d(${center.x}px, ${center.y}px, 0)`;
-            node.style.opacity = String(lineAlpha);
+            node.style.opacity = String(figureAlpha);
             node.textContent = figure.nom;
+            labels.appendChild(node);
+          }
+        }
+        if (fov < 52) {
+          for (const star of NOMS) {
+            const point = project(sph(star.ra, star.dec), cam, fov, width, height);
+            if (!point) continue;
+            if (Math.hypot(point.x - width / 2, point.y - height / 2) > Math.min(width, height) * 0.48) continue;
+            const node = document.createElement("span");
+            node.className = "etoile-nom";
+            node.style.transform = `translate3d(${point.x + 8}px, ${point.y - 10}px, 0)`;
+            node.textContent = star.nom;
             labels.appendChild(node);
           }
         }
@@ -422,8 +510,9 @@ export function Planetarium({
     };
 
     void (async () => {
-      const [bin, fig, image] = await Promise.all([
+      const [bin, faint, fig, image] = await Promise.all([
         fetch("/ciel/etoiles.bin").then((res) => res.arrayBuffer()),
+        fetch("/ciel/faibles.bin").then((res) => res.arrayBuffer()),
         fetch("/ciel/figures.json").then((res) => res.json()) as Promise<{ cadre: Aim; constellations: Figure[] }>,
         new Promise<HTMLImageElement>((resolve, reject) => {
           const img = new Image();
@@ -435,12 +524,13 @@ export function Planetarium({
       if (dead) return;
       aim.ra = fig.cadre.ra;
       aim.dec = fig.cadre.dec;
-      if (location.hash === "#pegase") {
-        const peg = fig.constellations.find((item) => item.id === "Peg");
-        if (peg) {
-          aim.ra = peg.ra;
-          aim.dec = peg.dec;
-          user = 0.42;
+      if (location.hash === "#pegase" || location.hash === "#petit-cheval") {
+        const id = location.hash === "#pegase" ? "Peg" : "Equ";
+        const figure = fig.constellations.find((item) => item.id === id);
+        if (figure) {
+          aim.ra = figure.ra;
+          aim.dec = figure.dec;
+          user = id === "Peg" ? 0.52 : 0.4;
         }
       }
       figures = fig.constellations;
@@ -475,6 +565,25 @@ export function Planetarium({
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mag), gl.STATIC_DRAW);
       gl.bindBuffer(gl.ARRAY_BUFFER, starBv);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bv), gl.STATIC_DRAW);
+      const faintView = new DataView(faint);
+      const faintTotal = lite ? Math.min(8000, faint.byteLength / 8) : faint.byteLength / 8;
+      const fpos: number[] = [];
+      const fmag: number[] = [];
+      const fbv: number[] = [];
+      for (let i = 0; i < faintTotal; i++) {
+        const ra = ((faintView.getInt16(i * 8, true) / 100) % 360 + 360) % 360;
+        const dec = faintView.getInt16(i * 8 + 2, true) / 100;
+        fpos.push(...sph(ra, dec));
+        fmag.push(faintView.getInt16(i * 8 + 4, true) / 100);
+        fbv.push(faintView.getInt16(i * 8 + 6, true) / 100);
+      }
+      faintCount = fmag.length;
+      gl.bindBuffer(gl.ARRAY_BUFFER, faintPos);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fpos), gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, faintMag);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fmag), gl.STATIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, faintBv);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fbv), gl.STATIC_DRAW);
       lineCount = lines.length / 3;
       gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lines), gl.STATIC_DRAW);
@@ -513,10 +622,33 @@ export function Planetarium({
       raf = requestAnimationFrame(draw);
     })().catch(() => undefined);
 
+    let zoomV = 0;
+    let gestureScale = 1;
+    const clampUser = (value: number) => Math.min(1.05, Math.max(0.18, value));
+    const zoomAt = (clientX: number, clientY: number, factor: number) => {
+      const rect = wrap.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const fov = fovNow();
+      const cam = basis(aim.ra, aim.dec);
+      const ndcX = (x / Math.max(1, rect.width) - 0.5) * 2;
+      const ndcY = (0.5 - y / Math.max(1, rect.height)) * 2;
+      const tan = Math.tan((fov * Math.PI) / 360);
+      const vx = ndcX * tan * (rect.width / Math.max(1, rect.height));
+      const vy = ndcY * tan;
+      user = clampUser(user * factor);
+      const tan2 = Math.tan((fovNow() * Math.PI) / 360);
+      const vx2 = ndcX * tan2 * (rect.width / Math.max(1, rect.height));
+      const vy2 = ndcY * tan2;
+      const cosDec = Math.cos((aim.dec * Math.PI) / 180) || 0.2;
+      aim.ra += ((vx - vx2) * 180) / Math.PI / cosDec;
+      aim.dec = Math.max(-84, Math.min(84, aim.dec + ((vy - vy2) * 180) / Math.PI));
+      void cam;
+    };
     const rotateBy = (dx: number, dy: number) => {
       const fov = fovNow();
-      yawV += -dx * (fov / height) * 0.35;
-      pitchV += dy * (fov / height) * 0.35;
+      yawV += -dx * (fov / height) * 0.22;
+      pitchV += dy * (fov / height) * 0.22;
     };
     const down = (event: PointerEvent) => {
       wrap.setPointerCapture(event.pointerId);
@@ -533,36 +665,39 @@ export function Planetarium({
       if (pointers.size >= 2) {
         const [a, b] = [...pointers.values()];
         const dist = Math.hypot(a!.x - b!.x, a!.y - b!.y);
-        if (pinch > 0) user = Math.min(1.15, Math.max(0.22, user * (pinch / dist)));
+        if (pinch > 0) zoomAt((a!.x + b!.x) / 2, (a!.y + b!.y) / 2, dist / pinch);
         pinch = dist;
         return;
       }
-      const dx = event.clientX - prev.x;
-      const dy = event.clientY - prev.y;
-      if (event.pointerType === "touch" && Math.abs(dy) > Math.abs(dx) * 1.15) {
-        window.scrollBy(0, dy);
-        return;
-      }
-      rotateBy(dx, dy);
+      rotateBy(event.clientX - prev.x, event.clientY - prev.y);
     };
     const up = (event: PointerEvent) => {
       pointers.delete(event.pointerId);
       pinch = 0;
     };
     const wheel = (event: WheelEvent) => {
-      if (openRef.current < 0.9) return;
       event.preventDefault();
-      if (event.deltaY > 0 && user >= 0.98) {
-        window.scrollBy({ top: -Math.min(140, event.deltaY) });
-        return;
+      const pinch = event.ctrlKey || event.metaKey;
+      const step = Math.max(-0.35, Math.min(0.35, event.deltaY / (pinch ? 180 : 420)));
+      zoomV += step * 0.2;
+      zoomAt(event.clientX, event.clientY, Math.exp(step));
+    };
+    const stopGesture = (event: Event) => event.preventDefault();
+    const onGesture = (event: Event) => {
+      event.preventDefault();
+      const scale = (event as Event & { scale?: number; clientX?: number; clientY?: number }).scale ?? 1;
+      if (gestureScale > 0 && scale > 0) {
+        zoomAt(event instanceof MouseEvent ? event.clientX : width / 2, event instanceof MouseEvent ? event.clientY : height / 2, gestureScale / scale);
       }
-      user = Math.min(1.15, Math.max(0.22, user * (event.deltaY > 0 ? 1.06 : 0.94)));
+      gestureScale = scale;
     };
     wrap.addEventListener("pointerdown", down);
     wrap.addEventListener("pointermove", move);
     wrap.addEventListener("pointerup", up);
     wrap.addEventListener("pointercancel", up);
     wrap.addEventListener("wheel", wheel, { passive: false });
+    wrap.addEventListener("gesturestart", stopGesture, { passive: false });
+    wrap.addEventListener("gesturechange", onGesture, { passive: false });
 
     const tickOpen = () => {
       openRef.current = openLive.current;
@@ -579,9 +714,14 @@ export function Planetarium({
       wrap.removeEventListener("pointerup", up);
       wrap.removeEventListener("pointercancel", up);
       wrap.removeEventListener("wheel", wheel);
+      wrap.removeEventListener("gesturestart", stopGesture);
+      wrap.removeEventListener("gesturechange", onGesture);
       gl.deleteBuffer(starPos);
       gl.deleteBuffer(starMag);
       gl.deleteBuffer(starBv);
+      gl.deleteBuffer(faintPos);
+      gl.deleteBuffer(faintMag);
+      gl.deleteBuffer(faintBv);
       gl.deleteBuffer(goldPos);
       gl.deleteBuffer(goldMag);
       gl.deleteBuffer(goldBv);
