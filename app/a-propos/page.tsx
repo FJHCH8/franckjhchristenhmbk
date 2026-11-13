@@ -1,13 +1,15 @@
-import type { Metadata } from "next";
 import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { InfinityMark } from "@/components/TitleMarks";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "À propos",
-};
+export const metadata = pageMetadata(
+  "À propos",
+  "Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck.",
+  "/a-propos",
+);
 
 export default function AboutPage() {
   return (

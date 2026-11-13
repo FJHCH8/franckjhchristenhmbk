@@ -14,7 +14,7 @@ import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
-import { googleSiteVerification, isPreviewDeployment, PERSON_NAME, SITE_DESCRIPTION, siteUrl, structuredData } from "@/lib/site";
+import { googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -32,38 +32,31 @@ const sans = Outfit({
   variable: "--font-sans",
 });
 
-const origin = siteUrl();
-const title = `Bienvenue — ${PERSON_NAME}`;
-const description = SITE_DESCRIPTION;
 const googleVerification = googleSiteVerification();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(origin),
+  metadataBase: new URL("https://franckjhchristenhmbk.vercel.app"),
   title: {
-    default: title,
-    template: `%s — ${PERSON_NAME}`,
+    absolute: PERSON_NAME,
   },
-  description,
+  description: HOME_DESCRIPTION,
   applicationName: PERSON_NAME,
   authors: [{ name: PERSON_NAME }],
-  keywords: [PERSON_NAME, "Polyhymate", "Bienvenue"],
-  alternates: { canonical: origin },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: origin,
-    title,
-    description,
+    url: "/",
+    title: PERSON_NAME,
+    description: HOME_DESCRIPTION,
     siteName: PERSON_NAME,
   },
   twitter: {
     card: "summary_large_image",
-    title,
-    description,
+    title: PERSON_NAME,
+    description: HOME_DESCRIPTION,
   },
-  robots: isPreviewDeployment()
-    ? { index: false, follow: false }
-    : { index: true, follow: true },
+  robots: { index: true, follow: true },
   ...(googleVerification ? { verification: { google: googleVerification } } : {}),
 };
 

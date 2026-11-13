@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Block, T } from "@/components/Locale";
 
 export const metadata: Metadata = {
-  title: "Page introuvable",
+  title: { absolute: "Page introuvable" },
   robots: { index: false, follow: false },
 };
 

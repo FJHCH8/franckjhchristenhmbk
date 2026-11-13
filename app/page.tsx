@@ -2,6 +2,9 @@ import { Crests } from "@/components/Crests";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
 import { ScrollTitle } from "@/components/ScrollTitle";
+import { HOME_DESCRIPTION, pageMetadata } from "@/lib/site";
+
+export const metadata = pageMetadata(null, HOME_DESCRIPTION, "/");
 
 export default function HomePage() {
   return (

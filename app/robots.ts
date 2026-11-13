@@ -1,15 +1,9 @@
 import type { MetadataRoute } from "next";
-import { isPreviewDeployment, siteUrl } from "@/lib/site";
+import { DEFAULT_SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  if (isPreviewDeployment()) {
-    return {
-      rules: { userAgent: "*", disallow: "/" },
-    };
-  }
-
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: `${siteUrl()}/sitemap.xml`,
+    sitemap: `${DEFAULT_SITE_URL}/sitemap.xml`,
   };
 }

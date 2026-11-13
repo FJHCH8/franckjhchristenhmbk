@@ -1,15 +1,10 @@
 import type { MetadataRoute } from "next";
-import { publicPaths } from "@/lib/public-paths";
-import { siteUrl } from "@/lib/site";
+import { DEFAULT_SITE_URL } from "@/lib/site";
+
+const PATHS = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const origin = siteUrl();
-  const lastModified = new Date();
-
-  return publicPaths().map((pathname) => ({
-    url: new URL(pathname, `${origin}/`).toString(),
-    lastModified,
-    changeFrequency: pathname === "/" ? "monthly" : "yearly",
-    priority: pathname === "/" ? 1 : 0.7,
+  return PATHS.map((pathname) => ({
+    url: pathname === "/" ? DEFAULT_SITE_URL : new URL(pathname, DEFAULT_SITE_URL).toString(),
   }));
 }

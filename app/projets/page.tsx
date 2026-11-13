@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
 import { Countdown } from "@/components/Countdown";
 import { Block } from "@/components/Locale";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { SmileyMark } from "@/components/TitleMarks";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Projets",
-};
+export const metadata = pageMetadata("Projets", "Des projets paraîtront ici.", "/projets");
 
 export default function ProjectsPage() {
   return (

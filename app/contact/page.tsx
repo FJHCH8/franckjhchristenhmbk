@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
 import { Glass } from "@/components/Glass";
 import { T } from "@/components/Locale";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { ParchmentMark } from "@/components/TitleMarks";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Contact",
-};
+export const metadata = pageMetadata(
+  "Contact",
+  "franckjhchristen@gmail.com. Instagram : @fjhchristenhmbk.",
+  "/contact",
+);
 
 export default function ContactPage() {
   return (
