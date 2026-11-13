@@ -1929,6 +1929,54 @@ html[data-page="qui-suis-je"] .projets-sky {
   transition: none;
 }
 
+html.qui-driven .skin-field,
+html.qui-driven .skin-sharp,
+html.qui-driven .skin-mid,
+html.qui-driven .skin-far,
+html.qui-driven .projets-sky {
+  animation-timeline: scroll(root);
+  animation-range: 0 72lvh;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+html.qui-driven .skin-field { animation-name: qui-veil; }
+html.qui-driven .skin-sharp { animation-name: qui-sharp; }
+html.qui-driven .skin-mid { animation-name: qui-mid; }
+html.qui-driven .skin-far { animation-name: qui-far; }
+html.qui-driven .projets-sky { animation-name: qui-stars; }
+
+@keyframes qui-veil {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 0, 0) scale(1.05); }
+}
+
+@keyframes qui-sharp {
+  0% { opacity: 1; }
+  55% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes qui-mid {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes qui-far {
+  0% { opacity: 0; }
+  42% { opacity: 0; }
+  78% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes qui-stars {
+  0% { opacity: 0; }
+  16% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 html[data-page="etoile"] .header,
 html[data-page="etoile"] .brand,
 html[data-page="etoile"] .nav a,
