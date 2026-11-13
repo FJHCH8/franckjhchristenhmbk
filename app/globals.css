@@ -234,8 +234,8 @@ html[data-page="qui-suis-je"] body {
   overscroll-behavior: none;
 }
 
-html[data-page="qui-suis-je"] .top-frost-tint {
-  background: none;
+html[data-page="qui-suis-je"] .top-frost {
+  display: none;
 }
 
 html[data-page="qui-suis-je"] .header,
