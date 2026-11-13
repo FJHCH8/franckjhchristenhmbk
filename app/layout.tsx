@@ -14,7 +14,7 @@ import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
-import { googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
+import { DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -35,7 +35,7 @@ const sans = Outfit({
 const googleVerification = googleSiteVerification();
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://franckjhchristenhmbk.vercel.app"),
+  metadataBase: new URL(DEFAULT_SITE_URL),
   title: {
     absolute: PERSON_NAME,
   },

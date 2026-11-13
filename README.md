@@ -30,14 +30,14 @@ npm run start
 1. Importer ce dépôt dans Vercel.
 2. Laisser le framework détecté : **Next.js**.
 3. Aucune variable d’environnement n’est obligatoire.
-4. Optionnel : définir `NEXT_PUBLIC_SITE_URL` (par exemple `https://exemple.tld`) lorsque le domaine définitif n’est plus `https://franckjhchristenhmbk.vercel.app`. Sans cette variable, l’adresse canonique, le sitemap et les balises Open Graph utilisent cette adresse.
+4. Optionnel : définir `NEXT_PUBLIC_SITE_URL` (par exemple `https://exemple.tld`) si l’adresse publique n’est plus `https://franckjhchristen.com`. Sans cette variable, l’adresse canonique, le sitemap et les balises Open Graph utilisent cette adresse.
 5. Optionnel, plus tard : définir `GOOGLE_SITE_VERIFICATION` avec le jeton `content` de la balise HTML fournie par Google Search Console. Aucun code de vérification n’est inscrit tant que la variable est absente.
 
 Aucune configuration supplémentaire n’est requise : Vercel reconnaît le projet Next.js tel quel.
 
 ## Référencement
 
-L’adresse publique est [https://franckjhchristenhmbk.vercel.app](https://franckjhchristenhmbk.vercel.app). Le fichier `robots.txt` autorise l’exploration et indique `https://franckjhchristenhmbk.vercel.app/sitemap.xml`.
+L’adresse publique est [https://franckjhchristen.com](https://franckjhchristen.com). L’ancienne adresse [https://franckjhchristenhmbk.vercel.app](https://franckjhchristenhmbk.vercel.app) redirige vers ce nom. Le fichier `robots.txt` autorise l’exploration et indique `https://franckjhchristen.com/sitemap.xml`.
 
 Les onglets sont des pages : `/`, `/qui-suis-je`, `/a-propos` et `/contact`. Le sitemap les liste. Une nouvelle page publique est ajoutée toute seule au prochain build dès qu’elle a un fichier de page, par exemple `app/langues/page.tsx`. Les dossiers `(groupe)` ne créent pas de segment d’adresse. Une route dynamique (`[slug]`) se déclare dans `extraPublicPaths` (`lib/site.ts`).
 

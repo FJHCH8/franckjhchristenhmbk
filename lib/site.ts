@@ -5,7 +5,7 @@ import type { Metadata } from "next";
  * Google Search Console: set `GOOGLE_SITE_VERIFICATION` to the HTML-tag token only
  * (the `content` value, not the whole meta tag). Nothing is emitted until that variable is set.
  */
-export const DEFAULT_SITE_URL = "https://franckjhchristenhmbk.vercel.app";
+export const DEFAULT_SITE_URL = "https://franckjhchristen.com";
 
 export const PERSON_NAME = "Franck J.H. CHRISTEN H.M.B.K.";
 
