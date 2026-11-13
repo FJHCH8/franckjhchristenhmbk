@@ -64,22 +64,37 @@ export function InfoNote() {
         if (!wrapRef.current?.contains(event.relatedTarget as Node)) setFocus(false);
       }}
     >
-      <button
-        type="button"
-        className={pressed ? "info-dot is-pressed" : "info-dot"}
-        aria-expanded={open}
-        aria-controls={bubbleId}
-        aria-label="Informations"
-        onClick={() => setPinned((value) => !value)}
-        onPointerDown={() => setPressed(true)}
-        onPointerUp={() => setPressed(false)}
-        onPointerCancel={() => setPressed(false)}
-      >
-        <span className="info-orb-glow" aria-hidden="true" />
-        <svg className="info-orb-mark" viewBox="0 0 32 42" aria-hidden="true">
-          <path d="M16 1.5c1.4 6.2 8 10.4 8 17.2a8 8 0 1 1-16 0C8 11.9 14.6 7.7 16 1.5z" />
-        </svg>
-      </button>
+      <div className="info-pair">
+        <button
+          type="button"
+          className={pressed ? "info-dot is-pressed" : "info-dot"}
+          aria-expanded={open}
+          aria-controls={bubbleId}
+          aria-label="Informations"
+          onClick={() => setPinned((value) => !value)}
+          onPointerDown={() => setPressed(true)}
+          onPointerUp={() => setPressed(false)}
+          onPointerCancel={() => setPressed(false)}
+        >
+          <span className="info-orb-glow" aria-hidden="true" />
+          <svg className="info-orb-mark" viewBox="0 0 32 42" aria-hidden="true">
+            <path d="M16 1.5c1.4 6.2 8 10.4 8 17.2a8 8 0 1 1-16 0C8 11.9 14.6 7.7 16 1.5z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={pressed ? "info-word is-pressed" : "info-word"}
+          aria-expanded={open}
+          aria-controls={bubbleId}
+          onClick={() => setPinned((value) => !value)}
+          onPointerDown={() => setPressed(true)}
+          onPointerUp={() => setPressed(false)}
+          onPointerCancel={() => setPressed(false)}
+        >
+          Information
+          <span className="info-sheen" aria-hidden="true" />
+        </button>
+      </div>
       <div className={open ? "info-bubble is-open" : "info-bubble"} id={bubbleId} role="region" aria-hidden={!open} inert={open ? undefined : true}>
         <p>
           <Block lines={["100%", "96%", "88%", "70%"]}>{BUBBLE}</Block>

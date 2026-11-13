@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SkyFilm } from "@/components/SkyFilm";
 import { Aurora, NightStars } from "@/components/NightStars";
 import { collectObstacles, createDrop, stepDrop, type Drop, type Obstacle, type Splash } from "@/lib/rain";
 import { VISIT_RAINBOW, visitHas, visitSet } from "@/lib/visit";
@@ -721,7 +720,6 @@ export function Sky() {
   return (
     <>
       <div className="sky" aria-hidden="true">
-        <SkyFilm />
         <div className="sky-gradient sky-gradient-clair" />
         <div className="sky-gradient sky-gradient-sombre" />
         <canvas ref={canvasRef} />

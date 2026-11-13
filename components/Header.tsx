@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { T, useLocale } from "@/components/Locale";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { TopBlur } from "@/components/TopBlur";
 
 const LINKS = [
@@ -79,7 +78,6 @@ export function Header() {
         </nav>
         <div className="header-tools">
           <LanguageToggle />
-          {pathname === "/" ? <ThemeToggle /> : null}
         </div>
       </header>
     </>

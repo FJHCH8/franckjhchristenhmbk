@@ -9,8 +9,7 @@ export function PageSky() {
   useLayoutEffect(() => {
     const root = document.documentElement;
     if (pathname === "/qui-suis-je") root.dataset.page = "qui-suis-je";
-    else if (pathname === "/a-propos" || pathname === "/contact" || pathname === "/projets") root.dataset.page = "etoile";
-    else delete root.dataset.page;
+    else root.dataset.page = "etoile";
     return () => {
       delete root.dataset.page;
     };
