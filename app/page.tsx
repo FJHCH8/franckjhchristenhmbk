@@ -14,7 +14,7 @@ export default function HomePage() {
               <T width="7.2em">Bienvenue</T>
             </p>
             <p className="epithet">
-              <T width="9em">Polyhymate</T>
+              <T width="9em">Polymathe</T>
             </p>
             <Glass className="motto-glass">
               <figure className="motto">

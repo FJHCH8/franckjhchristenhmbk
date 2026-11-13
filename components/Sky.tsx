@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SkyFilm } from "@/components/SkyFilm";
 import { Aurora, NightStars } from "@/components/NightStars";
 import { collectObstacles, createDrop, stepDrop, type Drop, type Obstacle, type Splash } from "@/lib/rain";
 import { VISIT_RAINBOW, visitHas, visitSet } from "@/lib/visit";
@@ -185,8 +186,9 @@ export function Sky() {
     };
 
     const resizeCanvas = (node: HTMLCanvasElement, nodeCtx: CanvasRenderingContext2D) => {
+      const lite = document.documentElement.dataset.power === "lite";
       const narrow = viewW < 760;
-      const dpr = Math.min(window.devicePixelRatio || 1, narrow ? 1.25 : 1.6);
+      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : narrow ? 1.25 : 1.6);
       node.width = Math.round(viewW * dpr);
       node.height = Math.round(viewH * dpr);
       nodeCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -515,6 +517,10 @@ export function Sky() {
 
     const tick = (now: number) => {
       if (!running) return;
+      if (document.documentElement.dataset.film === "1" && weather.phase === "idle") {
+        running = false;
+        return;
+      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!reduce) time += dt;
@@ -664,7 +670,7 @@ export function Sky() {
     const themeObserver = new MutationObserver(syncMode);
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     const onPage = () => {
-      if (document.documentElement.dataset.page || document.hidden) {
+      if (document.documentElement.dataset.page || document.documentElement.dataset.film === "1" || document.hidden) {
         running = false;
         cancelAnimationFrame(raf);
         return;
@@ -672,7 +678,7 @@ export function Sky() {
       wake();
     };
     const pageObserver = new MutationObserver(onPage);
-    pageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-page"] });
+    pageObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-page", "data-film"] });
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
@@ -715,6 +721,7 @@ export function Sky() {
   return (
     <>
       <div className="sky" aria-hidden="true">
+        <SkyFilm />
         <div className="sky-gradient sky-gradient-clair" />
         <div className="sky-gradient sky-gradient-sombre" />
         <canvas ref={canvasRef} />

@@ -11,7 +11,6 @@ export function InfoNote() {
   const [focus, setFocus] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleId = useId();
   const open = hover || focus || pinned;
@@ -70,23 +69,16 @@ export function InfoNote() {
         className={pressed ? "info-dot is-pressed" : "info-dot"}
         aria-expanded={open}
         aria-controls={bubbleId}
+        aria-label="Informations"
         onClick={() => setPinned((value) => !value)}
-        onPointerDown={(event) => {
-          setPressed(true);
-          const box = event.currentTarget.getBoundingClientRect();
-          const id = performance.now();
-          setRipples((current) => [...current, { id, x: event.clientX - box.left, y: event.clientY - box.top }]);
-          window.setTimeout(() => {
-            setRipples((current) => current.filter((ripple) => ripple.id !== id));
-          }, 700);
-        }}
+        onPointerDown={() => setPressed(true)}
         onPointerUp={() => setPressed(false)}
         onPointerCancel={() => setPressed(false)}
       >
-        i
-        {ripples.map((ripple) => (
-          <span key={ripple.id} className="info-ripple" style={{ left: ripple.x, top: ripple.y }} />
-        ))}
+        <span className="info-orb-glow" aria-hidden="true" />
+        <svg className="info-orb-mark" viewBox="0 0 32 42" aria-hidden="true">
+          <path d="M16 1.5c1.4 6.2 8 10.4 8 17.2a8 8 0 1 1-16 0C8 11.9 14.6 7.7 16 1.5z" />
+        </svg>
       </button>
       <div className={open ? "info-bubble is-open" : "info-bubble"} id={bubbleId} role="region" aria-hidden={!open} inert={open ? undefined : true}>
         <p>

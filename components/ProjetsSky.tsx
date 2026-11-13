@@ -11,8 +11,8 @@ type Star = {
   depth: number;
 };
 
-function createStars(width: number, height: number) {
-  const count = Math.round(Math.min(420, Math.max(160, (width * height) / 9000)));
+function createStars(width: number, height: number, density = 1) {
+  const count = Math.round(Math.min(420, Math.max(70, (width * height) / 9000)) * density);
   const stars: Star[] = [];
   for (let index = 0; index < count; index += 1) {
     const depth = Math.random();
@@ -60,11 +60,12 @@ export function ProjetsSky() {
       const rebuild = stars.length === 0;
       width = nextW;
       height = nextH;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const lite = document.documentElement.dataset.power === "lite";
+      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (rebuild) stars = createStars(width, height);
+      if (rebuild) stars = createStars(width, height, lite ? 0.38 : 1);
     };
 
     const draw = (now: number) => {

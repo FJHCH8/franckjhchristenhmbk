@@ -37,10 +37,15 @@ export function ScrollTitle({
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let dockAt = 0;
     let shown = 0;
-    let velocity = 0;
     let target = 0;
     let frame = 0;
     let width = window.innerWidth;
+    let last = performance.now();
+    let heroOn = true;
+    let barOn = false;
+    let settledOn = false;
+    let scrolledOn = false;
+    let lastMark = "";
 
     const measure = () => {
       const header = document.querySelector(".header");
@@ -52,37 +57,60 @@ export function ScrollTitle({
 
     const paint = (value: number) => {
       const travel = clamp(value);
-      hero.style.opacity = (1 - travel).toFixed(3);
-      hero.style.transform = `translate3d(0, ${(-12 * travel).toFixed(2)}px, 0)`;
-      bar.style.opacity = travel.toFixed(3);
-      bar.style.transform = `translate3d(0, ${(10 * (1 - travel)).toFixed(2)}px, 0)`;
-      bar.style.visibility = travel < 0.02 ? "hidden" : "visible";
-      const mark = travel.toFixed(4);
-      document.documentElement.style.setProperty("--scroll-title", mark);
-      document.documentElement.classList.toggle("title-settled", travel > 0.94);
-      stage.classList.toggle("is-scrolled", travel > 0.12);
+      const mark = travel.toFixed(3);
+      if (mark !== lastMark) {
+        lastMark = mark;
+        hero.style.opacity = (1 - travel).toFixed(3);
+        hero.style.transform = `translate3d(0, ${(-10 * travel).toFixed(2)}px, 0)`;
+        bar.style.opacity = travel.toFixed(3);
+        bar.style.transform = `translate3d(0, ${(8 * (1 - travel)).toFixed(2)}px, 0)`;
+        document.documentElement.style.setProperty("--scroll-title", mark);
+      }
+      const nextBar = travel >= 0.04;
+      if (nextBar !== barOn) {
+        barOn = nextBar;
+        bar.style.visibility = nextBar ? "visible" : "hidden";
+      }
+      const nextHero = travel < 0.98;
+      if (nextHero !== heroOn) {
+        heroOn = nextHero;
+        hero.style.visibility = nextHero ? "visible" : "hidden";
+      }
+      const nextSettled = travel > 0.94;
+      if (nextSettled !== settledOn) {
+        settledOn = nextSettled;
+        document.documentElement.classList.toggle("title-settled", nextSettled);
+      }
+      const nextScrolled = travel > 0.12;
+      if (nextScrolled !== scrolledOn) {
+        scrolledOn = nextScrolled;
+        stage.classList.toggle("is-scrolled", nextScrolled);
+      }
     };
 
     const readTarget = () => clamp((window.scrollY - (dockAt - 64)) / 64);
 
-    const step = () => {
-      frame = 0;
+    const step = (now: number) => {
+      if (document.hidden) {
+        frame = 0;
+        return;
+      }
+      const dt = Math.min(0.05, ((now || performance.now()) - last) / 1000);
+      last = now || performance.now();
       target = readTarget();
-      if (motion.matches || document.hidden) {
-        shown = target;
-        velocity = 0;
-      } else {
-        velocity += (target - shown) * 0.22;
-        velocity *= 0.64;
-        shown += velocity;
+      if (motion.matches) shown = target;
+      else {
+        shown += (target - shown) * (1 - Math.exp(-dt / 0.08));
+        if (Math.abs(target - shown) < 0.0006) shown = target;
       }
       paint(shown);
-      const settled = Math.abs(target - shown) < 0.0015 && Math.abs(velocity) < 0.0015;
-      if (!settled && !document.hidden) frame = window.requestAnimationFrame(step);
+      if (shown !== target) frame = window.requestAnimationFrame(step);
+      else frame = 0;
     };
 
     const wake = () => {
       if (frame || document.hidden) return;
+      last = performance.now();
       frame = window.requestAnimationFrame(step);
     };
 
@@ -99,7 +127,6 @@ export function ScrollTitle({
         frame = 0;
         return;
       }
-      measure();
       wake();
     };
 

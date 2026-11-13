@@ -8,6 +8,7 @@ import { Header } from "@/components/Header";
 import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
+import { PowerBoot } from "@/components/PowerBoot";
 import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <a className="skip" href="#contenu">
             <T width="9em">Aller au contenu</T>
           </a>
+          <PowerBoot />
           <Lux />
           <PageSky />
           <ProjetsSky />

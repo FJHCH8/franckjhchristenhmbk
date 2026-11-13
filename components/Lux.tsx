@@ -9,6 +9,7 @@ export function Lux() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
     let current: HTMLElement | null = null;
+    let box: DOMRect | null = null;
     let rx = 0;
     let ry = 0;
 
@@ -36,10 +37,11 @@ export function Lux() {
       if (current !== target) {
         clear(current);
         current = target;
+        box = target.getBoundingClientRect();
         current.style.transition = "none";
         current.classList.add("is-lit");
       }
-      const box = target.getBoundingClientRect();
+      if (!box || box.width < 1) return;
       const nx = (event.clientX - box.left) / box.width - 0.5;
       const ny = (event.clientY - box.top) / box.height - 0.5;
       rx = nx * 3.2;
@@ -52,6 +54,7 @@ export function Lux() {
     const onEnd = () => {
       clear(current);
       current = null;
+      box = null;
     };
 
     document.addEventListener("pointermove", onMove, { passive: true });
