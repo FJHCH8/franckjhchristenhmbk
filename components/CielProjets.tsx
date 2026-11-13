@@ -192,7 +192,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             </article>
           ) : null}
           <p className="sky-credit">
-            Étoiles jusqu’à la magnitude 6 : catalogue HYG. Au zoom, des étoiles plus faibles suivent la densité de la Voie lactée. Figures : d3-celestial, Olaf Frohn.
+            Étoiles : catalogue HYG. Voie lactée : tuiles Gaia DR3, ESA/Gaia/DPAC, CC BY-NC 3.0 IGO. Figures : d3-celestial, Olaf Frohn. Chevaux : Johannes Hevelius, 1690, domaine public.
           </p>
         </div>
         <ul className="ciel-index">

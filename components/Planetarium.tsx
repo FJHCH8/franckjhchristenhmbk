@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, type MutableRefObject } from "react";
+import { createHips } from "@/components/hips";
 
 type Figure = {
   id: string;
@@ -99,66 +100,9 @@ void main() {
   vec2 p = gl_PointCoord - 0.5;
   float d = length(p);
   if (d > 0.5) discard;
-  float glow = smoothstep(0.5, 0.0, d);
-  gl_FragColor = vec4(vColor, glow * vAlpha);
+  float core = smoothstep(0.42, 0.18, d);
+  gl_FragColor = vec4(vColor, core * vAlpha);
 }
-`;
-
-const DOME_VS = `
-attribute vec3 aPos;
-attribute vec2 aUv;
-uniform vec3 uF;
-uniform vec3 uR;
-uniform vec3 uU;
-uniform float uFov;
-uniform vec2 uRes;
-varying vec2 vUv;
-varying float vKeep;
-void main() {
-  float z = dot(aPos, uF);
-  float x = dot(aPos, uR);
-  float y = dot(aPos, uU);
-  float f = (uRes.y * 0.5) / tan(uFov * 0.00872665);
-  vec2 p = vec2(x / max(z, 0.02), y / max(z, 0.02)) * f;
-  gl_Position = vec4(p.x / (uRes.x * 0.5), p.y / (uRes.y * 0.5), z <= 0.02 ? 2.0 : 0.0, 1.0);
-  vUv = aUv;
-  vKeep = z > 0.02 ? 1.0 : 0.0;
-}
-`;
-
-const DOME_FS = `
-precision mediump float;
-varying vec2 vUv;
-varying float vKeep;
-uniform sampler2D uTex;
-void main() {
-  if (vKeep < 0.5) discard;
-  vec3 c = texture2D(uTex, vUv).rgb;
-  gl_FragColor = vec4(c, 0.92);
-}
-`;
-
-const LINE_VS = `
-attribute vec3 aPos;
-uniform vec3 uF;
-uniform vec3 uR;
-uniform vec3 uU;
-uniform float uFov;
-uniform vec2 uRes;
-void main() {
-  float z = dot(aPos, uF);
-  float x = dot(aPos, uR);
-  float y = dot(aPos, uU);
-  float f = (uRes.y * 0.5) / tan(uFov * 0.00872665);
-  vec2 p = vec2(x / max(z, 0.02), y / max(z, 0.02)) * f;
-  gl_Position = vec4(p.x / (uRes.x * 0.5), p.y / (uRes.y * 0.5), z <= 0.02 ? 2.0 : 0.0, 1.0);
-}
-`;
-
-const LINE_FS = `
-precision mediump float;
-uniform float uAlpha;
-void main() { gl_FragColor = vec4(0.78, 0.86, 1.0, uAlpha); }
 `;
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -176,41 +120,6 @@ function program(gl: WebGLRenderingContext, vs: string, fs: string) {
   return prog;
 }
 
-function horse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, small: boolean) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "rgba(255, 244, 224, 0.9)";
-  ctx.shadowColor = "rgba(255, 214, 150, 0.9)";
-  ctx.shadowBlur = small ? 6 : 16;
-  ctx.lineWidth = small ? 1.05 : 1.25;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  if (small) {
-    ctx.moveTo(-w * 0.35, h * 0.2);
-    ctx.quadraticCurveTo(-w * 0.05, -h * 0.55, w * 0.32, -h * 0.08);
-    ctx.quadraticCurveTo(w * 0.08, h * 0.02, -w * 0.12, h * 0.32);
-    ctx.moveTo(w * 0.05, -h * 0.18);
-    ctx.quadraticCurveTo(w * 0.28, -h * 0.42, w * 0.16, -h * 0.02);
-  } else {
-    ctx.moveTo(-w * 0.42, h * 0.08);
-    ctx.quadraticCurveTo(-w * 0.2, -h * 0.22, w * 0.02, -h * 0.38);
-    ctx.quadraticCurveTo(w * 0.28, -h * 0.55, w * 0.4, -h * 0.12);
-    ctx.quadraticCurveTo(w * 0.18, -h * 0.18, w * 0.02, h * 0.02);
-    ctx.quadraticCurveTo(-w * 0.22, h * 0.16, -w * 0.36, h * 0.22);
-    ctx.moveTo(-w * 0.02, -h * 0.28);
-    ctx.quadraticCurveTo(-w * 0.28, -h * 0.62, -w * 0.08, -h * 0.08);
-    ctx.moveTo(w * 0.16, -h * 0.22);
-    ctx.quadraticCurveTo(w * 0.42, -h * 0.48, w * 0.22, -h * 0.02);
-    ctx.moveTo(-w * 0.18, h * 0.12);
-    ctx.lineTo(-w * 0.22, h * 0.42);
-    ctx.moveTo(w * 0.12, h * 0.08);
-    ctx.lineTo(w * 0.16, h * 0.4);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
 const NOMS = [
   { nom: "Markab", ra: 346.19, dec: 15.21 },
   { nom: "Scheat", ra: 345.94, dec: 28.08 },
@@ -220,6 +129,93 @@ const NOMS = [
   { nom: "Caph", ra: 2.29, dec: 59.15 },
   { nom: "Schedar", ra: 10.13, dec: 56.54 },
   { nom: "Ruchbah", ra: 21.45, dec: 60.24 },
+];
+
+function solveHomography(src: Array<[number, number]>, dst: Array<[number, number]>) {
+  const rows = src.flatMap(([x, y], index) => {
+    const [X, Y] = dst[index]!;
+    return [
+      [x, y, 1, 0, 0, 0, -X * x, -X * y, X],
+      [0, 0, 0, x, y, 1, -Y * x, -Y * y, Y],
+    ];
+  });
+  for (let col = 0; col < 8; col++) {
+    let pivot = col;
+    for (let row = col + 1; row < 8; row++) if (Math.abs(rows[row]![col]!) > Math.abs(rows[pivot]![col]!)) pivot = row;
+    const swap = rows[col]!;
+    rows[col] = rows[pivot]!;
+    rows[pivot] = swap;
+    const div = rows[col]![col] || 1e-8;
+    for (let c = col; c < 9; c++) rows[col]![c] = rows[col]![c]! / div;
+    for (let row = 0; row < 8; row++) {
+      if (row === col) continue;
+      const factor = rows[row]![col]!;
+      for (let c = col; c < 9; c++) rows[row]![c] = rows[row]![c]! - factor * rows[col]![c]!;
+    }
+  }
+  return rows.map((row) => row[8]!);
+}
+
+function applyH(h: number[], x: number, y: number) {
+  const w = h[6]! * x + h[7]! * y + 1;
+  return [(h[0]! * x + h[1]! * y + h[2]!) / w, (h[3]! * x + h[4]! * y + h[5]!) / w] as const;
+}
+
+function paintPlate(ctx: CanvasRenderingContext2D, img: HTMLImageElement, src: Array<[number, number]>, dst: Array<[number, number]>) {
+  const h = solveHomography(src, dst);
+  const steps = 5;
+  for (let j = 0; j < steps; j++) {
+    for (let i = 0; i < steps; i++) {
+      const uv = [
+        [i / steps, j / steps],
+        [(i + 1) / steps, j / steps],
+        [i / steps, (j + 1) / steps],
+        [(i + 1) / steps, (j + 1) / steps],
+      ] as Array<[number, number]>;
+      const screen = uv.map(([u, v]) => applyH(h, u * img.width, v * img.height));
+      const source = uv.map(([u, v]) => [u * img.width, v * img.height]);
+      for (const [a, b, c] of [[0, 1, 2], [1, 3, 2]] as Array<[number, number, number]>) {
+        const s0 = source[a]!;
+        const s1 = source[b]!;
+        const s2 = source[c]!;
+        const d0 = screen[a]!;
+        const d1 = screen[b]!;
+        const d2 = screen[c]!;
+        const denom = s0[0]! * (s1[1]! - s2[1]!) + s1[0]! * (s2[1]! - s0[1]!) + s2[0]! * (s0[1]! - s1[1]!);
+        if (Math.abs(denom) < 0.001) continue;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(d0[0]!, d0[1]!);
+        ctx.lineTo(d1[0]!, d1[1]!);
+        ctx.lineTo(d2[0]!, d2[1]!);
+        ctx.closePath();
+        ctx.clip();
+        ctx.setTransform(
+          (d0[0]! * (s1[1]! - s2[1]!) + d1[0]! * (s2[1]! - s0[1]!) + d2[0]! * (s0[1]! - s1[1]!)) / denom,
+          (d0[1]! * (s1[1]! - s2[1]!) + d1[1]! * (s2[1]! - s0[1]!) + d2[1]! * (s0[1]! - s1[1]!)) / denom,
+          (d0[0]! * (s2[0]! - s1[0]!) + d1[0]! * (s0[0]! - s2[0]!) + d2[0]! * (s1[0]! - s0[0]!)) / denom,
+          (d0[1]! * (s2[0]! - s1[0]!) + d1[1]! * (s0[0]! - s2[0]!) + d2[1]! * (s1[0]! - s0[0]!)) / denom,
+          (d0[0]! * (s1[0]! * s2[1]! - s2[0]! * s1[1]!) + d1[0]! * (s2[0]! * s0[1]! - s0[0]! * s2[1]!) + d2[0]! * (s0[0]! * s1[1]! - s1[0]! * s0[1]!)) / denom,
+          (d0[1]! * (s1[0]! * s2[1]! - s2[0]! * s1[1]!) + d1[1]! * (s2[0]! * s0[1]! - s0[0]! * s2[1]!) + d2[1]! * (s0[0]! * s1[1]! - s1[0]! * s0[1]!)) / denom,
+        );
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
+      }
+    }
+  }
+}
+
+const PEG_PLATE = [
+  { ra: 326.05, dec: 9.88, u: 0.86, v: 0.44 },
+  { ra: 345.94, dec: 28.08, u: 0.48, v: 0.24 },
+  { ra: 346.19, dec: 15.21, u: 0.52, v: 0.62 },
+  { ra: 3.31, dec: 15.18, u: 0.22, v: 0.5 },
+];
+const EQU_PLATE = [
+  { ra: 318.96, dec: 5.25, u: 0.5, v: 0.62 },
+  { ra: 318.68, dec: 10.01, u: 0.42, v: 0.32 },
+  { ra: 320.72, dec: 6.81, u: 0.68, v: 0.5 },
+  { ra: 317.59, dec: 10.13, u: 0.32, v: 0.3 },
 ];
 
 export function Planetarium({
@@ -259,8 +255,11 @@ export function Planetarium({
     const lite = document.documentElement.dataset.power === "lite";
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const starsProg = program(gl, STAR_VS, STAR_FS);
-    const domeProg = program(gl, DOME_VS, DOME_FS);
-    const lineProg = program(gl, LINE_VS, LINE_FS);
+    const hips = createHips(gl, lite);
+    const pegPlate = new Image();
+    pegPlate.src = "/ciel/pegase.png";
+    const equPlate = new Image();
+    equPlate.src = "/ciel/petit-cheval.png";
     let dead = false;
     let raf = 0;
     let width = 1;
@@ -284,15 +283,9 @@ export function Planetarium({
     const goldPos = gl.createBuffer();
     const goldMag = gl.createBuffer();
     const goldBv = gl.createBuffer();
-    const lineBuf = gl.createBuffer();
-    const domeBuf = gl.createBuffer();
-    const domeIdx = gl.createBuffer();
     let starCount = 0;
     let faintCount = 0;
-    let lineCount = 0;
-    let domeCount = 0;
     let figures: Figure[] = [];
-    const texture = gl.createTexture();
 
     const resize = () => {
       const rect = wrap.getBoundingClientRect();
@@ -331,6 +324,12 @@ export function Planetarium({
         user = 0.36;
         wrap.dataset.lock = "1";
       }
+      if (location.hash === "#centre" && wrap.dataset.lock !== "1") {
+        aim.ra = 266.4;
+        aim.dec = -28.9;
+        user = 0.9;
+        wrap.dataset.lock = "1";
+      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!reduce) {
@@ -346,6 +345,7 @@ export function Planetarium({
       }
       view.current = { ra: ((aim.ra % 360) + 360) % 360, dec: aim.dec };
       wrap.dataset.ra = view.current.ra.toFixed(1);
+      wrap.dataset.dec = view.current.dec.toFixed(1);
       const fov = fovNow();
       const cam = basis(aim.ra, aim.dec);
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -360,31 +360,8 @@ export function Planetarium({
         gl.uniform1f(gl.getUniformLocation(prog, "uFov"), fov);
         gl.uniform2f(gl.getUniformLocation(prog, "uRes"), canvas.width, canvas.height);
       };
-      if (!lite && domeCount) {
-        gl.useProgram(domeProg);
-        setCam(domeProg);
-        gl.bindBuffer(gl.ARRAY_BUFFER, domeBuf);
-        const stride = 20;
-        const pos = gl.getAttribLocation(domeProg, "aPos");
-        const uv = gl.getAttribLocation(domeProg, "aUv");
-        gl.enableVertexAttribArray(pos);
-        gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, stride, 0);
-        gl.enableVertexAttribArray(uv);
-        gl.vertexAttribPointer(uv, 2, gl.FLOAT, false, stride, 12);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, domeIdx);
-        gl.drawElements(gl.TRIANGLES, domeCount, gl.UNSIGNED_SHORT, 0);
-      }
-      const lineAlpha = Math.max(0, Math.min(1, (58 - fov) / 30));
-      if (lineCount && lineAlpha > 0.02) {
-        gl.useProgram(lineProg);
-        setCam(lineProg);
-        gl.uniform1f(gl.getUniformLocation(lineProg, "uAlpha"), lineAlpha * 0.75);
-        gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf);
-        const loc = gl.getAttribLocation(lineProg, "aPos");
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.LINES, 0, lineCount);
-      }
+      const hipsState = hips.draw(cam.forward, cam.right, cam.up, fov, width, height);
+      wrap.dataset.tiles = hipsState.ready ? "1" : "0";
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
       gl.useProgram(starsProg);
       setCam(starsProg);
@@ -445,10 +422,9 @@ export function Planetarium({
       labels.replaceChildren();
       const figureAlpha = Math.max(0, Math.min(1, (68 - fov) / 26));
       if (figureAlpha > 0.05) {
-        ctx2.lineWidth = Math.max(1.8, Math.min(width, height) / 220);
-        ctx2.strokeStyle = `rgba(226, 236, 255, ${Math.min(1, figureAlpha + 0.25)})`;
-        ctx2.shadowColor = "rgba(186, 210, 255, 0.85)";
-        ctx2.shadowBlur = 6;
+        ctx2.lineWidth = Math.max(0.7, Math.min(width, height) / 700);
+        ctx2.strokeStyle = `rgba(190, 206, 232, ${figureAlpha * 0.45})`;
+        ctx2.shadowBlur = 0;
         ctx2.beginPath();
         for (const figure of figures) {
           for (const segment of figure.segments) {
@@ -472,15 +448,24 @@ export function Planetarium({
           const dist = Math.hypot(center.x - width / 2, center.y - height / 2);
           const near = dist < Math.min(width, height) * 0.46;
           if (figure.cheval && near) {
-            const pts = figure.segments.flat().map((pair) => project(sph(pair[0], pair[1]), cam, fov, width, height)).filter(Boolean) as { x: number; y: number }[];
-            if (pts.length) {
-              const minX = Math.min(...pts.map((p) => p.x));
-              const maxX = Math.max(...pts.map((p) => p.x));
-              const minY = Math.min(...pts.map((p) => p.y));
-              const maxY = Math.max(...pts.map((p) => p.y));
+            const plate = figure.id === "Equ" ? equPlate : pegPlate;
+            const anchors = figure.id === "Equ" ? EQU_PLATE : PEG_PLATE;
+            const placed = anchors
+              .map((anchor) => {
+                const point = project(sph(anchor.ra, anchor.dec), cam, fov, width, height);
+                return point ? { ...anchor, x: point.x, y: point.y } : null;
+              })
+              .filter((anchor): anchor is (typeof anchors)[number] & { x: number; y: number } => Boolean(anchor));
+            if (plate.complete && plate.naturalWidth > 0 && placed.length === 4) {
               ctx2.save();
-              ctx2.globalAlpha = Math.max(0.45, figureAlpha) * (1 - dist / (Math.min(width, height) * 0.9));
-              horse(ctx2, (minX + maxX) / 2, (minY + maxY) / 2, Math.max(48, maxX - minX), Math.max(36, maxY - minY), figure.id === "Equ");
+              ctx2.globalAlpha = Math.max(0.35, figureAlpha) * (1 - dist / (Math.min(width, height) * 0.95));
+              ctx2.filter = "none";
+              paintPlate(
+                ctx2,
+                plate,
+                placed.map((anchor) => [anchor.u * plate.naturalWidth, anchor.v * plate.naturalHeight]),
+                placed.map((anchor) => [anchor.x, anchor.y]),
+              );
               ctx2.restore();
             }
           }
@@ -510,16 +495,10 @@ export function Planetarium({
     };
 
     void (async () => {
-      const [bin, faint, fig, image] = await Promise.all([
+      const [bin, faint, fig] = await Promise.all([
         fetch("/ciel/etoiles.bin").then((res) => res.arrayBuffer()),
         fetch("/ciel/faibles.bin").then((res) => res.arrayBuffer()),
         fetch("/ciel/figures.json").then((res) => res.json()) as Promise<{ cadre: Aim; constellations: Figure[] }>,
-        new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => reject(new Error("voie"));
-          img.src = "/ciel/voie-lactee.jpg";
-        }),
       ]);
       if (dead) return;
       aim.ra = fig.cadre.ra;
@@ -533,13 +512,17 @@ export function Planetarium({
           user = id === "Peg" ? 0.52 : 0.4;
         }
       }
+      if (location.hash === "#centre") {
+        aim.ra = 266.4;
+        aim.dec = -28.9;
+        user = 0.9;
+      }
       figures = fig.constellations;
       const viewBin = new DataView(bin);
       const total = bin.byteLength / 8;
       const pos: number[] = [];
       const mag: number[] = [];
       const bv: number[] = [];
-      const lines: number[] = [];
       for (let i = 0; i < total; i++) {
         const ra = ((viewBin.getInt16(i * 8, true) / 100) % 360 + 360) % 360;
         const dec = viewBin.getInt16(i * 8 + 2, true) / 100;
@@ -549,14 +532,6 @@ export function Planetarium({
         pos.push(...sph(ra, dec));
         mag.push(magnitude);
         bv.push(color);
-      }
-      for (const figure of figures) {
-        if (lite && !figure.cheval && figure.id !== "Cas" && figure.id !== "UMa" && figure.id !== "Ori") continue;
-        for (const segment of figure.segments) {
-          for (let i = 1; i < segment.length; i++) {
-            lines.push(...sph(segment[i - 1]![0], segment[i - 1]![1]), ...sph(segment[i]![0], segment[i]![1]));
-          }
-        }
       }
       starCount = mag.length;
       gl.bindBuffer(gl.ARRAY_BUFFER, starPos);
@@ -584,41 +559,6 @@ export function Planetarium({
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fmag), gl.STATIC_DRAW);
       gl.bindBuffer(gl.ARRAY_BUFFER, faintBv);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fbv), gl.STATIC_DRAW);
-      lineCount = lines.length / 3;
-      gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lines), gl.STATIC_DRAW);
-      const stacks = lite ? 18 : 36;
-      const slices = lite ? 36 : 72;
-      const dome: number[] = [];
-      const index: number[] = [];
-      for (let y = 0; y <= stacks; y++) {
-        const dec = 90 - (y / stacks) * 180;
-        const v = y / stacks;
-        for (let x = 0; x <= slices; x++) {
-          const ra = (x / slices) * 360;
-          dome.push(...sph(ra, dec), x / slices, v);
-        }
-      }
-      for (let y = 0; y < stacks; y++) {
-        for (let x = 0; x < slices; x++) {
-          const a = y * (slices + 1) + x;
-          index.push(a, a + 1, a + slices + 1, a + 1, a + slices + 2, a + slices + 1);
-        }
-      }
-      domeCount = index.length;
-      gl.bindBuffer(gl.ARRAY_BUFFER, domeBuf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(dome), gl.STATIC_DRAW);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, domeIdx);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(index), gl.STATIC_DRAW);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-      gl.useProgram(domeProg);
-      gl.uniform1i(gl.getUniformLocation(domeProg, "uTex"), 0);
       raf = requestAnimationFrame(draw);
     })().catch(() => undefined);
 
@@ -725,10 +665,7 @@ export function Planetarium({
       gl.deleteBuffer(goldPos);
       gl.deleteBuffer(goldMag);
       gl.deleteBuffer(goldBv);
-      gl.deleteBuffer(lineBuf);
-      gl.deleteBuffer(domeBuf);
-      gl.deleteBuffer(domeIdx);
-      gl.deleteTexture(texture);
+      hips.dispose();
     };
     // The sky stays mounted while scrolling; `open` is read from a ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps

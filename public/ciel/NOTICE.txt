@@ -1,7 +1,15 @@
 Catalogue d'étoiles et figures de constellations
 adaptés de d3-celestial (Olaf Frohn, 2015), licence BSD.
 Les étoiles jusqu'à la magnitude 6 proviennent du catalogue HYG.
-Les noms français sont ceux fournis par ce jeu de données.
+
+Voie lactée : tuiles HiPS Gaia DR3 RGB
+https://skies.esac.esa.int/Gaia/dr3/RGB
+ESA/Gaia/DPAC. Carte couleur : Sandro Moreira, André Moitinho, Duarte Almeida.
+Licence CC BY-NC 3.0 IGO. Usage non commercial.
+Crédit : ESA/Gaia/DPAC, CC BY-NC 3.0 IGO.
+
+Cheval de Pégase et Petit Cheval : planches de Johannes Hevelius,
+Firmamentum Sobiescianum, 1690. Domaine public (Wikimedia Commons).
 
 Copyright (c) 2015, Olaf Frohn
 All rights reserved.

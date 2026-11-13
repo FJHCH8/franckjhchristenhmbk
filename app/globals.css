@@ -3098,12 +3098,12 @@ html.nav-vt::view-transition-group(nav-pill) {
   background: transparent;
   touch-action: none;
   -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 14%, #000 86%, transparent),
-    linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(to right, transparent, #000 14%, #000 86%, transparent),
-    linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
   mask-composite: intersect;
 }
 
@@ -3135,9 +3135,8 @@ html.nav-vt::view-transition-group(nav-pill) {
 
 .planet-air {
   background:
-    linear-gradient(to right, #000, transparent 16%, transparent 84%, #000),
-    linear-gradient(to bottom, #000, transparent 14%, transparent 86%, #000),
-    radial-gradient(70% 45% at 62% 78%, rgba(186, 112, 48, 0.16), transparent 55%);
+    linear-gradient(to right, #000, transparent 8%, transparent 92%, #000),
+    linear-gradient(to bottom, #000, transparent 8%, transparent 86%, #000);
 }
 
 .const-nom {

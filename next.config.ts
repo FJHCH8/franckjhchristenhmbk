@@ -14,7 +14,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' blob: data:",
+            "img-src 'self' blob: data: https://skies.esac.esa.int",
       "media-src 'self' blob:",
       "font-src 'self'",
       "connect-src 'self'",
