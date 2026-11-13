@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function ProjectsPage() {
   return (
     <main id="contenu" className="projets">
-      <ScrollTitle id="titre-projets" text="Projets" tone="sea" icon={<SmileyMark />} />
+      <ScrollTitle id="titre-projets" text="Projets" tone="sea" icon={<SmileyMark />} max={5.2} />
       <section className="section shell page-solo projets-copy scroll-reveal" aria-labelledby="titre-projets">
         <div className="ice">
           <p>

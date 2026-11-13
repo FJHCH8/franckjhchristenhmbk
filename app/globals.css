@@ -178,7 +178,7 @@ html[data-theme="sombre"] ::selection {
 .sky-gradient-sombre,
 .sky-vignette-clair,
 .sky-vignette-sombre {
-  transition: opacity 1.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sky-gradient-clair {
@@ -210,20 +210,44 @@ html[data-page="qui-suis-je"] .rail {
   display: none;
 }
 
+html[data-page="qui-suis-je"] {
+  color-scheme: light;
+  --text: #3a2218;
+  --text-soft: #6a4a38;
+  --line: rgba(58, 34, 24, 0.16);
+  --glass: rgba(255, 248, 242, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.68);
+  --glass-sheen: rgba(255, 255, 255, 0.5);
+  --nav-active: rgba(255, 255, 255, 0.88);
+  --toggle-bg: rgba(255, 248, 242, 0.62);
+  --header-fade: transparent;
+  --hero-shadow: 0 1px 0 rgba(255, 248, 242, 0.4);
+  --inset: rgba(255, 255, 255, 0.82);
+  --shadow-soft: 0 10px 28px rgba(90, 42, 16, 0.12);
+  --inactive: #6a4a38;
+  --active-label: #2c1812;
+}
+
 html[data-page="qui-suis-je"],
 html[data-page="qui-suis-je"] body {
-  overscroll-behavior-x: none;
+  background: #c6956a;
+  overscroll-behavior: none;
+}
+
+html[data-page="qui-suis-je"] .top-frost-tint {
+  background: none;
 }
 
 html[data-page="qui-suis-je"] .header,
 html[data-page="qui-suis-je"] .brand,
-html[data-page="qui-suis-je"] .rail {
-  color: #f4f7ff;
-}
-
+html[data-page="qui-suis-je"] .rail,
 html[data-page="qui-suis-je"] .toggle button,
-html[data-page="qui-suis-je"] .lang button {
-  color: #e7eefc;
+html[data-page="qui-suis-je"] .lang button,
+html[data-theme="sombre"][data-page="qui-suis-je"] .header,
+html[data-theme="sombre"][data-page="qui-suis-je"] .brand,
+html[data-theme="sombre"][data-page="qui-suis-je"] .toggle button,
+html[data-theme="sombre"][data-page="qui-suis-je"] .lang button {
+  color: #3a2218;
 }
 
 html[data-page="qui-suis-je"][data-theme="clair"] .opt-clair,
@@ -1267,18 +1291,25 @@ html[data-sky="cloud"] body {
   opacity: 1;
 }
 
-.qui-sea {
-  position: relative;
-}
-
-.qui-sea canvas {
+.skin-field {
   position: fixed;
   z-index: 0;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh;
+  overflow: hidden;
+  background: #c6956a;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+}
+
+.skin-field img {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
-  pointer-events: none;
+  object-fit: cover;
+  object-position: center;
 }
 
 .qui-follow {
@@ -1310,11 +1341,11 @@ html[data-sky="cloud"] body {
 .qui-note {
   width: min(40rem, 100%);
   padding: 1.15rem 1.25rem 1.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 26px;
-  background: rgba(255, 255, 255, 0.58);
-  color: #102433;
-  box-shadow: 0 18px 40px rgba(8, 28, 58, 0.12);
+  background: rgba(255, 248, 242, 0.78);
+  color: #2c1812;
+  box-shadow: 0 18px 40px rgba(80, 36, 12, 0.12);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
 }
@@ -1325,10 +1356,32 @@ html[data-sky="cloud"] body {
   line-height: 1.65;
 }
 
-html[data-theme="sombre"] .qui-note {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(8, 14, 28, 0.62);
-  color: #f4f7fb;
+html[data-page="qui-suis-je"] .qui-follow .album-nav button {
+  color: #3a2218;
+  background: rgba(255, 248, 242, 0.78);
+  border-color: rgba(255, 255, 255, 0.72);
+}
+
+html[data-page="qui-suis-je"] .scroll-head h1,
+html[data-page="qui-suis-je"] .scroll-cue,
+html[data-page="qui-suis-je"] .scroll-mark,
+html[data-theme="sombre"][data-page="qui-suis-je"] .scroll-head h1,
+html[data-theme="sombre"][data-page="qui-suis-je"] .scroll-cue,
+html[data-theme="sombre"][data-page="qui-suis-je"] .scroll-mark {
+  color: #3a2218;
+  text-shadow: 0 1px 0 rgba(255, 248, 242, 0.45);
+}
+
+html[data-page="qui-suis-je"] .mark-drops,
+html[data-theme="sombre"][data-page="qui-suis-je"] .mark-drops {
+  color: #3a2218;
+}
+
+html[data-page="qui-suis-je"] .info-bubble,
+html[data-theme="sombre"][data-page="qui-suis-je"] .info-bubble {
+  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 248, 242, 0.92);
+  color: #2c1812;
 }
 
 .scroll-stage {
@@ -1347,8 +1400,6 @@ html[data-theme="sombre"] .qui-note {
 }
 
 .scroll-head {
-  position: sticky;
-  top: calc(env(safe-area-inset-top) + 4.8rem);
   z-index: 2;
   display: grid;
   justify-items: center;
@@ -1364,24 +1415,55 @@ html[data-theme="sombre"] .qui-note {
   letter-spacing: -0.045em;
   line-height: 0.92;
   text-wrap: balance;
-  font-size: calc((var(--title-min) + (var(--title-max) - var(--title-min)) * (1 - var(--p, 0))) * 1rem);
+  font-size: clamp(2.15rem, 7.4vw, calc(var(--title-max) * 1rem));
   text-shadow: var(--hero-shadow);
 }
 
-.scroll-head h1.is-fluid {
-  position: relative;
-  width: 100%;
-  font-size: calc(var(--title-max) * 1rem);
+.title-dock {
+  position: fixed;
+  z-index: 19;
+  top: var(--title-dock, calc(env(safe-area-inset-top) + 4.7rem));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
 }
 
-.fluid-word {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
+html[data-page="projets"] .title-dock-pill {
+  color: #f4f7ff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+html[data-page="qui-suis-je"] .title-dock-pill {
+  color: #3a2218;
+  background: rgba(255, 248, 242, 0.78);
+  border-color: rgba(255, 255, 255, 0.66);
+}
+
+.title-dock-pill {
+  max-width: min(34rem, 100%);
+  margin: 0;
+  padding: 0.42rem 0.95rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--text);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(0.74rem, 2.5vw, 1rem);
+  font-weight: 520;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
   white-space: nowrap;
-  transform-origin: 0 0;
-  will-change: transform;
+  text-overflow: ellipsis;
+  box-shadow: var(--shadow-soft), inset 0 1px 0 var(--inset);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
 }
 
 .tone-sea .scroll-head h1,
@@ -1821,13 +1903,10 @@ html[data-page="projets"][data-locale="lassavi"] .lang-lassavi {
   z-index: 1;
 }
 
-.page-enter.is-same {
-  animation: page-fade 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
+.page-enter.is-same,
 .page-enter.is-forward,
 .page-enter.is-back {
-  animation: page-fade 0.66s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-fade 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 html.nav-vt .page-enter {
@@ -2297,13 +2376,11 @@ html.nav-vt::view-transition-group(nav-pill) {
   .section h2,
   .kicker {
     transition:
-      color 0.95s ease,
-      background-color 0.95s ease,
-      border-color 0.95s ease,
-      box-shadow 0.95s ease,
-      text-shadow 0.95s ease,
-      opacity 1.15s ease,
-      filter 1.15s ease;
+      color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      text-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .crest.is-lighting .crest-glow {

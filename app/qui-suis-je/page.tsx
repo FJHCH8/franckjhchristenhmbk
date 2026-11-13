@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { QuiScene } from "@/components/QuiScene";
+import { SkinField } from "@/components/SkinField";
 
 export const metadata: Metadata = {
   title: "Qui suis-je",
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
 export default function QuiSuisJePage() {
   return (
     <main id="contenu" className="qui">
+      <SkinField />
       <QuiScene />
     </main>
   );
