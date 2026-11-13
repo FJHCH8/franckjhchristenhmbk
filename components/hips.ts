@@ -220,12 +220,11 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
 
   function draw(forward: number[], right: number[], up: number[], fov: number, width: number, height: number) {
     const level = levelFor(fov);
-    const coarse = Math.max(1, level - 2);
     const n = lite ? 16 : 24;
     const tan = Math.tan(((fov * 1.12) * Math.PI) / 360);
     const aspect = width / Math.max(1, height);
     const stride = n + 1;
-    type Sample = { xyz: Vec3; fine: number; coarse: number; fu: number; fv: number; cu: number; cv: number };
+    type Sample = { xyz: Vec3; theta: number; phi: number; fine: number };
     const grid: Sample[] = [];
     for (let j = 0; j <= n; j++) {
       for (let i = 0; i <= n; i++) {
@@ -240,12 +239,9 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
         const xyz: Vec3 = [x / len, y / len, z / len];
         const { theta, phi } = eqDirection(xyz[0], xyz[1], xyz[2]);
         const fine = ang2pix(level, theta, phi);
-        const coarseIp = ang2pix(coarse, theta, phi);
-        const [fu, fv] = tileUv(level, theta, phi);
-        const [cu, cv] = tileUv(coarse, theta, phi);
-        grid.push({ xyz, fine, coarse: coarseIp, fu, fv, cu, cv });
+        grid.push({ xyz, theta, phi, fine });
         request(level, fine);
-        if (coarse !== level) request(coarse, coarseIp);
+        request(Math.max(1, level - 2), ang2pix(Math.max(1, level - 2), theta, phi));
       }
     }
     const groups = new Map<string, number[]>();
@@ -267,10 +263,20 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
           const a = cell[ia]!;
           const b = cell[ib]!;
           const c = cell[ic]!;
-          if (a.fine === b.fine && b.fine === c.fine && cache.get(key(level, a.fine)) && cache.get(key(level, a.fine)) !== "loading" && cache.get(key(level, a.fine)) !== "bad") {
-            add(key(level, a.fine), [a, b, c], [[a.fu, a.fv], [b.fu, b.fv], [c.fu, c.fv]]);
-          } else if (a.coarse === b.coarse && b.coarse === c.coarse) {
-            add(key(coarse, a.coarse), [a, b, c], [[a.cu, a.cv], [b.cu, b.cv], [c.cu, c.cv]]);
+          for (let order = level; order >= 1; order--) {
+            const pa = ang2pix(order, a.theta, a.phi);
+            const pb = ang2pix(order, b.theta, b.phi);
+            const pc = ang2pix(order, c.theta, c.phi);
+            if (pa !== pb || pb !== pc) continue;
+            request(order, pa);
+            const id = key(order, pa);
+            const slot = cache.get(id);
+            if (!slot || slot === "bad" || slot === "loading") continue;
+            const [ua, va] = tileUv(order, a.theta, a.phi);
+            const [ub, vb] = tileUv(order, b.theta, b.phi);
+            const [uc, vc] = tileUv(order, c.theta, c.phi);
+            add(id, [a, b, c], [[ua, va], [ub, vb], [uc, vc]]);
+            break;
           }
         }
       }

@@ -131,78 +131,21 @@ const NOMS = [
   { nom: "Ruchbah", ra: 21.45, dec: 60.24 },
 ];
 
-function solveHomography(src: Array<[number, number]>, dst: Array<[number, number]>) {
-  const rows = src.flatMap(([x, y], index) => {
-    const [X, Y] = dst[index]!;
-    return [
-      [x, y, 1, 0, 0, 0, -X * x, -X * y, X],
-      [0, 0, 0, x, y, 1, -Y * x, -Y * y, Y],
-    ];
-  });
-  for (let col = 0; col < 8; col++) {
-    let pivot = col;
-    for (let row = col + 1; row < 8; row++) if (Math.abs(rows[row]![col]!) > Math.abs(rows[pivot]![col]!)) pivot = row;
-    const swap = rows[col]!;
-    rows[col] = rows[pivot]!;
-    rows[pivot] = swap;
-    const div = rows[col]![col] || 1e-8;
-    for (let c = col; c < 9; c++) rows[col]![c] = rows[col]![c]! / div;
-    for (let row = 0; row < 8; row++) {
-      if (row === col) continue;
-      const factor = rows[row]![col]!;
-      for (let c = col; c < 9; c++) rows[row]![c] = rows[row]![c]! - factor * rows[col]![c]!;
-    }
-  }
-  return rows.map((row) => row[8]!);
-}
-
-function applyH(h: number[], x: number, y: number) {
-  const w = h[6]! * x + h[7]! * y + 1;
-  return [(h[0]! * x + h[1]! * y + h[2]!) / w, (h[3]! * x + h[4]! * y + h[5]!) / w] as const;
-}
-
 function paintPlate(ctx: CanvasRenderingContext2D, img: HTMLImageElement, src: Array<[number, number]>, dst: Array<[number, number]>) {
-  const h = solveHomography(src, dst);
-  const steps = 5;
-  for (let j = 0; j < steps; j++) {
-    for (let i = 0; i < steps; i++) {
-      const uv = [
-        [i / steps, j / steps],
-        [(i + 1) / steps, j / steps],
-        [i / steps, (j + 1) / steps],
-        [(i + 1) / steps, (j + 1) / steps],
-      ] as Array<[number, number]>;
-      const screen = uv.map(([u, v]) => applyH(h, u * img.width, v * img.height));
-      const source = uv.map(([u, v]) => [u * img.width, v * img.height]);
-      for (const [a, b, c] of [[0, 1, 2], [1, 3, 2]] as Array<[number, number, number]>) {
-        const s0 = source[a]!;
-        const s1 = source[b]!;
-        const s2 = source[c]!;
-        const d0 = screen[a]!;
-        const d1 = screen[b]!;
-        const d2 = screen[c]!;
-        const denom = s0[0]! * (s1[1]! - s2[1]!) + s1[0]! * (s2[1]! - s0[1]!) + s2[0]! * (s0[1]! - s1[1]!);
-        if (Math.abs(denom) < 0.001) continue;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(d0[0]!, d0[1]!);
-        ctx.lineTo(d1[0]!, d1[1]!);
-        ctx.lineTo(d2[0]!, d2[1]!);
-        ctx.closePath();
-        ctx.clip();
-        ctx.setTransform(
-          (d0[0]! * (s1[1]! - s2[1]!) + d1[0]! * (s2[1]! - s0[1]!) + d2[0]! * (s0[1]! - s1[1]!)) / denom,
-          (d0[1]! * (s1[1]! - s2[1]!) + d1[1]! * (s2[1]! - s0[1]!) + d2[1]! * (s0[1]! - s1[1]!)) / denom,
-          (d0[0]! * (s2[0]! - s1[0]!) + d1[0]! * (s0[0]! - s2[0]!) + d2[0]! * (s1[0]! - s0[0]!)) / denom,
-          (d0[1]! * (s2[0]! - s1[0]!) + d1[1]! * (s0[0]! - s2[0]!) + d2[1]! * (s1[0]! - s0[0]!)) / denom,
-          (d0[0]! * (s1[0]! * s2[1]! - s2[0]! * s1[1]!) + d1[0]! * (s2[0]! * s0[1]! - s0[0]! * s2[1]!) + d2[0]! * (s0[0]! * s1[1]! - s1[0]! * s0[1]!)) / denom,
-          (d0[1]! * (s1[0]! * s2[1]! - s2[0]! * s1[1]!) + d1[1]! * (s2[0]! * s0[1]! - s0[0]! * s2[1]!) + d2[1]! * (s0[0]! * s1[1]! - s1[0]! * s0[1]!)) / denom,
-        );
-        ctx.drawImage(img, 0, 0);
-        ctx.restore();
-      }
-    }
-  }
+  const s0 = src[0]!;
+  const s1 = src[src.length - 1]!;
+  const d0 = dst[0]!;
+  const d1 = dst[dst.length - 1]!;
+  const sang = Math.atan2(s1[1]! - s0[1]!, s1[0]! - s0[0]!);
+  const dang = Math.atan2(d1[1]! - d0[1]!, d1[0]! - d0[0]!);
+  const scale = (Math.hypot(d1[0]! - d0[0]!, d1[1]! - d0[1]!) || 1) / (Math.hypot(s1[0]! - s0[0]!, s1[1]! - s0[1]!) || 1);
+  ctx.save();
+  ctx.translate(d0[0]!, d0[1]!);
+  ctx.rotate(dang - sang);
+  ctx.scale(scale, scale);
+  ctx.translate(-s0[0]!, -s0[1]!);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
 }
 
 const PEG_PLATE = [
