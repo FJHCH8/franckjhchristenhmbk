@@ -43,7 +43,16 @@ export function pageMetadata(label: string | null, description: string, path: st
   };
 }
 
-export function structuredData() {
+export function copyrightSpan(now = new Date()) {
+  const year = now.getFullYear();
+  return year > 2026 ? `2026–${year}` : "2026";
+}
+
+export function copyrightNotice(now = new Date()) {
+  return `© ${copyrightSpan(now)} Franck J.H. Christen — Tous droits réservés. Toute reproduction, totale ou partielle, des textes, images, idées et créations de ce site est interdite sans autorisation.`;
+}
+
+export function structuredData(now = new Date()) {
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -56,6 +65,8 @@ export function structuredData() {
         "@type": "WebSite",
         name: PERSON_NAME,
         url: DEFAULT_SITE_URL,
+        copyrightHolder: { "@type": "Person", name: "Franck J.H. Christen" },
+        copyrightYear: now.getFullYear(),
       },
     ],
   };

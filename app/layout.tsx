@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import { Fraunces, Outfit } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
+import { EditionPorte } from "@/components/EditionPorte";
 import { Header } from "@/components/Header";
 import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
@@ -14,7 +14,7 @@ import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
-import { DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
+import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -57,6 +57,7 @@ export const metadata: Metadata = {
     description: HOME_DESCRIPTION,
   },
   robots: { index: true, follow: true },
+  other: { copyright: copyrightNotice() },
   ...(googleVerification ? { verification: { google: googleVerification } } : {}),
 };
 
@@ -104,16 +105,13 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </p>
           <Altimeter />
           <Header />
+          <EditionPorte />
           {children}
           <footer className="footer">
             <div className="shell footer-inner">
-              <p translate="no">© {new Date().getFullYear()} Franck J.H. CHRISTEN H.M.B.K.</p>
-              <p>
-                <T width="7em">Bienvenue</T>
+              <p className="footer-note" translate="no">
+                {copyrightNotice()}
               </p>
-              <Link href="/">
-                <T>Accueil</T>
-              </Link>
             </div>
           </footer>
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

@@ -1209,14 +1209,21 @@ html[data-sky="cloud"] body {
 
 .footer-inner {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem 1.25rem;
-  align-items: baseline;
-  justify-content: space-between;
+  justify-content: center;
   border-top: 1px solid var(--line);
   padding-top: 1.25rem;
   color: var(--text-soft);
-  font-size: 0.92rem;
+}
+
+.footer-note {
+  max-width: 44rem;
+  margin: 0;
+  color: inherit;
+  font-size: 0.74rem;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .footer a {
@@ -3067,3 +3074,277 @@ html.nav-vt::view-transition-group(nav-pill) {
     border: 1px solid #bbb;
   }
 }
+
+.sky-stage {
+  position: relative;
+  z-index: 1;
+  height: 220vh;
+}
+
+.sky-sticky {
+  position: sticky;
+  top: 0;
+  height: 100lvh;
+  display: grid;
+  place-items: center;
+}
+
+.sky-frame {
+  position: relative;
+  width: calc(min(22rem, 78vw) + (100vw - min(22rem, 78vw)) * var(--open, 0));
+  height: calc(15rem + (100lvh - 15rem) * var(--open, 0));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: calc(28px * (1 - var(--open, 0)));
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.planet,
+.planet-gl,
+.planet-ink,
+.planet-labels,
+.planet-air {
+  position: absolute;
+  inset: 0;
+}
+
+.planet-gl,
+.planet-ink {
+  width: 100%;
+  height: 100%;
+}
+
+.planet-labels,
+.planet-ink,
+.planet-air,
+.etoile-hit {
+  pointer-events: none;
+}
+
+.planet-air {
+  background: radial-gradient(120% 55% at 50% 120%, rgba(150, 176, 210, 0.2), transparent 58%);
+}
+
+.const-nom {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: rgba(244, 247, 255, 0.82);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: none;
+  white-space: nowrap;
+  transform: translate3d(-50%, -140%, 0);
+}
+
+.etoile-hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin: -1.2rem 0 0 -1.2rem;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 220, 150, 0.95), rgba(255, 186, 70, 0.15) 62%, transparent 70%);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.etoile-hit.is-born {
+  animation: etoile-nait 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes etoile-nait {
+  0% { transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(0.2); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(1); opacity: 1; }
+}
+
+.etoile-bulle {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 1.2rem;
+  width: min(34rem, calc(100% - 1.5rem));
+  max-height: min(70%, 28rem);
+  overflow: auto;
+  padding: 1.15rem 1.2rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+  background: rgba(10, 12, 18, 0.82);
+  color: #f7f4ee;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(18px);
+  transform: translate3d(-50%, 0, 0);
+}
+
+.etoile-texte {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 460;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.etoile-texte[data-police="fraunces"] { font-family: var(--font-display), Georgia, serif; }
+.etoile-texte[data-police="outfit"] { font-family: var(--font-sans), sans-serif; }
+.etoile-texte[data-police="georgia"] { font-family: Georgia, "Times New Roman", serif; }
+.etoile-texte[data-style="italic"] { font-style: italic; }
+
+.etoile-titre {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1rem;
+  font-weight: 460;
+}
+
+.etoile-signature {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.95rem 0 0;
+  color: rgba(244, 236, 220, 0.62);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.78rem;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+.etoile-bulle img,
+.etoile-bulle video,
+.etoile-bulle audio {
+  display: block;
+  width: 100%;
+  margin-top: 0.8rem;
+  border-radius: 14px;
+}
+
+.coeur,
+.etoile-fermer,
+.edition-menu button,
+.edition-feuille button {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+
+.coeur,
+.etoile-fermer {
+  margin-top: 0.85rem;
+  margin-right: 0.45rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.sky-credit {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.7rem;
+  left: 0.8rem;
+  margin: 0;
+  color: rgba(244, 247, 255, 0.55);
+  font-size: 0.62rem;
+  line-height: 1.4;
+  opacity: calc(1 - var(--open, 0));
+  pointer-events: none;
+}
+
+.vent-toggle {
+  position: fixed;
+  z-index: 24;
+  right: 0.85rem;
+  bottom: calc(5.6rem + env(safe-area-inset-bottom));
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(8, 10, 16, 0.45);
+  color: rgba(244, 247, 255, 0.8);
+}
+
+.vent-toggle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.edition-voile {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.edition-feuille,
+.edition-menu {
+  width: min(24rem, calc(100% - 1.5rem));
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  background: rgba(12, 14, 20, 0.92);
+  color: #f4f7ff;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.35);
+}
+
+.edition-feuille h2,
+.edition-menu p {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 460;
+}
+
+.edition-feuille input,
+.edition-menu input,
+.edition-menu textarea,
+.edition-menu select {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+}
+
+.edition-feuille button,
+.edition-menu button {
+  margin-top: 0.7rem;
+  padding: 0.45rem 0.8rem;
+}
+
+.edition-menu {
+  position: absolute;
+  z-index: 6;
+  top: 4.5rem;
+  right: 0.8rem;
+  max-height: calc(100lvh - 7rem);
+  overflow: auto;
+}
+
+.edition-menu label,
+.edition-ligne {
+  display: block;
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+}
+
+.ciel-index {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (min-width: 720px) {
+  .vent-toggle {
+    bottom: 1.2rem;
+  }
+}
+

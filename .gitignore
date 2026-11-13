@@ -8,6 +8,7 @@ dist
 .DS_Store
 .env
 .env*.local
+.data
 tsconfig.tsbuildinfo
 next-env.d.ts
 coverage

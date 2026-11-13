@@ -18,6 +18,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@vercel/blob": "^2.3.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

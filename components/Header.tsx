@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { T, useLocale } from "@/components/Locale";
@@ -18,10 +18,12 @@ const LINKS = [
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale } = useLocale();
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
   const ready = useRef(false);
+  const taps = useRef<number[]>([]);
 
   useLayoutEffect(() => {
     const nav = navRef.current;
@@ -53,7 +55,27 @@ export function Header() {
     <>
       <TopBlur />
       <header className="header">
-        <Link className="brand" href="/" aria-label="Franck J.H. CHRISTEN H.M.B.K.">
+        <Link
+          className="brand"
+          href="/"
+          aria-label="Franck J.H. CHRISTEN H.M.B.K."
+          onClick={(event) => {
+            const now = performance.now();
+            taps.current = [...taps.current.filter((time) => now - time < 2800), now];
+            if (taps.current.length >= 8) {
+              event.preventDefault();
+              taps.current = [];
+              window.dispatchEvent(new Event("fjch-edition"));
+              return;
+            }
+            if (pathname === "/") {
+              event.preventDefault();
+              return;
+            }
+            event.preventDefault();
+            router.push("/");
+          }}
+        >
           <span className="seal">
             <Image
               src="/portrait-enfance.jpg"
