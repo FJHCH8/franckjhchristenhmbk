@@ -78,13 +78,12 @@ export function ScrollTitle({
       rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
       maxPx = max * rootPx;
       const minPx = min * rootPx;
-      const midPx = (maxPx + minPx) / 2;
       const family = style.fontFamily || "Georgia, serif";
       const weight = style.fontWeight || "520";
       const maxWidth = Math.max(1, (head.parentElement ?? stage).clientWidth);
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      layouts = [maxPx, midPx, minPx].map((px) => {
+      const at = (px: number) => {
         const font = `${weight} ${px}px ${family}`;
         let space = px * 0.28;
         const widths = liveWords.map((word) => {
@@ -96,7 +95,24 @@ export function ScrollTitle({
           return ctx.measureText(word).width;
         });
         return layoutWords(widths, space, maxWidth, px * 0.92);
-      });
+      };
+      const linesOf = (layout: Layout) => new Set(layout.slots.map((slot) => slot.y)).size;
+      const fit = (limit: number, start: number, end: number) => {
+        let lo = start;
+        let hi = end;
+        for (let step = 0; step < 8; step += 1) {
+          const mid = (lo + hi) / 2;
+          if (linesOf(at(mid)) > limit) hi = mid;
+          else lo = mid;
+        }
+        return lo;
+      };
+      const full = at(maxPx);
+      const twoPx = linesOf(full) > 2 ? fit(2, minPx * 0.55, maxPx) : (maxPx + minPx) / 2;
+      const onePx = linesOf(at(twoPx)) > 1 ? fit(1, maxPx * 0.34, twoPx) : Math.min(minPx, twoPx);
+      maxPx = max * rootPx;
+      layouts = [full, at(twoPx), at(onePx)];
+      head.dataset.one = String(onePx);
     };
 
     const apply = () => {
@@ -108,7 +124,8 @@ export function ScrollTitle({
       document.documentElement.style.setProperty("--scroll-title", value);
       document.documentElement.classList.toggle("title-settled", progress >= 0.98);
       stage.classList.toggle("is-scrolled", window.scrollY > 6);
-      const fontPx = (max + (min - max) * progress) * rootPx;
+      const onePx = parseFloat(head.dataset.one || "") || min * rootPx;
+      const fontPx = multi ? maxPx + (onePx - maxPx) * progress : (max + (min - max) * progress) * rootPx;
       head.style.setProperty("--visual", `${fontPx}px`);
       if (!multi || layouts.length < 3) return;
       const segment = progress < 0.5 ? 0 : 1;

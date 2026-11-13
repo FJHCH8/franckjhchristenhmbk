@@ -181,12 +181,12 @@ export function QuiScene() {
     let alive = true;
 
     const paintTitle = () => {
-      const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const style = getComputedStyle(title);
       const visual = parseFloat(title.style.getPropertyValue("--visual")) || parseFloat(style.fontSize);
-      const width = Math.max(1, Math.round(rect.width * dpr));
-      const height = Math.max(1, Math.round(title.getBoundingClientRect().height * dpr));
+      const titleBox = title.getBoundingClientRect();
+      const width = Math.max(1, Math.round(titleBox.width * dpr));
+      const height = Math.max(1, Math.round(titleBox.height * dpr));
       textCanvas.width = width;
       textCanvas.height = height;
       textCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -196,6 +196,13 @@ export function QuiScene() {
       textCtx.textAlign = "center";
       textCtx.textBaseline = "middle";
       const label = title.textContent?.replace(/\s+/g, " ").trim() || "Qui suis-je";
+      let size = visual * dpr;
+      textCtx.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+      const measured = textCtx.measureText(label).width;
+      if (measured > width * 0.86) {
+        size *= (width * 0.86) / measured;
+        textCtx.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+      }
       textCtx.fillText(label, width / 2, height / 2);
       paintedH = title.getBoundingClientRect().height;
       paintedLabel = label;

@@ -17,13 +17,22 @@ export function InfoNote() {
   const open = hover || focus || pinned;
 
   useEffect(() => {
-    if (!open) return;
+    const note = wrapRef.current;
     const bubble = document.getElementById(bubbleId);
-    if (!bubble) return;
-    const nav = document.querySelector(".nav");
-    const limit = nav ? nav.getBoundingClientRect().top - 12 : window.innerHeight - 12;
-    const bottom = bubble.getBoundingClientRect().bottom;
-    if (bottom > limit) window.scrollBy(0, bottom - limit);
+    if (!open || !note || !bubble) return;
+    const lift = () => {
+      note.style.paddingBottom = `${bubble.offsetHeight + 28}px`;
+      const nav = document.querySelector(".nav")?.getBoundingClientRect();
+      const limit = nav && nav.top > window.innerHeight * 0.45 ? nav.top - 20 : window.innerHeight - 16;
+      const bottom = bubble.getBoundingClientRect().bottom;
+      if (bottom > limit) window.scrollBy(0, bottom - limit);
+    };
+    lift();
+    const later = window.setTimeout(lift, 420);
+    return () => {
+      window.clearTimeout(later);
+      note.style.paddingBottom = "";
+    };
   }, [open, bubbleId]);
 
   useEffect(() => {
