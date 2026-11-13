@@ -154,12 +154,6 @@ const PEG_PLATE = [
   { ra: 346.19, dec: 15.21, u: 0.52, v: 0.62 },
   { ra: 3.31, dec: 15.18, u: 0.22, v: 0.5 },
 ];
-const EQU_PLATE = [
-  { ra: 318.96, dec: 5.25, u: 0.5, v: 0.62 },
-  { ra: 318.68, dec: 10.01, u: 0.42, v: 0.32 },
-  { ra: 320.72, dec: 6.81, u: 0.68, v: 0.5 },
-  { ra: 317.59, dec: 10.13, u: 0.32, v: 0.3 },
-];
 
 export function Planetarium({
   etoiles,
@@ -201,15 +195,13 @@ export function Planetarium({
     const hips = createHips(gl, lite);
     const pegPlate = new Image();
     pegPlate.src = "/ciel/pegase.png";
-    const equPlate = new Image();
-    equPlate.src = "/ciel/petit-cheval.png";
     let dead = false;
     let raf = 0;
     let width = 1;
     let height = 1;
     let dpr = 1;
-    const aim = { ra: 15.3, dec: 60 };
-    let user = 1;
+    const aim = { ra: 341.6, dec: 19.5 };
+    let user = 0.72;
     let yawV = 0;
     let pitchV = 0;
     let last = performance.now();
@@ -255,24 +247,6 @@ export function Planetarium({
 
     const draw = (now: number) => {
       if (dead) return;
-      if (location.hash === "#pegase" && wrap.dataset.lock !== "1") {
-        aim.ra = 341.6;
-        aim.dec = 19.5;
-        user = 0.48;
-        wrap.dataset.lock = "1";
-      }
-      if (location.hash === "#petit-cheval" && wrap.dataset.lock !== "1") {
-        aim.ra = 318.4;
-        aim.dec = 8.5;
-        user = 0.36;
-        wrap.dataset.lock = "1";
-      }
-      if (location.hash === "#centre" && wrap.dataset.lock !== "1") {
-        aim.ra = 266.4;
-        aim.dec = -28.9;
-        user = 0.9;
-        wrap.dataset.lock = "1";
-      }
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       if (!reduce) {
@@ -363,7 +337,7 @@ export function Planetarium({
       ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx2.clearRect(0, 0, width, height);
       labels.replaceChildren();
-      const figureAlpha = Math.max(0, Math.min(1, (68 - fov) / 26));
+      const figureAlpha = Math.max(0.55, Math.min(1, (96 - fov) / 40));
       if (figureAlpha > 0.05) {
         ctx2.lineWidth = Math.max(0.7, Math.min(width, height) / 700);
         ctx2.strokeStyle = `rgba(190, 206, 232, ${figureAlpha * 0.45})`;
@@ -390,9 +364,9 @@ export function Planetarium({
           if (!center) continue;
           const dist = Math.hypot(center.x - width / 2, center.y - height / 2);
           const near = dist < Math.min(width, height) * 0.46;
-          if (figure.cheval && near) {
-            const plate = figure.id === "Equ" ? equPlate : pegPlate;
-            const anchors = figure.id === "Equ" ? EQU_PLATE : PEG_PLATE;
+          if (figure.id === "Peg" && near) {
+            const plate = pegPlate;
+            const anchors = PEG_PLATE;
             const placed = anchors
               .map((anchor) => {
                 const point = project(sph(anchor.ra, anchor.dec), cam, fov, width, height);
@@ -424,6 +398,7 @@ export function Planetarium({
         }
         if (fov < 52) {
           for (const star of NOMS) {
+            if (star.nom !== "Markab" && star.nom !== "Scheat" && star.nom !== "Algenib" && star.nom !== "Enif") continue;
             const point = project(sph(star.ra, star.dec), cam, fov, width, height);
             if (!point) continue;
             if (Math.hypot(point.x - width / 2, point.y - height / 2) > Math.min(width, height) * 0.48) continue;
@@ -445,23 +420,12 @@ export function Planetarium({
         fetch("/ciel/figures.json").then((res) => res.json()) as Promise<{ cadre: Aim; constellations: Figure[] }>,
       ]);
       if (dead) return;
-      aim.ra = fig.cadre.ra;
-      aim.dec = fig.cadre.dec;
-      if (location.hash === "#pegase" || location.hash === "#petit-cheval") {
-        const id = location.hash === "#pegase" ? "Peg" : "Equ";
-        const figure = fig.constellations.find((item) => item.id === id);
-        if (figure) {
-          aim.ra = figure.ra;
-          aim.dec = figure.dec;
-          user = id === "Peg" ? 0.52 : 0.4;
-        }
+      const peg = fig.constellations.find((item) => item.id === "Peg");
+      if (peg) {
+        aim.ra = peg.ra;
+        aim.dec = peg.dec;
       }
-      if (location.hash === "#centre") {
-        aim.ra = 266.4;
-        aim.dec = -28.9;
-        user = 0.9;
-      }
-      figures = fig.constellations;
+      figures = peg ? [peg] : [];
       const viewBin = new DataView(bin);
       const total = bin.byteLength / 8;
       const pos: number[] = [];

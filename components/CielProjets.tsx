@@ -29,8 +29,8 @@ function appareil() {
 
 export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const view = useRef({ ra: 15.3, dec: 60 });
-  const [open, setOpen] = useState(0);
+  const view = useRef({ ra: 341.6, dec: 19.5 });
+  const [open] = useState(1);
   const [etoiles, setEtoiles] = useState(initial);
   const [spots, setSpots] = useState<{ id: string; x: number; y: number }[]>([]);
   const [active, setActive] = useState<string | null>(null);
@@ -38,35 +38,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const [jeton, setJeton] = useState("");
   const [menu, setMenu] = useState(false);
   const [form, setForm] = useState({ id: "", titre: "", texte: "", date: "", police: "fraunces" as Police, style: "italic" as StyleTexte, seuil: 0.35, medias: [] as Media[] });
-
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let shown = 0;
-    let frame = 0;
-    const measure = () => {
-      const stage = stageRef.current;
-      if (!stage) return;
-      const total = Math.max(1, stage.offsetHeight - window.innerHeight);
-      const target = Math.max(0, Math.min(1, -stage.getBoundingClientRect().top / total));
-      if (reduce) shown = target;
-      else shown += (target - shown) * 0.18;
-      if (Math.abs(target - shown) < 0.002) shown = target;
-      setOpen(shown);
-      if (shown !== target) frame = requestAnimationFrame(measure);
-      else frame = 0;
-    };
-    const wake = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-    wake();
-    window.addEventListener("scroll", wake, { passive: true });
-    window.addEventListener("resize", wake);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", wake);
-      window.removeEventListener("resize", wake);
-    };
-  }, []);
 
   useEffect(() => {
     const load = () => {

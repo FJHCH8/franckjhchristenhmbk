@@ -100,6 +100,51 @@ export function tileUv(order: number, theta: number, phi: number) {
   return [Math.min(0.999, Math.max(0.001, u)), Math.min(0.999, Math.max(0.001, v))] as const;
 }
 
+const JRLL = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
+const JPLL = [1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7];
+
+/** Face coordinates x,y in [0,1] to the equatorial camera vector. */
+export function faceToEq(face: number, x: number, y: number): Vec3 {
+  const jr = JRLL[face]! - x - y;
+  let nr = 1;
+  let z = 0;
+  if (jr < 1) {
+    nr = jr;
+    z = 1 - (nr * nr) / 3;
+  } else if (jr > 3) {
+    nr = 4 - jr;
+    z = (nr * nr) / 3 - 1;
+  } else {
+    nr = 1;
+    z = ((2 - jr) * 2) / 3;
+  }
+  let tmp = JPLL[face]! * nr + x - y;
+  if (tmp < 0) tmp += 8;
+  if (tmp >= 8) tmp -= 8;
+  const phi = nr < 1e-12 ? 0 : ((Math.PI / 4) * tmp) / nr;
+  const sth = Math.sqrt(Math.max(0, 1 - z * z));
+  const gx = sth * Math.cos(phi);
+  const gy = sth * Math.sin(phi);
+  const gz = z;
+  const X = GAL[0] * gx + GAL[3] * gy + GAL[6] * gz;
+  const Y = GAL[1] * gx + GAL[4] * gy + GAL[7] * gz;
+  const Z = GAL[2] * gx + GAL[5] * gy + GAL[8] * gz;
+  return [X, Z, Y];
+}
+
+export function nestCell(order: number, ipix: number) {
+  const nside = 1 << order;
+  const face = ipix >> (2 * order);
+  const ipf = ipix & (nside * nside - 1);
+  let ix = 0;
+  let iy = 0;
+  for (let i = 0; i < order; i++) {
+    ix |= ((ipf >> (2 * i)) & 1) << i;
+    iy |= ((ipf >> (2 * i + 1)) & 1) << i;
+  }
+  return { face, ix, iy, nside };
+}
+
 export function tileUrl(order: number, ipix: number) {
   const dir = Math.floor(ipix / 10000) * 10000;
   return `${BASE}/Norder${order}/Dir${dir}/Npix${ipix}.png`;
@@ -132,6 +177,7 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
     precision mediump float;
     varying vec2 vUv; varying float vKeep;
     uniform sampler2D uTex;
+    uniform float uAlpha;
     void main() {
       if (vKeep < 0.5) discard;
       vec3 c = texture2D(uTex, vUv).rgb;
@@ -156,7 +202,7 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
       x.g += excess * 0.55;
       x.r -= excess * 0.22;
       x.b -= excess * 0.22;
-      gl_FragColor = vec4(clamp(x, 0.0, 1.0), 1.0);
+      gl_FragColor = vec4(clamp(x, 0.0, 1.0), uAlpha);
     }
   `);
   gl.compileShader(vs);
@@ -169,6 +215,8 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
   }
   const buf = gl.createBuffer()!;
   const cache = new Map<string, Slot>();
+  const born = new Map<string, number>();
+  const meshes = new Map<string, Float32Array>();
   const order: string[] = [];
   let inflight = 0;
   const maxOrder = lite ? 5 : 7;
@@ -192,14 +240,16 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
         return;
       }
       gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       cache.set(id, texture);
-      order.push(id);
-      while (order.length > (lite ? 36 : 72)) {
+      if (level > 0) born.set(id, performance.now());
+      if (level > 0) order.push(id);
+      while (order.length > (lite ? 80 : 140)) {
         const old = order.shift();
         if (!old) break;
         const slot = cache.get(old);
@@ -214,74 +264,64 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
     image.src = tileUrl(level, ipix);
   }
 
+  for (let i = 0; i < 12; i++) request(0, i, true);
+
   function levelFor(fov: number) {
     return Math.max(1, Math.min(maxOrder, Math.round(Math.log2(520 / Math.max(4, fov)))));
   }
 
+  function meshFor(level: number, ipix: number) {
+    const id = key(level, ipix);
+    const cached = meshes.get(id);
+    if (cached) return cached;
+    const { face, ix, iy, nside } = nestCell(level, ipix);
+    const div = level === 0 ? 8 : 3;
+    const data: number[] = [];
+    const at = (i: number, j: number) => {
+      const sx = i / div;
+      const sy = j / div;
+      const p = faceToEq(face, (ix + sx) / nside, (iy + sy) / nside);
+      return [p[0], p[1], p[2], sy, 1 - sx];
+    };
+    for (let j = 0; j < div; j++) {
+      for (let i = 0; i < div; i++) {
+        const a = at(i, j);
+        const b = at(i + 1, j);
+        const c = at(i, j + 1);
+        const d = at(i + 1, j + 1);
+        data.push(...a, ...c, ...b, ...b, ...c, ...d);
+      }
+    }
+    const array = new Float32Array(data);
+    meshes.set(id, array);
+    return array;
+  }
+
   function draw(forward: number[], right: number[], up: number[], fov: number, width: number, height: number) {
     const level = levelFor(fov);
-    const n = lite ? 16 : 24;
-    const tan = Math.tan(((fov * 1.12) * Math.PI) / 360);
+    let base = true;
+    for (let i = 0; i < 12; i++) {
+      const slot = cache.get(key(0, i));
+      if (!slot || slot === "loading") base = false;
+    }
+    if (!base) return { ready: false, level };
+    const want = new Set<string>();
+    const n = 14;
+    const tan = Math.tan(((fov * 1.15) * Math.PI) / 360);
     const aspect = width / Math.max(1, height);
-    const stride = n + 1;
-    type Sample = { xyz: Vec3; theta: number; phi: number; fine: number };
-    const grid: Sample[] = [];
     for (let j = 0; j <= n; j++) {
       for (let i = 0; i <= n; i++) {
-        const nx = (i / n - 0.5) * 2;
-        const ny = (0.5 - j / n) * 2;
-        const vx = nx * tan * aspect;
-        const vy = ny * tan;
+        const vx = (i / n - 0.5) * 2 * tan * aspect;
+        const vy = (0.5 - j / n) * 2 * tan;
         const x = forward[0]! + right[0]! * vx + up[0]! * vy;
         const y = forward[1]! + right[1]! * vx + up[1]! * vy;
         const z = forward[2]! + right[2]! * vx + up[2]! * vy;
         const len = Math.hypot(x, y, z) || 1;
-        const xyz: Vec3 = [x / len, y / len, z / len];
-        const { theta, phi } = eqDirection(xyz[0], xyz[1], xyz[2]);
-        const fine = ang2pix(level, theta, phi);
-        grid.push({ xyz, theta, phi, fine });
-      }
-    }
-    for (const sample of grid) {
-      request(1, ang2pix(1, sample.theta, sample.phi), true);
-      const mid = Math.max(1, Math.min(3, level));
-      request(mid, ang2pix(mid, sample.theta, sample.phi), true);
-    }
-    for (const sample of grid) request(level, sample.fine);
-    const groups = new Map<string, number[]>();
-    const add = (id: string, points: Sample[], uvs: Array<readonly [number, number]>) => {
-      const slot = cache.get(id);
-      if (!slot || slot === "bad" || slot === "loading") return;
-      const list = groups.get(id) ?? [];
-      points.forEach((point, index) => {
-        const uv = uvs[index]!;
-        list.push(point.xyz[0], point.xyz[1], point.xyz[2], uv[0], uv[1]);
-      });
-      groups.set(id, list);
-    };
-    for (let j = 0; j < n; j++) {
-      for (let i = 0; i < n; i++) {
-        const cell = [grid[j * stride + i]!, grid[j * stride + i + 1]!, grid[(j + 1) * stride + i]!, grid[(j + 1) * stride + i + 1]!];
-        const tris: Array<[number, number, number]> = [[0, 1, 2], [1, 3, 2]];
-        for (const [ia, ib, ic] of tris) {
-          const a = cell[ia]!;
-          const b = cell[ib]!;
-          const c = cell[ic]!;
-          for (let order = level; order >= 1; order--) {
-            const pa = ang2pix(order, a.theta, a.phi);
-            const pb = ang2pix(order, b.theta, b.phi);
-            const pc = ang2pix(order, c.theta, c.phi);
-            if (pa !== pb || pb !== pc) continue;
-            request(order, pa, order <= 3);
-            const id = key(order, pa);
-            const slot = cache.get(id);
-            if (!slot || slot === "bad" || slot === "loading") continue;
-            const [ua, va] = tileUv(order, a.theta, a.phi);
-            const [ub, vb] = tileUv(order, b.theta, b.phi);
-            const [uc, vc] = tileUv(order, c.theta, c.phi);
-            add(id, [a, b, c], [[ua, va], [ub, vb], [uc, vc]]);
-            break;
-          }
+        const { theta, phi } = eqDirection(x / len, y / len, z / len);
+        for (let order = 1; order <= level; order++) {
+          const ipix = ang2pix(order, theta, phi);
+          want.add(key(order, ipix));
+          request(order, ipix, order <= 2);
         }
       }
     }
@@ -294,25 +334,33 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
     gl.uniform1i(gl.getUniformLocation(prog, "uTex"), 0);
     const pos = gl.getAttribLocation(prog, "aPos");
     const uv = gl.getAttribLocation(prog, "aUv");
-    let ready = true;
-    const seen = new Set<number>();
-    for (const sample of grid) {
-      if (seen.has(sample.fine)) continue;
-      seen.add(sample.fine);
-      const slot = cache.get(key(level, sample.fine));
-      if (!slot || slot === "loading") ready = false;
-    }
-    for (const [id, data] of groups) {
-      const slot = cache.get(id);
-      if (!slot || slot === "bad" || slot === "loading") continue;
+    const now = performance.now();
+    const paint = (order: number, ipix: number, alpha: number) => {
+      const slot = cache.get(key(order, ipix));
+      if (!slot || slot === "bad" || slot === "loading") return;
+      const data = meshFor(order, ipix);
+      gl.uniform1f(gl.getUniformLocation(prog, "uAlpha"), alpha);
       gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
       gl.bindTexture(gl.TEXTURE_2D, slot);
       gl.enableVertexAttribArray(pos);
       gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 20, 0);
       gl.enableVertexAttribArray(uv);
       gl.vertexAttribPointer(uv, 2, gl.FLOAT, false, 20, 12);
       gl.drawArrays(gl.TRIANGLES, 0, data.length / 5);
+    };
+    for (let ipix = 0; ipix < 12; ipix++) paint(0, ipix, 1);
+    let ready = true;
+    const ids = [...want].sort((a, b) => Number(a.split(":")[0]) - Number(b.split(":")[0]));
+    for (const id of ids) {
+      const [orderText, ipixText] = id.split(":");
+      const order = Number(orderText);
+      const ipix = Number(ipixText);
+      const slot = cache.get(id);
+      if (order === level && (!slot || slot === "loading")) ready = false;
+      if (!slot || slot === "bad" || slot === "loading") continue;
+      const start = born.get(id) ?? now;
+      paint(order, ipix, Math.max(0, Math.min(1, (now - start) / 420)));
     }
     return { ready, level };
   }
