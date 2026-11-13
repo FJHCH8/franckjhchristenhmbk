@@ -458,6 +458,7 @@ export function Planetarium({
               .filter((anchor): anchor is (typeof anchors)[number] & { x: number; y: number } => Boolean(anchor));
             if (plate.complete && plate.naturalWidth > 0 && placed.length === 4) {
               ctx2.save();
+              ctx2.globalCompositeOperation = "screen";
               ctx2.globalAlpha = Math.max(0.35, figureAlpha) * (1 - dist / (Math.min(width, height) * 0.95));
               ctx2.filter = "none";
               paintPlate(
