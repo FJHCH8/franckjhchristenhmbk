@@ -177,9 +177,9 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
     return `${level}:${ipix}`;
   }
 
-  function request(level: number, ipix: number) {
+  function request(level: number, ipix: number, urgent = false) {
     const id = key(level, ipix);
-    if (cache.has(id) || inflight > 12) return;
+    if (cache.has(id) || inflight > (urgent ? 16 : 6)) return;
     cache.set(id, "loading");
     inflight += 1;
     const image = new Image();
@@ -240,10 +240,14 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
         const { theta, phi } = eqDirection(xyz[0], xyz[1], xyz[2]);
         const fine = ang2pix(level, theta, phi);
         grid.push({ xyz, theta, phi, fine });
-        request(level, fine);
-        request(Math.max(1, level - 2), ang2pix(Math.max(1, level - 2), theta, phi));
       }
     }
+    for (const sample of grid) {
+      request(1, ang2pix(1, sample.theta, sample.phi), true);
+      const mid = Math.max(1, Math.min(3, level));
+      request(mid, ang2pix(mid, sample.theta, sample.phi), true);
+    }
+    for (const sample of grid) request(level, sample.fine);
     const groups = new Map<string, number[]>();
     const add = (id: string, points: Sample[], uvs: Array<readonly [number, number]>) => {
       const slot = cache.get(id);
@@ -268,7 +272,7 @@ export function createHips(gl: WebGLRenderingContext, lite: boolean) {
             const pb = ang2pix(order, b.theta, b.phi);
             const pc = ang2pix(order, c.theta, c.phi);
             if (pa !== pb || pb !== pc) continue;
-            request(order, pa);
+            request(order, pa, order <= 3);
             const id = key(order, pa);
             const slot = cache.get(id);
             if (!slot || slot === "bad" || slot === "loading") continue;
