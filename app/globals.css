@@ -1521,7 +1521,7 @@ html[data-page="contact"] .scroll-cue,
 html[data-theme="sombre"][data-page="a-propos"] .scroll-head h1,
 html[data-theme="sombre"][data-page="contact"] .scroll-head h1 {
   color: #f7f4ee;
-  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 10px 28px rgba(0, 0, 0, 0.55);
 }
 
 html[data-page="a-propos"] .header,

@@ -104,11 +104,20 @@ export function QuiBlend() {
       wake();
     };
 
+    const syncNight = () => {
+      const progress = clamp(window.scrollY / range);
+      const next = progress > 0.62;
+      if (next === night) return;
+      night = next;
+      document.documentElement.classList.toggle("qui-night", night);
+    };
+
     const boot = async () => {
       const images = [...field.querySelectorAll("img")];
       await Promise.all(images.map((img) => (img.decode ? img.decode().catch(() => undefined) : Promise.resolve())));
       if (!alive) return;
       field.classList.add("is-ready");
+      syncNight();
       if (driven) {
         document.documentElement.classList.add("qui-driven");
         return;
@@ -129,12 +138,14 @@ export function QuiBlend() {
     if (note) reveal.observe(note);
 
     void boot();
+    window.addEventListener("scroll", syncNight, { passive: true });
     window.addEventListener("scroll", wake, { passive: true });
     window.addEventListener("orientationchange", onOrientation);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       alive = false;
       if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", syncNight);
       window.removeEventListener("scroll", wake);
       window.removeEventListener("orientationchange", onOrientation);
       document.removeEventListener("visibilitychange", onVisibility);
