@@ -143,7 +143,20 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                       const montre = active === etoile.id;
                       return (
                         <li key={etoile.id}>
-                          <button type="button" aria-expanded={montre} onClick={() => setActive(montre ? null : etoile.id)}>
+                          <button
+                            type="button"
+                            aria-expanded={montre}
+                            onClick={(event) => {
+                              const next = montre ? null : etoile.id;
+                              setActive(next);
+                              if (!next) return;
+                              const ligne = event.currentTarget.closest("li");
+                              const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                              window.setTimeout(() => {
+                                ligne?.querySelector(".fiche")?.scrollIntoView({ behavior: calme ? "auto" : "smooth", block: "center" });
+                              }, calme ? 0 : 60);
+                            }}
+                          >
                             {dateFr(etoile.date) || etoile.titre || "Sans date"}
                           </button>
                           <div className={montre ? "fiche is-open" : "fiche"}>

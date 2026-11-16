@@ -3103,8 +3103,7 @@ html.nav-vt::view-transition-group(nav-pill) {
   display: grid;
   justify-items: center;
   gap: 0.8rem;
-  min-height: 70vh;
-  padding: 6.5rem 1rem 2rem;
+  padding: 5.2rem 1rem 1.6rem;
 }
 
 .endur-haut .etoile-hit {
@@ -3119,7 +3118,7 @@ html.nav-vt::view-transition-group(nav-pill) {
   z-index: 1;
   width: min(36rem, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 0 0 4rem;
+  padding: 0 0 8rem;
 }
 
 .rubrique + .rubrique {
@@ -3178,6 +3177,7 @@ html.nav-vt::view-transition-group(nav-pill) {
 .fiche.is-open {
   grid-template-rows: 1fr;
   opacity: 1;
+  scroll-margin: 5.5rem 0 7rem;
 }
 
 .rubrique-corps > div,
