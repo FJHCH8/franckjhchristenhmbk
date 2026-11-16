@@ -40,7 +40,8 @@ export function secrets() {
 }
 
 export function origineOk(req: Request) {
-  return originAllowed(req.headers.get("origin"), req.headers.get("host")) && sameSiteFetch(req.headers.get("sec-fetch-site"));
+  const forwarded = req.headers.get("x-forwarded-host");
+  return originAllowed(req.headers.get("origin"), req.headers.get("host"), forwarded) && sameSiteFetch(req.headers.get("sec-fetch-site"));
 }
 
 function prune(etat: Etat, now: number) {

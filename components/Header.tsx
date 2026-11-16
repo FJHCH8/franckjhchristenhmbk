@@ -24,6 +24,25 @@ export function Header() {
   const pillRef = useRef<HTMLSpanElement>(null);
   const ready = useRef(false);
   const taps = useRef<number[]>([]);
+  const navTimer = useRef(0);
+
+  const onBrand = (event: React.PointerEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const now = performance.now();
+    taps.current = [...taps.current.filter((time) => now - time < 2800), now];
+    window.clearTimeout(navTimer.current);
+    if (taps.current.length >= 8) {
+      taps.current = [];
+      window.dispatchEvent(new Event("fjch-edition"));
+      return;
+    }
+    navTimer.current = window.setTimeout(() => {
+      const count = taps.current.length;
+      taps.current = [];
+      if (count === 1 && pathname !== "/") router.push("/");
+    }, 420);
+  };
 
   useLayoutEffect(() => {
     const nav = navRef.current;
@@ -59,22 +78,10 @@ export function Header() {
           className="brand"
           href="/"
           aria-label="Franck J.H. CHRISTEN H.M.B.K."
-          onClick={(event) => {
-            const now = performance.now();
-            taps.current = [...taps.current.filter((time) => now - time < 2800), now];
-            if (taps.current.length >= 8) {
-              event.preventDefault();
-              taps.current = [];
-              window.dispatchEvent(new Event("fjch-edition"));
-              return;
-            }
-            if (pathname === "/") {
-              event.preventDefault();
-              return;
-            }
-            event.preventDefault();
-            router.push("/");
+          onPointerDown={(event) => {
+            if (event.button === 0) event.preventDefault();
           }}
+          onPointerUp={onBrand}
         >
           <span className="seal">
             <Image

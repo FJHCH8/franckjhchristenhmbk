@@ -53,6 +53,7 @@ export function EditionPorte() {
           try {
             const response = await fetch("/api/edition/session", {
               method: "POST",
+              credentials: "same-origin",
               headers: { "content-type": "application/json" },
               body: JSON.stringify({ code }),
             });

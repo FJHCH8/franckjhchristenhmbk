@@ -125,11 +125,16 @@ export function readCookie(header: string | null) {
   return match?.[1] ? decodeURIComponent(match[1]) : "";
 }
 
-export function originAllowed(origin: string | null, host: string | null) {
-  if (!origin || !host) return false;
+export function originAllowed(origin: string | null, host: string | null, forwardedHost: string | null = null) {
+  if (!origin) return false;
   try {
     const url = new URL(origin);
-    if (url.host !== host) return false;
+    const hosts = [host, forwardedHost]
+      .flatMap((value) => (value ? value.split(",") : []))
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const site = url.host === "franckjhchristen.com" || url.host === "www.franckjhchristen.com";
+    if (!hosts.includes(url.host) && !site) return false;
     if (url.protocol === "https:") return true;
     return url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
   } catch {

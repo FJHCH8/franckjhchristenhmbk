@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "@/components/Countdown";
-import { Planetarium } from "@/components/Planetarium";
 import { VentNordique } from "@/components/VentNordique";
+import { emplacements } from "@/lib/etoiles/points";
 import type { Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
@@ -31,9 +31,7 @@ function appareil() {
 export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const view = useRef({ ra: 341.6, dec: 19.5 });
-  const [open] = useState(1);
   const [etoiles, setEtoiles] = useState(initial);
-  const [spots, setSpots] = useState<{ id: string; x: number; y: number }[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [born, setBorn] = useState<string | null>(null);
   const [jeton, setJeton] = useState("");
@@ -92,25 +90,37 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
 
   const chosen = etoiles.find((item) => item.id === active) ?? null;
 
+  const places = emplacements(etoiles.map((etoile) => etoile.id));
+
   return (
-    <div className="sky-stage" ref={stageRef} style={{ ["--open" as string]: String(open) }}>
+    <div className="sky-stage" ref={stageRef}>
       <div className="sky-sticky">
-        <div className={open > 0.92 ? "sky-frame is-open" : "sky-frame"} data-open={open > 0.92 ? "1" : "0"}>
-          <Planetarium etoiles={etoiles} open={open} view={view} onSpots={setSpots} />
-          {spots.map((spot) => {
-            const etoile = etoiles.find((item) => item.id === spot.id);
-            if (!etoile) return null;
-            return (
-              <button
-                key={spot.id}
-                type="button"
-                className={born === spot.id ? "etoile-hit is-born" : "etoile-hit"}
-                style={{ transform: `translate3d(${spot.x}px, ${spot.y}px, 0)` }}
-                aria-label={etoile.titre || "Étoile"}
-                onClick={() => setActive(spot.id)}
-              />
-            );
-          })}
+        <div className="sky-frame is-open" data-open="1">
+          <div className="pegase-scene">
+            <div className="voie-boucle" aria-hidden="true">
+              <img src="/ciel/voie-lactee.jpg" alt="" />
+              <img src="/ciel/voie-lactee.jpg" alt="" />
+            </div>
+            <div className="cheval-cadre">
+              <div className="cheval-plan">
+                <img className="cheval-fixe" src="/ciel/pegase.png" alt="" />
+                {etoiles.map((etoile) => {
+                  const place = places.get(etoile.id);
+                  if (!place) return null;
+                  return (
+                    <button
+                      key={etoile.id}
+                      type="button"
+                      className={born === etoile.id ? "etoile-hit is-born" : "etoile-hit"}
+                      style={{ left: `${place.x}%`, top: `${place.y}%` }}
+                      aria-label={etoile.titre || "Étoile"}
+                      onClick={() => setActive(etoile.id)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
           {chosen ? (
             <article className="etoile-bulle" role="dialog" aria-label={chosen.titre || "Étoile"}>
               {chosen.texte ? (

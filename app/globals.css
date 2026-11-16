@@ -3105,15 +3105,71 @@ html.nav-vt::view-transition-group(nav-pill) {
   overflow: hidden;
   border: 0;
   background: #000;
-  touch-action: none;
+  touch-action: pan-y;
   -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
-    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
-    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
   mask-composite: intersect;
+}
+
+.pegase-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.voie-boucle {
+  position: absolute;
+  top: -8%;
+  left: 0;
+  display: flex;
+  width: 200%;
+  height: 116%;
+  animation: voie-boucle 96s linear infinite;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.voie-boucle img {
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+  flex: none;
+}
+
+@keyframes voie-boucle {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voie-boucle { animation: none; }
+}
+
+.cheval-cadre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.cheval-plan {
+  position: relative;
+  width: min(100%, calc(100lvh * 1024 / 733));
+  height: min(100%, calc(100vw * 733 / 1024));
+}
+
+.cheval-fixe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .planet {
@@ -3166,10 +3222,11 @@ html.nav-vt::view-transition-group(nav-pill) {
   top: 0;
   width: 2.4rem;
   height: 2.4rem;
-  margin: -1.2rem 0 0 -1.2rem;
+  margin: 0;
   border: 0;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 220, 150, 0.95), rgba(255, 186, 70, 0.15) 62%, transparent 70%);
+  transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: pointer;
 }
