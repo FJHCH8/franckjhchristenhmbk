@@ -1,5 +1,6 @@
 import { Glass } from "@/components/Glass";
 import { T } from "@/components/Locale";
+import { PhotoField } from "@/components/PhotoField";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { ParchmentMark } from "@/components/TitleMarks";
 import { pageMetadata } from "@/lib/site";
@@ -12,7 +13,8 @@ export const metadata = pageMetadata(
 
 export default function ContactPage() {
   return (
-    <main id="contenu">
+    <main id="contenu" className="photo-page">
+      <PhotoField name="avion" width={1500} height={2000} focus="68% 42%" />
       <ScrollTitle id="titre-contact" text="Contact" icon={<ParchmentMark />} />
       <section className="section shell page-solo scroll-reveal" aria-labelledby="titre-contact">
         <Glass>

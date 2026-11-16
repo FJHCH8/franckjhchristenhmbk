@@ -39,9 +39,11 @@ function normalize(value: Etat): Etat {
     : semence();
   const projet = semence().find((etoile) => etoile.id === "creation-langue-davissiv");
   const etoiles = projet && !mapped.some((etoile) => etoile.id === projet.id) ? [...mapped, projet] : mapped;
+  const coeurs = { ...(value.coeurs ?? {}) };
+  delete coeurs.endurreisen;
   return {
     etoiles,
-    coeurs: value.coeurs ?? {},
+    coeurs,
     sessions: value.sessions ?? {},
     totpStep: value.totpStep ?? 0,
     ip: value.ip ?? {},
@@ -88,7 +90,7 @@ function doitEnregistrer(value: Etat) {
       (etoile) =>
         (etoile.id === "citation-2026-05-26" && (etoile.ra !== 349 || etoile.dec !== 26)) ||
         (etoile.id === "endurreisen" && etoile.titre !== "Endurreisen"),
-    ) || !stars.some((etoile) => etoile.id === "creation-langue-davissiv")
+    ) || !stars.some((etoile) => etoile.id === "creation-langue-davissiv") || Boolean(value.coeurs?.endurreisen)
   );
 }
 
@@ -122,7 +124,7 @@ export function updateEtat<T>(fn: (etat: Etat) => Promise<T> | T): Promise<T> {
 }
 
 export function vuePublique(etat: Etat): PublicEtoile[] {
-  return etat.etoiles.map((etoile) => ({ ...etoile, coeurs: etat.coeurs[etoile.id]?.n ?? 0 }));
+  return etat.etoiles.map((etoile) => (etoile.id === "endurreisen" ? { ...etoile } : { ...etoile, coeurs: etat.coeurs[etoile.id]?.n ?? 0 }));
 }
 
 export async function writeMedia(id: string, bytes: Buffer) {

@@ -68,6 +68,7 @@ export async function PATCH(req: Request) {
   }
   return avecEcriture(req, (etat) => {
     const id = plainText(body.id, 40);
+    if (id === "endurreisen") return { body: { erreur: "Introuvable." }, status: 404 };
     const index = etat.etoiles.findIndex((item) => item.id === id);
     if (index < 0) return { body: { erreur: "Introuvable." }, status: 404 };
     const known = new Set(Object.keys(etat.medias));
@@ -87,6 +88,7 @@ export async function DELETE(req: Request) {
   }
   return avecEcriture(req, (etat) => {
     const id = plainText(body.id, 40);
+    if (id === "endurreisen") return { body: { erreur: "Introuvable." }, status: 404 };
     const before = etat.etoiles.length;
     etat.etoiles = etat.etoiles.filter((item) => item.id !== id);
     if (etat.etoiles.length === before) return { body: { erreur: "Introuvable." }, status: 404 };

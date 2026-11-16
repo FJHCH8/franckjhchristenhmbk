@@ -1,6 +1,7 @@
 import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
 import { Block, T } from "@/components/Locale";
+import { PhotoField } from "@/components/PhotoField";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { InfinityMark } from "@/components/TitleMarks";
 import { pageMetadata } from "@/lib/site";
@@ -13,7 +14,8 @@ export const metadata = pageMetadata(
 
 export default function AboutPage() {
   return (
-    <main id="contenu">
+    <main id="contenu" className="photo-page">
+      <PhotoField name="judo" width={1500} height={2386} focus="center 26%" />
       <ScrollTitle id="titre-apropos" text="À propos" icon={<InfinityMark />} />
       <section className="section shell page-solo" aria-labelledby="titre-apropos">
         <Descend>

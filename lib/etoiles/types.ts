@@ -20,4 +20,4 @@ export type Etoile = {
   medias: Media[];
 };
 
-export type PublicEtoile = Etoile & { coeurs: number };
+export type PublicEtoile = Etoile & { coeurs?: number };

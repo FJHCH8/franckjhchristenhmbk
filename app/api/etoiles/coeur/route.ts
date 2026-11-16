@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   }
   const id = typeof body.id === "string" ? body.id : "";
   const appareil = typeof body.appareil === "string" ? body.appareil : "";
-  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id) || !/^[A-Za-z0-9_-]{16,80}$/.test(appareil)) {
+  if (id === "endurreisen" || !/^[A-Za-z0-9_-]{8,80}$/.test(id) || !/^[A-Za-z0-9_-]{16,80}$/.test(appareil)) {
     return reponse({ erreur: "Requête refusée." }, 400);
   }
   const ip = clientIp(req);

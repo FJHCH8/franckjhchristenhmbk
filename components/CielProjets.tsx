@@ -14,19 +14,6 @@ function dateFr(value: string) {
   );
 }
 
-function appareil() {
-  const key = "fjch-appareil";
-  try {
-    const existing = localStorage.getItem(key);
-    if (existing && /^[A-Za-z0-9_-]{16,80}$/.test(existing)) return existing;
-    const next = crypto.randomUUID().replace(/-/g, "");
-    localStorage.setItem(key, next);
-    return next;
-  } catch {
-    return "appareil-navigateur";
-  }
-}
-
 export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [etoiles, setEtoiles] = useState(initial);
@@ -111,6 +98,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
         {endur ? (
           <button type="button" className="etoile-hit is-coeur" aria-label="Endurreisen" onClick={() => setActive(active === endur.id ? null : endur.id)} />
         ) : null}
+        <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" />
         <p className="endurreisen" translate="no">Endurreisen</p>
         <Countdown />
       </section>
@@ -219,26 +207,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                 <span>{SIGNATURE}</span>
                 {chosen.date ? <time dateTime={chosen.date}>{dateFr(chosen.date)}</time> : null}
               </p>
-              <button
-                type="button"
-                className="coeur"
-                onClick={() => {
-                  void fetch("/api/etoiles/coeur", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ id: chosen.id, appareil: appareil() }),
-                  })
-                    .then((res) => res.json())
-                    .then((data: { coeurs?: number }) => {
-                      if (typeof data.coeurs === "number") {
-                        setEtoiles((list) => list.map((item) => (item.id === chosen.id ? { ...item, coeurs: data.coeurs! } : item)));
-                      }
-                    })
-                    .catch(() => undefined);
-                }}
-              >
-                ♥ {chosen.coeurs}
-              </button>
               <button type="button" className="etoile-fermer" onClick={() => setActive(null)} aria-label="Fermer">
                 Fermer
               </button>
@@ -248,7 +216,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             Étoiles : catalogue HYG. Voie lactée : ESA/Gaia/DPAC, CC BY-NC 3.0 IGO.
           </p>
         <ul className="ciel-index">
-          {etoiles.map((etoile) => (
+          {etoiles.filter((etoile) => etoile.id !== "endurreisen").map((etoile) => (
             <li key={etoile.id}>
               {etoile.texte ? <blockquote>{etoile.texte}</blockquote> : null}
               {etoile.titre ? <span>{etoile.titre}</span> : null}
@@ -317,7 +285,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               />
             </label>
             <button type="submit">Enregistrer</button>
-            {etoiles.map((etoile) => (
+            {etoiles.filter((etoile) => etoile.id !== "endurreisen").map((etoile) => (
               <span key={etoile.id} className="edition-ligne">
                 <button
                   type="button"

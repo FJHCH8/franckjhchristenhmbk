@@ -258,6 +258,12 @@ html[data-page="qui-suis-je"] .rail {
 html[data-page="qui-suis-je"] .sky,
 html[data-page="qui-suis-je"] .night-stars,
 html[data-page="qui-suis-je"] .rain-layer,
+html[data-page="a-propos"] .sky,
+html[data-page="a-propos"] .night-stars,
+html[data-page="a-propos"] .rain-layer,
+html[data-page="contact"] .sky,
+html[data-page="contact"] .night-stars,
+html[data-page="contact"] .rain-layer,
 html[data-page="etoile"] .sky,
 html[data-page="etoile"] .night-stars,
 html[data-page="etoile"] .rain-layer {
@@ -1133,8 +1139,12 @@ html[data-theme="sombre"] .night-stars {
 }
 
 html[data-page="qui-suis-je"] .night-stars,
+html[data-page="a-propos"] .night-stars,
+html[data-page="contact"] .night-stars,
 html[data-page="etoile"] .night-stars,
 html[data-theme="sombre"][data-page="qui-suis-je"] .night-stars,
+html[data-theme="sombre"][data-page="a-propos"] .night-stars,
+html[data-theme="sombre"][data-page="contact"] .night-stars,
 html[data-theme="sombre"][data-page="etoile"] .night-stars {
   opacity: 0;
 }
@@ -1416,6 +1426,92 @@ html[data-sky="cloud"] body {
 
 .skin-far {
   opacity: var(--qui-far, 0);
+}
+
+.photo-field {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  height: 100lvh;
+  overflow: hidden;
+  background: #000;
+  pointer-events: none;
+}
+
+.photo-field picture,
+.photo-field img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-field img {
+  object-fit: cover;
+  object-position: var(--photo-pos, center);
+}
+
+.photo-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.12) 22%, transparent 40%),
+    radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0.28), transparent 48%);
+  pointer-events: none;
+}
+
+html[data-page="a-propos"],
+html[data-page="a-propos"] body,
+html[data-page="contact"],
+html[data-page="contact"] body {
+  background: #000;
+}
+
+html[data-page="a-propos"],
+html[data-page="contact"] {
+  --glass: rgba(8, 10, 14, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-sheen: rgba(255, 255, 255, 0.16);
+  --glass-shade: rgba(255, 255, 255, 0.04);
+  --text: #f7f4ee;
+  --text-soft: rgba(247, 244, 238, 0.84);
+  --nav-active: rgba(255, 255, 255, 0.16);
+  --header-fade: transparent;
+}
+
+html[data-page="a-propos"] .scroll-head h1,
+html[data-page="a-propos"] .scroll-mark,
+html[data-page="a-propos"] .scroll-cue,
+html[data-page="contact"] .scroll-head h1,
+html[data-page="contact"] .scroll-mark,
+html[data-page="contact"] .scroll-cue,
+html[data-theme="sombre"][data-page="a-propos"] .scroll-head h1,
+html[data-theme="sombre"][data-page="contact"] .scroll-head h1 {
+  color: #f7f4ee;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.55);
+}
+
+html[data-page="a-propos"] .header,
+html[data-page="a-propos"] .brand,
+html[data-page="a-propos"] .nav a,
+html[data-page="a-propos"] .lang button,
+html[data-page="contact"] .header,
+html[data-page="contact"] .brand,
+html[data-page="contact"] .nav a,
+html[data-page="contact"] .lang button {
+  color: #f7f4ee;
+}
+
+html[data-page="a-propos"] .nav a[aria-current="page"],
+html[data-page="contact"] .nav a[aria-current="page"] {
+  color: #fff;
+}
+
+html[data-page="a-propos"]:not([data-locale="davissiv"]) .lang-fr,
+html[data-page="a-propos"][data-locale="davissiv"] .lang-davissiv,
+html[data-page="contact"]:not([data-locale="davissiv"]) .lang-fr,
+html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
+  color: #102033;
 }
 
 .qui-follow {
@@ -3113,6 +3209,14 @@ html.nav-vt::view-transition-group(nav-pill) {
   transform: none;
 }
 
+.bebe-endur {
+  width: auto;
+  height: 4.4rem;
+  margin: 0.15rem 0 0.1rem;
+  pointer-events: none;
+  user-select: none;
+}
+
 .rubriques {
   position: relative;
   z-index: 1;
@@ -3360,25 +3464,19 @@ html.nav-vt::view-transition-group(nav-pill) {
 .projets .scroll-stage {
   position: relative;
   z-index: 2;
-  min-height: 0;
-  place-items: start center;
-  padding: calc(env(safe-area-inset-top) + 4.5rem) 1rem 0;
+  min-height: 100svh;
+  place-items: center;
+  background: #000;
+  padding: calc(env(safe-area-inset-top) + 5.2rem) 1.25rem calc(5.5rem + env(safe-area-inset-bottom));
   pointer-events: none;
 }
 
 .projets .tone-sea {
-  padding-bottom: 0;
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
-.projets .scroll-head h1 {
-  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.projets .scroll-cue,
 .projets .scroll-mark {
-  display: none;
+  width: 5.6rem;
 }
 
 .projets-attente {
