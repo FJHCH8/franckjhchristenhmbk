@@ -3076,10 +3076,185 @@ html.nav-vt::view-transition-group(nav-pill) {
 }
 
 .sky-stage {
+  position: relative;
+  z-index: 1;
+  min-height: 100lvh;
+  padding: 0 0 5rem;
+  background: transparent;
+}
+
+.voie-boucle {
   position: fixed;
   z-index: 0;
-  inset: 0;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 200%;
   height: 100lvh;
+  animation: voie-boucle 110s linear infinite;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+.endur-haut {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  min-height: 70vh;
+  padding: 6.5rem 1rem 2rem;
+}
+
+.endur-haut .etoile-hit {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+}
+
+.bocaux {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  min-height: 70vh;
+  padding: 2rem 1rem 4rem;
+}
+
+.bocal {
+  position: relative;
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  width: 9.2rem;
+  height: 13.5rem;
+  padding: 0 0 1.1rem;
+  border: 0;
+  background: transparent;
+  color: #f7f4ee;
+  cursor: pointer;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+}
+
+.bocal-col {
+  position: absolute;
+  top: 0.2rem;
+  left: 50%;
+  width: 3.2rem;
+  height: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 4px;
+  transform: translateX(-50%);
+}
+
+.bocal-verre {
+  position: absolute;
+  inset: 1rem 0.35rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 1rem 1rem 2.4rem 2.4rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.06);
+}
+
+.bocal-titre,
+.bocal-compte {
+  position: relative;
+  z-index: 1;
+}
+
+.bocal-titre {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: 0.08em;
+}
+
+.bocal-compte {
+  margin-top: 0.2rem;
+  font-size: 1.4rem;
+}
+
+.bocal.is-envole {
+  transform: translate3d(-70vw, -12vh, 0) rotate(-8deg);
+  opacity: 0;
+}
+
+.bocal.is-choisi {
+  transform: translate3d(0, 8vh, 0) scale(0.9);
+  opacity: 0;
+}
+
+.cheval-vue {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem 1rem 5rem;
+}
+
+.retour-bocaux {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: #f7f4ee;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+}
+
+.cheval-forme {
+  position: relative;
+  width: min(36rem, 100%);
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+
+.cheval-forme svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cheval-forme polyline {
+  fill: none;
+  stroke: rgba(244, 247, 255, 0.45);
+  stroke-width: 0.35;
+}
+
+.etoile-chute {
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.9s ease;
+}
+
+.etoile-chute:not(.is-pose) {
+  transform: translate(-50%, -60vh) scale(0.35);
+  opacity: 0;
+}
+
+.etoile-chute.is-pose {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+.etoile-chute.is-loin {
+  transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.45);
+  opacity: 0.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voie-boucle,
+  .bocal,
+  .etoile-chute {
+    animation: none;
+    transition: none;
+  }
+
+  .etoile-chute:not(.is-pose),
+  .etoile-chute.is-pose,
+  .etoile-chute.is-loin {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
 }
 
 .projets .scroll-stage {
@@ -3145,25 +3320,6 @@ html.nav-vt::view-transition-group(nav-pill) {
   border: 0;
   background: #000;
   touch-action: pan-y;
-}
-
-.pegase-scene {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #000;
-}
-
-.voie-boucle {
-  position: absolute;
-  top: -8%;
-  left: 0;
-  display: flex;
-  width: 200%;
-  height: 116%;
-  animation: voie-boucle 96s linear infinite;
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
 }
 
 .voie-boucle img {

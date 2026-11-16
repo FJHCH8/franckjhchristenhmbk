@@ -1,5 +1,6 @@
 export type Police = "fraunces" | "outfit" | "georgia";
 export type StyleTexte = "normal" | "italic";
+export type GenreEtoile = "citation" | "projet";
 export type MediaKind = "photo" | "video" | "audio" | "fichier";
 
 export type Media = { id: string; kind: MediaKind; nom: string };
@@ -15,6 +16,7 @@ export type Etoile = {
   ra: number;
   dec: number;
   seuil: number;
+  genre?: GenreEtoile;
   medias: Media[];
 };
 

@@ -35,6 +35,7 @@ function lireChamps(body: Record<string, unknown>, known: Set<string>, previous?
     ra: clampNumber(body.ra, 0, 360, previous?.ra ?? 15),
     dec: clampNumber(body.dec, -90, 90, previous?.dec ?? 40),
     seuil: clampNumber(body.seuil, 0, 1, previous?.seuil ?? 0.35),
+    genre: body.genre === "citation" || body.genre === "projet" ? body.genre : previous?.genre ?? "projet",
     medias: mediasOf(body.medias, known),
   };
 }

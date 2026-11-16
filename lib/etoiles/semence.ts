@@ -24,6 +24,7 @@ export function semence(): Etoile[] {
       ra: 349,
       dec: 26,
       seuil: 0,
+      genre: "citation",
       medias: [],
     },
     {
@@ -37,6 +38,7 @@ export function semence(): Etoile[] {
       ra: 336,
       dec: 22,
       seuil: 0,
+      genre: "projet",
       medias: [],
     },
     {

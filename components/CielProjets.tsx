@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "@/components/Countdown";
 import { VentNordique } from "@/components/VentNordique";
-import { emplacements } from "@/lib/etoiles/points";
-import type { Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
+import { chevauxPour, poseCheval, TRACE_CHEVAL } from "@/lib/etoiles/cheval";
+import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
 function dateFr(value: string) {
@@ -30,13 +30,16 @@ function appareil() {
 
 export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const view = useRef({ ra: 341.6, dec: 19.5 });
   const [etoiles, setEtoiles] = useState(initial);
   const [active, setActive] = useState<string | null>(null);
   const [born, setBorn] = useState<string | null>(null);
   const [jeton, setJeton] = useState("");
   const [menu, setMenu] = useState(false);
-  const [form, setForm] = useState({ id: "", titre: "", texte: "", date: "", police: "fraunces" as Police, style: "italic" as StyleTexte, seuil: 0.35, medias: [] as Media[] });
+  const [form, setForm] = useState({ id: "", titre: "", texte: "", date: "", police: "fraunces" as Police, style: "italic" as StyleTexte, seuil: 0.35, genre: "projet" as GenreEtoile, medias: [] as Media[] });
+  const [bocal, setBocal] = useState<GenreEtoile | null>(null);
+  const [vue, setVue] = useState<"bocaux" | "cheval">("bocaux");
+  const [envol, setEnvol] = useState<GenreEtoile | null>(null);
+  const [pose, setPose] = useState(false);
 
   useEffect(() => {
     const load = () => {
@@ -77,7 +80,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
 
   async function sauver(event: React.FormEvent) {
     event.preventDefault();
-    const body = { ...form, ra: view.current.ra, dec: view.current.dec };
+    const body = { ...form, ra: 341.6, dec: 19.5 };
     const data = await envoyer(form.id ? "/api/edition/etoiles" : "/api/edition/etoiles", {
       method: form.id ? "PATCH" : "POST",
       headers: { "content-type": "application/json" },
@@ -86,43 +89,111 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
     if (data.etoile) setBorn(data.etoile.id);
     const fresh = await fetch("/api/etoiles").then((res) => res.json()) as { etoiles: PublicEtoile[] };
     setEtoiles(fresh.etoiles);
-    setForm({ id: "", titre: "", texte: "", date: "", police: "fraunces", style: "italic", seuil: 0.35, medias: [] });
+    setForm({ id: "", titre: "", texte: "", date: "", police: "fraunces", style: "italic", seuil: 0.35, genre: "projet", medias: [] });
   }
 
   const chosen = etoiles.find((item) => item.id === active) ?? null;
 
-  const places = emplacements(etoiles.map((etoile) => etoile.id));
+  const endur = etoiles.find((etoile) => etoile.id === "endurreisen") ?? null;
+  const citations = etoiles.filter((etoile) => etoile.genre === "citation" || etoile.id === "citation-2026-05-26");
+  const projets = etoiles.filter((etoile) => etoile.id !== "endurreisen" && !citations.some((item) => item.id === etoile.id));
+  const tas = bocal === "citation" ? citations : projets;
+  const horses = chevauxPour(tas.length);
+  const reduce = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ouvrirBocal(genre: GenreEtoile) {
+    setEnvol(genre);
+    setBocal(genre);
+    setActive(null);
+    setPose(reduce);
+    window.setTimeout(() => {
+      setVue("cheval");
+      if (!reduce) requestAnimationFrame(() => requestAnimationFrame(() => setPose(true)));
+    }, reduce ? 0 : 620);
+  }
+
+  function retour() {
+    if (active) {
+      setActive(null);
+      return;
+    }
+    setVue("bocaux");
+    setBocal(null);
+    setEnvol(null);
+    setPose(false);
+  }
 
   return (
     <div className="sky-stage" ref={stageRef}>
-      <div className="sky-sticky">
-        <div className="sky-frame is-open" data-open="1">
-          <div className="pegase-scene">
-            <div className="voie-boucle" aria-hidden="true">
-              <img src="/ciel/voie-lactee.jpg" alt="" />
-              <img src="/ciel/voie-lactee.jpg" alt="" />
+      <div className="voie-boucle" aria-hidden="true">
+        <img src="/ciel/voie-lactee.jpg" alt="" />
+        <img src="/ciel/voie-lactee.jpg" alt="" />
+      </div>
+      <section className="endur-haut">
+        {endur ? (
+          <button type="button" className="etoile-hit is-coeur" aria-label="Endurreisen" onClick={() => setActive(endur.id)} />
+        ) : null}
+        <p className="endurreisen" translate="no">Endurreisen</p>
+        <Countdown />
+      </section>
+      {vue === "bocaux" ? (
+        <div className="bocaux">
+          {(["citation", "projet"] as GenreEtoile[]).map((genre) => {
+            const liste = genre === "citation" ? citations : projets;
+            const titre = genre === "citation" ? "Citations" : "Projets";
+            const parti = envol && envol !== genre;
+            const choisi = envol === genre;
+            return (
+              <button
+                key={genre}
+                type="button"
+                className={parti ? "bocal is-envole" : choisi ? "bocal is-choisi" : "bocal"}
+                onClick={() => ouvrirBocal(genre)}
+              >
+                <span className="bocal-col" aria-hidden="true" />
+                <span className="bocal-verre" aria-hidden="true" />
+                <span className="bocal-titre">{titre}</span>
+                <span className="bocal-compte">{liste.length}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="cheval-vue">
+          <button type="button" className="retour-bocaux" onClick={retour}>
+            {active ? "Retour aux étoiles" : "Retour aux bocaux"}
+          </button>
+          {Array.from({ length: horses }, (_, horse) => (
+            <div className="cheval-forme" key={horse}>
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <polyline points={TRACE_CHEVAL.map((point) => point.join(",")).join(" ")} />
+              </svg>
+              {tas.map((etoile, index) => {
+                const place = poseCheval(index, tas.length);
+                if (place.horse !== horse) return null;
+                const loin = Boolean(active && active !== etoile.id);
+                const angle = ((index + 1) / tas.length) * Math.PI * 2;
+                return (
+                  <button
+                    key={etoile.id}
+                    type="button"
+                    className={loin ? "etoile-hit etoile-chute is-loin" : pose ? "etoile-hit etoile-chute is-pose" : "etoile-hit etoile-chute"}
+                    style={{
+                      left: `${place.x}%`,
+                      top: `${place.y}%`,
+                      ["--dx" as string]: `${Math.cos(angle) * 70}vw`,
+                      ["--dy" as string]: `${Math.sin(angle) * 50}vh`,
+                    }}
+                    aria-label={etoile.titre || "Étoile"}
+                    onClick={() => setActive(etoile.id)}
+                  />
+                );
+              })}
             </div>
-            <div className="cheval-cadre">
-              <div className="cheval-plan">
-                <img className="cheval-fixe" src="/ciel/pegase.png" alt="" />
-                {etoiles.map((etoile) => {
-                  const place = places.get(etoile.id);
-                  if (!place) return null;
-                  return (
-                    <button
-                      key={etoile.id}
-                      type="button"
-                      className={etoile.id === "endurreisen" ? "etoile-hit is-coeur" : born === etoile.id ? "etoile-hit is-born" : "etoile-hit"}
-                      style={{ left: `${place.x}%`, top: `${place.y}%` }}
-                      aria-label={etoile.titre || "Étoile"}
-                      onClick={() => setActive(etoile.id)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          {chosen ? (
+          ))}
+        </div>
+      )}
+      {chosen ? (
             <article className="etoile-bulle" role="dialog" aria-label={chosen.titre || "Étoile"}>
               {chosen.texte ? (
                 <blockquote className="etoile-texte" data-police={chosen.police} data-style={chosen.style}>
@@ -182,9 +253,8 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             </article>
           ) : null}
           <p className="sky-credit">
-            Étoiles : catalogue HYG. Voie lactée : tuiles Gaia DR3, ESA/Gaia/DPAC, CC BY-NC 3.0 IGO. Figures : d3-celestial, Olaf Frohn. Chevaux : Johannes Hevelius, 1690, domaine public.
+            Étoiles : catalogue HYG. Voie lactée : ESA/Gaia/DPAC, CC BY-NC 3.0 IGO.
           </p>
-        </div>
         <ul className="ciel-index">
           {etoiles.map((etoile) => (
             <li key={etoile.id}>
@@ -232,8 +302,11 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               </select>
             </label>
             <label>
-              Apparition au zoom
-              <input type="range" min="0" max="1" step="0.05" value={form.seuil} onChange={(event) => setForm({ ...form, seuil: Number(event.target.value) })} />
+              Type
+              <select value={form.genre} onChange={(event) => setForm({ ...form, genre: event.target.value as GenreEtoile })}>
+                <option value="citation">Citation</option>
+                <option value="projet">Projet</option>
+              </select>
             </label>
             <label className="fichier-bouton">
               Ajouter un fichier
@@ -265,6 +338,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                       police: etoile.police,
                       style: etoile.style,
                       seuil: etoile.seuil,
+                      genre: etoile.genre ?? "projet",
                       medias: etoile.medias,
                     })
                   }
@@ -301,7 +375,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             </button>
           </form>
         ) : null}
-      </div>
     </div>
   );
 }
