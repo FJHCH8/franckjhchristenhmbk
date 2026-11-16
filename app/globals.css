@@ -3515,13 +3515,6 @@ html.nav-vt::view-transition-group(nav-pill) {
   pointer-events: none;
 }
 
-.projets .photo-field {
-  position: absolute;
-  top: 0;
-  z-index: 1;
-  height: 100svh;
-}
-
 .projets .title-dock {
   display: none;
 }
