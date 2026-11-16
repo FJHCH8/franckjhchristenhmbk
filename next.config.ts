@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async rewrites() {
+    return [{ source: "/apple-icon", destination: "/apple-icon.png" }];
+  },
   async redirects() {
     return [
       {

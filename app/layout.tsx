@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
 import { EditionPorte } from "@/components/EditionPorte";
 import { Header } from "@/components/Header";
+import { ImageGuard } from "@/components/ImageGuard";
 import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
@@ -56,6 +57,16 @@ export const metadata: Metadata = {
     title: PERSON_NAME,
     description: HOME_DESCRIPTION,
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico?v=bles", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon-32.png?v=bles", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png?v=bles", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png?v=bles", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png?v=bles", sizes: "180x180", type: "image/png" }],
+    shortcut: [{ url: "/favicon.ico?v=bles", type: "image/x-icon" }],
+  },
   robots: { index: true, follow: true },
   other: { copyright: copyrightNotice() },
   ...(googleVerification ? { verification: { google: googleVerification } } : {}),
@@ -105,6 +116,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </p>
           <Altimeter />
           <Header />
+          <ImageGuard />
           <EditionPorte />
           {children}
           <footer className="footer">

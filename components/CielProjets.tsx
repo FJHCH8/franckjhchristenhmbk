@@ -98,7 +98,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
         {endur ? (
           <button type="button" className="etoile-hit is-coeur" aria-label="Endurreisen" onClick={() => setActive(active === endur.id ? null : endur.id)} />
         ) : null}
-        <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" />
+        <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
         <p className="endurreisen" translate="no">Endurreisen</p>
         <Countdown />
       </section>
@@ -212,9 +212,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               </button>
             </article>
           ) : null}
-          <p className="sky-credit">
-            Étoiles : catalogue HYG. Voie lactée : ESA/Gaia/DPAC, CC BY-NC 3.0 IGO.
-          </p>
         <ul className="ciel-index">
           {etoiles.filter((etoile) => etoile.id !== "endurreisen").map((etoile) => (
             <li key={etoile.id}>

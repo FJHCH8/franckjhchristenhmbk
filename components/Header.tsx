@@ -96,6 +96,7 @@ export function Header() {
               fill
               priority
               sizes="48px"
+              draggable={false}
               style={{ objectFit: "cover", objectPosition: "center 12%" }}
             />
           </span>

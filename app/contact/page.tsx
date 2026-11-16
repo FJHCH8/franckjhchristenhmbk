@@ -22,10 +22,21 @@ export default function ContactPage() {
         <Glass>
           <div className="contact-links">
             <a href="mailto:franckjhchristen@gmail.com" translate="no">
-              franckjhchristen@gmail.com
+              <svg className="contact-glyph" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3.2" y="5.2" width="17.6" height="13.6" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.15" />
+                <path d="M4.2 7.1 12 12.4l7.8-5.3" fill="none" stroke="currentColor" strokeWidth="1.15" />
+              </svg>
+              <span>franckjhchristen@gmail.com</span>
             </a>
             <a href="https://instagram.com/fjhchristenhmbk" rel="noopener noreferrer" target="_blank">
-              <T width="8em">Instagram :</T> <span translate="no">@fjhchristenhmbk</span>
+              <svg className="contact-glyph" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3.4" y="3.4" width="17.2" height="17.2" rx="5" fill="none" stroke="currentColor" strokeWidth="1.15" />
+                <circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" strokeWidth="1.15" />
+                <circle cx="17.15" cy="6.85" r="0.85" fill="currentColor" />
+              </svg>
+              <span>
+                <T width="8em">Instagram :</T> <span translate="no">@fjhchristenhmbk</span>
+              </span>
             </a>
           </div>
         </Glass>

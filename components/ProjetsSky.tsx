@@ -3,29 +3,60 @@
 import { useEffect, useRef } from "react";
 
 type Star = {
-  radius: number;
-  angle: number;
-  size: number;
-  alpha: number;
+  x: number;
+  y: number;
+  r: number;
+  a: number;
   phase: number;
-  depth: number;
+  tw: number;
+  tone: number;
 };
 
 function createStars(width: number, height: number, density = 1) {
-  const count = Math.round(Math.min(420, Math.max(70, (width * height) / 9000)) * density);
+  const count = Math.round(Math.min(2600, Math.max(720, (width * height) / 360)) * density);
   const stars: Star[] = [];
   for (let index = 0; index < count; index += 1) {
     const depth = Math.random();
+    const fine = depth < 0.88;
     stars.push({
-      radius: Math.pow(Math.random(), 0.72),
-      angle: Math.random() * Math.PI * 2,
-      size: 0.4 + depth * 1.35,
-      alpha: 0.25 + depth * 0.75,
+      x: Math.random(),
+      y: Math.random(),
+      r: fine ? 0.32 + Math.random() * 0.55 : 1 + Math.random() * 1.05,
+      a: fine ? 0.35 + depth * 0.5 : 0.78 + Math.random() * 0.22,
       phase: Math.random() * Math.PI * 2,
-      depth,
+      tw: depth > 0.62 ? 0.25 + Math.random() * 0.45 : 0,
+      tone: Math.random(),
     });
   }
   return stars;
+}
+
+function bakeGalaxy(width: number, height: number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return canvas;
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
+  ctx.translate(width * 0.5, height * 0.46);
+  ctx.rotate(-0.42);
+  const band = ctx.createLinearGradient(-width * 0.7, 0, width * 0.7, 0);
+  band.addColorStop(0, "rgba(0,0,0,0)");
+  band.addColorStop(0.28, "rgba(86, 104, 156, 0.16)");
+  band.addColorStop(0.48, "rgba(226, 214, 196, 0.2)");
+  band.addColorStop(0.62, "rgba(92, 110, 168, 0.14)");
+  band.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = band;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, width * 0.62, Math.max(18, height * 0.075), 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+  ctx.beginPath();
+  ctx.ellipse(-width * 0.04, height * 0.012, width * 0.28, Math.max(8, height * 0.02), 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  return canvas;
 }
 
 export function ProjetsSky() {
@@ -42,6 +73,7 @@ export function ProjetsSky() {
     let width = 1;
     let height = 1;
     let stars: Star[] = [];
+    let galaxy: HTMLCanvasElement | null = null;
     let time = 0;
     let last = performance.now();
     let frame = 0;
@@ -61,11 +93,12 @@ export function ProjetsSky() {
       width = nextW;
       height = nextH;
       const lite = document.documentElement.dataset.power === "lite";
-      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 3);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (rebuild) stars = createStars(width, height, lite ? 0.38 : 1);
+      galaxy = bakeGalaxy(width, height);
+      if (rebuild) stars = createStars(width, height, lite ? 0.55 : 1);
     };
 
     const draw = (now: number) => {
@@ -77,35 +110,20 @@ export function ProjetsSky() {
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, width, height);
-      const reach = Math.hypot(width, height) * 0.72;
-      const poleX = width * 0.5;
-      const poleY = height * 0.42;
-      const spin = reduce.matches ? 0 : time * 0.045;
-      const ring = 36 + (1 - pointer.life) * 120;
+      if (galaxy) ctx.drawImage(galaxy, 0, 0, width, height);
+      const drift = reduce.matches ? 0 : time * 1.1;
       for (const star of stars) {
-        const angle = star.angle + spin * (0.9 + star.depth * 0.1);
-        const orbit = 18 + star.radius * reach;
-        const x = poleX + Math.cos(angle) * orbit;
-        const y = poleY + Math.sin(angle) * orbit * 0.92;
-        if (x < -8 || y < -8 || x > width + 8 || y > height + 8) continue;
-        const twinkle = reduce.matches
-          ? 1
-          : 0.62 +
-            0.38 *
-              Math.sin(time * (0.55 + star.depth * 0.35) + star.phase) *
-              Math.sin(time * 0.17 + star.phase * 1.7);
-        let boost = 0;
-        if (!reduce.matches && pointer.life > 0.03) {
-          const distance = Math.hypot(x - pointer.x, y - pointer.y);
-          const near = Math.max(0, 1 - distance / 170);
-          const ripple = Math.max(0, 1 - Math.abs(distance - ring) / 26);
-          boost = pointer.life * (near * 0.62 + ripple * 0.4);
+        const x = ((star.x * width + drift * (0.12 + star.r * 0.04)) % (width + 6) + width + 6) % (width + 6) - 3;
+        const y = star.y * height;
+        const twinkle = !reduce.matches && star.tw ? 0.82 + 0.18 * Math.sin(time * star.tw + star.phase) : 1;
+        ctx.globalAlpha = Math.min(1, star.a * twinkle);
+        ctx.fillStyle = star.tone < 0.14 ? "#c5d4ff" : star.tone > 0.88 ? "#ffe4c4" : "#f5f7ff";
+        if (star.r < 0.9) ctx.fillRect(x, y, star.r, star.r);
+        else {
+          ctx.beginPath();
+          ctx.arc(x, y, star.r, 0, Math.PI * 2);
+          ctx.fill();
         }
-        ctx.globalAlpha = Math.min(1, Math.max(0.18, star.alpha * twinkle) + boost);
-        ctx.fillStyle = star.depth > 0.72 ? "#fff4e4" : "#f4f7ff";
-        ctx.beginPath();
-        ctx.arc(x, y, star.size, 0, Math.PI * 2);
-        ctx.fill();
       }
       if (!reduce.matches && pointer.life > 0.04) {
         const glow = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 150);
