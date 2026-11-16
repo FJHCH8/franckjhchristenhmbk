@@ -3281,22 +3281,14 @@ html.nav-vt::view-transition-group(nav-pill) {
   display: none;
 }
 
-.projets .projets-copy {
-  position: absolute;
+.projets-attente {
+  position: relative;
   z-index: 2;
-  right: 0;
-  bottom: calc(4.4rem + env(safe-area-inset-bottom));
-  left: 0;
+  margin: 0;
+  padding: 0 1.2rem;
+  color: rgba(247, 244, 238, 0.78);
+  text-align: center;
   pointer-events: none;
-}
-
-.projets .ice {
-  width: min(28rem, calc(100% - 2rem));
-  padding: 0.7rem 0.9rem;
-  background: rgba(0, 0, 0, 0.28);
-  border-color: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
 }
 
 .projets .altimeter {
