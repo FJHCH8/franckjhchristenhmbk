@@ -306,8 +306,8 @@ html[data-theme="sombre"][data-page="qui-suis-je"] .lang button {
 
 html[data-page="qui-suis-je"][data-theme="clair"] .opt-clair,
 html[data-page="qui-suis-je"][data-theme="sombre"] .opt-sombre,
-html[data-page="qui-suis-je"]:not([data-locale="lassavi"]) .lang-fr,
-html[data-page="qui-suis-je"][data-locale="lassavi"] .lang-lassavi {
+html[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
+html[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv {
   color: #102033;
 }
 
@@ -590,12 +590,12 @@ html[data-theme="sombre"] .toggle-thumb {
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html[data-locale="lassavi"] .lang-thumb {
+html[data-locale="davissiv"] .lang-thumb {
   transform: translateX(100%);
 }
 
-html:not([data-locale="lassavi"]) .lang-fr,
-html[data-locale="lassavi"] .lang-lassavi {
+html:not([data-locale="davissiv"]) .lang-fr,
+html[data-locale="davissiv"] .lang-davissiv {
   color: var(--active-label);
 }
 
@@ -2039,8 +2039,8 @@ html[data-page="etoile"] .lang button {
 
 html[data-page="etoile"][data-theme="clair"] .opt-clair,
 html[data-page="etoile"][data-theme="sombre"] .opt-sombre,
-html[data-page="etoile"]:not([data-locale="lassavi"]) .lang-fr,
-html[data-page="etoile"][data-locale="lassavi"] .lang-lassavi {
+html[data-page="etoile"]:not([data-locale="davissiv"]) .lang-fr,
+html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   color: #102033;
 }
 

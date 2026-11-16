@@ -13,7 +13,7 @@ export function LanguageToggle() {
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
     event.preventDefault();
-    const next: LocaleName = event.key === "ArrowRight" ? "lassavi" : "fr";
+    const next: LocaleName = event.key === "ArrowRight" ? "davissiv" : "fr";
     choose(next);
     (next === "fr" ? frRef : laRef).current?.focus();
   };
@@ -36,12 +36,12 @@ export function LanguageToggle() {
         ref={laRef}
         type="button"
         role="radio"
-        className="lang-lassavi"
-        aria-checked={locale === "lassavi"}
-        tabIndex={locale === "lassavi" ? 0 : -1}
-        onClick={() => choose("lassavi")}
+        className="lang-davissiv"
+        aria-checked={locale === "davissiv"}
+        tabIndex={locale === "davissiv" ? 0 : -1}
+        onClick={() => choose("davissiv")}
       >
-        Lassavi
+        Davissiv
       </button>
     </div>
   );

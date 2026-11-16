@@ -1,1 +1,1 @@
-export const localeInitScript = `(function(){try{if(localStorage.getItem("fjch-lang")==="lassavi")document.documentElement.dataset.locale="lassavi";}catch(e){}})();`;
+export const localeInitScript = `(function(){try{var k="fjch-lang";var v=localStorage.getItem(k);if(v==="lassavi"){localStorage.setItem(k,"davissiv");v="davissiv";}if(v==="davissiv")document.documentElement.dataset.locale="davissiv";}catch(e){}})();`;

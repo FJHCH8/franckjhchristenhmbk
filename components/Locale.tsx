@@ -1,17 +1,11 @@
 "use client";
 
 import { createContext, useContext, useLayoutEffect, useSyncExternalStore, type ReactNode } from "react";
+import { texteDavissiv } from "@/lib/davissiv";
 
-export type LocaleName = "fr" | "lassavi";
+export type LocaleName = "fr" | "davissiv";
 
 export const LOCALE_KEY = "fjch-lang";
-
-const LASSAVI: Record<string, string> = {
-  Accueil: "Hovaksa",
-  "Qui suis-je": "Sihama",
-  "À propos": "Asova",
-  Contact: "Ispam",
-};
 
 const LocaleContext = createContext<{
   locale: LocaleName;
@@ -22,7 +16,7 @@ const LocaleContext = createContext<{
 });
 
 function applyLocale(locale: LocaleName) {
-  if (locale === "lassavi") document.documentElement.dataset.locale = "lassavi";
+  if (locale === "davissiv") document.documentElement.dataset.locale = "davissiv";
   else delete document.documentElement.dataset.locale;
 }
 
@@ -37,7 +31,12 @@ function subscribeLocale(onStoreChange: () => void) {
 
 function readLocale(): LocaleName {
   try {
-    return localStorage.getItem(LOCALE_KEY) === "lassavi" ? "lassavi" : "fr";
+    const stored = localStorage.getItem(LOCALE_KEY);
+    if (stored === "davissiv" || stored === "lassavi") {
+      if (stored === "lassavi") localStorage.setItem(LOCALE_KEY, "davissiv");
+      return "davissiv";
+    }
+    return "fr";
   } catch {
     return "fr";
   }
@@ -68,27 +67,16 @@ export function useLocale() {
 }
 
 export function titleLabel(locale: LocaleName, text: string, keep = false) {
-  if (keep || locale !== "lassavi") return text;
-  return LASSAVI[text] ?? null;
+  if (keep || locale !== "davissiv") return text;
+  return texteDavissiv(text);
 }
 
-export function T({ children, width }: { children: string; width?: string }) {
+export function T({ children }: { children: string; width?: string }) {
   const { locale } = useLocale();
-  if (locale !== "lassavi") return <>{children}</>;
-  const word = LASSAVI[children];
-  if (word) return <>{word}</>;
-  const size = width ?? `${Math.max(2.2, Math.min(16, children.length * 0.5))}em`;
-  return <span className="skel" style={{ width: size }} aria-hidden="true" />;
+  if (locale !== "davissiv") return <>{children}</>;
+  return <>{texteDavissiv(children)}</>;
 }
 
-export function Block({ lines, children }: { lines: string[]; children: ReactNode }) {
-  const { locale } = useLocale();
-  if (locale !== "lassavi") return <>{children}</>;
-  return (
-    <span className="skel-stack" aria-hidden="true">
-      {lines.map((width, index) => (
-        <span key={`${width}-${index}`} className="skel" style={{ width }} />
-      ))}
-    </span>
-  );
+export function Block({ children }: { lines?: string[]; children: ReactNode }) {
+  return <>{children}</>;
 }
