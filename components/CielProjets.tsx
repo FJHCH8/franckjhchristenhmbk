@@ -66,6 +66,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   async function envoyer(path: string, init: RequestInit) {
     const response = await fetch(path, {
       ...init,
+      credentials: "same-origin",
       headers: { ...(init.headers || {}), "x-edition-jeton": jeton },
     });
     const data = (await response.json()) as { jeton?: string; erreur?: string; etoile?: PublicEtoile; media?: Media };
@@ -111,7 +112,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                     <button
                       key={etoile.id}
                       type="button"
-                      className={born === etoile.id ? "etoile-hit is-born" : "etoile-hit"}
+                      className={etoile.id === "endurreisen" ? "etoile-hit is-coeur" : born === etoile.id ? "etoile-hit is-born" : "etoile-hit"}
                       style={{ left: `${place.x}%`, top: `${place.y}%` }}
                       aria-label={etoile.titre || "Étoile"}
                       onClick={() => setActive(etoile.id)}

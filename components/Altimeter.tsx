@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { Block } from "@/components/Locale";
 
 const formatter = new Intl.NumberFormat("fr-FR");
 
 export function Altimeter() {
+  const path = usePathname();
   const valueRef = useRef<HTMLSpanElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
 
@@ -39,6 +41,8 @@ export function Altimeter() {
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
+
+  if (path === "/projets") return null;
 
   return (
     <div className="altimeter" aria-hidden="true">

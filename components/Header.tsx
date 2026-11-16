@@ -26,10 +26,14 @@ export function Header() {
   const taps = useRef<number[]>([]);
   const navTimer = useRef(0);
 
-  const onBrand = (event: React.PointerEvent<HTMLAnchorElement>) => {
-    if (event.button !== 0) return;
+  const stamp = useRef(0);
+
+  const onBrand = (event: { button?: number; preventDefault: () => void }) => {
+    if (event.button != null && event.button !== 0) return;
     event.preventDefault();
     const now = performance.now();
+    if (now - stamp.current < 35) return;
+    stamp.current = now;
     taps.current = [...taps.current.filter((time) => now - time < 2800), now];
     window.clearTimeout(navTimer.current);
     if (taps.current.length >= 8) {
@@ -41,7 +45,7 @@ export function Header() {
       const count = taps.current.length;
       taps.current = [];
       if (count === 1 && pathname !== "/") router.push("/");
-    }, 420);
+    }, 480);
   };
 
   useLayoutEffect(() => {
@@ -81,8 +85,9 @@ export function Header() {
           onPointerDown={(event) => {
             if (event.button === 0) event.preventDefault();
           }}
-          onClick={(event) => event.preventDefault()}
           onPointerUp={onBrand}
+          onTouchEnd={onBrand}
+          onClick={(event) => event.preventDefault()}
         >
           <span className="seal">
             <Image

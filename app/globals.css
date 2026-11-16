@@ -3082,11 +3082,50 @@ html.nav-vt::view-transition-group(nav-pill) {
   height: 100lvh;
 }
 
-.projets-copy,
 .projets .scroll-stage {
   position: relative;
   z-index: 2;
+  min-height: 0;
+  place-items: start center;
+  padding: calc(env(safe-area-inset-top) + 4.5rem) 1rem 0;
   pointer-events: none;
+}
+
+.projets .tone-sea {
+  padding-bottom: 0;
+}
+
+.projets .scroll-head h1 {
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.projets .scroll-cue,
+.projets .scroll-mark {
+  display: none;
+}
+
+.projets .projets-copy {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: calc(4.4rem + env(safe-area-inset-bottom));
+  left: 0;
+  pointer-events: none;
+}
+
+.projets .ice {
+  width: min(28rem, calc(100% - 2rem));
+  padding: 0.7rem 0.9rem;
+  background: rgba(0, 0, 0, 0.28);
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.projets .altimeter {
+  display: none;
 }
 
 .sky-sticky {
@@ -3106,14 +3145,6 @@ html.nav-vt::view-transition-group(nav-pill) {
   border: 0;
   background: #000;
   touch-action: pan-y;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  mask-composite: intersect;
 }
 
 .pegase-scene {
@@ -3139,7 +3170,9 @@ html.nav-vt::view-transition-group(nav-pill) {
   width: 50%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   flex: none;
+  filter: saturate(0.85);
 }
 
 @keyframes voie-boucle {
@@ -3154,20 +3187,23 @@ html.nav-vt::view-transition-group(nav-pill) {
 .cheval-cadre {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
 }
 
 .cheval-plan {
-  position: relative;
-  width: min(100%, calc(100lvh * 1024 / 733));
-  height: min(100%, calc(100vw * 733 / 1024));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, calc(100lvh * 1024 / 733));
+  height: max(100lvh, calc(100vw * 733 / 1024));
+  transform: translate3d(-50%, -50%, 0);
 }
 
 .cheval-fixe {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
 }
@@ -3231,7 +3267,11 @@ html.nav-vt::view-transition-group(nav-pill) {
   cursor: pointer;
 }
 
-.etoile-hit.is-born {
+.etoile-hit.is-coeur {
+  width: 3rem;
+  height: 3rem;
+  background: radial-gradient(circle, #fff4d2, rgba(255, 186, 70, 0.85) 42%, transparent 70%);
+}
   animation: etoile-nait 1.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

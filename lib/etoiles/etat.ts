@@ -28,15 +28,18 @@ function empty(): Etat {
 }
 
 function normalize(value: Etat): Etat {
+  const mapped = Array.isArray(value.etoiles)
+    ? value.etoiles.map((etoile) => {
+        const base = { ...etoile, auteur: SIGNATURE };
+        if (base.id === "citation-2026-05-26") return { ...base, ra: 349, dec: 26 };
+        if (base.id === "endurreisen") return { ...base, titre: "Endurreisen" };
+        return base;
+      })
+    : semence();
+  const projet = semence().find((etoile) => etoile.id === "creation-langue-davissiv");
+  const etoiles = projet && !mapped.some((etoile) => etoile.id === projet.id) ? [...mapped, projet] : mapped;
   return {
-    etoiles: Array.isArray(value.etoiles)
-      ? value.etoiles.map((etoile) => {
-          const base = { ...etoile, auteur: SIGNATURE };
-          if (base.id === "citation-2026-05-26") return { ...base, ra: 349, dec: 26 };
-          if (base.id === "endurreisen") return { ...base, titre: "Endurreisen" };
-          return base;
-        })
-      : semence(),
+    etoiles,
     coeurs: value.coeurs ?? {},
     sessions: value.sessions ?? {},
     totpStep: value.totpStep ?? 0,
@@ -78,10 +81,13 @@ async function saveFile(etat: Etat) {
 const remote = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 function doitEnregistrer(value: Etat) {
-  return (value.etoiles ?? []).some(
-    (etoile) =>
-      (etoile.id === "citation-2026-05-26" && (etoile.ra !== 349 || etoile.dec !== 26)) ||
-      (etoile.id === "endurreisen" && etoile.titre !== "Endurreisen"),
+  const stars = value.etoiles ?? [];
+  return (
+    stars.some(
+      (etoile) =>
+        (etoile.id === "citation-2026-05-26" && (etoile.ra !== 349 || etoile.dec !== 26)) ||
+        (etoile.id === "endurreisen" && etoile.titre !== "Endurreisen"),
+    ) || !stars.some((etoile) => etoile.id === "creation-langue-davissiv")
   );
 }
 
