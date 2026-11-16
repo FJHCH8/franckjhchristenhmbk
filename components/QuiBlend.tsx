@@ -17,7 +17,7 @@ function stableRange() {
 
 export function QuiBlend() {
   useEffect(() => {
-    const field = document.querySelector(".skin-field");
+    const field = document.querySelector(".skin-field, .photo-field");
     const sky = document.querySelector(".projets-sky");
     const sharp = field?.querySelector<HTMLElement>(".skin-sharp");
     const mid = field?.querySelector<HTMLElement>(".skin-mid");

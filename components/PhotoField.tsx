@@ -12,7 +12,7 @@ export function PhotoField({
   const file = (ext: string, size: number) => `/fond/${name}-${size}.${ext}`;
   return (
     <div className="photo-field" style={{ ["--photo-pos" as string]: focus }} aria-hidden="true">
-      <picture>
+      <picture className="skin-layer skin-sharp">
         <source
           type="image/avif"
           sizes="100vw"
@@ -24,6 +24,12 @@ export function PhotoField({
           srcSet={`${file("webp", 640)} 640w, ${file("webp", 960)} 960w, ${file("webp", 1280)} 1280w, ${file("webp", width)} ${width}w`}
         />
         <img src={file("jpg", 1280)} alt="" width={width} height={height} />
+      </picture>
+      <picture className="skin-layer skin-mid">
+        <img src={`/fond/${name}-flou-doux.webp`} alt="" width={960} height={height} />
+      </picture>
+      <picture className="skin-layer skin-far">
+        <img src={`/fond/${name}-flou-fort.webp`} alt="" width={720} height={height} />
       </picture>
     </div>
   );

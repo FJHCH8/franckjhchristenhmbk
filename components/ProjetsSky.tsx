@@ -50,7 +50,7 @@ export function ProjetsSky() {
 
     const playing = () => {
       const page = document.documentElement.dataset.page;
-      return (page === "etoile" || page === "qui-suis-je") && !document.hidden;
+      return (page === "etoile" || page === "qui-suis-je" || page === "a-propos" || page === "contact") && !document.hidden;
     };
 
     const lockSize = () => {
