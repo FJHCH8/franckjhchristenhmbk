@@ -3114,6 +3114,106 @@ html.nav-vt::view-transition-group(nav-pill) {
   transform: none;
 }
 
+.rubriques {
+  position: relative;
+  z-index: 1;
+  width: min(36rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 4rem;
+}
+
+.rubrique + .rubrique {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.rubrique h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 450;
+}
+
+.rubrique h2 button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 0.15rem;
+  border: 0;
+  background: transparent;
+  color: #f7f4ee;
+  font: inherit;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.rubrique-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.rubrique-chevron {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.35s ease;
+}
+
+.rubrique.is-open .rubrique-chevron {
+  transform: rotate(225deg);
+}
+
+.rubrique-corps,
+.fiche {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.4s ease, opacity 0.35s ease;
+}
+
+.rubrique.is-open > .rubrique-corps,
+.fiche.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.rubrique-corps > div,
+.fiche > div {
+  overflow: hidden;
+}
+
+.rubrique ul {
+  margin: 0;
+  padding: 0 0 0.8rem;
+  list-style: none;
+}
+
+.rubrique li button {
+  padding: 0.45rem 0;
+  border: 0;
+  background: transparent;
+  color: rgba(247, 244, 238, 0.86);
+  font: inherit;
+  cursor: pointer;
+}
+
+.fiche .etoile-texte,
+.fiche .etoile-titre,
+.fiche .etoile-signature {
+  margin-top: 0.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rubrique-corps,
+  .fiche,
+  .rubrique-chevron {
+    transition: none;
+  }
+}
+
 .bocaux {
   position: relative;
   z-index: 1;
