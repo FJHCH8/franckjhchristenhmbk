@@ -81,6 +81,7 @@ export function Header() {
           onPointerDown={(event) => {
             if (event.button === 0) event.preventDefault();
           }}
+          onClick={(event) => event.preventDefault()}
           onPointerUp={onBrand}
         >
           <span className="seal">
