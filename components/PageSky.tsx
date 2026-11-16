@@ -11,6 +11,7 @@ export function PageSky() {
     if (pathname === "/qui-suis-je") root.dataset.page = "qui-suis-je";
     else if (pathname === "/a-propos") root.dataset.page = "a-propos";
     else if (pathname === "/contact") root.dataset.page = "contact";
+    else if (pathname === "/projets") root.dataset.page = "projets";
     else root.dataset.page = "etoile";
     return () => {
       delete root.dataset.page;

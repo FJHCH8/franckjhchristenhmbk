@@ -1,4 +1,6 @@
 import { CielProjets } from "@/components/CielProjets";
+import { PhotoField } from "@/components/PhotoField";
+import { QuiBlend } from "@/components/QuiBlend";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { SmileyMark } from "@/components/TitleMarks";
 import { readEtat, vuePublique } from "@/lib/etoiles/etat";
@@ -11,7 +13,9 @@ export const metadata = pageMetadata("Projets", "Citations et projets.", "/proje
 export default async function ProjectsPage() {
   const etoiles = vuePublique(await readEtat());
   return (
-    <main id="contenu" className="projets">
+    <main id="contenu" className="projets photo-page">
+      <PhotoField name="rose" width={1500} height={2291} focus="46% 34%" />
+      <QuiBlend />
       <ScrollTitle id="titre-projets" text="Projets" tone="sea" icon={<SmileyMark />} max={5.2} />
       <CielProjets initial={etoiles} />
     </main>

@@ -264,6 +264,9 @@ html[data-page="a-propos"] .rain-layer,
 html[data-page="contact"] .sky,
 html[data-page="contact"] .night-stars,
 html[data-page="contact"] .rain-layer,
+html[data-page="projets"] .sky,
+html[data-page="projets"] .night-stars,
+html[data-page="projets"] .rain-layer,
 html[data-page="etoile"] .sky,
 html[data-page="etoile"] .night-stars,
 html[data-page="etoile"] .rain-layer {
@@ -1141,10 +1144,12 @@ html[data-theme="sombre"] .night-stars {
 html[data-page="qui-suis-je"] .night-stars,
 html[data-page="a-propos"] .night-stars,
 html[data-page="contact"] .night-stars,
+html[data-page="projets"] .night-stars,
 html[data-page="etoile"] .night-stars,
 html[data-theme="sombre"][data-page="qui-suis-je"] .night-stars,
 html[data-theme="sombre"][data-page="a-propos"] .night-stars,
 html[data-theme="sombre"][data-page="contact"] .night-stars,
+html[data-theme="sombre"][data-page="projets"] .night-stars,
 html[data-theme="sombre"][data-page="etoile"] .night-stars {
   opacity: 0;
 }
@@ -1467,7 +1472,9 @@ html[data-sky="cloud"] body {
 html[data-page="a-propos"],
 html[data-page="a-propos"] body,
 html[data-page="contact"],
-html[data-page="contact"] body {
+html[data-page="contact"] body,
+html[data-page="projets"],
+html[data-page="projets"] body {
   background: #000;
 }
 
@@ -2072,7 +2079,8 @@ html[data-page="etoile"] .projets-sky {
 
 html[data-page="qui-suis-je"] .projets-sky,
 html[data-page="a-propos"] .projets-sky,
-html[data-page="contact"] .projets-sky {
+html[data-page="contact"] .projets-sky,
+html[data-page="projets"] .projets-sky {
   transition: none;
 }
 
@@ -3485,9 +3493,28 @@ html.nav-vt::view-transition-group(nav-pill) {
   z-index: 2;
   min-height: 100svh;
   place-items: center;
-  background: #000;
+  background: transparent;
   padding: calc(env(safe-area-inset-top) + 5.2rem) 1.25rem calc(5.5rem + env(safe-area-inset-bottom));
   pointer-events: none;
+}
+
+.projets .photo-field {
+  z-index: 1;
+}
+
+.projets .sky-stage {
+  z-index: 0;
+}
+
+.projets .scroll-head h1,
+.projets .scroll-mark,
+.projets .scroll-cue {
+  color: #f7f4ee;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.72);
+}
+
+.projets .mark-sourire {
+  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.7));
 }
 
 .projets .tone-sea {
