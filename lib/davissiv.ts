@@ -1,15 +1,17 @@
 /**
- * Mots Lassavi écrits par Franck. Aucun n’a été déposé : les anciens
- * libellés du menu n’étaient pas de lui, ils ne sont pas repris.
+ * Anciens libellés du menu, qui n’étaient pas de Franck. Ils ne sont pas repris.
  */
 export const LASSAVI_DE_FRANCK: Record<string, string> = {};
 
-/** Traductions Davissiv. Laisser "" tant que le mot n’est pas fourni. */
+/**
+ * Traductions tirées uniquement du dictionnaire de Franck.
+ * Une chaîne reste vide dès qu’un mot n’y figure pas : le site affiche alors le français.
+ */
 export const DAVISSIV: Record<string, string> = {
   Accueil: "",
-  "Qui suis-je": "",
-  "À propos": "",
-  Contact: "",
+  "Qui suis-je": "Maa eefit ?",
+  "À propos": "Laab",
+  Contact: "Abam",
   Projets: "",
   Bienvenue: "",
   Polymathe: "",
