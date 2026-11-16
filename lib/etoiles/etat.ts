@@ -50,7 +50,7 @@ async function loadBlob(): Promise<Etat | null> {
   const found = await get(BLOB_ETAT, { access: "private", useCache: false });
   if (!found || found.statusCode !== 200 || !found.stream) return null;
   const text = await new Response(found.stream).text();
-  return normalize(JSON.parse(text) as Etat);
+  return JSON.parse(text) as Etat;
 }
 
 async function saveBlob(etat: Etat) {
@@ -77,12 +77,24 @@ async function saveFile(etat: Etat) {
 
 const remote = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
+function doitEnregistrer(value: Etat) {
+  return (value.etoiles ?? []).some(
+    (etoile) =>
+      (etoile.id === "citation-2026-05-26" && (etoile.ra !== 349 || etoile.dec !== 26)) ||
+      (etoile.id === "endurreisen" && etoile.titre !== "Endurreisen"),
+  );
+}
+
 export async function readEtat(): Promise<Etat> {
   if (remote()) {
     const loaded = await loadBlob();
-    return loaded ?? empty();
+    if (!loaded) return empty();
+    const next = normalize(loaded);
+    if (doitEnregistrer(loaded)) await saveBlob(next);
+    return next;
   }
-  return loadFile();
+  const file = await loadFile();
+  return file;
 }
 
 let queue: Promise<unknown> = Promise.resolve();
