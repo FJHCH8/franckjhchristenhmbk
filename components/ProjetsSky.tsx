@@ -31,34 +31,6 @@ function createStars(width: number, height: number, density = 1) {
   return stars;
 }
 
-function bakeGalaxy(width: number, height: number) {
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(width));
-  canvas.height = Math.max(1, Math.round(height));
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return canvas;
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-  ctx.translate(width * 0.5, height * 0.46);
-  ctx.rotate(-0.42);
-  const band = ctx.createLinearGradient(-width * 0.7, 0, width * 0.7, 0);
-  band.addColorStop(0, "rgba(0,0,0,0)");
-  band.addColorStop(0.28, "rgba(86, 104, 156, 0.16)");
-  band.addColorStop(0.48, "rgba(226, 214, 196, 0.2)");
-  band.addColorStop(0.62, "rgba(92, 110, 168, 0.14)");
-  band.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = band;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, width * 0.62, Math.max(18, height * 0.075), 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
-  ctx.beginPath();
-  ctx.ellipse(-width * 0.04, height * 0.012, width * 0.28, Math.max(8, height * 0.02), 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  return canvas;
-}
-
 export function ProjetsSky() {
   const layerRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +45,7 @@ export function ProjetsSky() {
     let width = 1;
     let height = 1;
     let stars: Star[] = [];
-    let galaxy: HTMLCanvasElement | null = null;
+    let milky: HTMLImageElement | null = null;
     let time = 0;
     let last = performance.now();
     let frame = 0;
@@ -97,7 +69,6 @@ export function ProjetsSky() {
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      galaxy = bakeGalaxy(width, height);
       if (rebuild) stars = createStars(width, height, lite ? 0.55 : 1);
     };
 
@@ -110,7 +81,11 @@ export function ProjetsSky() {
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, width, height);
-      if (galaxy) ctx.drawImage(galaxy, 0, 0, width, height);
+      if (milky) {
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(milky, 0, 0, width, height);
+        ctx.globalAlpha = 1;
+      }
       const drift = reduce.matches ? 0 : time * 1.1;
       for (const star of stars) {
         const x = ((star.x * width + drift * (0.12 + star.r * 0.04)) % (width + 6) + width + 6) % (width + 6) - 3;
@@ -181,6 +156,13 @@ export function ProjetsSky() {
     };
 
     let boot = 0;
+    const picture = new Image();
+    picture.decoding = "async";
+    picture.onload = () => {
+      milky = picture;
+      wake();
+    };
+    picture.src = "/ciel/voie-organique.webp";
     lockSize();
     if (layer.clientHeight < 2) {
       boot = window.requestAnimationFrame(() => {
@@ -201,6 +183,7 @@ export function ProjetsSky() {
     window.addEventListener("orientationchange", onOrientation);
     document.addEventListener("visibilitychange", onPage);
     return () => {
+      picture.onload = null;
       window.cancelAnimationFrame(boot);
       window.cancelAnimationFrame(frame);
       pageObserver.disconnect();
