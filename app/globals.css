@@ -3272,6 +3272,8 @@ html.nav-vt::view-transition-group(nav-pill) {
   height: 3rem;
   background: radial-gradient(circle, #fff4d2, rgba(255, 186, 70, 0.85) 42%, transparent 70%);
 }
+
+.etoile-hit.is-born {
   animation: etoile-nait 1.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
