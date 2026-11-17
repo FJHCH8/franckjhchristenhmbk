@@ -91,18 +91,21 @@ html[data-theme="sombre"] {
 html,
 body {
   min-height: 100%;
+}
+
+html {
   overflow-x: clip;
 }
 
 body {
   margin: 0;
+  max-width: 100%;
   color: var(--text);
   font-family: var(--font-sans), "Avenir Next", "Segoe UI", sans-serif;
   font-weight: 400;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 h1,
@@ -295,10 +298,10 @@ html[data-page="qui-suis-je"] {
 html[data-page="qui-suis-je"],
 html[data-page="qui-suis-je"] body {
   background: #000;
-  overscroll-behavior: none;
 }
 
-html[data-page="qui-suis-je"] .top-frost {
+html[data-page="qui-suis-je"] .top-frost,
+html[data-page="projets"] .top-frost {
   display: none;
 }
 
@@ -501,6 +504,7 @@ video,
 .nav a[aria-current="page"] {
   background: transparent;
   color: var(--text);
+  font-weight: 600;
 }
 
 .nav a:active,
@@ -1286,8 +1290,7 @@ html[data-sky="cloud"] body {
   min-height: 0;
   perspective: 1400px;
   outline: none;
-  touch-action: none;
-  overscroll-behavior: none;
+  touch-action: pan-y;
 }
 
 .album:focus-visible {
@@ -1304,7 +1307,7 @@ html[data-sky="cloud"] body {
   aspect-ratio: 4 / 5;
   transform: translate3d(-50%, 0, 40px);
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .album-card[data-depth="1"] {
@@ -1553,13 +1556,15 @@ html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
   display: grid;
   justify-items: center;
   gap: 1.35rem;
-  margin-top: -10vh;
-  padding: 0 1.2rem calc(7rem + env(safe-area-inset-bottom));
+  margin-top: 0;
+  padding: calc(env(safe-area-inset-top) + 5.6rem) 1.2rem calc(7rem + env(safe-area-inset-bottom));
 }
 
 .qui-follow .album {
   width: min(250px, 72vw);
   height: calc(min(250px, 72vw) * 1.25 + 3.5rem);
+  margin-top: 0.85rem;
+  scroll-margin-top: calc(env(safe-area-inset-top) + 5.6rem);
 }
 
 .qui-follow .album-card {
@@ -1676,7 +1681,6 @@ html[data-page="qui-suis-je"] .projets-sky {
 html.qui-night[data-page="qui-suis-je"] .header,
 html.qui-night[data-page="qui-suis-je"] .brand,
 html.qui-night[data-page="qui-suis-je"] .nav a,
-html.qui-night[data-page="qui-suis-je"] .lang button,
 html.qui-night[data-page="qui-suis-je"] .scroll-head h1,
 html.qui-night[data-page="qui-suis-je"] .scroll-cue,
 html.qui-night[data-page="qui-suis-je"] .scroll-mark,
@@ -1684,6 +1688,24 @@ html.qui-night[data-page="qui-suis-je"] .mark-drops,
 html.qui-night[data-page="qui-suis-je"] .title-dock-pill {
   color: #f4f7ff;
   text-shadow: none;
+}
+
+html[data-page="qui-suis-je"] .nav a[aria-current="page"],
+html.qui-night[data-page="qui-suis-je"] .nav a[aria-current="page"] {
+  color: #1a120e;
+  font-weight: 650;
+}
+
+html.qui-night[data-page="qui-suis-je"] .lang button {
+  color: #4e382c;
+}
+
+html[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
+html[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv,
+html.qui-night[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
+html.qui-night[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv {
+  color: #101826;
+  font-weight: 650;
 }
 
 html.qui-night[data-page="qui-suis-je"] .title-dock-pill {
@@ -2050,8 +2072,6 @@ html[data-theme="sombre"] .info-bubble {
   overflow: hidden;
   background: #000;
   pointer-events: none;
-  touch-action: none;
-  overscroll-behavior: none;
   opacity: 0;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -3289,8 +3309,12 @@ html.nav-vt::view-transition-group(nav-pill) {
   background: transparent;
   color: #f7f4ee;
   font: inherit;
+  font-weight: 450;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  opacity: 1;
+  filter: none;
+  backdrop-filter: none;
   cursor: pointer;
 }
 
@@ -3339,11 +3363,28 @@ html.nav-vt::view-transition-group(nav-pill) {
   list-style: none;
 }
 
+.rubrique,
+.rubrique.is-open,
+.rubrique:not(.is-open) {
+  opacity: 1;
+  filter: none;
+}
+
+.rubrique h2,
+.rubrique h2 button,
+.rubrique.is-open h2 button,
+.rubrique:not(.is-open) h2 button,
+.rubrique li button {
+  color: #f7f4ee;
+  opacity: 1;
+  filter: none;
+  text-shadow: none;
+}
+
 .rubrique li button {
   padding: 0.45rem 0;
   border: 0;
   background: transparent;
-  color: rgba(247, 244, 238, 0.86);
   font: inherit;
   cursor: pointer;
 }
@@ -3777,6 +3818,26 @@ html.nav-vt::view-transition-group(nav-pill) {
   margin-top: 0.85rem;
   margin-right: 0.45rem;
   padding: 0.35rem 0.7rem;
+}
+
+.rubrique li button.etoile-fermer,
+.etoile-bulle button.etoile-fermer,
+.etoile-fermer {
+  background: linear-gradient(135deg, #ffffff 0%, #fb7185 46%, #e11d48 100%);
+  color: #3f0714;
+  font: inherit;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 22px rgba(225, 29, 72, 0.28);
+}
+
+.etoile-fermer:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #fda4af 42%, #be123c 100%);
+  box-shadow: 0 10px 26px rgba(225, 29, 72, 0.4);
+}
+
+.etoile-fermer:active {
+  transform: scale(0.97);
 }
 
 .sky-credit {

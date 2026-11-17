@@ -9,7 +9,7 @@ export const LASSAVI_DE_FRANCK: Record<string, string> = {};
  */
 export const DAVISSIV: Record<string, string> = {
   Accueil: "",
-  "Qui suis-je": "Maa eefit ?",
+  "Qui suis-je": "Maa eebit ?",
   "À propos": "Laab",
   Contact: "Abam",
   Projets: "",

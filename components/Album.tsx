@@ -36,6 +36,7 @@ export function Album() {
   const raf = useRef(0);
   const last = useRef(0);
   const hovered = useRef(false);
+  const intent = useRef<"pending" | "drag" | "scroll">("scroll");
   const releaseRef = useRef<(passed: boolean, vx: number, vy: number) => void>(() => undefined);
 
   const paint = () => {
@@ -152,10 +153,6 @@ export function Album() {
   useEffect(() => {
     paint();
     const stage = stageRef.current;
-    const blockScroll = (event: TouchEvent) => {
-      event.preventDefault();
-    };
-    stage?.addEventListener("touchmove", blockScroll, { passive: false });
     const videos = stage?.querySelectorAll("video") ?? [];
     videos.forEach((video) => {
       video.muted = true;
@@ -179,7 +176,6 @@ export function Album() {
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      stage?.removeEventListener("touchmove", blockScroll);
       window.removeEventListener("keydown", onKey);
       stop();
     };
@@ -191,18 +187,30 @@ export function Album() {
     const front = order.current[0] ?? 0;
     const node = event.currentTarget;
     if (Number(node.dataset.card) !== front) return;
-    event.preventDefault();
-    node.setPointerCapture(event.pointerId);
     const now = performance.now();
     pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, lx: event.clientX, ly: event.clientY, lt: now, vx: 0, vy: 0 };
     const current = pose.current[front];
     origin.current = current ? { ...current } : { x: 0, y: 0, r: 0 };
-    mode.current = "drag";
-    stop();
+    intent.current = "pending";
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLElement>) => {
-    if (pointer.current.id !== event.pointerId || mode.current !== "drag") return;
+    if (pointer.current.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.current.x;
+    const dy = event.clientY - pointer.current.y;
+    if (intent.current === "pending") {
+      if (Math.hypot(dx, dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        intent.current = "scroll";
+        pointer.current.id = -1;
+        return;
+      }
+      intent.current = "drag";
+      mode.current = "drag";
+      stop();
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    if (intent.current !== "drag" || mode.current !== "drag") return;
     event.preventDefault();
     const now = performance.now();
     const dt = Math.max(8, now - pointer.current.lt);
@@ -223,9 +231,17 @@ export function Album() {
   };
 
   const finish = (event: React.PointerEvent<HTMLElement>) => {
+    if (pointer.current.id !== event.pointerId && intent.current !== "drag") {
+      intent.current = "scroll";
+      return;
+    }
     if (pointer.current.id !== event.pointerId) return;
     pointer.current.id = -1;
-    if (mode.current !== "drag") return;
+    if (intent.current !== "drag" || mode.current !== "drag") {
+      intent.current = "scroll";
+      return;
+    }
+    intent.current = "scroll";
     const front = order.current[0] ?? 0;
     const current = pose.current[front];
     const dx = current?.x ?? 0;

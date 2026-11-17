@@ -158,7 +158,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                               <p className="etoile-signature">
                                 <span>{SIGNATURE}</span>
                               </p>
-                              <button type="button" onClick={() => setActive(null)}>
+                              <button type="button" className="etoile-fermer" onClick={() => setActive(null)}>
                                 Fermer
                               </button>
                             </div>

@@ -25,10 +25,9 @@ export function QuiBlend() {
     if (!(field instanceof HTMLElement) || !(sky instanceof HTMLElement) || !sharp || !mid || !far) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const driven =
-      !reduce.matches &&
-      typeof CSS !== "undefined" &&
-      (CSS.supports("animation-timeline", "scroll()") || CSS.supports("animation-timeline", "scroll(root)"));
+    // Scroll-timeline on the fixed photo locks or crashes WebKit, including iPhone.
+    // The scroll listener below keeps the same fade without taking over the gesture.
+    const driven = false;
     let frame = 0;
     let alive = true;
     let shown = 0;
