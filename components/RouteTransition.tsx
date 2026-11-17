@@ -3,54 +3,46 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-const OUT_MS = 250;
-const IN_MS = 250;
+const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
-function calm() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void> };
+
+function iosBrowser() {
+  const ua = navigator.userAgent;
+  return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
-function clearBlur() {
+function viewTransition(): StartViewTransition | null {
+  if (iosBrowser()) return null;
+  const start = (document as Document & { startViewTransition?: StartViewTransition }).startViewTransition;
+  return typeof start === "function" ? start.bind(document) : null;
+}
+
+function clearNav() {
   const root = document.documentElement;
-  root.classList.remove("nav-out", "nav-in");
+  root.classList.remove("nav-vt", "nav-out", "nav-in");
+  delete root.dataset.nav;
+  document.querySelector(".theme-veil")?.remove();
 }
 
 export function RouteTransition() {
   const router = useRouter();
   const pathname = usePathname();
-  const booted = useRef(false);
-  const popping = useRef(false);
-  const timer = useRef(0);
+  const pending = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
-    if (!booted.current) {
-      booted.current = true;
-      return;
-    }
-    const root = document.documentElement;
-    root.classList.remove("nav-out");
-    if (popping.current || calm()) {
-      popping.current = false;
-      root.classList.remove("nav-in");
-      return;
-    }
-    root.classList.add("nav-in");
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => root.classList.remove("nav-in"), IN_MS);
-    return () => window.clearTimeout(timer.current);
+    const resolve = pending.current;
+    pending.current = null;
+    resolve?.();
   }, [pathname]);
 
   useEffect(() => {
-    const onPop = () => {
-      popping.current = true;
-      clearBlur();
-    };
-    const onShow = () => clearBlur();
-    window.addEventListener("popstate", onPop);
+    const onShow = () => clearNav();
     window.addEventListener("pageshow", onShow);
+    document.addEventListener("visibilitychange", onShow);
     return () => {
-      window.removeEventListener("popstate", onPop);
       window.removeEventListener("pageshow", onShow);
+      document.removeEventListener("visibilitychange", onShow);
     };
   }, []);
 
@@ -72,18 +64,40 @@ export function RouteTransition() {
       }
       if (url.origin !== window.location.origin) return;
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
-      if (calm()) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const start = viewTransition();
+      if (!start) return;
 
       event.preventDefault();
       event.stopPropagation();
-      event.stopImmediatePropagation();
-      const destination = `${url.pathname}${url.search}${url.hash}`;
+      const from = ORDER.indexOf(window.location.pathname);
+      const to = ORDER.indexOf(url.pathname);
       const root = document.documentElement;
-      root.classList.remove("nav-in");
-      root.classList.add("nav-out");
-      window.setTimeout(() => {
+      root.dataset.nav = from >= 0 && to >= 0 && to < from ? "back" : "forward";
+      root.classList.add("nav-vt");
+      document.querySelector(".theme-veil")?.remove();
+      const destination = `${url.pathname}${url.search}${url.hash}`;
+      const navigate = () =>
+        new Promise<void>((resolve) => {
+          const timer = window.setTimeout(resolve, 800);
+          pending.current = () => {
+            window.clearTimeout(timer);
+            resolve();
+          };
+          router.push(destination);
+        });
+      const failSafe = window.setTimeout(clearNav, 1400);
+      try {
+        const transition = start(navigate);
+        transition.finished.finally(() => {
+          window.clearTimeout(failSafe);
+          clearNav();
+        });
+      } catch {
+        window.clearTimeout(failSafe);
+        clearNav();
         router.push(destination);
-      }, OUT_MS);
+      }
     };
 
     document.addEventListener("click", onClick, true);

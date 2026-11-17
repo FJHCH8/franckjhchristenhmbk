@@ -6,6 +6,7 @@ import { Altimeter } from "@/components/Altimeter";
 import { EditionPorte } from "@/components/EditionPorte";
 import { Header } from "@/components/Header";
 import { ImageGuard } from "@/components/ImageGuard";
+import { Tilt } from "@/components/Tilt";
 import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
@@ -117,6 +118,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Altimeter />
           <Header />
           <ImageGuard />
+          <Tilt />
           <EditionPorte />
           {children}
           <footer className="footer">
