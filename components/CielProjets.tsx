@@ -88,7 +88,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
 
   const chosen = etoiles.find((item) => item.id === active) ?? null;
 
-  const endur = etoiles.find((etoile) => etoile.id === "endurreisen") ?? null;
   const rang = (etoile: PublicEtoile) => etoile.genre || (etoile.texte && !etoile.titre ? "citation" : "projet");
   const groupes = new Map<string, PublicEtoile[]>();
   for (const etoile of etoiles) {
@@ -106,9 +105,16 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
         <img src="/ciel/voie-lactee.jpg" alt="" />
       </div>
       <section className="endur-haut">
-        {endur ? (
-          <button type="button" className="etoile-hit is-coeur" aria-label="Endurreisen" onClick={() => setActive(active === endur.id ? null : endur.id)} />
-        ) : null}
+        <div className="vie" aria-hidden="true">
+          <span className="vie-halo" />
+          <span className="vie-onde" />
+          <span className="vie-coeur">
+            <span className="vie-eclat" />
+          </span>
+          <span className="vie-grain vie-grain-a" />
+          <span className="vie-grain vie-grain-b" />
+          <span className="vie-grain vie-grain-c" />
+        </div>
         <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
         <p className="endurreisen" translate="no">Endurreisen</p>
         <Countdown />
