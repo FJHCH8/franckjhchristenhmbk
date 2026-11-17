@@ -2195,6 +2195,26 @@ html.title-settled .scroll-reveal {
   50% { background-position: -30% 0; }
 }
 
+@keyframes vivant-portrait {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+
+@keyframes vivant-flot {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -2px, 0); }
+}
+
+@keyframes vivant-crest {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -3px, 0) scale(1.015); }
+}
+
+@keyframes vivant-souffle {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
 @keyframes gemme-clin {
   0%, 100% { opacity: 0.15; transform: scale(0.55); }
   46% { opacity: 1; transform: scale(1); }
@@ -3278,6 +3298,24 @@ html.nav-vt::view-transition-group(nav-pill) {
 
   .scroll-cue {
     animation: cue-bob 1.8s ease-in-out infinite;
+  }
+
+  .seal img {
+    animation: vivant-portrait 9s ease-in-out infinite;
+  }
+
+  .contact-glyph {
+    animation: vivant-flot 5.6s ease-in-out infinite;
+  }
+
+  .crest-art {
+    transform-origin: center;
+    animation: vivant-crest 8.8s ease-in-out infinite;
+  }
+
+  .footer-note,
+  .count-dot:not(.count-dot-live) {
+    animation: vivant-souffle 6.4s ease-in-out infinite;
   }
 
   .night-star[data-state="present"] {
