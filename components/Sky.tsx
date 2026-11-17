@@ -195,12 +195,15 @@ export function Sky() {
 
     let builtW = 0;
     const resize = () => {
+      const vv = window.visualViewport;
+      const nextW = Math.max(1, vv?.width || window.innerWidth);
+      // The mobile toolbar only changes the viewport height. Rewriting the
+      // canvas bitmap forces a document reflow and the fixed nav jumps with
+      // it. Rotation and split-screen still change the width.
+      if (builtW > 0 && Math.abs(nextW - viewW) < 2) return;
       const rect = canvas.getBoundingClientRect();
-      const nextW = Math.max(1, rect.width);
       const nextH = Math.max(1, rect.height);
       const widthShift = Math.abs(nextW - viewW);
-      const heightShift = Math.abs(nextH - viewH);
-      if (builtW > 0 && widthShift < 2 && heightShift < 16) return;
       const rebuild = builtW === 0 || widthShift >= 2;
       viewW = nextW;
       viewH = nextH;
