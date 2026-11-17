@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "@/components/Countdown";
+import { Gemme } from "@/components/Gemme";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
@@ -134,7 +135,10 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                     setActive(null);
                   }}
                 >
-                  <span>{nomSection(cle)}</span>
+                  <span className="rubrique-nom">
+                    <Gemme tone="ciel" petit />
+                    <span>{nomSection(cle)}</span>
+                  </span>
                   <span className="rubrique-meta">
                     <span>{liste.length}</span>
                     <span className="rubrique-chevron" aria-hidden="true" />

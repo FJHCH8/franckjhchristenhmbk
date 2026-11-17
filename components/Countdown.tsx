@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Gemme } from "@/components/Gemme";
 import { countdownParts } from "@/lib/paris";
 
 function pad(value: number) {
@@ -50,6 +51,7 @@ export function Countdown() {
       style={{ ["--fraction" as string]: String(shown.done ? 0 : shown.fraction) }}
       aria-label={`${pad(shown.days)} ${pad(shown.hours)} ${pad(shown.minutes)} ${pad(shown.seconds)}`}
     >
+      <Gemme tone="nature" />
       <Group value={shown.days} />
       <span className="count-dot" aria-hidden="true" />
       <Group value={shown.hours} />

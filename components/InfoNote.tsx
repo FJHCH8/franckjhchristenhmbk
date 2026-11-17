@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { Gemme } from "@/components/Gemme";
 import { Block } from "@/components/Locale";
 
 const BUBBLE =
@@ -76,10 +77,7 @@ export function InfoNote() {
           onPointerUp={() => setPressed(false)}
           onPointerCancel={() => setPressed(false)}
         >
-          <span className="info-orb-glow" aria-hidden="true" />
-          <svg className="info-orb-mark" viewBox="0 0 32 42" aria-hidden="true">
-            <path d="M16 1.5c1.4 6.2 8 10.4 8 17.2a8 8 0 1 1-16 0C8 11.9 14.6 7.7 16 1.5z" />
-          </svg>
+          <Gemme tone="ame" />
         </button>
         <button
           type="button"

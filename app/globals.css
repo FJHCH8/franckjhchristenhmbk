@@ -536,9 +536,7 @@ video,
 .toggle button:active,
 .lang button:active,
 .album-nav button:active,
-.brand:active,
-.info-dot:active,
-.info-dot.is-pressed {
+.brand:active {
   transform: scale(0.96);
 }
 
@@ -1999,8 +1997,7 @@ html.title-settled .scroll-reveal {
   animation: info-sheen 3.8s ease-in-out infinite;
 }
 
-.info-word.is-pressed,
-.info-dot.is-pressed {
+.info-word.is-pressed {
   transform: scale(0.96);
 }
 
@@ -2024,7 +2021,6 @@ html.title-settled .scroll-reveal {
   cursor: pointer;
   touch-action: manipulation;
   box-shadow: none;
-  transition: transform 0.5s cubic-bezier(0.22, 1.5, 0.36, 1);
 }
 
 .info-orb-glow {
@@ -2053,8 +2049,155 @@ html.title-settled .scroll-reveal {
   50% { transform: scale(1.08); opacity: 1; }
 }
 
-.info-dot.is-pressed {
-  transform: scale(0.96);
+.rubrique-nom {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.gemme {
+  --g1: #fff8f5;
+  --g2: #f4d4cb;
+  --g3: #e7b4aa;
+  --g4: #c98480;
+  --g5: #fffdfb;
+  --profondeur: 0.28rem;
+  position: relative;
+  display: inline-block;
+  width: 1.7rem;
+  height: 2.2rem;
+  flex: none;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+.gemme-petit {
+  --profondeur: 0.16rem;
+  width: 0.95rem;
+  height: 1.22rem;
+}
+
+.gemme-ame {
+  --g1: #fff9f6;
+  --g2: #f6d5cc;
+  --g3: #e8b6ad;
+  --g4: #c98984;
+  --g5: #fff;
+}
+
+.gemme-ciel {
+  --g1: #f7fbff;
+  --g2: #c9e4ff;
+  --g3: #7eb4ee;
+  --g4: #3d78b8;
+  --g5: #fff;
+}
+
+.gemme-nature {
+  --g1: #f5fff8;
+  --g2: #c8efd4;
+  --g3: #6fbf88;
+  --g4: #2f7a4e;
+  --g5: #fff;
+}
+
+.gemme-halo {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--g2) 55%, transparent), transparent 70%);
+  opacity: 0.85;
+  animation: gemme-halo 5.2s ease-in-out infinite;
+}
+
+.gemme-scene {
+  position: absolute;
+  inset: 0;
+  perspective: 240px;
+}
+
+.gemme-pivot {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(16deg);
+  transform-style: preserve-3d;
+}
+
+.gemme-spin {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: gemme-tour 11s linear infinite;
+}
+
+.gemme-ciel .gemme-spin { animation-delay: -3.6s; }
+.gemme-nature .gemme-spin { animation-delay: -7.2s; }
+
+.gemme-avant,
+.gemme-dos,
+.gemme-reflet {
+  position: absolute;
+  inset: 0;
+}
+
+.gemme-avant { transform: translateZ(var(--profondeur)); }
+.gemme-dos { transform: rotateY(180deg) translateZ(var(--profondeur)); }
+
+.gemme-plaque {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gemme-reflet {
+  background: linear-gradient(105deg, transparent 0 36%, rgba(255, 255, 255, 0.78) 50%, transparent 64% 100%);
+  background-size: 240% 100%;
+  clip-path: polygon(50% 2%, 84% 28%, 78% 66%, 50% 98%, 22% 66%, 16% 28%);
+  animation: gemme-reflet 4.6s ease-in-out infinite;
+}
+
+.gemme-etincelle {
+  position: absolute;
+  top: 6%;
+  right: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px var(--g1);
+  animation: gemme-clin 3.1s ease-in-out infinite;
+}
+
+.gemme-etincelle-b {
+  top: auto;
+  right: auto;
+  bottom: 10%;
+  left: -2px;
+  width: 2px;
+  height: 2px;
+  animation-delay: -1.4s;
+}
+
+@keyframes gemme-tour {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes gemme-halo {
+  0%, 100% { opacity: 0.32; transform: scale(0.92); }
+  50% { opacity: 0.72; transform: scale(1.08); }
+}
+
+@keyframes gemme-reflet {
+  0%, 100% { background-position: 130% 0; }
+  50% { background-position: -30% 0; }
+}
+
+@keyframes gemme-clin {
+  0%, 100% { opacity: 0.15; transform: scale(0.55); }
+  46% { opacity: 1; transform: scale(1); }
 }
 
 .info-ripple {
