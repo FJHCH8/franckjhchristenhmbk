@@ -91,6 +91,9 @@ html[data-theme="sombre"] {
 html,
 body {
   min-height: 100%;
+  /* Large viewport: stable while Safari and Chrome show or hide the toolbar.
+     100dvh would resize the document on every step of that animation. */
+  min-height: 100lvh;
 }
 
 html {
@@ -466,6 +469,16 @@ video,
   backdrop-filter: blur(22px) saturate(1.75);
   -webkit-backdrop-filter: blur(22px) saturate(1.75);
   position: relative;
+  /* The glass stays on its own layer. The fixed dock must not carry this
+     transform: the browser already moves that dock with the toolbar. */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.nav-dock {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
 }
 
 .nav-pill {
@@ -2060,46 +2073,45 @@ html.title-settled .scroll-reveal {
   --g1: #fff8f5;
   --g2: #f4d4cb;
   --g3: #e7b4aa;
-  --g4: #c98480;
-  --g5: #fffdfb;
-  --profondeur: 0.28rem;
+  --g4: #c45c62;
+  --g5: #8e3040;
   position: relative;
   display: inline-block;
-  width: 1.7rem;
-  height: 2.2rem;
+  width: 2.15rem;
+  height: 2.65rem;
   flex: none;
   pointer-events: none;
   vertical-align: middle;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--g3) 80%, white));
 }
 
 .gemme-petit {
-  --profondeur: 0.16rem;
-  width: 0.95rem;
-  height: 1.22rem;
+  width: 1.7rem;
+  height: 2.1rem;
 }
 
 .gemme-ame {
-  --g1: #fff9f6;
-  --g2: #f6d5cc;
-  --g3: #e8b6ad;
-  --g4: #c98984;
-  --g5: #fff;
+  --g1: #fff7f4;
+  --g2: #ffd0c6;
+  --g3: #f0a090;
+  --g4: #d56d78;
+  --g5: #a34458;
 }
 
 .gemme-ciel {
-  --g1: #f7fbff;
-  --g2: #c9e4ff;
-  --g3: #7eb4ee;
-  --g4: #3d78b8;
-  --g5: #fff;
+  --g1: #f4fbff;
+  --g2: #b9e4ff;
+  --g3: #3aa8ff;
+  --g4: #1574e0;
+  --g5: #0c4ea8;
 }
 
 .gemme-nature {
-  --g1: #f5fff8;
-  --g2: #c8efd4;
-  --g3: #6fbf88;
-  --g4: #2f7a4e;
-  --g5: #fff;
+  --g1: #f3fff6;
+  --g2: #9ef5bf;
+  --g3: #2ed673;
+  --g4: #12924a;
+  --g5: #0b6a34;
 }
 
 .gemme-halo {
@@ -2128,7 +2140,8 @@ html.title-settled .scroll-reveal {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  animation: gemme-tour 11s linear infinite;
+  animation: gemme-tour 7.2s ease-in-out infinite;
+  backface-visibility: visible;
 }
 
 .gemme-ciel .gemme-spin { animation-delay: -3.6s; }
@@ -2141,14 +2154,17 @@ html.title-settled .scroll-reveal {
   inset: 0;
 }
 
-.gemme-avant { transform: translateZ(var(--profondeur)); }
-.gemme-dos { transform: rotateY(180deg) translateZ(var(--profondeur)); }
+.gemme-avant {
+  transform: none;
+  backface-visibility: visible;
+}
 
 .gemme-plaque {
   display: block;
   width: 100%;
   height: 100%;
   overflow: visible;
+  shape-rendering: geometricPrecision;
 }
 
 .gemme-reflet {
@@ -2181,8 +2197,8 @@ html.title-settled .scroll-reveal {
 }
 
 @keyframes gemme-tour {
-  from { transform: rotateY(0deg); }
-  to { transform: rotateY(360deg); }
+  0%, 100% { transform: rotateY(-32deg); }
+  50% { transform: rotateY(32deg); }
 }
 
 @keyframes gemme-halo {
@@ -2976,7 +2992,7 @@ html.nav-vt::view-transition-group(nav-pill) {
     justify-self: start;
   }
 
-  .nav {
+  .nav-dock {
     justify-self: center;
   }
 
@@ -3010,22 +3026,45 @@ html.nav-vt::view-transition-group(nav-pill) {
     padding-bottom: calc(7.4rem + env(safe-area-inset-bottom));
   }
 
-  .nav {
+  .nav-dock {
     position: fixed;
-    right: 0;
-    bottom: calc(0.7rem + env(safe-area-inset-bottom));
     left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 30;
+    justify-content: center;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding:
+      0.7rem
+      max(0.5rem, env(safe-area-inset-right, 0px))
+      calc(0.7rem + env(safe-area-inset-bottom, 0px))
+      max(0.5rem, env(safe-area-inset-left, 0px));
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    pointer-events: none;
+    /* The browser sticks this edge to the visual viewport. A transform,
+       a will-change, or a transition here would fight that resize. */
+    transform: none;
+    will-change: auto;
+    transition: none;
+  }
+
+  .nav {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: max-content;
+    max-width: 100%;
+    min-width: 0;
     height: max-content;
     margin-inline: auto;
-  }
-
-  .nav {
-    width: min(calc(100% - 1rem), max-content);
-  }
-
-  .nav {
-    max-width: calc(100% - 0.75rem);
+    pointer-events: auto;
   }
 
   .nav a {

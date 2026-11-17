@@ -73,7 +73,13 @@ export function Header() {
 
     place(ready.current);
     ready.current = true;
-    const observer = new ResizeObserver(() => place(false));
+    let lastW = nav.getBoundingClientRect().width;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - lastW) < 0.5) return;
+      lastW = width;
+      place(false);
+    });
     observer.observe(nav);
     return () => observer.disconnect();
   }, [pathname, locale]);
@@ -108,16 +114,18 @@ export function Header() {
             Franck J.H. CHRISTEN H.M.B.K.
           </span>
         </Link>
-        <nav className="nav" aria-label="Navigation principale" ref={navRef}>
-          <span className="nav-pill" ref={pillRef} aria-hidden="true">
-            <span className="nav-pill-face" />
-          </span>
-          {LINKS.map((link) => (
-            <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
-              <T>{link.label}</T>
-            </Link>
-          ))}
-        </nav>
+        <div className="nav-dock">
+          <nav className="nav" aria-label="Navigation principale" ref={navRef}>
+            <span className="nav-pill" ref={pillRef} aria-hidden="true">
+              <span className="nav-pill-face" />
+            </span>
+            {LINKS.map((link) => (
+              <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
+                <T>{link.label}</T>
+              </Link>
+            ))}
+          </nav>
+        </div>
         <div className="header-tools">
           <LanguageToggle />
         </div>

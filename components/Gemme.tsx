@@ -6,14 +6,16 @@ type Ton = "ame" | "ciel" | "nature";
 
 function Plaque() {
   return (
-    <svg className="gemme-plaque" viewBox="0 0 40 54" aria-hidden="true">
-      <polygon points="20,1.5 7,15 20,21" fill="var(--g2)" />
-      <polygon points="20,1.5 33,15 20,21" fill="var(--g1)" />
-      <polygon points="7,15 20,21 9,35 20,52.5" fill="var(--g3)" />
-      <polygon points="33,15 20,21 31,35 20,52.5" fill="var(--g4)" />
-      <polygon points="20,21 9,35 31,35" fill="var(--g2)" opacity="0.9" />
-      <polygon points="9,35 20,52.5 31,35" fill="var(--g5)" opacity="0.55" />
-      <polygon points="17,16 23,16 20,28" fill="#fff" opacity="0.55" />
+    <svg className="gemme-plaque" viewBox="0 0 48 58" aria-hidden="true">
+      <polygon points="24,2 36,14 40,18 28,5" fill="var(--g4)" />
+      <polygon points="36,14 40,18 38,40 32,36" fill="var(--g5)" />
+      <polygon points="32,36 38,40 28,54 22,56" fill="var(--g4)" />
+      <polygon points="22,2 8,15 22,22" fill="var(--g2)" />
+      <polygon points="22,2 36,14 22,22" fill="var(--g1)" />
+      <polygon points="8,15 22,22 10,36 22,56" fill="var(--g3)" />
+      <polygon points="36,14 22,22 32,36 22,56" fill="var(--g2)" />
+      <polygon points="10,36 22,56 32,36" fill="var(--g4)" />
+      <polygon points="16,16 26,14 22,30" fill="#fff" opacity="0.72" />
     </svg>
   );
 }
@@ -85,22 +87,21 @@ export function Gemme({
     const matrix = new DOMMatrix(getComputedStyle(spin).transform);
     let angle = (Math.atan2(matrix.m13, matrix.m11) * 180) / Math.PI;
     if (!Number.isFinite(angle)) angle = 0;
-    angle = ((angle % 360) + 360) % 360;
-    const reste = (360 - angle) % 360 || 360;
-    const target = angle + 720 + reste;
+    angle = Math.max(-34, Math.min(34, angle));
     const debut = performance.now();
     const duree = 1200;
     spin.style.animation = "none";
     const step = (now: number) => {
       if (!alive) return;
       const t = Math.min(1, (now - debut) / duree);
-      const y = angle + (target - angle) * easeOut(t);
+      const decay = 1 - easeOut(t);
+      const y = angle * decay + Math.sin(t * Math.PI * 5) * 32 * (1 - t);
       spin.style.transform = `rotateY(${y.toFixed(3)}deg)`;
       if (t < 1) {
         frame = window.requestAnimationFrame(step);
         return;
       }
-      spin.style.transform = `rotateY(${target}deg)`;
+      spin.style.transform = "rotateY(0deg)";
       onFaceRef.current?.();
     };
     frame = window.requestAnimationFrame(step);
@@ -118,9 +119,6 @@ export function Gemme({
         <span className="gemme-pivot">
           <span className="gemme-spin" ref={spinRef}>
             <span className="gemme-avant">
-              <Plaque />
-            </span>
-            <span className="gemme-dos">
               <Plaque />
             </span>
             <span className="gemme-reflet" />
