@@ -10,7 +10,7 @@ function FermerBouton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" className="etoile-fermer" onClick={onClick}>
       <svg viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M4.25 4.25 11.75 11.75M11.75 4.25 4.25 11.75" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" />
       </svg>
       Fermer
     </button>
