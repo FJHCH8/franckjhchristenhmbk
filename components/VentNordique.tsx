@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const KEY = "fjch-vent";
 const LEVEL = 0.07;
@@ -45,8 +45,21 @@ function ramp(gain: GainNode, ctx: AudioContext, value: number, seconds: number)
   gain.gain.linearRampToValueAtTime(Math.max(0.0001, value), now + seconds);
 }
 
+function calme() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function easeOut(t: number) {
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  return 1 - (1 - t) ** 3;
+}
+
 export function VentNordique() {
   const [on, setOn] = useState(true);
+  const [rafale, setRafale] = useState(false);
+  const spinRef = useRef<HTMLSpanElement>(null);
+  const burst = useRef(0);
 
   useEffect(() => {
     let want = true;
@@ -182,10 +195,51 @@ export function VentNordique() {
     };
   }, []);
 
+  useEffect(() => {
+    const spin = spinRef.current;
+    if (!spin) return;
+    let frame = 0;
+    let alive = true;
+    if (!rafale || calme()) {
+      spin.style.transition = "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)";
+      spin.style.animation = "";
+      spin.style.transform = "";
+      return () => {
+        alive = false;
+        window.cancelAnimationFrame(frame);
+      };
+    }
+    const matrix = new DOMMatrix(getComputedStyle(spin).transform);
+    let angle = (Math.atan2(matrix.m13, matrix.m11) * 180) / Math.PI;
+    if (!Number.isFinite(angle)) angle = 0;
+    angle = ((angle % 360) + 360) % 360;
+    const reste = (360 - angle) % 360 || 360;
+    const target = angle + 540 + reste;
+    const debut = performance.now();
+    spin.style.transition = "none";
+    spin.style.animation = "none";
+    const step = (now: number) => {
+      if (!alive) return;
+      const t = Math.min(1, (now - debut) / 1000);
+      spin.style.transform = `rotateY(${(angle + (target - angle) * easeOut(t)).toFixed(2)}deg)`;
+      if (t < 1) frame = window.requestAnimationFrame(step);
+      else {
+        spin.style.transition = "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)";
+        spin.style.transform = "";
+        spin.style.animation = "";
+      }
+    };
+    frame = window.requestAnimationFrame(step);
+    return () => {
+      alive = false;
+      window.cancelAnimationFrame(frame);
+    };
+  }, [rafale]);
+
   return (
     <button
       type="button"
-      className="vent-toggle"
+      className={on ? (rafale ? "vent-toggle is-actif is-rafale" : "vent-toggle is-actif") : "vent-toggle"}
       aria-pressed={!on}
       aria-label={on ? "Couper le vent" : "Activer le vent"}
       onClick={() => {
@@ -195,13 +249,35 @@ export function VentNordique() {
         } catch {
           /* ignore */
         }
+        window.clearTimeout(burst.current);
+        if (next && !calme()) {
+          setRafale(true);
+          burst.current = window.setTimeout(() => setRafale(false), 1050);
+        } else setRafale(false);
         window.dispatchEvent(new CustomEvent("fjch-vent", { detail: next }));
       }}
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 9h7a2 2 0 1 0-2-2M4 12h11a2 2 0 1 1-2 2M4 15h6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        {on ? null : <path d="M5 5l14 14" fill="none" stroke="currentColor" strokeWidth="1.2" />}
-      </svg>
+      <span className="brin" aria-hidden="true">
+        <span className="brin-scene">
+          <span className="brin-pivot">
+            <span className="brin-spin" ref={spinRef}>
+              <span className="brin-face">
+                <span className="brin-herbe brin-a" />
+                <span className="brin-herbe brin-b" />
+                <span className="brin-herbe brin-c" />
+              </span>
+              <span className="brin-face brin-dos">
+                <span className="brin-herbe brin-a" />
+                <span className="brin-herbe brin-b" />
+                <span className="brin-herbe brin-c" />
+              </span>
+            </span>
+          </span>
+        </span>
+        <span className="brin-vent" />
+        <span className="brin-vent brin-vent-b" />
+        <span className="brin-vent brin-vent-c" />
+      </span>
     </button>
   );
 }
