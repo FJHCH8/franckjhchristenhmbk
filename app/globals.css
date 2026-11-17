@@ -1607,8 +1607,8 @@ html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
 
 .qui-note {
   position: relative;
-  width: min(38rem, 100%);
-  padding: 1.6rem 0.2rem 0.2rem;
+  width: min(34rem, 100%);
+  padding: 1.85rem 0.05rem 0.35rem;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1624,32 +1624,82 @@ html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
   position: absolute;
   top: 0;
   left: 0;
-  width: min(12rem, 46%);
+  width: min(7.5rem, 42%);
   height: 1px;
-  background: linear-gradient(90deg, rgba(255, 228, 196, 0.9), transparent);
+  background: linear-gradient(90deg, rgba(255, 228, 196, 0.85), transparent);
   pointer-events: none;
 }
 
 .qui-note-copy {
   margin: 0;
+  max-width: 36em;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 440;
-  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
-  line-height: 1.4;
-  letter-spacing: -0.025em;
-  text-shadow: 0 0 22px rgba(255, 210, 160, 0.22);
+  font-weight: 430;
+  font-size: clamp(1.02rem, 2.15vw, 1.2rem);
+  line-height: 1.68;
+  letter-spacing: -0.014em;
+  text-wrap: pretty;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
 }
 
 .qui-line {
   display: block;
-  margin-top: 0.95rem;
+  margin: 0 0 0.95rem;
   opacity: 0;
   transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0s);
 }
 
-.qui-note.is-shown .qui-line {
-  animation: line-in 0.9s cubic-bezier(0.22, 1.28, 0.36, 1) forwards;
-  animation-delay: var(--d, 0s);
+.qui-line.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.qui-line-lead {
+  font-size: 1.26em;
+  font-weight: 520;
+  letter-spacing: -0.028em;
+  line-height: 1.28;
+  margin-bottom: 1.15rem;
+}
+
+.qui-line-quiet {
+  color: rgba(246, 241, 234, 0.74);
+  font-size: 0.94em;
+  letter-spacing: 0.004em;
+  margin-bottom: 1.45rem;
+}
+
+.qui-line-strong {
+  font-style: italic;
+  margin: 0.1rem 0 1.5rem;
+  padding: 0.05rem 0 0.05rem 0.85rem;
+  border-left: 1px solid rgba(255, 220, 186, 0.72);
+}
+
+.qui-line-body + .qui-line-body {
+  margin-top: -0.2rem;
+}
+
+.qui-line-ask {
+  margin-top: 0.55rem;
+  letter-spacing: 0.012em;
+  color: rgba(255, 232, 208, 0.96);
+}
+
+.qui-line-answer {
+  max-width: 34em;
+  color: rgba(246, 241, 234, 0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qui-line {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 html[data-page="qui-suis-je"] .qui-follow .album-nav button {
@@ -3006,24 +3056,21 @@ html.nav-vt::view-transition-group(nav-pill) {
   .descend-only.is-visible .reserve div,
   html.title-settled .ice p,
   html.title-settled .contact-links a,
-  html.title-settled .qui-follow .album,
-  html.title-settled .qui-note {
-    animation: line-in 0.78s cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  html.title-settled .qui-follow .album {
+    animation: line-in 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .descend-only.is-visible .reserve div + div,
   html.title-settled .ice p + p,
-  html.title-settled .contact-links a + a,
-  html.title-settled .qui-note {
+  html.title-settled .contact-links a + a {
     animation-delay: 0.1s;
   }
 
   .glass,
   .ice,
   .qui-note,
-  .scroll-mark,
-  .album-card {
-    transition: transform 0.7s cubic-bezier(0.22, 1.4, 0.36, 1);
+  .scroll-mark {
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .rainbow {

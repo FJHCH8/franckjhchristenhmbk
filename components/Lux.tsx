@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const SELECTOR = ".glass, .ice, .qui-note, .scroll-mark, .album-card";
+const SELECTOR = ".glass, .ice, .qui-note, .scroll-mark";
 
 export function Lux() {
   useEffect(() => {

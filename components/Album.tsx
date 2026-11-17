@@ -10,34 +10,36 @@ const CARDS = [
 
 type Pose = { x: number; y: number; r: number };
 
-const REST: Pose[] = [
-  { x: 0, y: 0, r: 0 },
-  { x: 34, y: 26, r: 7.5 },
-];
+const FRONT: Pose = { x: 0, y: 0, r: 0 };
+const RIGHT: Pose = { x: 34, y: 26, r: 7.5 };
+const LEFT: Pose = { x: -34, y: 26, r: -7.5 };
+const SWAP_AT = 64;
+const DURATION = 460;
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
+function ease(t: number) {
+  const u = clamp(t, 0, 1);
+  return 1 - (1 - u) ** 3;
+}
+
 export function Album() {
   const stageRef = useRef<HTMLDivElement>(null);
   const order = useRef([0, 1]);
-  const pose = useRef<Pose[]>([
-    { x: 0, y: 0, r: 0 },
-    { ...REST[1] },
-  ]);
-  const vel = useRef<Pose[]>([
-    { x: 0, y: 0, r: 0 },
-    { x: 0, y: 0, r: 0 },
-  ]);
-  const mode = useRef<"rest" | "drag" | "fly">("rest");
-  const pointer = useRef({ id: -1, x: 0, y: 0, lx: 0, ly: 0, lt: 0, vx: 0, vy: 0 });
-  const origin = useRef<Pose>({ x: 0, y: 0, r: 0 });
-  const raf = useRef(0);
-  const last = useRef(0);
-  const hovered = useRef(false);
+  const pose = useRef<Pose[]>([{ ...FRONT }, { ...RIGHT }]);
+  const side = useRef<1 | -1>(1);
+  const mode = useRef<"rest" | "drag" | "settle">("rest");
+  const leaving = useRef(-1);
+  const pending = useRef<number[] | null>(null);
+  const anim = useRef<{ start: number; from: Pose[]; to: Pose[] } | null>(null);
+  const pointer = useRef({ id: -1, x: 0, y: 0 });
+  const origin = useRef<Pose>({ ...FRONT });
   const intent = useRef<"pending" | "drag" | "scroll">("scroll");
-  const releaseRef = useRef<(passed: boolean, vx: number, vy: number) => void>(() => undefined);
+  const raf = useRef(0);
+  const hovered = useRef(false);
+  const goRef = useRef<(dir: -1 | 1) => void>(() => undefined);
 
   const paint = () => {
     const stage = stageRef.current;
@@ -48,10 +50,11 @@ export function Album() {
       const depth = order.current.indexOf(id);
       const current = pose.current[id];
       if (!current || depth < 0) return;
-      const front = depth === 0;
-      node.dataset.depth = String(depth);
-      node.style.zIndex = String(front ? 3 : 1);
-      node.style.transform = `translate3d(calc(-50% + ${current.x}px), ${current.y}px, ${front ? 40 : -70}px) rotate(${current.r}deg) scale(${front ? 1 : 0.94})`;
+      const top = leaving.current === id || (leaving.current < 0 && depth === 0);
+      node.dataset.depth = top ? "0" : "1";
+      node.style.zIndex = top ? "4" : "1";
+      node.style.transition = "none";
+      node.style.transform = `translate3d(calc(-50% + ${current.x}px), ${current.y}px, ${top ? 40 : -70}px) rotate(${current.r}deg) scale(${top ? 1 : 0.94})`;
     });
   };
 
@@ -62,92 +65,88 @@ export function Album() {
   };
 
   const step = (now: number) => {
-    const dt = Math.min(0.032, (now - last.current) / 1000 || 0.016);
-    last.current = now;
-    let moving = false;
-    for (let id = 0; id < pose.current.length; id += 1) {
-      const depth = order.current.indexOf(id);
-      const target = REST[depth] ?? REST[REST.length - 1];
-      const current = pose.current[id];
-      const speed = vel.current[id];
-      if (!current || !target || !speed) continue;
-      if (mode.current === "drag" && depth === 0) continue;
-      const stiffness = 62;
-      const damping = 14;
-      speed.x += ((target.x - current.x) * stiffness - speed.x * damping) * dt;
-      speed.y += ((target.y - current.y) * stiffness - speed.y * damping) * dt;
-      speed.r += ((target.r - current.r) * stiffness - speed.r * damping) * dt;
-      current.x += speed.x * dt;
-      current.y += speed.y * dt;
-      current.r += speed.r * dt;
-      const settled =
-        Math.abs(target.x - current.x) < 0.4 &&
-        Math.abs(target.y - current.y) < 0.4 &&
-        Math.abs(target.r - current.r) < 0.15 &&
-        Math.hypot(speed.x, speed.y) < 12;
-      if (settled) {
-        current.x = target.x;
-        current.y = target.y;
-        current.r = target.r;
-        speed.x = 0;
-        speed.y = 0;
-        speed.r = 0;
-      } else {
-        moving = true;
-      }
+    const job = anim.current;
+    if (!job || mode.current !== "settle") {
+      raf.current = 0;
+      return;
     }
+    const t = Math.min(1, (now - job.start) / DURATION);
+    const e = ease(t);
+    job.from.forEach((from, id) => {
+      const target = job.to[id];
+      const current = pose.current[id];
+      if (!target || !current) return;
+      current.x = from.x + (target.x - from.x) * e;
+      current.y = from.y + (target.y - from.y) * e;
+      current.r = from.r + (target.r - from.r) * e;
+    });
     paint();
-    if (moving && mode.current === "fly") {
+    if (t < 1) {
       raf.current = requestAnimationFrame(step);
       return;
     }
-    if (mode.current === "fly") mode.current = "rest";
+    if (pending.current) order.current = pending.current;
+    pending.current = null;
+    leaving.current = -1;
+    anim.current = null;
+    mode.current = "rest";
     raf.current = 0;
+    paint();
   };
 
   const wake = () => {
     if (raf.current) return;
-    last.current = performance.now();
     raf.current = requestAnimationFrame(step);
   };
 
-  const release = (passed: boolean, vx: number, vy: number) => {
+  const restBack = (): Pose => (side.current < 0 ? { ...LEFT } : { ...RIGHT });
+
+  const begin = (dir: -1 | 0 | 1) => {
     const front = order.current[0] ?? 0;
+    const back = order.current[1] ?? 1;
+    const from = pose.current.map((item) => ({ ...item }));
+    const to = pose.current.map((item) => ({ ...item }));
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (passed) {
-      order.current = [...order.current.slice(1), front];
+    if (dir !== 0) {
+      side.current = dir < 0 ? -1 : 1;
+      to[front] = restBack();
+      to[back] = { ...FRONT };
+      pending.current = [back, front];
+      leaving.current = front;
+    } else {
+      to[front] = { ...FRONT };
+      to[back] = restBack();
+      pending.current = null;
+      leaving.current = -1;
     }
     if (reduce) {
-      order.current.forEach((id, depth) => {
-        const target = REST[depth];
+      to.forEach((item, id) => {
         const current = pose.current[id];
-        if (!target || !current) return;
-        current.x = target.x;
-        current.y = target.y;
-        current.r = target.r;
+        if (current && item) {
+          current.x = item.x;
+          current.y = item.y;
+          current.r = item.r;
+        }
       });
-      vel.current.forEach((speed) => {
-        speed.x = 0;
-        speed.y = 0;
-        speed.r = 0;
-      });
+      if (pending.current) order.current = pending.current;
+      pending.current = null;
+      leaving.current = -1;
+      anim.current = null;
       mode.current = "rest";
       stop();
       paint();
       return;
     }
-    const speed = vel.current[front];
-    if (speed) {
-      speed.x = vx;
-      speed.y = vy;
-      speed.r = clamp(vx / 80, -40, 40);
-    }
-    mode.current = "fly";
+    anim.current = { start: performance.now(), from, to };
+    mode.current = "settle";
     wake();
   };
 
   useEffect(() => {
-    releaseRef.current = release;
+    goRef.current = (dir) => {
+      if (mode.current === "drag") return;
+      begin(dir);
+    };
   });
 
   useEffect(() => {
@@ -165,14 +164,7 @@ export function Album() {
       const activeHere = stage?.contains(document.activeElement) || hovered.current;
       if (!activeHere || mode.current === "drag") return;
       event.preventDefault();
-      const dir = event.key === "ArrowRight" ? 1 : -1;
-      const front = order.current[0] ?? 0;
-      const current = pose.current[front];
-      if (current) {
-        current.x = dir * 28;
-        current.r = dir * 6;
-      }
-      releaseRef.current(true, dir * 980, 40);
+      goRef.current(event.key === "ArrowLeft" ? -1 : 1);
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -182,15 +174,12 @@ export function Album() {
   }, []);
 
   const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-    if (mode.current === "fly") return;
     if (event.button !== 0) return;
     const front = order.current[0] ?? 0;
-    const node = event.currentTarget;
-    if (Number(node.dataset.card) !== front) return;
-    const now = performance.now();
-    pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, lx: event.clientX, ly: event.clientY, lt: now, vx: 0, vy: 0 };
+    if (Number(event.currentTarget.dataset.card) !== front) return;
     const current = pose.current[front];
-    origin.current = current ? { ...current } : { x: 0, y: 0, r: 0 };
+    pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    origin.current = current ? { ...current } : { ...FRONT };
     intent.current = "pending";
   };
 
@@ -199,7 +188,7 @@ export function Album() {
     const dx = event.clientX - pointer.current.x;
     const dy = event.clientY - pointer.current.y;
     if (intent.current === "pending") {
-      if (Math.hypot(dx, dy) < 10) return;
+      if (Math.hypot(dx, dy) < 12) return;
       if (Math.abs(dy) >= Math.abs(dx)) {
         intent.current = "scroll";
         pointer.current.id = -1;
@@ -207,48 +196,41 @@ export function Album() {
       }
       intent.current = "drag";
       mode.current = "drag";
+      anim.current = null;
+      pending.current = null;
+      leaving.current = -1;
       stop();
+      const held = order.current[0] ?? 0;
+      const heldPose = pose.current[held];
+      origin.current = heldPose ? { ...heldPose } : { ...FRONT };
+      pointer.current.x = event.clientX;
+      pointer.current.y = event.clientY;
       event.currentTarget.setPointerCapture(event.pointerId);
+      return;
     }
-    if (intent.current !== "drag" || mode.current !== "drag") return;
+    if (intent.current !== "drag") return;
     event.preventDefault();
-    const now = performance.now();
-    const dt = Math.max(8, now - pointer.current.lt);
-    const instX = ((event.clientX - pointer.current.lx) / dt) * 1000;
-    const instY = ((event.clientY - pointer.current.ly) / dt) * 1000;
-    pointer.current.vx = pointer.current.vx * 0.4 + instX * 0.6;
-    pointer.current.vy = pointer.current.vy * 0.4 + instY * 0.6;
-    pointer.current.lx = event.clientX;
-    pointer.current.ly = event.clientY;
-    pointer.current.lt = now;
     const front = order.current[0] ?? 0;
     const current = pose.current[front];
     if (!current) return;
-    current.x = origin.current.x + (event.clientX - pointer.current.x);
-    current.y = origin.current.y + (event.clientY - pointer.current.y);
-    current.r = clamp(current.x / 16 + pointer.current.vx / 1400, -22, 22);
+    current.x = origin.current.x + dx;
+    current.y = origin.current.y + dy * 0.22;
+    current.r = clamp(dx / 26, -8, 8);
     paint();
   };
 
   const finish = (event: React.PointerEvent<HTMLElement>) => {
-    if (pointer.current.id !== event.pointerId && intent.current !== "drag") {
-      intent.current = "scroll";
-      return;
-    }
     if (pointer.current.id !== event.pointerId) return;
+    const front = order.current[0] ?? 0;
+    const current = pose.current[front];
     pointer.current.id = -1;
-    if (intent.current !== "drag" || mode.current !== "drag") {
+    if (intent.current !== "drag" || !current) {
       intent.current = "scroll";
       return;
     }
     intent.current = "scroll";
-    const front = order.current[0] ?? 0;
-    const current = pose.current[front];
-    const dx = current?.x ?? 0;
-    const dy = current?.y ?? 0;
-    const speed = Math.hypot(pointer.current.vx, pointer.current.vy);
-    const passed = Math.abs(dx) > 92 || Math.abs(dy) > 120 || speed > 680;
-    release(passed, pointer.current.vx, pointer.current.vy);
+    const dx = current.x - origin.current.x;
+    begin(Math.abs(dx) >= SWAP_AT ? (dx < 0 ? -1 : 1) : 0);
   };
 
   return (
@@ -280,23 +262,17 @@ export function Album() {
             {card.kind === "video" ? (
               <video src={card.src} poster={card.poster} autoPlay muted loop playsInline preload="metadata" />
             ) : (
-              <Image
-                src={card.src}
-                alt="Franck J.H. CHRISTEN H.M.B.K."
-                fill
-                sizes="340px"
-                draggable={false}
-              />
+              <Image src={card.src} alt="Franck J.H. CHRISTEN H.M.B.K." fill sizes="340px" draggable={false} />
             )}
             <span className="album-bubble" aria-hidden="true" />
           </div>
         </article>
       ))}
       <div className="album-nav">
-        <button type="button" aria-label="Carte précédente" onClick={() => release(true, -980, 30)}>
+        <button type="button" aria-label="Carte précédente" onClick={() => goRef.current(-1)}>
           <Chevron dir="left" />
         </button>
-        <button type="button" aria-label="Carte suivante" onClick={() => release(true, 980, 30)}>
+        <button type="button" aria-label="Carte suivante" onClick={() => goRef.current(1)}>
           <Chevron dir="right" />
         </button>
       </div>

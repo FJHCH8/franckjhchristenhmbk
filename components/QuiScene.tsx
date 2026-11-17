@@ -24,7 +24,11 @@ export function QuiScene() {
           <p className="qui-note-copy">
             <Block lines={["100%", "98%", "96%", "94%", "90%", "84%", "62%"]}>
               {LINES.map((line, index) => (
-                <span className="qui-line" key={line} style={{ ["--d" as string]: `${index * 0.07}s` }}>
+                <span
+                  className={`qui-line qui-line-${["lead", "quiet", "strong", "body", "body", "ask", "answer"][index]}`}
+                  key={line}
+                  style={{ ["--d" as string]: `${index * 0.045}s` }}
+                >
                   {index < LINES.length - 1 ? `${line} ` : line}
                 </span>
               ))}

@@ -127,14 +127,23 @@ export function QuiBlend() {
     };
 
     const note = document.querySelector(".qui-note");
-    if (reduce.matches) note?.classList.add("is-shown");
+    const lines = [...document.querySelectorAll<HTMLElement>(".qui-line")];
+    if (reduce.matches) {
+      note?.classList.add("is-shown");
+      lines.forEach((line) => line.classList.add("is-in"));
+    }
     const reveal = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) note?.classList.add("is-shown");
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add(entry.target.classList.contains("qui-line") ? "is-in" : "is-shown");
+          reveal.unobserve(entry.target);
+        }
       },
-      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0.35, rootMargin: "0px 0px -8% 0px" },
     );
     if (note) reveal.observe(note);
+    if (!reduce.matches) lines.forEach((line) => reveal.observe(line));
 
     void boot();
     window.addEventListener("scroll", syncNight, { passive: true });
