@@ -7,20 +7,32 @@ import { Block } from "@/components/Locale";
 const BUBBLE =
   "Ici, des vocaux, vidéos, photos, textes et fichiers seront partagés sur cette page. Suivez le compte Instagram de Franck et peut-être serez-vous averti des nouveautés.";
 
+type Phase = "repos" | "course" | "ouvert" | "fermeture";
+
+function calme() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export function InfoNote() {
-  const [hover, setHover] = useState(false);
-  const [focus, setFocus] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const [phase, setPhase] = useState<Phase>("repos");
+  const [eclat, setEclat] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const timer = useRef(0);
   const bubbleId = useId();
-  const open = hover || focus || pinned;
+  const ouvert = phase === "ouvert" || phase === "fermeture";
 
   useEffect(() => {
+    return () => window.clearTimeout(timer.current);
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "ouvert") return;
+    setEclat(true);
+    const flash = window.setTimeout(() => setEclat(false), 480);
     const note = wrapRef.current;
     const bubble = document.getElementById(bubbleId);
-    if (!open || !note || !bubble) return;
     const lift = () => {
+      if (!note || !bubble) return;
       note.style.paddingBottom = `${bubble.offsetHeight + 28}px`;
       const nav = document.querySelector(".nav")?.getBoundingClientRect();
       const limit = nav && nav.top > window.innerHeight * 0.45 ? nav.top - 20 : window.innerHeight - 16;
@@ -28,20 +40,21 @@ export function InfoNote() {
       if (bottom > limit) window.scrollBy(0, bottom - limit);
     };
     lift();
-    const later = window.setTimeout(lift, 420);
+    const later = window.setTimeout(lift, calme() ? 0 : 420);
     return () => {
+      window.clearTimeout(flash);
       window.clearTimeout(later);
-      note.style.paddingBottom = "";
+      if (note) note.style.paddingBottom = "";
     };
-  }, [open, bubbleId]);
+  }, [phase, bubbleId]);
 
   useEffect(() => {
-    if (!pinned) return;
+    if (phase !== "ouvert") return;
     const onPointer = (event: PointerEvent) => {
-      if (!wrapRef.current?.contains(event.target as Node)) setPinned(false);
+      if (!wrapRef.current?.contains(event.target as Node)) fermer();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setPinned(false);
+      if (event.key === "Escape") fermer();
     };
     document.addEventListener("pointerdown", onPointer);
     document.addEventListener("keydown", onKey);
@@ -49,57 +62,64 @@ export function InfoNote() {
       document.removeEventListener("pointerdown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [pinned]);
+  }, [phase]);
+
+  function ouvrir() {
+    if (phase === "course" || phase === "fermeture" || phase === "ouvert") return;
+    if (calme()) {
+      setPhase("ouvert");
+      return;
+    }
+    setPhase("course");
+  }
+
+  function fermer() {
+    if (phase !== "ouvert") return;
+    if (calme()) {
+      setPhase("repos");
+      setEclat(false);
+      return;
+    }
+    setPhase("fermeture");
+    setEclat(false);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setPhase("repos"), 420);
+  }
+
+  const bulle =
+    phase === "ouvert" ? "info-bubble is-open" : phase === "fermeture" ? "info-bubble is-closing" : "info-bubble";
 
   return (
-    <div
-      className="info-note"
-      ref={wrapRef}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => {
-        setHover(false);
-        setPressed(false);
-      }}
-      onFocus={() => setFocus(true)}
-      onBlur={(event) => {
-        if (!wrapRef.current?.contains(event.relatedTarget as Node)) setFocus(false);
-      }}
-    >
+    <div className="info-note" ref={wrapRef}>
       <div className="info-pair">
         <button
           type="button"
-          className={pressed ? "info-dot is-pressed" : "info-dot"}
-          aria-expanded={open}
+          className="info-dot"
+          aria-expanded={phase === "ouvert"}
           aria-controls={bubbleId}
           aria-label="Informations"
-          onClick={() => setPinned((value) => !value)}
-          onPointerDown={() => setPressed(true)}
-          onPointerUp={() => setPressed(false)}
-          onPointerCancel={() => setPressed(false)}
+          onClick={ouvrir}
         >
-          <Gemme tone="ame" />
+          <Gemme tone="ame" pose={phase === "repos" ? "tourne" : "face"} eclat={eclat} onFace={() => setPhase("ouvert")} />
         </button>
-        <button
-          type="button"
-          className={pressed ? "info-word is-pressed" : "info-word"}
-          aria-expanded={open}
-          aria-controls={bubbleId}
-          onClick={() => setPinned((value) => !value)}
-          onPointerDown={() => setPressed(true)}
-          onPointerUp={() => setPressed(false)}
-          onPointerCancel={() => setPressed(false)}
-        >
+        <button type="button" className="info-word" aria-expanded={phase === "ouvert"} aria-controls={bubbleId} onClick={ouvrir}>
           Information
           <span className="info-sheen" aria-hidden="true" />
         </button>
       </div>
-      <div className={open ? "info-bubble is-open" : "info-bubble"} id={bubbleId} role="region" aria-hidden={!open} inert={open ? undefined : true}>
-        <p>
+      <div className={bulle} id={bubbleId} role="region" aria-hidden={phase !== "ouvert"} inert={phase === "ouvert" ? undefined : true}>
+        <p className="info-ligne" style={{ ["--i" as string]: 0 }}>
           <Block lines={["100%", "96%", "88%", "70%"]}>{BUBBLE}</Block>
         </p>
-        <a href="https://www.instagram.com/fjhchristenhmbk/" rel="noopener noreferrer" target="_blank">
+        <a className="info-ligne" style={{ ["--i" as string]: 1 }} href="https://www.instagram.com/fjhchristenhmbk/" rel="noopener noreferrer" target="_blank">
           @fjhchristenhmbk
         </a>
+        <button type="button" className="etoile-fermer info-ligne" style={{ ["--i" as string]: 2 }} onClick={fermer}>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" />
+          </svg>
+          Fermer
+        </button>
       </div>
     </div>
   );

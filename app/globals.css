@@ -2200,6 +2200,16 @@ html.title-settled .scroll-reveal {
   46% { opacity: 1; transform: scale(1); }
 }
 
+.gemme.is-liberant .gemme-halo {
+  animation: gemme-libere 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes gemme-libere {
+  0% { opacity: 0.45; transform: scale(0.92); }
+  32% { opacity: 1; transform: scale(1.45); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
 .info-ripple {
   position: absolute;
   width: 10px;
@@ -2250,10 +2260,48 @@ html.title-settled .scroll-reveal {
   transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.info-bubble.is-open,
+.info-bubble.is-closing {
+  transition: none;
+}
+
 .info-bubble.is-open {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(-50%, 0, 0) scale(1);
+  transform-origin: 22% 0;
+  animation: info-from-gem 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.info-bubble.is-closing {
+  pointer-events: none;
+  transform-origin: 22% 0;
+  animation: info-to-gem 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.info-bubble .info-ligne {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.info-bubble.is-open .info-ligne {
+  animation: apple-item 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.06s + var(--i, 0) * 36ms);
+}
+
+.info-bubble .etoile-fermer {
+  margin-top: 0.9rem;
+}
+
+@keyframes info-from-gem {
+  from { opacity: 0; transform: translate3d(-50%, -12px, 0) scale(0.84); }
+  to { opacity: 1; transform: translate3d(-50%, 0, 0) scale(1); }
+}
+
+@keyframes info-to-gem {
+  from { opacity: 1; transform: translate3d(-50%, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(-50%, -14px, 0) scale(0.8); }
 }
 
 .info-bubble.is-open::before {
