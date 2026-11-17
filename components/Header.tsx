@@ -58,10 +58,14 @@ export function Header() {
       if (!current) return;
       const navBox = nav.getBoundingClientRect();
       const box = current.getBoundingClientRect();
+      pill.classList.remove("is-gliding");
       pill.style.transitionProperty = animate ? "" : "none";
       pill.style.width = `${box.width}px`;
       pill.style.transform = `translate3d(${box.left - navBox.left}px, 0, 0)`;
-      if (!animate) {
+      if (animate) {
+        pill.getBoundingClientRect();
+        pill.classList.add("is-gliding");
+      } else {
         pill.getBoundingClientRect();
         pill.style.transitionProperty = "";
       }
@@ -105,7 +109,9 @@ export function Header() {
           </span>
         </Link>
         <nav className="nav" aria-label="Navigation principale" ref={navRef}>
-          <span className="nav-pill" ref={pillRef} aria-hidden="true" />
+          <span className="nav-pill" ref={pillRef} aria-hidden="true">
+            <span className="nav-pill-face" />
+          </span>
           {LINKS.map((link) => (
             <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
               <T>{link.label}</T>

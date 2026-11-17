@@ -1,12 +1,25 @@
 "use client";
 
-import { useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useLocale, type LocaleName } from "@/components/Locale";
 
 export function LanguageToggle() {
   const { locale, setLocale } = useLocale();
   const frRef = useRef<HTMLButtonElement>(null);
   const laRef = useRef<HTMLButtonElement>(null);
+  const ready = useRef(false);
+  const [gliding, setGliding] = useState(false);
+
+  useEffect(() => {
+    if (!ready.current) {
+      ready.current = true;
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setGliding(true);
+    const timer = window.setTimeout(() => setGliding(false), 560);
+    return () => window.clearTimeout(timer);
+  }, [locale]);
 
   const choose = (next: LocaleName) => setLocale(next);
 
@@ -20,7 +33,9 @@ export function LanguageToggle() {
 
   return (
     <div className="lang" role="radiogroup" aria-label="Langue" onKeyDown={onKeyDown}>
-      <span className="lang-thumb" aria-hidden="true" />
+      <span className={gliding ? "lang-thumb is-gliding" : "lang-thumb"} aria-hidden="true">
+        <span className="lang-thumb-face" />
+      </span>
       <button
         ref={frRef}
         type="button"

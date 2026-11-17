@@ -6,6 +6,17 @@ import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
+function FermerBouton({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" className="etoile-fermer" onClick={onClick}>
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4.25 4.25 11.75 11.75M11.75 4.25 4.25 11.75" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+      Fermer
+    </button>
+  );
+}
+
 function dateFr(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
   const [year, month, day] = value.split("-").map(Number);
@@ -158,9 +169,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                               <p className="etoile-signature">
                                 <span>{SIGNATURE}</span>
                               </p>
-                              <button type="button" className="etoile-fermer" onClick={() => setActive(null)}>
-                                Fermer
-                              </button>
+                              <FermerBouton onClick={() => setActive(null)} />
                             </div>
                           </div>
                         </li>
@@ -207,9 +216,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                 <span>{SIGNATURE}</span>
                 {chosen.date ? <time dateTime={chosen.date}>{dateFr(chosen.date)}</time> : null}
               </p>
-              <button type="button" className="etoile-fermer" onClick={() => setActive(null)} aria-label="Fermer">
-                Fermer
-              </button>
+              <FermerBouton onClick={() => setActive(null)} />
             </article>
           ) : null}
         <ul className="ciel-index">
