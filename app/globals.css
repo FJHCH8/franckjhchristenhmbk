@@ -2455,34 +2455,50 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 html.nav-out .page-enter,
 html.nav-out .sky,
 html.nav-out .projets-sky,
-html.nav-out .skin-field,
-html.nav-out .photo-field {
-  animation: blur-out 0.22s cubic-bezier(0.32, 0.72, 0, 1) both;
+html.nav-in .page-enter,
+html.nav-in .sky,
+html.nav-in .projets-sky {
+  will-change: filter, opacity;
+}
+
+html.nav-out .page-enter,
+html.nav-out .sky,
+html.nav-out .projets-sky {
+  animation: blur-out 0.25s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
 }
 
 html.nav-in .page-enter,
 html.nav-in .sky,
-html.nav-in .projets-sky,
-html.nav-in .skin-field,
-html.nav-in .photo-field {
-  animation: blur-in 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+html.nav-in .projets-sky {
+  animation: blur-in 0.25s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+}
+
+html:not(.nav-out):not(.nav-in) .page-enter,
+html:not(.nav-out):not(.nav-in) .sky,
+html:not(.nav-out):not(.nav-in) .projets-sky {
+  will-change: auto;
 }
 
 @keyframes blur-out {
+  from {
+    filter: blur(0px);
+    opacity: 1;
+  }
+
   to {
     filter: blur(14px);
-    opacity: 0.42;
+    opacity: 0.9;
   }
 }
 
 @keyframes blur-in {
   from {
     filter: blur(14px);
-    opacity: 0.5;
+    opacity: 0.9;
   }
 
   to {
-    filter: blur(0);
+    filter: blur(0px);
     opacity: 1;
   }
 }
@@ -3456,36 +3472,49 @@ html.nav-vt::view-transition-group(nav-pill) {
 }
 
 .rubrique li button {
-  padding: 0.45rem 0;
+  position: relative;
+  padding: 0.45rem 0 0.55rem;
   border: 0;
   background: transparent;
+  color: #f7f4ee;
   font: inherit;
   cursor: pointer;
+  transition: color 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+
+.rubrique li button:not(.etoile-fermer)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0.12rem;
+  left: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, #9ec8ff 0%, #ffffff 50%, #9ec8ff 100%);
+  background-size: 64px 100%;
+  background-repeat: repeat-x;
+  opacity: 0;
+  transform: scaleX(0.2);
+  transform-origin: left center;
+  transition:
+    opacity 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95),
+    transform 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  pointer-events: none;
 }
 
 .rubrique li button[aria-expanded="true"] {
-  position: relative;
   color: #9ec8ff;
   background: transparent;
 }
 
-.rubrique li button[aria-expanded="true"]::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0.28rem;
-  left: 0;
-  height: 1px;
-  background-image: linear-gradient(90deg, transparent, #d7ecff 28%, #ffffff 50%, #d7ecff 72%, transparent);
-  background-size: 220% 100%;
-  background-repeat: no-repeat;
-  animation: date-file 4.6s ease-in-out infinite;
-  pointer-events: none;
+.rubrique li button[aria-expanded="true"]:not(.etoile-fermer)::after {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: date-file 2.4s linear infinite;
 }
 
 @keyframes date-file {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
+  from { background-position-x: 0; }
+  to { background-position-x: 64px; }
 }
 
 .fiche .etoile-texte,
@@ -3948,11 +3977,18 @@ html.nav-vt::view-transition-group(nav-pill) {
   letter-spacing: 0.14em;
   text-align: center;
   white-space: nowrap;
+  transform: perspective(480px) rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   backdrop-filter: blur(16px) saturate(1.35);
   -webkit-backdrop-filter: blur(16px) saturate(1.35);
   box-shadow:
     0 0 18px rgba(225, 29, 72, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.etoile-fermer.is-pressing {
+  transition: none;
 }
 
 .etoile-fermer::before {
@@ -3984,8 +4020,7 @@ html.nav-vt::view-transition-group(nav-pill) {
   }
 }
 
-.etoile-fermer:active {
-  transform: translateY(1px) scale(0.985);
+.etoile-fermer.is-pressing:active {
   box-shadow:
     0 0 10px rgba(225, 29, 72, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);

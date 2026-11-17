@@ -1,14 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Countdown } from "@/components/Countdown";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
 function FermerBouton({ onClick }: { onClick: () => void }) {
+  const ref = useRef<HTMLButtonElement>(null);
+
+  const pose = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const node = ref.current;
+    if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const box = node.getBoundingClientRect();
+    const px = (event.clientX - box.left) / Math.max(1, box.width) - 0.5;
+    const py = (event.clientY - box.top) / Math.max(1, box.height) - 0.5;
+    const rotY = Math.max(-14, Math.min(14, px * 28));
+    const rotX = Math.max(-12, Math.min(12, -py * 22));
+    node.style.transform = `perspective(480px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(-10px) scale(0.985)`;
+  };
+
+  const release = () => {
+    const node = ref.current;
+    if (!node) return;
+    node.classList.remove("is-pressing");
+    node.style.transform = "";
+  };
+
   return (
-    <button type="button" className="etoile-fermer" onClick={onClick}>
+    <button
+      ref={ref}
+      type="button"
+      className="etoile-fermer"
+      onClick={onClick}
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        event.currentTarget.classList.add("is-pressing");
+        pose(event);
+      }}
+      onPointerMove={(event) => {
+        if (!event.currentTarget.classList.contains("is-pressing")) return;
+        pose(event);
+      }}
+      onPointerUp={release}
+      onPointerCancel={release}
+    >
       <svg viewBox="0 0 16 16" aria-hidden="true">
         <path d="M4.25 4.25 11.75 11.75M11.75 4.25 4.25 11.75" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>

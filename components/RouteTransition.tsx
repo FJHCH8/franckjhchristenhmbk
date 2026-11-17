@@ -3,8 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-const OUT_MS = 220;
-const IN_MS = 260;
+const OUT_MS = 250;
+const IN_MS = 250;
 
 function calm() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -76,6 +76,7 @@ export function RouteTransition() {
 
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
       const destination = `${url.pathname}${url.search}${url.hash}`;
       const root = document.documentElement;
       root.classList.remove("nav-in");
