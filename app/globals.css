@@ -3823,11 +3823,19 @@ html.nav-vt::view-transition-group(nav-pill) {
 .rubrique li button.etoile-fermer,
 .etoile-bulle button.etoile-fermer,
 .etoile-fermer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin-top: 0.85rem;
+  padding: 0.5rem 20px;
   background: linear-gradient(135deg, #ffffff 0%, #fb7185 46%, #e11d48 100%);
   color: #3f0714;
   font: inherit;
   font-weight: 650;
+  line-height: 1.2;
   letter-spacing: 0.02em;
+  text-align: center;
   box-shadow: 0 8px 22px rgba(225, 29, 72, 0.28);
 }
 
