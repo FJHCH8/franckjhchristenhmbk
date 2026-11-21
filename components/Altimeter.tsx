@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { Block } from "@/components/Locale";
 
 const formatter = new Intl.NumberFormat("fr-FR");
 
 export function Altimeter() {
+  const path = usePathname();
   const valueRef = useRef<HTMLSpanElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
 
@@ -21,14 +24,25 @@ export function Altimeter() {
       dot.style.translate = `-50% ${progress * 112}px`;
     };
 
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        render();
+      });
+    };
     render();
-    window.addEventListener("scroll", render, { passive: true });
-    window.addEventListener("resize", render);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", render);
-      window.removeEventListener("resize", render);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
+
+  if (path === "/projets") return null;
 
   return (
     <div className="altimeter" aria-hidden="true">
@@ -37,9 +51,13 @@ export function Altimeter() {
       </div>
       <div className="alt-readout">
         <span className="alt-kicker">
-          Altitude
-          <br />
-          de la page
+          <Block lines={["6.2em", "5.4em"]}>
+            <>
+              Altitude
+              <br />
+              de la page
+            </>
+          </Block>
         </span>
         <span ref={valueRef} className="alt-value">
           2 400

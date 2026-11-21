@@ -1,61 +1,135 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { T, useLocale } from "@/components/Locale";
+import { TopBlur } from "@/components/TopBlur";
 
 const LINKS = [
-  { href: "#accueil", id: "accueil", label: "Accueil" },
-  { href: "#a-propos", id: "a-propos", label: "À propos" },
-  { href: "#contact", id: "contact", label: "Contact" },
+  { href: "/", id: "accueil", label: "Accueil" },
+  { href: "/qui-suis-je", id: "qui-suis-je", label: "Qui suis-je" },
+  { href: "/a-propos", id: "a-propos", label: "À propos" },
+  { href: "/contact", id: "contact", label: "Contact" },
+  { href: "/projets", id: "projets", label: "Projets" },
 ];
 
 export function Header() {
-  const [active, setActive] = useState("accueil");
+  const pathname = usePathname();
+  const router = useRouter();
+  const { locale } = useLocale();
+  const navRef = useRef<HTMLElement>(null);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const ready = useRef(false);
+  const taps = useRef<number[]>([]);
+  const navTimer = useRef(0);
 
-  useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const marker = window.scrollY + 140;
-      let current = "accueil";
-      for (const link of LINKS) {
-        const section = document.getElementById(link.id);
-        if (section && section.offsetTop <= marker) current = link.id;
+  const stamp = useRef(0);
+
+  const onBrand = (event: { button?: number; preventDefault: () => void }) => {
+    if (event.button != null && event.button !== 0) return;
+    event.preventDefault();
+    const now = performance.now();
+    if (now - stamp.current < 35) return;
+    stamp.current = now;
+    taps.current = [...taps.current.filter((time) => now - time < 2800), now];
+    window.clearTimeout(navTimer.current);
+    if (taps.current.length >= 8) {
+      taps.current = [];
+      window.dispatchEvent(new Event("fjch-edition"));
+      return;
+    }
+    navTimer.current = window.setTimeout(() => {
+      const count = taps.current.length;
+      taps.current = [];
+      if (count === 1 && pathname !== "/") router.push("/");
+    }, 480);
+  };
+
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const pill = pillRef.current;
+    if (!nav || !pill) return;
+
+    const place = (animate: boolean) => {
+      const current = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!current) return;
+      const navBox = nav.getBoundingClientRect();
+      const box = current.getBoundingClientRect();
+      pill.classList.remove("is-gliding");
+      pill.style.transitionProperty = animate ? "" : "none";
+      pill.style.width = `${box.width}px`;
+      pill.style.transform = `translate3d(${box.left - navBox.left}px, 0, 0)`;
+      if (animate) {
+        pill.getBoundingClientRect();
+        pill.classList.add("is-gliding");
+      } else {
+        pill.getBoundingClientRect();
+        pill.style.transitionProperty = "";
       }
-      setActive((prev) => (prev === current ? prev : current));
     };
-    const onScroll = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
+
+    place(ready.current);
+    ready.current = true;
+    let lastW = nav.getBoundingClientRect().width;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - lastW) < 0.5) return;
+      lastW = width;
+      place(false);
+    });
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [pathname, locale]);
 
   return (
-    <header className="header">
-      <a className="brand" href="#accueil">
-        <span className="seal" aria-hidden="true">
-          F
-        </span>
-        <span className="brand-name" translate="no">
-          Franck J.H. Christen H.M.B.K.
-        </span>
-      </a>
-      <nav className="nav" aria-label="Navigation principale">
-        {LINKS.map((link) => (
-          <a key={link.id} href={link.href} aria-current={active === link.id ? "true" : undefined}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
-      <ThemeToggle />
-    </header>
+    <>
+      <TopBlur />
+      <header className="header">
+        <Link
+          className="brand"
+          href="/"
+          aria-label="Franck J.H. CHRISTEN H.M.B.K."
+          onPointerDown={(event) => {
+            if (event.button === 0) event.preventDefault();
+          }}
+          onPointerUp={onBrand}
+          onTouchEnd={onBrand}
+          onClick={(event) => event.preventDefault()}
+        >
+          <span className="seal">
+            <Image
+              src="/portrait-enfance.jpg"
+              alt=""
+              fill
+              priority
+              sizes="48px"
+              draggable={false}
+              style={{ objectFit: "cover", objectPosition: "center 12%" }}
+            />
+          </span>
+          <span className="brand-name" translate="no">
+            Franck J.H. CHRISTEN H.M.B.K.
+          </span>
+        </Link>
+        <div className="nav-dock">
+          <nav className="nav" aria-label="Navigation principale" ref={navRef}>
+            <span className="nav-pill" ref={pillRef} aria-hidden="true">
+              <span className="nav-pill-face" />
+            </span>
+            {LINKS.map((link) => (
+              <Link key={link.id} href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
+                <T>{link.label}</T>
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="header-tools">
+          <LanguageToggle />
+        </div>
+      </header>
+    </>
   );
 }
