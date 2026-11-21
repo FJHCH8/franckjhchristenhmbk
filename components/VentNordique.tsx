@@ -202,35 +202,57 @@ export function VentNordique() {
     };
   }, []);
 
+  const sonRef = useRef(false);
+  sonRef.current = son;
+
   useEffect(() => {
     const spin = spinRef.current;
     if (!spin) return;
-    let frame = 0;
     let alive = true;
+    let frame = 0;
     let angle = 0;
     let speed = 0;
     let last = performance.now();
+    let mode: "repos" | "accel" | "vitesse" | "frein" = "repos";
+    let phase = 0;
+    let fromSpeed = 0;
+    const max = 150;
+    const accelS = 1.8;
+    const freinS = 2.6;
+
     const step = (now: number) => {
       if (!alive) return;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      const playing = son && !calme();
-      const target = playing ? (rafale ? 240 : 72) : 0;
-      const tau = target === 0 ? 0.7 : 0.28;
-      speed += (target - speed) * (1 - Math.exp(-dt / tau));
-      if (speed > 0.35) {
-        angle = (angle + speed * dt) % 360;
-        spin.style.animation = "none";
-        spin.style.transform = `rotate(${angle.toFixed(2)}deg)`;
-      } else {
-        speed = 0;
-        spin.style.transform = "";
-        spin.style.animation = "";
+      const want = sonRef.current && !calme();
+      if (want && (mode === "repos" || mode === "frein")) {
+        fromSpeed = speed;
+        phase = 0;
+        mode = "accel";
+      } else if (!want && (mode === "accel" || mode === "vitesse")) {
+        fromSpeed = speed;
+        phase = 0;
+        mode = "frein";
       }
-      if (speed === 0 && target === 0) {
-        frame = 0;
-        return;
+      if (mode === "accel") {
+        phase = Math.min(1, phase + dt / accelS);
+        const eased = phase * phase * phase;
+        speed = fromSpeed + (max - fromSpeed) * eased;
+        if (phase >= 1) mode = "vitesse";
+      } else if (mode === "vitesse") {
+        speed = max;
+      } else if (mode === "frein") {
+        phase = Math.min(1, phase + dt / freinS);
+        const reste = 1 - phase;
+        speed = fromSpeed * reste * reste * reste;
+        if (phase >= 1) {
+          speed = 0;
+          mode = "repos";
+        }
       }
+      angle += speed * dt;
+      spin.style.animation = "none";
+      spin.style.transform = `rotate(${angle.toFixed(3)}deg)`;
       frame = window.requestAnimationFrame(step);
     };
     frame = window.requestAnimationFrame(step);
@@ -238,7 +260,7 @@ export function VentNordique() {
       alive = false;
       window.cancelAnimationFrame(frame);
     };
-  }, [son, rafale]);
+  }, []);
 
   return (
     <button
