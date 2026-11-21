@@ -39,8 +39,13 @@ function copy(pose: Pose): Pose {
   return { rx: pose.rx, ry: pose.ry, z: pose.z, s: pose.s };
 }
 
+function info(el: HTMLElement) {
+  return el.classList.contains("info-dot");
+}
+
 function paint(el: HTMLElement, pose: Pose) {
-  el.style.transform = `perspective(480px) rotateX(${pose.rx.toFixed(3)}deg) rotateY(${pose.ry.toFixed(3)}deg) translateZ(${pose.z.toFixed(3)}px) scale(${pose.s.toFixed(4)})`;
+  const depth = info(el) ? 320 : 480;
+  el.style.transform = `perspective(${depth}px) rotateX(${pose.rx.toFixed(3)}deg) rotateY(${pose.ry.toFixed(3)}deg) translateZ(${pose.z.toFixed(3)}px) scale(${pose.s.toFixed(4)})`;
 }
 
 function aim(el: HTMLElement, x: number, y: number): Pose {
@@ -48,11 +53,12 @@ function aim(el: HTMLElement, x: number, y: number): Pose {
   const px = (x - box.left) / Math.max(1, box.width) - 0.5;
   const py = (y - box.top) / Math.max(1, box.height) - 0.5;
   const small = el.classList.contains("etoile-fermer");
+  const fort = info(el);
   return {
-    rx: Math.max(small ? -6 : -12, Math.min(small ? 6 : 12, -py * (small ? 12 : 22))),
-    ry: Math.max(small ? -8 : -14, Math.min(small ? 8 : 14, px * (small ? 16 : 28))),
-    z: small ? -4 : -8,
-    s: small ? 0.992 : 0.985,
+    rx: Math.max(fort ? -20 : small ? -6 : -12, Math.min(fort ? 20 : small ? 6 : 12, -py * (fort ? 40 : small ? 12 : 22))),
+    ry: Math.max(fort ? -24 : small ? -8 : -14, Math.min(fort ? 24 : small ? 8 : 14, px * (fort ? 48 : small ? 16 : 28))),
+    z: fort ? -18 : small ? -4 : -8,
+    s: fort ? 0.94 : small ? 0.992 : 0.985,
   };
 }
 
@@ -96,7 +102,7 @@ export function Tilt() {
           if (gesture.mode === "track") {
             const dt = gesture.last ? Math.min(0.05, (now - gesture.last) / 1000) : 0.016;
             gesture.last = now;
-            const k = 1 - Math.exp(-dt / TAU);
+            const k = 1 - Math.exp(-dt / (info(gesture.el) ? 0.02 : TAU));
             gesture.cur.rx += (gesture.goal.rx - gesture.cur.rx) * k;
             gesture.cur.ry += (gesture.goal.ry - gesture.cur.ry) * k;
             gesture.cur.z += (gesture.goal.z - gesture.cur.z) * k;
@@ -104,7 +110,8 @@ export function Tilt() {
             paint(gesture.el, gesture.cur);
             continue;
           }
-          const t = Math.min(1, (now - gesture.started) / RELEASE_MS);
+          const release = info(gesture.el) ? 920 : RELEASE_MS;
+          const t = Math.min(1, (now - gesture.started) / release);
           const e = eased(t);
           gesture.cur.rx = gesture.from.rx * (1 - e);
           gesture.cur.ry = gesture.from.ry * (1 - e);
