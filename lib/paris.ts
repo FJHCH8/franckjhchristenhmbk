@@ -17,6 +17,18 @@ function zonedToUtc(year: number, month: number, day: number, hour: number, minu
 
 export const PROJECTS_OPENING_MS = zonedToUtc(2026, 12, 1, 0, 0, "Europe/Paris");
 
+/**
+ * Début du compte à rebours, en heure de Paris.
+ * null : cette date n'est pas dans le code. Ne pas la deviner.
+ * Quand Franck la donne : zonedToUtc(année, mois, jour, heure, minute, "Europe/Paris").
+ */
+export const PROJECTS_START_MS: number | null = null;
+
+export function countdownProgress(now: number, start: number | null = PROJECTS_START_MS, end = PROJECTS_OPENING_MS) {
+  if (start == null || !(end > start)) return null;
+  return Math.min(1, Math.max(0, (now - start) / (end - start)));
+}
+
 export function countdownParts(now: number, target = PROJECTS_OPENING_MS) {
   const left = Math.max(0, target - now);
   const seconds = Math.floor(left / 1000);

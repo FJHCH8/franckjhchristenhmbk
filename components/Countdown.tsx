@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Gemme } from "@/components/Gemme";
-import { countdownParts } from "@/lib/paris";
+import { Eclair } from "@/components/Eclair";
+import { countdownParts, countdownProgress } from "@/lib/paris";
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
@@ -44,21 +44,29 @@ export function Countdown() {
 
   const parts = countdownParts(now ?? 0);
   const shown = now === null ? { days: 0, hours: 0, minutes: 0, seconds: 0, fraction: 0, done: false } : parts;
+  const progress = now === null ? null : countdownProgress(now);
 
   return (
-    <div
-      className={now === null ? "count" : "count is-on"}
-      style={{ ["--fraction" as string]: String(shown.done ? 0 : shown.fraction) }}
-      aria-label={`${pad(shown.days)} ${pad(shown.hours)} ${pad(shown.minutes)} ${pad(shown.seconds)}`}
-    >
-      <Gemme tone="nature" />
-      <Group value={shown.days} />
-      <span className="count-dot" aria-hidden="true" />
-      <Group value={shown.hours} />
-      <span className="count-dot" aria-hidden="true" />
-      <Group value={shown.minutes} />
-      <span className="count-dot count-dot-live" aria-hidden="true" />
-      <Group value={shown.seconds} />
+    <div className={now === null ? "count-bloc" : "count-bloc is-on"}>
+      <div
+        className="count"
+        style={{ ["--fraction" as string]: String(shown.done ? 0 : shown.fraction) }}
+        aria-label={`${pad(shown.days)} ${pad(shown.hours)} ${pad(shown.minutes)} ${pad(shown.seconds)}`}
+      >
+        <Eclair />
+        <Group value={shown.days} />
+        <span className="count-dot" aria-hidden="true" />
+        <Group value={shown.hours} />
+        <span className="count-dot" aria-hidden="true" />
+        <Group value={shown.minutes} />
+        <span className="count-dot count-dot-live" aria-hidden="true" />
+        <Group value={shown.seconds} />
+      </div>
+      {progress != null ? (
+        <div className="count-barre" aria-hidden="true">
+          <span style={{ width: `${(progress * 100).toFixed(3)}%` }} />
+        </div>
+      ) : null}
     </div>
   );
 }

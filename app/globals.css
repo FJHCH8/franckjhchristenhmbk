@@ -2614,9 +2614,24 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   font-weight: 460;
 }
 
+.count-bloc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  width: min(100%, 36rem);
+  opacity: 0;
+}
+
+.count-bloc.is-on {
+  opacity: 1;
+  transition: opacity 0.7s ease;
+}
+
 .count {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
   color: #f4f6fb;
   font-family: var(--font-display), Georgia, serif;
@@ -2625,11 +2640,80 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   font-weight: 520;
   letter-spacing: -0.04em;
   line-height: 1;
-  opacity: 0;
 }
 
-.count.is-on {
-  opacity: 1;
+.eclair {
+  position: relative;
+  display: inline-block;
+  width: 2.45rem;
+  height: 2.1rem;
+  flex: none;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+.eclair-trait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(112deg, #e9fff3 0%, #8eecc0 32%, #2aaa62 64%, #0c5a32 100%);
+  -webkit-mask: url("/marks/eclair.png") center / contain no-repeat;
+  mask: url("/marks/eclair.png") center / contain no-repeat;
+  filter: blur(0.35px) drop-shadow(0 0 2px rgba(190, 255, 210, 0.7));
+  animation: eclair-souffle 5.6s ease-in-out infinite;
+}
+
+.eclair-cendre {
+  position: absolute;
+  left: 28%;
+  bottom: 42%;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+  animation: cendre-monte 5.4s ease-out infinite;
+}
+
+.eclair-cendre.cendre-b {
+  left: 58%;
+  bottom: 58%;
+  width: 1px;
+  height: 1px;
+  animation-delay: -1.8s;
+}
+
+.eclair-cendre.cendre-c {
+  left: 78%;
+  bottom: 34%;
+  animation-delay: -3.5s;
+}
+
+@keyframes eclair-souffle {
+  0%,
+  100% { transform: scale(1); opacity: 0.88; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes cendre-monte {
+  0% { transform: translate(0, 3px); opacity: 0; }
+  18% { opacity: 0.7; }
+  100% { transform: translate(5px, -16px); opacity: 0; }
+}
+
+.count-barre {
+  width: min(12rem, 68%);
+  height: 7px;
+  background: #3a3a3a;
+  border-radius: 0;
+}
+
+.count-barre > span {
+  display: block;
+  height: 100%;
+  background: #fff;
+  border-radius: 0;
+  transition: width 0.28s linear;
 }
 
 .count-group {
