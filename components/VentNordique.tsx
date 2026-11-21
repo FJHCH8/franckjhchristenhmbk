@@ -5,6 +5,33 @@ import { useEffect, useRef, useState } from "react";
 const KEY = "fjch-vent";
 const LEVEL = 0.07;
 
+/** Pointes du flocon, en fraction du demi-côté, y vers le bas. */
+const POINTES: ReadonlyArray<readonly [number, number]> = [
+  [0.755, 0.079],
+  [0.649, 0.331],
+  [0.485, 0.599],
+  [0.176, 0.828],
+  [-0.161, 0.915],
+  [-0.528, 0.754],
+  [-0.602, 0.294],
+  [-0.752, -0.013],
+  [-0.468, -0.539],
+  [0.161, -0.912],
+  [0.734, -0.424],
+];
+
+type Volute = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  curl: number;
+  w: number;
+  pts: Array<[number, number]>;
+};
+
 function noise(ctx: AudioContext, seconds: number, brown: boolean) {
   const length = Math.floor(ctx.sampleRate * seconds);
   const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
@@ -54,6 +81,7 @@ export function VentNordique() {
   const [son, setSon] = useState(false);
   const [rafale, setRafale] = useState(false);
   const spinRef = useRef<HTMLSpanElement>(null);
+  const toileRef = useRef<HTMLCanvasElement>(null);
   const burst = useRef(0);
 
   useEffect(() => {
@@ -219,6 +247,19 @@ export function VentNordique() {
     const max = 150;
     const accelS = 1.8;
     const freinS = 2.6;
+    const toile = toileRef.current;
+    const volutes: Volute[] = [];
+    let reservoir = 0;
+    let dpr = 1;
+    let css = 112;
+    let ctx: CanvasRenderingContext2D | null = null;
+    if (toile && !calme()) {
+      css = toile.clientWidth || 112;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      toile.width = Math.round(css * dpr);
+      toile.height = Math.round(css * dpr);
+      ctx = toile.getContext("2d");
+    }
 
     const step = (now: number) => {
       if (!alive) return;
@@ -253,6 +294,87 @@ export function VentNordique() {
       angle += speed * dt;
       spin.style.animation = "none";
       spin.style.transform = `rotate(${angle.toFixed(3)}deg)`;
+      if (ctx) {
+        const half = (spin.clientWidth || 27) / 2;
+        const intensity = Math.min(1, Math.max(0, speed / max));
+        if (intensity > 0.03) {
+          reservoir += dt * intensity * 46;
+          const rad = (angle * Math.PI) / 180;
+          const c = Math.cos(rad);
+          const s = Math.sin(rad);
+          while (reservoir >= 1 && volutes.length < 40) {
+            reservoir -= 1;
+            const tip = POINTES[(Math.random() * POINTES.length) | 0];
+            const lx = tip[0] * half;
+            const ly = tip[1] * half;
+            const ox = c * lx - s * ly;
+            const oy = s * lx + c * ly;
+            let tx = -s * lx - c * ly;
+            let ty = c * lx - s * ly;
+            const tlen = Math.hypot(tx, ty) || 1;
+            tx /= tlen;
+            ty /= tlen;
+            const rlen = Math.hypot(ox, oy) || 1;
+            const rx = ox / rlen;
+            const ry = oy / rlen;
+            const launch = (16 + intensity * 34) * (0.72 + Math.random() * 0.5);
+            const out = 4 + intensity * 9;
+            const x = css / 2 + ox + rx * 2;
+            const y = css / 2 + oy + ry * 2;
+            const life = 0.5 + Math.random() * 0.45;
+            volutes.push({
+              x,
+              y,
+              vx: tx * launch + rx * out,
+              vy: ty * launch + ry * out,
+              life,
+              max: life,
+              curl: 1.1 + Math.random() * 1.3,
+              w: 0.55 + Math.random() * 0.55,
+              pts: [[x, y]],
+            });
+          }
+        } else {
+          reservoir = 0;
+        }
+        for (let i = volutes.length - 1; i >= 0; i--) {
+          const p = volutes[i];
+          p.life -= dt * (intensity > 0.05 ? 1 : 1.6);
+          if (p.life <= 0) {
+            volutes.splice(i, 1);
+            continue;
+          }
+          const turn = p.curl * dt;
+          const ct = Math.cos(turn);
+          const st = Math.sin(turn);
+          const vx = p.vx * ct - p.vy * st;
+          const vy = p.vx * st + p.vy * ct;
+          p.vx = vx * 0.99;
+          p.vy = vy * 0.99;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.pts.push([p.x, p.y]);
+          if (p.pts.length > 18) p.pts.shift();
+        }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, css, css);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        for (const p of volutes) {
+          if (p.pts.length < 2) continue;
+          const fade = Math.max(0, p.life / p.max);
+          const alpha = fade * fade * (0.35 + intensity * 0.65);
+          ctx.beginPath();
+          ctx.moveTo(p.pts[0][0], p.pts[0][1]);
+          for (let k = 1; k < p.pts.length; k++) ctx.lineTo(p.pts[k][0], p.pts[k][1]);
+          ctx.strokeStyle = `rgba(255,255,255,${(alpha * 0.28).toFixed(3)})`;
+          ctx.lineWidth = p.w * 2.4;
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(255,255,255,${(alpha * 0.78).toFixed(3)})`;
+          ctx.lineWidth = p.w;
+          ctx.stroke();
+        }
+      }
       frame = window.requestAnimationFrame(step);
     };
     frame = window.requestAnimationFrame(step);
@@ -284,6 +406,7 @@ export function VentNordique() {
       }}
     >
       <span className="vent-marque" aria-hidden="true">
+        <canvas className="vent-volutes" ref={toileRef} />
         <span className="vent-tour" ref={spinRef}>
           <span className="vent-symbole" />
         </span>

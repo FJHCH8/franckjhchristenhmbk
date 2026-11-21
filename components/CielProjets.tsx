@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Countdown } from "@/components/Countdown";
+import { BarreCompte, CompteEndur, Countdown } from "@/components/Countdown";
 import { LogoEau } from "@/components/LogoEau";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
@@ -100,15 +100,14 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   const nomSection = (cle: string) => (cle === "citation" ? "Citations" : cle === "projet" ? "Projets" : cle.charAt(0).toUpperCase() + cle.slice(1));
 
   return (
+    <CompteEndur>
     <div className="sky-stage" ref={stageRef}>
       <div className="voie-boucle" aria-hidden="true">
         <img src="/ciel/voie-lactee.jpg" alt="" />
         <img src="/ciel/voie-lactee.jpg" alt="" />
       </div>
       <section className="endur-haut">
-        <div className="vie" aria-hidden="true">
-          <span className="vie-halo" />
-        </div>
+        <BarreCompte />
         <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
         <p className="endurreisen" translate="no">Endurreisen</p>
         <Countdown />
@@ -343,5 +342,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
           </form>
         ) : null}
     </div>
+    </CompteEndur>
   );
 }

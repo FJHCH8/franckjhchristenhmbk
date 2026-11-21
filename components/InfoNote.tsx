@@ -100,7 +100,7 @@ export function InfoNote() {
           aria-label="Informations"
           onClick={ouvrir}
         >
-          <Gemme tone="ame" pose={phase === "repos" ? "tourne" : "face"} eclat={eclat} onFace={() => setPhase("ouvert")} />
+          <Gemme pose={phase === "repos" ? "tourne" : "face"} eclat={eclat} onFace={() => setPhase("ouvert")} />
         </button>
         <button type="button" className="info-word" aria-expanded={phase === "ouvert"} aria-controls={bubbleId} onClick={ouvrir}>
           Information

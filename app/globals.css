@@ -1971,6 +1971,7 @@ html.title-settled .scroll-reveal {
   --mark: url("/marks/symbole-x.png");
   -webkit-mask-image: var(--mark);
   mask-image: var(--mark);
+  background: #f7f4ee;
   animation: infini-breathe 7.6s ease-in-out infinite;
 }
 
@@ -1979,6 +1980,7 @@ html.title-settled .scroll-reveal {
   --mark: url("/marks/symbole-parchemin.png");
   -webkit-mask-image: var(--mark);
   mask-image: var(--mark);
+  background: #f7f4ee;
   animation: parchemin-wave 6.8s ease-in-out infinite;
 }
 
@@ -2122,120 +2124,96 @@ html.title-settled .scroll-reveal {
   50% { background-position: 92% 62%; opacity: 0.95; }
 }
 
+.mark-infini,
+.mark-parchemin,
+.vent-symbole,
+.eclair-trait {
+  position: relative;
+}
+
+.mark-infini::after,
+.mark-parchemin::after,
+.vent-symbole::after,
+.eclair-trait::after {
+  content: "";
+  position: absolute;
+  inset: -70% -120%;
+  pointer-events: none;
+  background-size: 220% 220%;
+  animation: eau-onde 7.2s ease-in-out infinite;
+}
+
+.mark-infini::after,
+.mark-parchemin::after,
+.vent-symbole::after {
+  background-image: linear-gradient(
+    118deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.16) 30%,
+    #ffffff 46%,
+    #e6e1d8 58%,
+    #c2bdb4 74%,
+    transparent 100%
+  );
+}
+
+.mark-infini::after { animation-delay: -1.4s; }
+.mark-parchemin::after { animation-duration: 8.1s; animation-delay: -3.6s; }
+.vent-symbole::after { animation-duration: 6.6s; animation-delay: -2.2s; }
+
 .gemme {
-  --g1: #fff8f5;
-  --g2: #f4d4cb;
-  --g3: #e7b4aa;
-  --g4: #c45c62;
-  --g5: #8e3040;
   position: relative;
   display: inline-block;
-  width: 1.7rem;
+  width: 0.99rem;
   height: 2.1rem;
   flex: none;
   pointer-events: none;
   vertical-align: middle;
-  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--g2) 70%, white));
 }
 
-.gemme-ame {
-  --g1: #fff7f4;
-  --g2: #ffd0c6;
-  --g3: #f0a090;
-  --g4: #d56d78;
-  --g5: #a34458;
-}
-
-.gemme-ciel {
-  --g1: #f4fbff;
-  --g2: #b9e4ff;
-  --g3: #3aa8ff;
-  --g4: #1574e0;
-  --g5: #0c4ea8;
-}
-
-.gemme-nature {
-  --g1: #f3fff6;
-  --g2: #9ef5bf;
-  --g3: #2ed673;
-  --g4: #12924a;
-  --g5: #0b6a34;
-}
-
-.gemme-halo {
-  position: absolute;
-  inset: -12%;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--g2) 55%, transparent), transparent 70%);
-  opacity: 0.85;
-  animation: gemme-halo 5.2s ease-in-out infinite;
-}
-
-.gemme-face {
-  position: absolute;
-  inset: 0;
-}
-
-.gemme.is-face .gemme-face {
-  animation: gemme-face 0.72s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.gemme-reflet {
-  position: absolute;
-  inset: 0;
-}
-
-.gemme-plaque {
+.gemme-trait {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  shape-rendering: geometricPrecision;
+  background: #c41428;
+  -webkit-mask: url("/marks/crochet.png") center / contain no-repeat;
+  mask: url("/marks/crochet.png") center / contain no-repeat;
+  filter: blur(0.28px) drop-shadow(0 0 2px rgba(255, 236, 236, 0.45)) drop-shadow(0 0 5px rgba(196, 20, 40, 0.4));
 }
 
-.gemme-reflet {
-  background: linear-gradient(105deg, transparent 0 36%, rgba(255, 255, 255, 0.78) 50%, transparent 64% 100%);
-  background-size: 240% 100%;
-  clip-path: polygon(50% 2%, 84% 28%, 78% 66%, 50% 98%, 22% 66%, 16% 28%);
-  animation: gemme-reflet 4.6s ease-in-out infinite;
-}
-
-.gemme-etincelle {
+.gemme-trait::after {
+  content: "";
   position: absolute;
-  top: 6%;
-  right: 0;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 6px var(--g1);
-  animation: gemme-clin 3.1s ease-in-out infinite;
+  inset: -80% -170%;
+  pointer-events: none;
+  background-image: linear-gradient(
+    118deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 26%,
+    #ffffff 44%,
+    #ffd0d4 54%,
+    #e1062c 70%,
+    transparent 100%
+  );
+  background-size: 220% 220%;
+  animation: eau-rouge 7.4s ease-in-out infinite;
 }
 
-.gemme-etincelle-b {
-  top: auto;
-  right: auto;
-  bottom: 10%;
-  left: -2px;
-  width: 2px;
-  height: 2px;
-  animation-delay: -1.4s;
+@keyframes eau-rouge {
+  0%,
+  100% { background-position: 8% 40%; opacity: 0.62; }
+  50% { background-position: 92% 62%; opacity: 1; }
+}
+
+.gemme.is-face {
+  animation: gemme-face 0.72s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes gemme-face {
   0% { transform: scale(1); filter: brightness(1); }
-  42% { transform: scale(1.16); filter: brightness(1.55); }
+  42% { transform: scale(1.12); filter: brightness(1.45); }
   100% { transform: scale(1); filter: brightness(1); }
-}
-
-@keyframes gemme-halo {
-  0%, 100% { opacity: 0.32; transform: scale(0.92); }
-  50% { opacity: 0.72; transform: scale(1.08); }
-}
-
-@keyframes gemme-reflet {
-  0%, 100% { background-position: 130% 0; }
-  50% { background-position: -30% 0; }
 }
 
 @keyframes vivant-portrait {
@@ -2258,19 +2236,14 @@ html.title-settled .scroll-reveal {
   50% { opacity: 1; }
 }
 
-@keyframes gemme-clin {
-  0%, 100% { opacity: 0.15; transform: scale(0.55); }
-  46% { opacity: 1; transform: scale(1); }
-}
-
-.gemme.is-liberant .gemme-halo {
+.gemme.is-liberant .gemme-trait {
   animation: gemme-libere 0.48s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes gemme-libere {
-  0% { opacity: 0.45; transform: scale(0.92); }
-  32% { opacity: 1; transform: scale(1.45); }
-  100% { opacity: 0.5; transform: scale(1); }
+  0% { filter: blur(0.28px) drop-shadow(0 0 2px rgba(255, 236, 236, 0.45)) drop-shadow(0 0 5px rgba(196, 20, 40, 0.4)); }
+  36% { filter: blur(0.35px) drop-shadow(0 0 3px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 8px rgba(225, 40, 60, 0.65)); }
+  100% { filter: blur(0.28px) drop-shadow(0 0 2px rgba(255, 236, 236, 0.45)) drop-shadow(0 0 5px rgba(196, 20, 40, 0.4)); }
 }
 
 .info-ripple {
@@ -2656,11 +2629,25 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(112deg, #e9fff3 0%, #8eecc0 32%, #2aaa62 64%, #0c5a32 100%);
+  background: #1c8f4e;
   -webkit-mask: url("/marks/eclair.png") center / contain no-repeat;
   mask: url("/marks/eclair.png") center / contain no-repeat;
   filter: blur(0.35px) drop-shadow(0 0 2px rgba(190, 255, 210, 0.7));
   animation: eclair-souffle 5.6s ease-in-out infinite;
+}
+
+.eclair-trait::after {
+  background-image: linear-gradient(
+    118deg,
+    transparent 0%,
+    rgba(233, 255, 243, 0.18) 28%,
+    #e9fff3 44%,
+    #7ed9a4 56%,
+    #0c5a32 74%,
+    transparent 100%
+  );
+  animation-duration: 7.8s;
+  animation-delay: -4.8s;
 }
 
 .eclair-cendre {
@@ -2702,8 +2689,9 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 }
 
 .count-barre {
-  width: min(12rem, 68%);
+  width: min(14rem, 72%);
   height: 7px;
+  margin: 0.15rem 0 0.1rem;
   background: #3a3a3a;
   border-radius: 0;
 }
@@ -2711,9 +2699,16 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 .count-barre > span {
   display: block;
   height: 100%;
-  background: #fff;
   border-radius: 0;
-  transition: width 0.28s linear;
+  background: #f0b02a;
+}
+
+.count.is-defile {
+  font-size: clamp(1.45rem, 4.8vw, 3.4rem);
+}
+
+.count.is-defile .flip > span {
+  animation: none;
 }
 
 .count-group {
@@ -3745,43 +3740,6 @@ html.nav-vt::view-transition-group(nav-pill) {
   transform: none;
 }
 
-.vie {
-  position: relative;
-  width: 9rem;
-  height: 9rem;
-  margin: 0 0 -1.4rem;
-  pointer-events: none;
-  user-select: none;
-  animation: vie-flot 11s ease-in-out infinite;
-}
-
-.vie-halo {
-  position: absolute;
-  inset: -18%;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(
-    circle,
-    rgba(255, 252, 244, 0.92) 0%,
-    rgba(255, 236, 186, 0.62) 14%,
-    rgba(255, 196, 72, 0.28) 34%,
-    rgba(196, 132, 28, 0.1) 56%,
-    rgba(120, 72, 8, 0.03) 74%,
-    transparent 86%
-  );
-  animation: vie-souffle 9.5s ease-in-out infinite;
-}
-
-@keyframes vie-flot {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -3px, 0); }
-}
-
-@keyframes vie-souffle {
-  0%, 100% { transform: scale(0.97); opacity: 0.86; }
-  50% { transform: scale(1.035); opacity: 1; }
-}
-
 .bebe-endur {
   width: auto;
   height: 4.4rem;
@@ -4517,7 +4475,19 @@ html.nav-vt::view-transition-group(nav-pill) {
 .vent-tour {
   position: absolute;
   inset: 0;
+  z-index: 1;
   transform-origin: center;
+}
+
+.vent-volutes {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: 7rem;
+  height: 7rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .vent-symbole {
