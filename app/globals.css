@@ -4486,25 +4486,27 @@ html.nav-vt::view-transition-group(nav-pill) {
   bottom: calc(5.6rem + env(safe-area-inset-bottom));
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  background: rgba(8, 10, 16, 0.45);
-  color: rgba(190, 235, 205, 0.9);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f7f4ee;
+  box-shadow: none;
   overflow: visible;
 }
 
 .vent-toggle.is-actif {
-  border-color: rgba(150, 230, 175, 0.72);
-  box-shadow: 0 0 16px rgba(90, 190, 120, 0.38);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .vent-marque {
   position: relative;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.7rem;
+  height: 1.7rem;
   pointer-events: none;
   animation: vent-flotte 4.8s ease-in-out infinite;
 }
@@ -4517,12 +4519,13 @@ html.nav-vt::view-transition-group(nav-pill) {
 
 .vent-symbole {
   display: block;
-  width: 100%;
-  height: 100%;
-  background: currentColor;
-  -webkit-mask: url("/marks/vent.svg") center / contain no-repeat;
-  mask: url("/marks/vent.svg") center / contain no-repeat;
-  filter: blur(0.2px);
+  width: 1.7rem;
+  height: 1.7rem;
+  margin: auto;
+  background: #f7f4ee;
+  -webkit-mask: url("/marks/vent.png") center / contain no-repeat;
+  mask: url("/marks/vent.png") center / contain no-repeat;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 6px rgba(255, 255, 255, 0.45));
 }
 
 @keyframes vent-flotte {
