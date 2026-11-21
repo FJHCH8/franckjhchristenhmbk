@@ -3537,12 +3537,11 @@ html.nav-vt::view-transition-group(nav-pill) {
   }
 
   .kin-lettre {
-    clip-path: inset(0 0 110% 0);
+    opacity: 0;
     filter: blur(5px);
     animation: lettre-entre 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(min(var(--i), 22) * 0.03s);
     animation-play-state: paused;
-    transform: translate3d(0, calc((var(--i) - 5) * var(--kin, 0) * -1.15px), 0);
   }
 
   .kin-suivi.is-revele .kin-lettre {
@@ -3609,8 +3608,8 @@ html.nav-vt::view-transition-group(nav-pill) {
 }
 
 @keyframes lettre-entre {
-  from { clip-path: inset(0 0 110% 0); filter: blur(5px); }
-  to { clip-path: inset(0 0 0 0); filter: blur(0); }
+  from { opacity: 0; filter: blur(5px); }
+  to { opacity: 1; filter: blur(0); }
 }
 
 @keyframes mot-entre {
