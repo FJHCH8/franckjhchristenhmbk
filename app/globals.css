@@ -2532,7 +2532,7 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 }
 
 .endurreisen {
-  margin: -0.35rem 0 0;
+  margin: 0;
   color: rgba(244, 247, 255, 0.78);
   font-weight: 300;
   font-size: 0.78rem;
@@ -2635,7 +2635,7 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   display: block;
   width: 100%;
   height: 100%;
-  background: #1c8f4e;
+  background: #2f8a44;
   -webkit-mask: url("/marks/eclair.png") center / contain no-repeat;
   mask: url("/marks/eclair.png") center / contain no-repeat;
   filter: blur(0.35px) drop-shadow(0 0 2px rgba(190, 255, 210, 0.7));
@@ -2643,17 +2643,17 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 }
 
 .eclair-trait::after {
-  background-image: linear-gradient(
-    118deg,
-    transparent 0%,
-    rgba(233, 255, 243, 0.18) 28%,
-    #e9fff3 44%,
-    #7ed9a4 56%,
-    #0c5a32 74%,
-    transparent 100%
-  );
-  animation-duration: 7.8s;
+  inset: 0;
+  background-image: linear-gradient(115deg, #f7fff8 0%, #ffffff 32%, #8fd49a 62%, #2f8a44 100%);
+  background-size: 220% 100%;
+  animation: eclair-onde 7.8s ease-in-out infinite;
   animation-delay: -4.8s;
+}
+
+@keyframes eclair-onde {
+  0%,
+  100% { background-position: 0% 50%; opacity: 1; }
+  50% { background-position: 100% 50%; opacity: 1; }
 }
 
 .eclair-cendre {
@@ -2695,11 +2695,14 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 }
 
 .count-barre {
-  width: min(14rem, 72%);
+  width: 100vw;
   height: 7px;
-  margin: 0.15rem 0 0.1rem;
+  margin: 0;
+  justify-self: center;
   background: #3a3a3a;
   border-radius: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
 }
 
 .count-barre > span {
@@ -3734,7 +3737,7 @@ html.nav-vt::view-transition-group(nav-pill) {
   z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 0.8rem;
+  gap: 8px;
   padding: calc(env(safe-area-inset-top) + 6.8rem) 1rem 1.6rem;
   scroll-margin-top: calc(env(safe-area-inset-top) + 4.5rem);
 }
@@ -3749,7 +3752,7 @@ html.nav-vt::view-transition-group(nav-pill) {
 .bebe-endur {
   width: auto;
   height: 4.4rem;
-  margin: 0.15rem 0 0.1rem;
+  margin: 0;
   pointer-events: none;
   user-select: none;
   transform-origin: center bottom;
