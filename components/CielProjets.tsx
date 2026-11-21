@@ -108,13 +108,6 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
       <section className="endur-haut">
         <div className="vie" aria-hidden="true">
           <span className="vie-halo" />
-          <span className="vie-onde" />
-          <span className="vie-coeur">
-            <span className="vie-eclat" />
-          </span>
-          <span className="vie-grain vie-grain-a" />
-          <span className="vie-grain vie-grain-b" />
-          <span className="vie-grain vie-grain-c" />
         </div>
         <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
         <p className="endurreisen" translate="no">Endurreisen</p>

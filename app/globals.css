@@ -3663,120 +3663,39 @@ html.nav-vt::view-transition-group(nav-pill) {
 
 .vie {
   position: relative;
-  width: 4.6rem;
-  height: 4.6rem;
-  margin: 0 0 -0.15rem;
+  width: 9rem;
+  height: 9rem;
+  margin: 0 0 -1.4rem;
   pointer-events: none;
   user-select: none;
-  animation: vie-flot 7.4s ease-in-out infinite;
-}
-
-.vie-halo,
-.vie-onde,
-.vie-coeur,
-.vie-eclat,
-.vie-grain {
-  position: absolute;
-  pointer-events: none;
+  animation: vie-flot 11s ease-in-out infinite;
 }
 
 .vie-halo {
-  inset: 2%;
+  position: absolute;
+  inset: -18%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 214, 120, 0.42) 0%, rgba(255, 176, 48, 0.16) 46%, transparent 72%);
-  filter: blur(1.5px);
-  animation: vie-halo 6.6s ease-in-out infinite;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 252, 244, 0.92) 0%,
+    rgba(255, 236, 186, 0.62) 14%,
+    rgba(255, 196, 72, 0.28) 34%,
+    rgba(196, 132, 28, 0.1) 56%,
+    rgba(120, 72, 8, 0.03) 74%,
+    transparent 86%
+  );
+  animation: vie-souffle 9.5s ease-in-out infinite;
 }
-
-.vie-onde {
-  inset: 8%;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 220, 150, 0.38);
-  box-shadow: 0 0 16px rgba(255, 196, 80, 0.28);
-  animation: vie-onde 8.2s ease-in-out infinite;
-}
-
-.vie-coeur {
-  inset: 24%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 36% 32%, #fffaf0 0%, #ffe7ad 26%, #f2b43a 58%, #c48116 100%);
-  box-shadow:
-    inset 0 -6px 10px rgba(150, 78, 8, 0.28),
-    inset 0 0 14px rgba(255, 248, 220, 0.85),
-    0 0 18px rgba(255, 196, 80, 0.55);
-  animation: vie-souffle 5.4s ease-in-out infinite;
-}
-
-.vie-eclat {
-  width: 46%;
-  height: 46%;
-  left: 16%;
-  top: 12%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(255, 236, 190, 0.15) 68%, transparent 74%);
-  animation: vie-scintille 4.8s ease-in-out infinite;
-}
-
-.vie-grain {
-  width: 3px;
-  height: 3px;
-  left: 50%;
-  top: 50%;
-  margin: -1.5px 0 0 -1.5px;
-  border-radius: 50%;
-  background: #fff6dd;
-  box-shadow: 0 0 6px rgba(255, 206, 110, 0.9);
-}
-
-.vie-grain-a { animation: vie-grain-a 9.2s ease-in-out infinite; }
-.vie-grain-b { animation: vie-grain-b 11.4s ease-in-out infinite; }
-.vie-grain-c { animation: vie-grain-c 8.4s ease-in-out infinite; }
 
 @keyframes vie-flot {
   0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -6px, 0); }
+  50% { transform: translate3d(0, -3px, 0); }
 }
 
 @keyframes vie-souffle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.07); }
-}
-
-@keyframes vie-halo {
-  0%, 100% { transform: scale(0.92); opacity: 0.72; }
-  50% { transform: scale(1.14); opacity: 1; }
-}
-
-@keyframes vie-onde {
-  0%, 100% { transform: scale(0.86); opacity: 0.28; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-}
-
-@keyframes vie-scintille {
-  0%, 100% { opacity: 0.35; transform: translate3d(0, 0, 0) scale(0.86); }
-  38% { opacity: 0.95; transform: translate3d(1px, 1px, 0) scale(1); }
-  70% { opacity: 0.5; transform: translate3d(-1px, 2px, 0) scale(0.92); }
-}
-
-@keyframes vie-grain-a {
-  0%, 100% { transform: translate3d(10px, 8px, 0); opacity: 0.15; }
-  25% { transform: translate3d(22px, -6px, 0); opacity: 0.85; }
-  50% { transform: translate3d(4px, -18px, 0); opacity: 0.3; }
-  75% { transform: translate3d(-12px, -2px, 0); opacity: 0.7; }
-}
-
-@keyframes vie-grain-b {
-  0%, 100% { transform: translate3d(-8px, 12px, 0); opacity: 0.2; }
-  30% { transform: translate3d(-20px, -4px, 0); opacity: 0.75; }
-  60% { transform: translate3d(-2px, -16px, 0); opacity: 0.25; }
-  82% { transform: translate3d(14px, 2px, 0); opacity: 0.65; }
-}
-
-@keyframes vie-grain-c {
-  0%, 100% { transform: translate3d(6px, -14px, 0); opacity: 0.25; }
-  40% { transform: translate3d(18px, 8px, 0); opacity: 0.8; }
-  70% { transform: translate3d(-6px, 16px, 0); opacity: 0.2; }
+  0%, 100% { transform: scale(0.97); opacity: 0.86; }
+  50% { transform: scale(1.035); opacity: 1; }
 }
 
 .bebe-endur {
