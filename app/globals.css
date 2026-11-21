@@ -1673,7 +1673,8 @@ html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
   transform: translate3d(0, 14px, 0);
   transition:
     opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.72s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--d, 0s);
 }
 
@@ -3522,6 +3523,114 @@ html.nav-vt::view-transition-group(nav-pill) {
   .sky-vignette-sombre {
     transition: none;
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kin-groupe {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .kin-lettre,
+  .kin-mot {
+    display: inline-block;
+  }
+
+  .kin-lettre {
+    clip-path: inset(0 0 110% 0);
+    filter: blur(5px);
+    animation: lettre-entre 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(min(var(--i), 22) * 0.03s);
+    animation-play-state: paused;
+    transform: translate3d(0, calc((var(--i) - 5) * var(--kin, 0) * -1.15px), 0);
+  }
+
+  .kin-suivi.is-revele .kin-lettre {
+    animation-play-state: running;
+  }
+
+  .scroll-head h1.kin-suivi {
+    letter-spacing: calc(-0.045em + var(--kin, 0) * 0.055em);
+  }
+
+  .kin-mot {
+    clip-path: inset(0 100% 0 0);
+    filter: blur(4px);
+    animation: mot-entre 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(min(var(--i), 16) * 0.042s);
+    animation-play-state: paused;
+  }
+
+  .kin-suivi.is-revele .kin-mot {
+    animation-play-state: running;
+  }
+
+  .kin-ligne:not(.qui-line) {
+    clip-path: inset(0 0 100% 0);
+    filter: blur(4px);
+    transform: translate3d(0, 12px, 0);
+    animation: ligne-entre 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-play-state: paused;
+  }
+
+  .kin-ligne.is-revele:not(.qui-line) {
+    animation-play-state: running;
+  }
+
+  .qui-line {
+    filter: blur(4px);
+  }
+
+  .qui-line.is-in {
+    filter: blur(0);
+  }
+
+  .scroll-head:not(.is-revele) .scroll-mark {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  .scroll-head.is-revele .scroll-mark {
+    animation: recit-marque 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @supports (animation-timeline: view()) {
+    .recit-chapitre {
+      animation: recit-chapitre linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 46%;
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    .recit-chapitre.is-chapitre {
+      animation: recit-chapitre 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+  }
+}
+
+@keyframes lettre-entre {
+  from { clip-path: inset(0 0 110% 0); filter: blur(5px); }
+  to { clip-path: inset(0 0 0 0); filter: blur(0); }
+}
+
+@keyframes mot-entre {
+  from { clip-path: inset(0 100% -10% 0); filter: blur(4px); transform: translate3d(0, 0.28em, 0); }
+  to { clip-path: inset(0 0 -10% 0); filter: blur(0); transform: none; }
+}
+
+@keyframes ligne-entre {
+  from { clip-path: inset(0 0 100% 0); filter: blur(4px); transform: translate3d(0, 12px, 0); }
+  to { clip-path: inset(0); filter: blur(0); transform: none; }
+}
+
+@keyframes recit-marque {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0); }
+}
+
+@keyframes recit-chapitre {
+  from { clip-path: inset(10% 0 16% 0); }
+  to { clip-path: inset(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

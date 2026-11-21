@@ -13,6 +13,7 @@ import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
 import { PowerBoot } from "@/components/PowerBoot";
 import { ProjetsSky } from "@/components/ProjetsSky";
+import { Recit } from "@/components/Recit";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
@@ -126,6 +127,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Altimeter />
           <Header />
           <ImageGuard />
+          <Recit />
           <Tilt />
           <EditionPorte />
           {children}
