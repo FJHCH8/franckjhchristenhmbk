@@ -3,6 +3,7 @@ import { Fraunces, Outfit } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
+import { Crests } from "@/components/Crests";
 import { EditionPorte } from "@/components/EditionPorte";
 import { Header } from "@/components/Header";
 import { ImageGuard } from "@/components/ImageGuard";
@@ -60,13 +61,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico?v=bles", sizes: "48x48", type: "image/x-icon" },
-      { url: "/icon-32.png?v=bles", sizes: "32x32", type: "image/png" },
-      { url: "/icon-192.png?v=bles", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png?v=bles", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico?v=champs", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon-32.png?v=champs", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png?v=champs", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png?v=champs", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png?v=bles", sizes: "180x180", type: "image/png" }],
-    shortcut: [{ url: "/favicon.ico?v=bles", type: "image/x-icon" }],
+    apple: [{ url: "/apple-touch-icon.png?v=champs", sizes: "180x180", type: "image/png" }],
+    shortcut: [{ url: "/favicon.ico?v=champs", type: "image/x-icon" }],
   },
   robots: { index: true, follow: true },
   other: { copyright: copyrightNotice() },
@@ -123,6 +124,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           {children}
           <footer className="footer">
             <div className="shell footer-inner">
+              <Crests place="footer" />
               <p className="footer-note" translate="no">
                 {copyrightNotice()}
               </p>

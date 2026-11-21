@@ -23,7 +23,7 @@ export function googleSiteVerification() {
 
 export function pageMetadata(label: string | null, description: string, path: string): Metadata {
   const title = label ? `${PERSON_NAME} — ${label}` : PERSON_NAME;
-  const image = { url: "/opengraph-image", width: 1200, height: 630, alt: PERSON_NAME };
+  const image = { url: "/opengraph-image?v=champs", width: 1200, height: 630, alt: PERSON_NAME };
   return {
     title: { absolute: title },
     description,

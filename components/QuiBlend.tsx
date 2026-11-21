@@ -6,13 +6,19 @@ function clamp(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
-function stableRange() {
+function measure(height: string) {
   const probe = document.createElement("div");
-  probe.style.cssText = "position:absolute;left:0;top:0;height:72lvh;width:0;visibility:hidden;pointer-events:none";
+  probe.style.cssText = `position:absolute;left:0;top:0;height:${height};width:0;visibility:hidden;pointer-events:none`;
   document.body.appendChild(probe);
-  const height = probe.offsetHeight || window.innerHeight * 0.72;
+  const value = probe.offsetHeight;
   probe.remove();
-  return Math.max(320, height);
+  return value;
+}
+
+function stableRange() {
+  const span = measure("72lvh") || window.innerHeight * 0.72;
+  const room = Math.max(1, document.documentElement.scrollHeight - (measure("100lvh") || window.innerHeight));
+  return Math.max(240, Math.min(span, room));
 }
 
 export function QuiBlend() {
@@ -45,7 +51,7 @@ export function QuiBlend() {
       const farV = lite ? 0 : clamp((blur - 0.4) / 0.42);
       const veil = 1 - clamp((progress - 0.22) / 0.78);
       const stars = clamp((progress - 0.08) / 0.8);
-      const zoom = lite ? 1 : 1 + blur * 0.05;
+      const zoom = lite ? 1 : 1 + blur * 0.07;
       const key = `${sharpV.toFixed(3)}|${midV.toFixed(3)}|${farV.toFixed(3)}|${veil.toFixed(3)}|${stars.toFixed(3)}|${zoom.toFixed(4)}`;
       if (key === lastWrite) return;
       lastWrite = key;
@@ -53,7 +59,7 @@ export function QuiBlend() {
       mid.style.opacity = midV.toFixed(3);
       far.style.opacity = farV.toFixed(3);
       field.style.opacity = veil.toFixed(3);
-      field.style.transform = `translate3d(0,0,0) scale(${zoom.toFixed(4)})`;
+      field.style.setProperty("--qui-zoom", zoom.toFixed(4));
       sky.style.opacity = stars.toFixed(3);
       const nextNight = progress > 0.62;
       if (nextNight !== night) {
@@ -159,7 +165,7 @@ export function QuiBlend() {
       document.removeEventListener("visibilitychange", onVisibility);
       sky.style.opacity = "";
       field.style.opacity = "";
-      field.style.transform = "";
+      field.style.removeProperty("--qui-zoom");
       sharp.style.opacity = "";
       mid.style.opacity = "";
       far.style.opacity = "";

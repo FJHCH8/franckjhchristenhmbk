@@ -6,18 +6,26 @@ import { useRef } from "react";
 function lightCrest(node: HTMLButtonElement | null) {
   if (!node) return;
   node.classList.add("is-lit");
+  const glow = node.querySelector(".crest-glow");
+  if (!(glow instanceof HTMLElement)) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  node.classList.remove("is-lighting");
-  void node.offsetWidth;
-  node.classList.add("is-lighting");
+  glow.classList.remove("is-lighting");
+  void glow.offsetWidth;
+  glow.classList.add("is-lighting");
+  const done = (event: AnimationEvent) => {
+    if (event.target !== glow || event.animationName !== "crest-light" && event.animationName !== "crest-light-night") return;
+    glow.classList.remove("is-lighting");
+    glow.removeEventListener("animationend", done);
+  };
+  glow.addEventListener("animationend", done);
 }
 
-export function Crests() {
+export function Crests({ place = "hero" }: { place?: "hero" | "footer" }) {
   const blasonRef = useRef<HTMLButtonElement>(null);
   const dropsRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="crests">
+    <div className={place === "footer" ? "crests crests-footer" : "crests"}>
       <button
         ref={blasonRef}
         type="button"
@@ -34,7 +42,7 @@ export function Crests() {
             height={1721}
             sizes="120px"
             unoptimized
-            priority
+            priority={place === "hero"}
             draggable={false}
           />
         </span>
@@ -55,7 +63,7 @@ export function Crests() {
             height={1573}
             sizes="150px"
             unoptimized
-            priority
+            priority={place === "hero"}
             draggable={false}
           />
         </span>

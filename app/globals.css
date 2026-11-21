@@ -1029,8 +1029,10 @@ main {
 
 .crests {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  gap: 1.15rem;
 }
 
 .crest {
@@ -1059,10 +1061,15 @@ main {
 
 .crest-glow {
   display: block;
-  padding: 1.75rem;
+  padding: 0.35rem 0.1rem;
   background: transparent;
   box-shadow: none;
   filter: drop-shadow(0 0 0.7px rgba(255, 255, 255, 0.75));
+  animation: crest-brillance 6.2s ease-in-out infinite;
+}
+
+.crest-drops .crest-glow {
+  animation-delay: -2.8s;
 }
 
 html[data-theme="sombre"] .crest-glow {
@@ -1088,12 +1095,16 @@ html[data-theme="sombre"] .crest.is-lit .crest-glow {
   -webkit-user-drag: none;
 }
 
-.crest-blason .crest-art {
-  width: 7.1rem;
+.crest-art {
+  height: 8.2rem;
 }
 
-.crest-drops .crest-art {
-  width: 9.2rem;
+.crests-footer .crest-art {
+  height: 4.4rem;
+}
+
+.crests-footer {
+  gap: 0.7rem;
 }
 
 .top-frost {
@@ -1288,7 +1299,9 @@ html[data-sky="cloud"] body {
 
 .footer-inner {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
   border-top: 1px solid var(--line);
   padding-top: 1.25rem;
   color: var(--text-soft);
@@ -1955,7 +1968,7 @@ html.title-settled .scroll-reveal {
 }
 
 .mark-infini {
-  --mark: url("/marks/infini.png");
+  --mark: url("/marks/symbole-x.png");
   -webkit-mask-image: var(--mark);
   mask-image: var(--mark);
   animation: infini-breathe 7.6s ease-in-out infinite;
@@ -1963,7 +1976,7 @@ html.title-settled .scroll-reveal {
 
 .mark-parchemin {
   height: 5.4rem;
-  --mark: url("/marks/parchemin.png");
+  --mark: url("/marks/symbole-parchemin.png");
   -webkit-mask-image: var(--mark);
   mask-image: var(--mark);
   animation: parchemin-wave 6.8s ease-in-out infinite;
@@ -2069,6 +2082,46 @@ html.title-settled .scroll-reveal {
   min-width: 0;
 }
 
+.logo-eau {
+  position: relative;
+  display: inline-block;
+  width: calc(1.7rem * 640 / 2071);
+  height: 1.7rem;
+  flex: none;
+  vertical-align: middle;
+  background: #8ecfff;
+  pointer-events: none;
+  -webkit-mask: url("/marks/logo-eau.png") center / contain no-repeat;
+  mask: url("/marks/logo-eau.png") center / contain no-repeat;
+}
+
+.logo-eau::after {
+  content: "";
+  position: absolute;
+  inset: -70% -120%;
+  background: linear-gradient(
+    118deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 32%,
+    #ffffff 46%,
+    #c5e8ff 58%,
+    #3aa4ff 74%,
+    transparent 100%
+  );
+  background-size: 220% 220%;
+  animation: eau-onde 6.8s ease-in-out infinite;
+}
+
+.rubrique + .rubrique .logo-eau::after {
+  animation-delay: -3.2s;
+}
+
+@keyframes eau-onde {
+  0%,
+  100% { background-position: 8% 40%; opacity: 0.28; }
+  50% { background-position: 92% 62%; opacity: 0.95; }
+}
+
 .gemme {
   --g1: #fff8f5;
   --g2: #f4d4cb;
@@ -2077,17 +2130,12 @@ html.title-settled .scroll-reveal {
   --g5: #8e3040;
   position: relative;
   display: inline-block;
-  width: 2.15rem;
-  height: 2.65rem;
+  width: 1.7rem;
+  height: 2.1rem;
   flex: none;
   pointer-events: none;
   vertical-align: middle;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--g3) 80%, white));
-}
-
-.gemme-petit {
-  width: 1.7rem;
-  height: 2.1rem;
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--g2) 70%, white));
 }
 
 .gemme-ame {
@@ -2123,40 +2171,18 @@ html.title-settled .scroll-reveal {
   animation: gemme-halo 5.2s ease-in-out infinite;
 }
 
-.gemme-scene {
+.gemme-face {
   position: absolute;
   inset: 0;
-  perspective: 240px;
 }
 
-.gemme-pivot {
-  position: absolute;
-  inset: 0;
-  transform: rotateX(16deg);
-  transform-style: preserve-3d;
+.gemme.is-face .gemme-face {
+  animation: gemme-face 0.72s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.gemme-spin {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: gemme-tour 7.2s ease-in-out infinite;
-  backface-visibility: visible;
-}
-
-.gemme-ciel .gemme-spin { animation-delay: -3.6s; }
-.gemme-nature .gemme-spin { animation-delay: -7.2s; }
-
-.gemme-avant,
-.gemme-dos,
 .gemme-reflet {
   position: absolute;
   inset: 0;
-}
-
-.gemme-avant {
-  transform: none;
-  backface-visibility: visible;
 }
 
 .gemme-plaque {
@@ -2196,9 +2222,10 @@ html.title-settled .scroll-reveal {
   animation-delay: -1.4s;
 }
 
-@keyframes gemme-tour {
-  0%, 100% { transform: rotateY(-32deg); }
-  50% { transform: rotateY(32deg); }
+@keyframes gemme-face {
+  0% { transform: scale(1); filter: brightness(1); }
+  42% { transform: scale(1.16); filter: brightness(1.55); }
+  100% { transform: scale(1); filter: brightness(1); }
 }
 
 @keyframes gemme-halo {
@@ -3094,6 +3121,10 @@ html.nav-vt::view-transition-group(nav-pill) {
   .footer {
     padding-bottom: calc(6.4rem + env(safe-area-inset-bottom));
   }
+
+  .crests:not(.crests-footer) .crest-art {
+    height: 6.5rem;
+  }
 }
 
 @media (max-width: 360px) {
@@ -3238,11 +3269,11 @@ html.nav-vt::view-transition-group(nav-pill) {
       text-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .crest.is-lighting .crest-glow {
+  .crest-glow.is-lighting {
     animation: crest-light 0.85s ease;
   }
 
-  html[data-theme="sombre"] .crest.is-lighting .crest-glow {
+  html[data-theme="sombre"] .crest-glow.is-lighting {
     animation-name: crest-light-night;
   }
 
@@ -3451,6 +3482,17 @@ html.nav-vt::view-transition-group(nav-pill) {
 
   to {
     background-position: -80% 0;
+  }
+}
+
+@keyframes crest-brillance {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0.6px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 7px rgba(198, 220, 255, 0.18));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 1.1px #fff) drop-shadow(0 0 16px rgba(214, 228, 255, 0.78));
   }
 }
 
@@ -4459,55 +4501,35 @@ html.nav-vt::view-transition-group(nav-pill) {
   box-shadow: 0 0 16px rgba(90, 190, 120, 0.38);
 }
 
-.brin {
+.vent-marque {
   position: relative;
   width: 1.55rem;
-  height: 1.7rem;
+  height: 1.55rem;
   pointer-events: none;
+  animation: vent-flotte 4.8s ease-in-out infinite;
 }
 
-.brin-scene,
-.brin-pivot,
-.brin-spin,
-.brin-face {
+.vent-tour {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
+  transform-origin: center;
 }
 
-.brin-scene { perspective: 180px; }
-.brin-pivot { transform: rotateX(12deg); }
-
-.brin-spin {
-  animation: brin-tour 9s linear infinite;
+.vent-symbole {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  -webkit-mask: url("/marks/vent.svg") center / contain no-repeat;
+  mask: url("/marks/vent.svg") center / contain no-repeat;
+  filter: blur(0.2px);
 }
 
-.brin-dos { transform: rotateY(180deg); }
-
-.brin-herbe {
-  position: absolute;
-  left: 50%;
-  bottom: 8%;
-  width: 4px;
-  margin-left: -2px;
-  border-radius: 6px 6px 1px 1px;
-  transform-origin: 50% 100%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, #d9f8e2 16%, #6fbf88 58%, #2f7a4e 100%);
-  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.55);
-  clip-path: polygon(50% 0, 100% 72%, 68% 100%, 32% 100%, 0 72%);
+@keyframes vent-flotte {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
 }
-
-.brin-a { height: 72%; transform: rotateZ(-16deg); }
-.brin-b { height: 92%; width: 5px; margin-left: -2.5px; transform: rotateZ(0deg); }
-.brin-c { height: 68%; transform: rotateZ(15deg); }
-
-.vent-toggle.is-actif .brin-herbe {
-  animation: brin-courbe 1.35s ease-in-out infinite;
-}
-
-.vent-toggle.is-actif .brin-a { animation-delay: 0s; }
-.vent-toggle.is-actif .brin-b { animation-delay: 0.08s; }
-.vent-toggle.is-actif .brin-c { animation-delay: 0.16s; }
 
 .brin-vent {
   position: absolute;
@@ -4530,21 +4552,6 @@ html.nav-vt::view-transition-group(nav-pill) {
 
 .vent-toggle.is-actif .brin-vent-b { animation-delay: 0.28s; }
 .vent-toggle.is-actif .brin-vent-c { animation-delay: 0.55s; }
-
-@keyframes brin-tour {
-  from { transform: rotateY(0deg); }
-  to { transform: rotateY(360deg); }
-}
-
-@keyframes brin-courbe {
-  0%, 100% { transform: rotateZ(var(--inclin, 0deg)); }
-  35% { transform: rotateZ(calc(var(--inclin, 0deg) + 22deg)) translateX(1px); }
-  70% { transform: rotateZ(calc(var(--inclin, 0deg) - 8deg)); }
-}
-
-.brin-a { --inclin: -16deg; }
-.brin-b { --inclin: 0deg; }
-.brin-c { --inclin: 15deg; }
 
 @keyframes brin-file {
   0% { transform: translate3d(0, 0, 0); opacity: 0; }

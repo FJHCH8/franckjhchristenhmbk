@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Countdown } from "@/components/Countdown";
-import { Gemme } from "@/components/Gemme";
+import { LogoEau } from "@/components/LogoEau";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
@@ -136,7 +136,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                   }}
                 >
                   <span className="rubrique-nom">
-                    <Gemme tone="ciel" petit />
+                    <LogoEau />
                     <span>{nomSection(cle)}</span>
                   </span>
                   <span className="rubrique-meta">
