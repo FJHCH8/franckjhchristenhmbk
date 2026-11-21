@@ -3525,122 +3525,45 @@ html.nav-vt::view-transition-group(nav-pill) {
   }
 }
 
+.veille-mot {
+  background: none;
+  box-shadow: none;
+  filter: none;
+}
+
+.prose,
+.qui-line,
+.qui-note-copy,
+.reserve dd,
+.motto,
+.etoile-texte,
+.contact-links,
+figcaption {
+  font-family: var(--font-texte), var(--font-sans), sans-serif;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .kin-groupe {
-    display: inline-block;
-    white-space: nowrap;
-  }
-
-  .kin-lettre,
-  .kin-mot {
-    display: inline-block;
-    overflow: visible;
+  .veille-mot,
+  .veille-titre {
+    opacity: 0.33;
+    transition: opacity 0.16s ease-out;
     background: none;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    vertical-align: baseline;
+    filter: none;
+    transform: none;
   }
 
-  .scroll-head h1.kin-suivi,
-  .endurreisen.kin-suivi,
-  .welcome.kin-suivi,
-  .epithet.kin-suivi {
-    overflow: visible;
-    line-height: 1.28;
-  }
-
-  .kin-lettre {
-    padding: 0.18em 0.01em 0.28em;
-    margin: -0.18em 0 -0.28em;
-    opacity: 0;
-    animation: lettre-entre 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(min(var(--i), 22) * 0.03s);
-    animation-play-state: paused;
-  }
-
-  .kin-suivi.is-revele .kin-lettre {
-    animation-play-state: running;
-  }
-
-  .scroll-head h1.kin-suivi {
-    letter-spacing: calc(-0.045em + var(--kin, 0) * 0.055em);
-  }
-
-  .kin-mot {
-    padding: 0.12em 0 0.22em;
-    margin: -0.12em 0 -0.22em;
-    opacity: 0;
-    animation: mot-entre 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(min(var(--i), 16) * 0.042s);
-    animation-play-state: paused;
-  }
-
-  .kin-suivi.is-revele .kin-mot {
-    animation-play-state: running;
-  }
-
-  .kin-ligne:not(.qui-line) {
-    opacity: 0;
-    transform: translate3d(0, 12px, 0);
-    animation: ligne-entre 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-play-state: paused;
-  }
-
-  .kin-ligne.is-revele:not(.qui-line) {
-    animation-play-state: running;
+  .veille-mot.is-allume,
+  .veille-titre.is-allume {
+    opacity: 1;
   }
 
   .qui-line {
+    opacity: 1;
+    transform: none;
     filter: none;
   }
-
-  .scroll-head:not(.is-revele) .scroll-mark {
-    clip-path: inset(0 0 100% 0);
-  }
-
-  .scroll-head.is-revele .scroll-mark {
-    animation: recit-marque 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  @supports (animation-timeline: view()) {
-    .recit-chapitre {
-      animation: recit-chapitre linear both;
-      animation-timeline: view();
-      animation-range: entry 8% cover 46%;
-    }
-  }
-
-  @supports not (animation-timeline: view()) {
-    .recit-chapitre.is-chapitre {
-      animation: recit-chapitre 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-  }
-}
-
-@keyframes lettre-entre {
-  from { opacity: 0; transform: translate3d(0, 0.22em, 0); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes mot-entre {
-  from { opacity: 0; transform: translate3d(0, 0.28em, 0); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes ligne-entre {
-  from { opacity: 0; transform: translate3d(0, 12px, 0); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes recit-marque {
-  from { clip-path: inset(0 0 100% 0); }
-  to { clip-path: inset(0); }
-}
-
-@keyframes recit-chapitre {
-  from { opacity: 0.55; transform: translate3d(0, 16px, 0); }
-  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

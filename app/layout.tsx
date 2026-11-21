@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Orbitron, Outfit } from "next/font/google";
+import { Fraunces, Inter, Orbitron, Outfit } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
@@ -41,6 +41,14 @@ const chrono = Orbitron({
   display: "swap",
   weight: "500",
   variable: "--font-chrono",
+});
+
+const texte = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-texte",
 });
 
 const googleVerification = googleSiteVerification();
@@ -94,7 +102,7 @@ const jsonLd = structuredData();
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${display.variable} ${sans.variable} ${chrono.variable}`}>
+      <body className={`${display.variable} ${sans.variable} ${chrono.variable} ${texte.variable}`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
