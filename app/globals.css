@@ -3525,10 +3525,21 @@ html.nav-vt::view-transition-group(nav-pill) {
   }
 }
 
-.veille-mot {
+.veille-mot,
+.veille-signe {
   background: none;
   box-shadow: none;
   filter: none;
+}
+
+.veille-signe {
+  display: inline-block;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+  vertical-align: baseline;
+  text-align: center;
+  line-height: inherit;
 }
 
 .prose,
