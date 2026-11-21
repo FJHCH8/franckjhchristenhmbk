@@ -107,10 +107,10 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
         <img src="/ciel/voie-lactee.jpg" alt="" />
       </div>
       <section className="endur-haut">
-        <BarreCompte />
         <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
         <p className="endurreisen" translate="no">Endurreisen</p>
         <Countdown />
+        <BarreCompte />
       </section>
       <div className="rubriques">
         {ordre.map((cle) => {
