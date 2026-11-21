@@ -23,7 +23,7 @@ export default function HomePage() {
               <figure className="motto">
                 <blockquote>
                   <Block lines={["100%", "78%"]}>
-                    <p>« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »</p>
+                    <p>«&nbsp;Ta deuxième vie commence quand tu comprends que tu n’en as qu’une.&nbsp;»</p>
                   </Block>
                 </blockquote>
                 <figcaption>
