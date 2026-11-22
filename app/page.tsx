@@ -26,7 +26,7 @@ export default function HomePage() {
               <figure className="motto">
                 <blockquote>
                   <p>
-                    <Split text={"«\u00a0Ta deuxième vie commence quand tu comprends que tu n’en as qu’une.\u00a0»"} delay={380} />
+                    <Split text={"«\u00a0Ta deuxième vie commence quand tu comprends que tu n’en as qu’une.\u00a0»"} delay={380} lang />
                   </p>
                 </blockquote>
                 <figcaption>

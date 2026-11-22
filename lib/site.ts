@@ -48,6 +48,15 @@ export function copyrightSpan(now = new Date()) {
   return year > 2026 ? `2026–${year}` : "2026";
 }
 
+/** Le copyright en trois morceaux, pour écrire le nom en Davissis quand la langue est choisie. */
+export function copyrightParts(now = new Date()) {
+  return {
+    avant: `© ${copyrightSpan(now)} `,
+    nom: "Franck J.H. Christen",
+    apres: " — Tous droits réservés. Toute reproduction, totale ou partielle, des textes, images, idées et créations de ce site est interdite sans autorisation.",
+  };
+}
+
 export function copyrightNotice(now = new Date()) {
   return `© ${copyrightSpan(now)} Franck J.H. Christen — Tous droits réservés. Toute reproduction, totale ou partielle, des textes, images, idées et créations de ce site est interdite sans autorisation.`;
 }

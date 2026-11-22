@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BarreCompte, CompteEndur, Countdown } from "@/components/Countdown";
 import { Split } from "@/components/Kinetic";
+import { T } from "@/components/Locale";
 import { LogoEau } from "@/components/LogoEau";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
@@ -174,7 +175,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                                 </blockquote>
                               ) : null}
                               <p className="etoile-signature">
-                                <span>{SIGNATURE}</span>
+                                <span><T>{SIGNATURE}</T></span>
                               </p>
                               <FermerBouton onClick={() => setActive(null)} />
                             </div>
@@ -220,7 +221,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                 ),
               )}
               <p className="etoile-signature">
-                <span>{SIGNATURE}</span>
+                <span><T>{SIGNATURE}</T></span>
                 {chosen.date ? <time dateTime={chosen.date}>{dateFr(chosen.date)}</time> : null}
               </p>
               <FermerBouton onClick={() => setActive(null)} />
@@ -231,7 +232,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             <li key={etoile.id}>
               {etoile.texte ? <blockquote>{etoile.texte}</blockquote> : null}
               {etoile.titre ? <span>{etoile.titre}</span> : null}
-              <span>{SIGNATURE}</span>
+              <span><T>{SIGNATURE}</T></span>
               {etoile.date ? <time dateTime={etoile.date}>{dateFr(etoile.date)}</time> : null}
             </li>
           ))}
@@ -244,7 +245,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
               {form.texte || form.titre || "Aperçu"}
             </blockquote>
             <p className="etoile-signature">
-              <span>Franck J.H. Christen</span>
+              <span><T>Franck J.H. Christen</T></span>
             </p>
             <div className="police-choix" role="group" aria-label="Police">
               {(["fraunces", "outfit", "georgia"] as Police[]).map((police) => (

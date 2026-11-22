@@ -32,7 +32,7 @@ import { SonBouton } from "@/components/SonBouton";
 import { Suite } from "@/components/Suite";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
-import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
+import { copyrightNotice, copyrightParts, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -207,7 +207,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Lux />
           <PageSky />
           <p className="rail" translate="no">
-            © Franck J.H. Christen
+            © <T>Franck J.H. Christen</T>
           </p>
           <Header />
           <ImageGuard />
@@ -224,7 +224,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             <div className="shell footer-inner">
               <Crests place="footer" />
               <p className="footer-note" translate="no">
-                {copyrightNotice()}
+                {copyrightParts().avant}
+                <T>{copyrightParts().nom}</T>
+                {copyrightParts().apres}
               </p>
             </div>
           </footer>

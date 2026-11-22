@@ -52,7 +52,7 @@ export function Bento() {
         <Split text="Explorer" mode="chars" lang />
       </p>
       <h2 className="bento-titre" id="titre-bento">
-        <Split text="Franck J.H. Christen" mode="chars" className="kt-x" />
+        <Split text="Franck J.H. Christen" mode="chars" className="kt-x" lang />
       </h2>
       <div className="bento-grille">
         <Carte href="/qui-suis-je" className="bento-qui" image="/media/franck.jpg" focus="50% 30%" index={0}>
@@ -65,7 +65,7 @@ export function Bento() {
         <Carte className="bento-citation" index={1}>
           <span className="bento-etiquette">Citation</span>
           <span className="bento-moyen">
-            <Split text={"« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »"} />
+            <Split text={"« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »"} lang />
           </span>
           <span className="bento-petit">— Raphaëlle Giordano</span>
         </Carte>

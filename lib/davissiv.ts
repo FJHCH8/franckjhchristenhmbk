@@ -9,12 +9,13 @@ export const LASSAVI_DE_FRANCK: Record<string, string> = {};
  */
 export const DAVISSIV: Record<string, string> = {
   "Franck J.H. CHRISTEN H.M.B.K.": "frank j.h christen h.m.b.k",
+  "Franck J.H. Christen": "frank j.h christen h.m.b.k",
   Accueil: "Oveksa",
   "Qui suis-je": "Maa eebit",
   "À propos": "Laab",
   Contact: "Abam",
   Projets: "Vayak",
-  Bienvenue: "",
+  Bienvenue: "Hantaamis",
   Polymathe: "",
   "02 — Le site": "",
   Présentation: "",
@@ -26,7 +27,7 @@ export const DAVISSIV: Record<string, string> = {
   "Des projets paraîtront ici.": "",
   "L’attente n’est pas un vide : c’est le noir où les choses prennent forme.": "",
   "Altitude de la page": "",
-  "« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »": "",
+  "« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »": "Lannabtammive alban ash obayes e apashes paa.",
   "— Raphaëlle Giordano": "",
   "Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck.": "",
   "La vie, les projets et les annonces de Franck y prennent place.": "",
@@ -42,6 +43,8 @@ export const DAVISSIV: Record<string, string> = {
 };
 
 export function texteDavissiv(francais: string) {
+  // Les espaces insécables comptent comme des espaces ordinaires.
+  francais = francais.replace(/\u00a0/g, " ");
   const propre = DAVISSIV[francais]?.trim();
   if (propre) return propre;
   const ancien = LASSAVI_DE_FRANCK[francais]?.trim();

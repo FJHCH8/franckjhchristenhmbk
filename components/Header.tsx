@@ -106,7 +106,7 @@ export function Header() {
             <Logo />
           </span>
           <span className="brand-name" translate="no">
-            Franck J.H. CHRISTEN H.M.B.K.
+            <T>Franck J.H. CHRISTEN H.M.B.K.</T>
           </span>
         </Link>
         <div className="nav-dock">
