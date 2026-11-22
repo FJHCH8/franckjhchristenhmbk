@@ -386,7 +386,7 @@ export function createGalaxie(canvas: HTMLCanvasElement, lite: boolean): Galaxie
     render(state) {
       const aspectX = width / height;
       // La galaxie évolue lentement : une image sur deux suffit, sauf la première.
-      if (frame % 2 === 0) {
+      if (frame % 3 === 0) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.viewport(0, 0, nebW, nebH);
         gl.useProgram(nebulaProg);

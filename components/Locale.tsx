@@ -71,10 +71,19 @@ export function titleLabel(locale: LocaleName, text: string, keep = false) {
   return texteDavissiv(text);
 }
 
+/** Vrai si ce texte a une traduction en Davissis : elle s'écrit alors dans l'écriture Davissis. */
+export function estTraduit(locale: LocaleName, francais: string) {
+  return locale === "davissiv" && texteDavissiv(francais) !== francais;
+}
+
 export function T({ children }: { children: string; width?: string }) {
   const { locale } = useLocale();
-  if (locale !== "davissiv") return <>{children}</>;
-  return <>{texteDavissiv(children)}</>;
+  if (!estTraduit(locale, children)) return <>{children}</>;
+  return (
+    <span className="davissis" lang="x-davissis">
+      {texteDavissiv(children)}
+    </span>
+  );
 }
 
 export function Block({ children }: { lines?: string[]; children: ReactNode }) {

@@ -225,7 +225,10 @@ export function ProjetsSky() {
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, life: 0, target: 0 };
     // Sur téléphone, 30 images par seconde suffisent au ciel et laissent le défilement fluide.
     const touch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-    const minStep = touch || lite ? 1000 / 31 : 0;
+    // Le ciel évolue lentement : 24 images par seconde suffisent, et soulagent tout le reste
+    // (chaque surface en verre dépoli refait son flou à chaque image du ciel).
+    void touch;
+    const minStep = lite ? 1000 / 16 : 1000 / 24;
     let lastDraw = 0;
     let checks = 0;
     let visible = true;
@@ -236,7 +239,7 @@ export function ProjetsSky() {
       if (Math.abs(w - width) < 2 && Math.abs(h - height) < 2) return;
       width = w;
       height = h;
-      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 1.5);
+      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 0.6 : 0.85);
       galaxie.resize(w, h, dpr);
     };
 

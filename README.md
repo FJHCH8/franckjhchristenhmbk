@@ -66,6 +66,18 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Verre dépoli avec une légère dispersion de couleurs sur les bords.
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
 
+## Écriture Davissis
+
+La police `public/fonts/davissis.woff2` (6 Ko) dessine l’écriture du Davissis, d’après les formes de Franck. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
+
+On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
+
+- `aa ii oo ee uu` : voyelles longues ; `a i o e u` après une consonne : signe posé au-dessus ;
+- `sh`, `ts` ou `c`, `mg`, `x` : lettres propres ; consonne doublée : signe « ∩ » dessous ; `'` : trait haut ;
+- `! . , ; ?` : ponctuation du Davissis.
+
+Sur le site, en mode Davissis, tout texte qui a une traduction dans `lib/davissiv.ts` s’écrit dans cette écriture.
+
 ## Scripts
 
 - `npm run dev` — serveur de développement

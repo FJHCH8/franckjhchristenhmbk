@@ -158,7 +158,7 @@ export function ScrollTitle({
     };
   }, [label]);
 
-  const face = label ? <Split text={label} mode="chars" delay={120} /> : <span className="skel" style={{ width: "6.5em" }} aria-hidden="true" />;
+  const face = label ? <Split text={text} lang={!keep} mode="chars" delay={120} /> : <span className="skel" style={{ width: "6.5em" }} aria-hidden="true" />;
 
   return (
     <div ref={stageRef} className={tone === "sea" ? "scroll-stage tone-sea" : "scroll-stage"} style={{ ["--title-max" as string]: String(max) }}>
@@ -172,7 +172,9 @@ export function ScrollTitle({
         </span>
       </div>
       <div className="title-dock" ref={barRef} aria-hidden="true">
-        <p className="title-dock-pill">{label ?? <span className="skel" style={{ width: "5.5em" }} />}</p>
+        <p className="title-dock-pill">
+          {label && label !== text ? <span className="davissis">{label}</span> : (label ?? <span className="skel" style={{ width: "5.5em" }} />)}
+        </p>
       </div>
     </div>
   );

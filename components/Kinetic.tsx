@@ -33,9 +33,17 @@ function hasard(index: number) {
  * Découpe un texte en mots ou en lettres, rendus par React.
  * Le texte lisible reste entier pour les lecteurs d'écran et le copier-coller.
  */
-export function Split({ text, mode = "words", lang = false, lit = false, delay = 0, className }: SplitProps) {
+export function Split({ text, mode: modeDemande = "words", lang = false, lit = false, delay = 0, className: classeDemandee }: SplitProps) {
+  let mode = modeDemande;
+  let className = classeDemandee;
   const { locale } = useLocale();
-  const value = lang && locale === "davissiv" ? texteDavissiv(text) : text;
+  const traduit = lang && locale === "davissiv" && texteDavissiv(text) !== text;
+  const value = traduit ? texteDavissiv(text) : text;
+  // L'écriture Davissis lie ses lettres et pose ses voyelles : on ne coupe pas ses mots en lettres.
+  if (traduit) {
+    mode = "words";
+    className = className ? `${className} davissis` : "davissis";
+  }
   const parts = value.split(SPACE).filter(Boolean);
   const classes = ["kt", lit === "css" ? "kt-lit" : "", className ?? ""].filter(Boolean).join(" ");
 

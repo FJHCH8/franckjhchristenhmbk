@@ -227,8 +227,13 @@ export default function Ficelle({
     taille();
     window.addEventListener("resize", taille);
 
+    const tactile = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const pas = tactile || lite ? 1000 / 31 : 0;
+    let trace = 0;
     const dessiner = (now: number) => {
       frame = window.requestAnimationFrame(dessiner);
+      if (now - trace < pas) return;
+      trace = now;
       const dt = Math.min(0.05, (now - dernier) / 1000);
       dernier = now;
       temps += dt;

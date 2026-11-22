@@ -190,10 +190,27 @@ export function Experience() {
       ring.style.transform = `translate3d(${ringPos.x}px, ${ringPos.y}px, 0) scale(${scale.toFixed(3)})`;
 
       lenis.raf(now);
-      frame = window.requestAnimationFrame(tick);
+      // Rien ne bouge : la boucle s'endort jusqu'au prochain geste.
+      const calme =
+        !lenis.isScrolling &&
+        Math.abs(mouse.x - ringPos.x) < 0.3 &&
+        Math.abs(mouse.y - ringPos.y) < 0.3 &&
+        Math.abs(scaleTarget - scale) < 0.002;
+      frame = calme ? 0 : window.requestAnimationFrame(tick);
     };
 
+    const reveiller = () => {
+      if (frame) return;
+      last = performance.now();
+      frame = window.requestAnimationFrame(tick);
+    };
+    window.addEventListener("wheel", reveiller, { passive: true });
+    window.addEventListener("touchstart", reveiller, { passive: true });
+    window.addEventListener("keydown", reveiller);
+    window.addEventListener("scroll", reveiller, { passive: true });
+
     const onMove = (event: PointerEvent) => {
+      reveiller();
       if (event.pointerType !== "mouse") return;
       mouse.x = event.clientX;
       mouse.y = event.clientY;
@@ -256,6 +273,10 @@ export function Experience() {
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
       document.documentElement.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("wheel", reveiller);
+      window.removeEventListener("touchstart", reveiller);
+      window.removeEventListener("keydown", reveiller);
+      window.removeEventListener("scroll", reveiller);
       lenis.destroy();
       delete (window as Window & { __lenis?: Lenis }).__lenis;
       stopScroll.current = () => undefined;

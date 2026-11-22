@@ -6913,3 +6913,69 @@ html.nav-lent .chargement {
 .chargement .intro-anneau {
   opacity: 1;
 }
+
+/* ═════════════════════════ Écriture Davissis ═════════════════════════ */
+
+@font-face {
+  font-family: "Davissis";
+  src: url("/fonts/davissis.woff2") format("woff2");
+  font-display: swap;
+}
+
+.davissis {
+  font-family: "Davissis", var(--font-text);
+  font-weight: 400;
+  font-feature-settings: "liga" 1, "calt" 1;
+  letter-spacing: 0.02em;
+  /* Place pour les voyelles posées au-dessus et le signe de doublement dessous. */
+  line-height: 1.5;
+}
+
+/* ═════════════════════════ Économie d'énergie ═════════════════════════ */
+
+/* Le grain reste, mais immobile : plus aucune animation plein écran. */
+.grain {
+  inset: 0;
+  animation: none;
+}
+
+/* Les dégradés organiques bougent plus lentement, et seulement à l'écran. */
+.bento-mesh,
+.intro-mesh {
+  animation-duration: 28s;
+  will-change: auto;
+}
+
+/* Sur téléphone, les flous de verre sont plus légers à calculer. */
+@media (hover: none), (pointer: coarse) {
+  .glass,
+  .bento-carte,
+  .echiquier,
+  .title-dock-pill,
+  .son-bouton,
+  .flacon-bouton,
+  .lang {
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    backdrop-filter: blur(10px) saturate(1.2);
+  }
+
+  .bento-mesh {
+    animation: none;
+  }
+}
+
+/* Les animations infinies s'arrêtent quand l'élément n'est pas visible. */
+.bento-carte,
+.echecs,
+.footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+/* En grand, le trait de la police s'épaissit pour tenir face aux titres. */
+.scroll-head h1 .davissis,
+.chap-mot .davissis,
+.suite-titre .davissis {
+  -webkit-text-stroke: 0.035em currentColor;
+  paint-order: stroke fill;
+}

@@ -56,7 +56,7 @@ export function LanguageToggle() {
         tabIndex={locale === "davissiv" ? 0 : -1}
         onClick={() => choose("davissiv")}
       >
-        Davissiv
+        Davissis
       </button>
     </div>
   );
