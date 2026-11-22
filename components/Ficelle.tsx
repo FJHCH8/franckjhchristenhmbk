@@ -168,7 +168,6 @@ export default function Ficelle({
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const formes = useRef<{ bocal: Forme; images: (Forme | null)[]; secours: Forme } | null>(null);
-  const souris = useRef({ x: -9999, y: -9999 });
 
   useEffect(() => {
     formes.current = { bocal: bocal(), images: images.map(() => null), secours: cercle() };
@@ -186,23 +185,6 @@ export default function Ficelle({
     };
   }, [images, onPret]);
 
-  useEffect(() => {
-    const onMove = (event: PointerEvent) => {
-      souris.current.x = event.clientX;
-      souris.current.y = event.clientY;
-    };
-    const onLeave = () => {
-      souris.current.x = -9999;
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerdown", onMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onLeave);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerdown", onMove);
-      document.documentElement.removeEventListener("pointerleave", onLeave);
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -269,8 +251,6 @@ export default function Ficelle({
       const cx = W / 2;
       const cy = H / 2 + e.decalage;
       const tremble = e.phase === "bocal" ? e.fissure * e.fissure * 0.012 : 0;
-      const sx = souris.current.x;
-      const sy = souris.current.y;
 
       for (let k = 0; k < N; k += 1) {
         const t = k / (N - 1);
@@ -292,20 +272,8 @@ export default function Ficelle({
           x += (Math.random() - 0.5) * tremble;
           y += (Math.random() - 0.5) * tremble;
         }
-        let px = cx + x * echelle;
-        let py = cy + y * echelle;
-        // Le doigt ou la souris écarte la ficelle.
-        const dx = px - sx;
-        const dy = py - sy;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 120 * 120) {
-          const d = Math.sqrt(d2) || 1;
-          const pousse = (1 - d / 120) ** 2 * 38;
-          px += (dx / d) * pousse;
-          py += (dy / d) * pousse;
-        }
-        xs[k] = px;
-        ys[k] = py;
+        xs[k] = cx + x * echelle;
+        ys[k] = cy + y * echelle;
       }
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
