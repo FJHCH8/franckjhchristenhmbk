@@ -24,7 +24,7 @@ export function Suite() {
       <Link className="suite-lien" href={suivante.href}>
         <span className="suite-etiquette">Suivant</span>
         <span className="suite-titre">
-          <Split key={suivante.href} text={suivante.titre} mode="chars" lang />
+          <Split key={suivante.href} text={suivante.titre} mode="chars" lang className="kt-x" />
         </span>
         <svg className="suite-fleche" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M5 12h13M13 6.5 18.5 12 13 17.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />

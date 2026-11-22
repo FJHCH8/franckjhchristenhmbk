@@ -1,5 +1,6 @@
 import { Crests } from "@/components/Crests";
 import { Glass } from "@/components/Glass";
+import { Bento } from "@/components/Bento";
 import { Chapitres } from "@/components/Chapitres";
 import { Split } from "@/components/Kinetic";
 import { ScrollTitle } from "@/components/ScrollTitle";
@@ -37,6 +38,7 @@ export default function HomePage() {
         </div>
       </section>
       <Chapitres />
+      <Bento />
     </main>
   );
 }

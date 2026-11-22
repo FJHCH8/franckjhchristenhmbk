@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { souffle } from "@/lib/sons";
 
 const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
@@ -18,7 +19,26 @@ function viewTransition(): StartViewTransition | null {
   return typeof start === "function" ? start.bind(document) : null;
 }
 
+const MORPH = "titre-page";
+
+/** Le titre cliqué (chapitre, carte, page suivante) devient le titre de la page d'arrivée. */
+function sourceTitre(anchor: HTMLAnchorElement) {
+  return (
+    anchor.closest(".chap")?.querySelector<HTMLElement>(".chap-mot") ??
+    anchor.closest(".suite")?.querySelector<HTMLElement>(".suite-titre") ??
+    null
+  );
+}
+
+function clearMorph() {
+  document.querySelectorAll<HTMLElement>("[data-morph]").forEach((el) => {
+    el.style.removeProperty("view-transition-name");
+    delete el.dataset.morph;
+  });
+}
+
 function clearNav() {
+  clearMorph();
   const root = document.documentElement;
   root.classList.remove("nav-vt", "nav-out", "nav-in");
   delete root.dataset.nav;
@@ -70,6 +90,12 @@ export function RouteTransition() {
 
       event.preventDefault();
       event.stopPropagation();
+      souffle();
+      const source = sourceTitre(anchor);
+      if (source) {
+        source.style.setProperty("view-transition-name", MORPH);
+        source.dataset.morph = "1";
+      }
       const from = ORDER.indexOf(window.location.pathname);
       const to = ORDER.indexOf(url.pathname);
       const root = document.documentElement;
@@ -79,14 +105,22 @@ export function RouteTransition() {
       const destination = `${url.pathname}${url.search}${url.hash}`;
       const navigate = () =>
         new Promise<void>((resolve) => {
-          const timer = window.setTimeout(resolve, 800);
+          const timer = window.setTimeout(resolve, 1500);
           pending.current = () => {
             window.clearTimeout(timer);
+            // La page d'arrivée est en place : son grand titre reçoit le même nom.
+            if (source) {
+              const cible = document.querySelector<HTMLElement>(".scroll-head h1");
+              if (cible) {
+                cible.style.setProperty("view-transition-name", MORPH);
+                cible.dataset.morph = "1";
+              }
+            }
             resolve();
           };
           router.push(destination);
         });
-      const failSafe = window.setTimeout(clearNav, 1400);
+      const failSafe = window.setTimeout(clearNav, 2600);
       try {
         const transition = start(navigate);
         transition.finished.finally(() => {

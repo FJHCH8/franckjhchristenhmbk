@@ -30,6 +30,7 @@ import { PowerBoot } from "@/components/PowerBoot";
 import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
+import { SonBouton } from "@/components/SonBouton";
 import { Suite } from "@/components/Suite";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
@@ -213,6 +214,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Kinetic />
           <Experience />
           <Intro />
+          <SonBouton />
           <Tilt />
           <EditionPorte />
           {children}

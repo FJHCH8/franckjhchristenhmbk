@@ -54,6 +54,10 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Sur ordinateur : curseur personnalisé, boutons aimantés et défilement lissé à la molette (`components/Experience.tsx`).
 - À la première visite de la session, une courte ouverture compose le nom (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
+- Les photos des chapitres passent par un shader (`lib/imageGl.ts`) : apparition de droite à gauche derrière un bord liquide, ondulation et séparation des couleurs selon la vitesse du défilement, ride sous le curseur.
+- Sous les chapitres, une grille « bento » (`components/Bento.tsx`) mène à chaque page, avec le compte à rebours en direct.
+- En passant d’un chapitre, d’une carte ou de « Suivant » à une page, le grand titre se transforme en titre de la page d’arrivée (View Transitions API).
+- Sons d’interface synthétisés (`lib/sons.ts`), désactivés par défaut, à activer avec le bouton « Son ».
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
 
 ## Scripts

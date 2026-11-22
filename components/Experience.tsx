@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { clic, tic } from "@/lib/sons";
 
 const CIBLES = "a, button, [role='button'], label, summary, [data-magnet]";
 
@@ -33,6 +34,77 @@ export function Experience() {
 
   useEffect(() => {
     stopScroll.current();
+  }, [pathname]);
+
+  // Micro-sons : un tic en arrivant sur un élément cliquable, une goutte au clic (souris et doigt).
+  useEffect(() => {
+    let survol: Element | null = null;
+    const onOver = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      const hit = (event.target as Element | null)?.closest(CIBLES) ?? null;
+      if (hit && hit !== survol) tic();
+      survol = hit;
+    };
+    const onDown = (event: PointerEvent) => {
+      if ((event.target as Element | null)?.closest(CIBLES)) clic();
+    };
+    window.addEventListener("pointerover", onOver, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    return () => {
+      window.removeEventListener("pointerover", onOver);
+      window.removeEventListener("pointerdown", onDown);
+    };
+  }, []);
+
+  // Bordures lumineuses : les cartes proches du curseur s'éclairent sur leur contour.
+  useEffect(() => {
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!fine.matches) return;
+    let cartes: HTMLElement[] = [];
+    let lues = 0;
+    let frame = 0;
+    const pos = { x: -9999, y: -9999 };
+    const paint = () => {
+      frame = 0;
+      const now = performance.now();
+      if (now - lues > 800) {
+        cartes = [...document.querySelectorAll<HTMLElement>("[data-glow], .glass")];
+        lues = now;
+      }
+      for (const carte of cartes) {
+        const box = carte.getBoundingClientRect();
+        const dx = Math.max(box.left - pos.x, 0, pos.x - box.right);
+        const dy = Math.max(box.top - pos.y, 0, pos.y - box.bottom);
+        const reach = Math.hypot(dx, dy);
+        const glow = Math.max(0, 1 - reach / 240);
+        if (glow <= 0) {
+          if (carte.dataset.lit) {
+            carte.style.setProperty("--go", "0");
+            delete carte.dataset.lit;
+          }
+          continue;
+        }
+        carte.dataset.lit = "1";
+        carte.style.setProperty("--gx", `${(pos.x - box.left).toFixed(0)}px`);
+        carte.style.setProperty("--gy", `${(pos.y - box.top).toFixed(0)}px`);
+        carte.style.setProperty("--go", glow.toFixed(3));
+      }
+    };
+    const onMove = (event: PointerEvent) => {
+      pos.x = event.clientX;
+      pos.y = event.clientY;
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [pathname]);
 
   useEffect(() => {
