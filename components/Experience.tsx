@@ -61,7 +61,7 @@ export function Experience() {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (!fine.matches || reduce.matches) return;
-    const TITRES = ".scroll-head h1 .kt-c, .chap-mot .kt-c, .bento-titre .kt-c, .suite-titre .kt-c, .gravite-titre .kt-c";
+    const TITRES = ".scroll-head h1 .kt-c, .chap-mot .kt-c, .bento-titre .kt-c, .suite-titre .kt-c, .echecs-titre .kt-c";
     let lettres: HTMLElement[] = [];
     let lues = 0;
     let frame = 0;

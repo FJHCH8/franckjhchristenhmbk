@@ -58,9 +58,9 @@ export function Bento() {
         <Carte href="/qui-suis-je" className="bento-qui" image="/media/franck.jpg" focus="50% 30%" index={0}>
           <span className="bento-etiquette">01 — Qui suis-je</span>
           <span className="bento-grand">
-            <Split text="Bonjour, je m’appelle Franck." />
+            <Split text="Né différent." />
           </span>
-          <span className="bento-petit">Je suis né en 2007 en France.</span>
+          <span className="bento-petit">Une enfance à regarder ce que personne ne regardait. La suite, en entrant.</span>
         </Carte>
         <Carte className="bento-citation" index={1}>
           <span className="bento-etiquette">Citation</span>
@@ -71,13 +71,11 @@ export function Bento() {
         </Carte>
         <Carte href="/a-propos" className="bento-apropos" image="/fond/judo-960-a.webp" focus="50% 22%" index={2}>
           <span className="bento-etiquette">02 — À propos</span>
-          <span className="bento-petit">La vie, les projets et les annonces de Franck.</span>
+          <span className="bento-petit">Les coulisses du site, et ce qui s’y prépare.</span>
         </Carte>
         <Carte href="/contact" className="bento-contact" image="/fond/avion-960-a.webp" focus="68% 42%" index={3}>
           <span className="bento-etiquette">03 — Contact</span>
-          <span className="bento-petit" translate="no">
-            franckjhchristen@gmail.com
-          </span>
+          <span className="bento-petit">Écrire à Franck, ou le suivre.</span>
         </Carte>
         <Carte href="/projets" className="bento-projets" image="/fond/rose-960-a.webp" focus="46% 34%" index={4}>
           <span className="bento-etiquette">04 — Projets · Endurreisen</span>

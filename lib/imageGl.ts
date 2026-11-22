@@ -1,5 +1,5 @@
 /**
- * Une photo rendue par un shader : elle apparaît de droite à gauche derrière un bord liquide,
+ * Une photo rendue par un shader : elle apparaît de gauche à droite derrière un bord liquide,
  * ondule et se dédouble légèrement en couleurs avec la vitesse du défilement,
  * et se ride sous le curseur.
  */
@@ -52,8 +52,9 @@ void main() {
   vec2 uv = vUv;
   // Bord d'apparition, de droite à gauche, ondulé comme un liquide.
   float wobble = (noise(vec2(vUv.y * 3.2, uTime * 0.35)) - 0.5) * 0.18 + (noise(vec2(vUv.y * 9.0, uTime * 0.6)) - 0.5) * 0.05;
-  float edge = 1.08 - uReveal * 1.2 + wobble * (1.0 - uReveal);
-  float mask = smoothstep(edge, edge + 0.06, vUv.x);
+  // Apparition de gauche à droite.
+  float edge = -0.08 + uReveal * 1.2 - wobble * (1.0 - uReveal);
+  float mask = 1.0 - smoothstep(edge - 0.06, edge, vUv.x);
   float near = 1.0 - smoothstep(0.0, 0.22, abs(vUv.x - edge));
   uv.x += near * 0.07 * (1.0 - uReveal);
 
