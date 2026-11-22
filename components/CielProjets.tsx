@@ -35,7 +35,7 @@ function dateFr(value: string) {
   );
 }
 
-export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
+export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre?: React.ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [etoiles, setEtoiles] = useState(initial);
   const [active, setActive] = useState<string | null>(null);
@@ -114,6 +114,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
     <CompteEndur>
     <div className="sky-stage" ref={stageRef}>
       <ProjetsPanorama comptes={ordre.map((cle) => ({ nom: nomSection(cle).toLowerCase(), nombre: groupes.get(cle)?.length ?? 0, couleur: couleurRubrique(cle) }))} />
+      <div className="projets-titre">{titre}</div>
       <div className="tuiles-rubriques">
         {ordre.map((cle) => (
           <button

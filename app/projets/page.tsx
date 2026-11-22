@@ -16,8 +16,7 @@ export default async function ProjectsPage() {
     <main id="contenu" className="projets photo-page">
       <PhotoField name="rose" width={1500} height={2291} focus="46% 34%" />
       <QuiBlend />
-      <ScrollTitle id="titre-projets" text="Projets" tone="sea" icon={<SmileyMark />} max={5.2} />
-      <CielProjets initial={etoiles} />
+      <CielProjets initial={etoiles} titre={<ScrollTitle id="titre-projets" text="Projets" tone="sea" icon={<SmileyMark />} max={5.2} />} />
     </main>
   );
 }

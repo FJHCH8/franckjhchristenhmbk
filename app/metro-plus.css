@@ -1637,3 +1637,28 @@ html body .projets .evenement-texte small {
 html body .projets .evenement-detail {
   border-left-color: #339933;
 }
+
+/* Projets : on arrive directement sur l'actualité ; le grand titre vient juste après, sans espace vide. */
+html body .projets .pano {
+  padding-top: calc(env(safe-area-inset-top) + 8.4rem);
+}
+
+.pano-actualite {
+  margin: 0;
+  padding: 0 var(--gouttiere);
+  font-family: var(--font-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+html body .projets .projets-titre .scroll-stage {
+  min-height: 0 !important;
+  padding: 0.6rem var(--gouttiere) 1rem !important;
+}
+
+html body .projets .projets-titre .scroll-cue,
+html body .projets .projets-titre .title-dock {
+  display: none !important;
+}
