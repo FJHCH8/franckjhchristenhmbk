@@ -30,6 +30,7 @@ import { PowerBoot } from "@/components/PowerBoot";
 import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
+import { Suite } from "@/components/Suite";
 import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
 import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
@@ -215,6 +216,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Tilt />
           <EditionPorte />
           {children}
+          <Suite />
           <footer className="footer">
             <div className="shell footer-inner">
               <Crests place="footer" />

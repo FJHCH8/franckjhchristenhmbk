@@ -41,11 +41,14 @@ export function Header() {
       window.dispatchEvent(new Event("fjch-edition"));
       return;
     }
+    // Hors de l'accueil, le premier appui y ramène tout de suite (il n'y a plus de barre en bas).
+    if (pathname !== "/" && taps.current.length === 1) {
+      router.push("/");
+      return;
+    }
     navTimer.current = window.setTimeout(() => {
-      const count = taps.current.length;
       taps.current = [];
-      if (count === 1 && pathname !== "/") router.push("/");
-    }, 480);
+    }, 2800);
   };
 
   useLayoutEffect(() => {

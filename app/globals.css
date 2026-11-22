@@ -5409,3 +5409,94 @@ html.kt-on.intro-joue .kt[data-kt="words"]:not(.kt-lit):not([data-kt-lit]) .kt-w
   color: #fff;
   text-shadow: none;
 }
+
+/* ───────────────────────── Page suivante ───────────────────────── */
+
+.suite {
+  position: relative;
+  z-index: 1;
+  padding: 18vh clamp(1.25rem, 5vw, 4rem) 10vh;
+}
+
+.suite-lien {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.4rem 1.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  text-decoration: none;
+  mix-blend-mode: difference;
+}
+
+.suite-etiquette {
+  grid-column: 1 / -1;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.suite-titre {
+  font-size: clamp(3rem, 12vw, 10rem);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.suite-fleche {
+  width: clamp(2.2rem, 6vw, 4.5rem);
+  height: clamp(2.2rem, 6vw, 4.5rem);
+  margin-bottom: 0.6em;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.suite-titre .kt-c {
+  transition:
+    opacity 0.85s cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 1.05s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.95s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.suite-lien:hover .suite-fleche,
+.suite-lien:focus-visible .suite-fleche {
+  transform: translateX(0.6rem);
+}
+
+.suite-lien:hover .suite-titre .kt-c {
+  transform: translateY(calc((var(--r, 0.5) - 0.6) * -0.18em));
+}
+
+/* ───────────────────────── Mobile sans barre du bas ───────────────────────── */
+
+@media (max-width: 719px) {
+  .nav-dock {
+    display: none;
+  }
+
+  html:not([data-page="etoile"]) .brand::after {
+    content: "← Accueil";
+    margin-left: 0.6rem;
+    padding: 0.36rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(10, 12, 18, 0.42);
+    color: #f4f7ff;
+    font-family: var(--font-label);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  .chap-pied {
+    bottom: calc(env(safe-area-inset-bottom) + 2.4rem);
+  }
+
+  .suite {
+    padding-bottom: calc(6vh + env(safe-area-inset-bottom));
+  }
+}
