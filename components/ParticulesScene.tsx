@@ -158,6 +158,7 @@ uniform float uVortex;
 uniform float uTemps;
 uniform float uDensite;
 uniform float uSeuil;
+uniform float uN;
 attribute vec2 aRef;
 attribute vec2 aAutre;
 attribute float aHasard;
@@ -169,9 +170,17 @@ float morphIci(vec2 ref) {
   return clamp(uMorph * 1.7 - h * 0.7, 0.0, 1.0);
 }
 
+// Une vague qui court le long du fil, comme à la surface de l'eau.
+vec3 vague(vec3 p, vec2 ref) {
+  float s = (floor(ref.y * uN) * uN + floor(ref.x * uN)) / (uN * uN);
+  float a = sin(s * 90.0 - uTemps * 1.7 + p.y * 2.2) * 0.6 + sin(s * 37.0 - uTemps * 1.1 + p.x * 1.6) * 0.4;
+  float b = cos(s * 71.0 - uTemps * 1.4 + p.x * 2.0) * 0.6 + cos(s * 23.0 - uTemps * 0.8 - p.y * 1.3) * 0.4;
+  return p + vec3(a, b, a * b) * 0.018;
+}
+
 void main() {
-  vec3 pos = texture2D(uPos, aRef).xyz;
-  vec3 autre = texture2D(uPos, aAutre).xyz;
+  vec3 pos = vague(texture2D(uPos, aRef).xyz, aRef);
+  vec3 autre = vague(texture2D(uPos, aAutre).xyz, aAutre);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   float mi = morphIci(aRef);
   float m = mi * mi * (3.0 - 2.0 * mi);
@@ -181,7 +190,8 @@ void main() {
   // Un segment trop long est un saut de la courbe : il s'efface. Dans le vortex, la ficelle peut s'étirer.
   float seuil = uSeuil * (1.0 + vortexIci * 4.0);
   float longueur = distance(pos, autre);
-  float tenue = 1.0 - smoothstep(seuil * 0.45, seuil, longueur);
+  // Une seule ligne : les sauts restent visibles, juste un peu plus discrets.
+  float tenue = mix(1.0, 0.45, smoothstep(seuil * 0.6, seuil * 2.5, longueur));
   float garde = step(aHasard, uDensite);
   float vibre = 0.8 + 0.2 * sin(uTemps * 1.3 + aHasard * 30.0);
   // Pendant le tourbillon, la ficelle s'affine : elle ne fait pas une boule blanche.
@@ -218,61 +228,54 @@ function texture(data: Float32Array, n: number) {
   return t;
 }
 
-/** Rang d'un point sur une courbe de Hilbert : deux rangs voisins sont deux points voisins. */
-function hilbert(x: number, y: number, ordre = 1024) {
-  let d = 0;
-  let px = x;
-  let py = y;
-  for (let s = ordre / 2; s >= 1; s = Math.floor(s / 2)) {
-    const rx = (px & s) > 0 ? 1 : 0;
-    const ry = (py & s) > 0 ? 1 : 0;
-    d += s * s * ((3 * rx) ^ ry);
-    if (ry === 0) {
-      if (rx === 1) {
-        px = ordre - 1 - px;
-        py = ordre - 1 - py;
-      }
-      const t = px;
-      px = py;
-      py = t;
-    }
-  }
-  return d;
-}
-
 /**
- * Range les points le long d'une courbe de Hilbert, puis crée les textures.
- * Reliés dans cet ordre, ils forment une seule ficelle qui dessine l'image ;
- * et comme toutes les images sont rangées pareil, la ficelle passe de l'une à l'autre sans se rompre.
+ * Range les points en une seule ligne continue, puis crée les textures.
+ * Toutes les images sont rangées de la même façon : la ligne passe de l'une à l'autre sans se rompre.
  */
 function cible(pos: Float32Array, couleur: Float32Array, n: number): Cible {
   const count = n * n;
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  for (let k = 0; k < count; k += 1) {
-    minX = Math.min(minX, pos[k * 4]!);
-    maxX = Math.max(maxX, pos[k * 4]!);
-    minY = Math.min(minY, pos[k * 4 + 1]!);
-    maxY = Math.max(maxY, pos[k * 4 + 1]!);
-  }
-  const etendue = Math.max(maxX - minX, maxY - minY, 1e-6);
-  const rangs = new Float64Array(count);
+  // Une seule ligne : on part du point le plus à gauche, puis on va toujours au plus proche
+  // pas encore visité. La ligne longe ainsi les contours, sans jamais se rompre.
+  const libre = new Uint8Array(count).fill(1);
   const ordre = new Uint32Array(count);
-  for (let k = 0; k < count; k += 1) {
-    const x = Math.min(1023, Math.floor(((pos[k * 4]! - minX) / etendue) * 1023));
-    const y = Math.min(1023, Math.floor(((pos[k * 4 + 1]! - minY) / etendue) * 1023));
-    rangs[k] = hilbert(x, y);
-    ordre[k] = k;
+  let courant = 0;
+  for (let k = 1; k < count; k += 1) if (pos[k * 4]! < pos[courant * 4]!) courant = k;
+  for (let rang = 0; rang < count; rang += 1) {
+    ordre[rang] = courant;
+    libre[courant] = 0;
+    const cx = pos[courant * 4]!;
+    const cy = pos[courant * 4 + 1]!;
+    let meilleur = -1;
+    let record = Infinity;
+    for (let k = 0; k < count; k += 1) {
+      if (!libre[k]) continue;
+      const dx = pos[k * 4]! - cx;
+      const dy = pos[k * 4 + 1]! - cy;
+      const d = dx * dx + dy * dy;
+      if (d < record) {
+        record = d;
+        meilleur = k;
+      }
+    }
+    if (meilleur < 0) break;
+    courant = meilleur;
   }
-  ordre.sort((a, b) => rangs[a]! - rangs[b]!);
   const p2 = new Float32Array(count * 4);
   const c2 = new Float32Array(count * 4);
   ordre.forEach((source, rang) => {
     p2.set(pos.subarray(source * 4, source * 4 + 4), rang * 4);
     c2.set(couleur.subarray(source * 4, source * 4 + 4), rang * 4);
   });
+  // Lissage : la ligne coule au lieu de zigzaguer.
+  const tampon = new Float32Array(count * 4);
+  for (let passe = 0; passe < 3; passe += 1) {
+    tampon.set(p2);
+    for (let k = 1; k < count - 1; k += 1) {
+      for (let c = 0; c < 3; c += 1) {
+        p2[k * 4 + c] = (tampon[(k - 1) * 4 + c]! + 2 * tampon[k * 4 + c]! + tampon[(k + 1) * 4 + c]!) / 4;
+      }
+    }
+  }
   return { pos: texture(p2, n), couleur: texture(c2, n) };
 }
 
@@ -373,58 +376,56 @@ function nuage(n: number): Cible {
   return cible(pos, couleur, n);
 }
 
-/** Le bocal : un verre bombé au col étroit, et dedans un nuage dense de particules. */
+/** Le bocal : sa silhouette d'un seul trait (col, épaules, flancs, fond), et une petite spirale dedans. */
 function bocal(n: number): Cible {
   const count = n * n;
   const pos = new Float32Array(count * 4);
   const couleur = new Float32Array(count * 4);
   const lisse3 = (t: number) => t * t * (3 - 2 * t);
   const rayon = (y: number) => {
-    if (y < -0.4) return 0.27 * Math.sqrt(Math.max(0, 1 - ((-0.4 - y) / 0.1) ** 2));
-    if (y < 0.12) return 0.27 + 0.02 * Math.sin(((y + 0.4) / 0.52) * Math.PI);
+    if (y < 0.12) return 0.27;
     if (y < 0.3) return 0.27 + (0.15 - 0.27) * lisse3((y - 0.12) / 0.18);
-    if (y < 0.4) return 0.15;
-    return 0.18;
+    return 0.15;
   };
+  // Le contour, parcouru dans l'ordre : rebord, col gauche, flanc gauche, fond, flanc droit, col droit.
+  const contour: [number, number][] = [];
+  const pasY = 0.004;
+  contour.push([0.19, 0.43], [-0.19, 0.43]);
+  for (let y = 0.4; y >= -0.42; y -= pasY) contour.push([-rayon(y), y]);
+  for (let t = 0; t <= 1; t += 0.01) {
+    const a = Math.PI + t * Math.PI;
+    contour.push([Math.cos(a) * 0.27, -0.42 + Math.sin(a) * 0.08]);
+  }
+  for (let y = -0.42; y <= 0.4; y += pasY) contour.push([rayon(y), y]);
+  const longueurs = [0];
+  for (let i = 1; i < contour.length; i += 1) {
+    longueurs.push(longueurs[i - 1]! + Math.hypot(contour[i]![0] - contour[i - 1]![0], contour[i]![1] - contour[i - 1]![1]));
+  }
+  const total = longueurs[longueurs.length - 1]!;
+  const surContour = Math.floor(count * 0.72);
   for (let k = 0; k < count; k += 1) {
-    const tirage = Math.random();
-    const angle = Math.random() * Math.PI * 2;
     let x: number;
     let y: number;
-    let z: number;
-    let c: [number, number, number, number];
-    if (tirage < 0.34) {
-      // Le verre : sa surface, plus dense sur les bords vus de face.
-      y = -0.5 + Math.random() * 0.92;
-      const r = rayon(y);
-      x = Math.cos(angle) * r;
-      z = Math.sin(angle) * r * 0.7;
-      const bord = Math.abs(Math.cos(angle));
-      c = [0.82, 0.9, 1, 0.35 + bord * 0.65];
-    } else if (tirage < 0.4) {
-      // Le rebord du col.
-      y = 0.4 + Math.random() * 0.03;
-      x = Math.cos(angle) * 0.18;
-      z = Math.sin(angle) * 0.18 * 0.7;
-      c = [0.95, 0.97, 1, 0.95];
+    if (k < surContour) {
+      const cible = (k / surContour) * total;
+      let i = 1;
+      while (i < longueurs.length - 1 && longueurs[i]! < cible) i += 1;
+      const f = (cible - longueurs[i - 1]!) / Math.max(1e-6, longueurs[i]! - longueurs[i - 1]!);
+      x = contour[i - 1]![0] + (contour[i]![0] - contour[i - 1]![0]) * f;
+      y = contour[i - 1]![1] + (contour[i]![1] - contour[i - 1]![1]) * f;
     } else {
-      // Le nuage : dense au centre, effiloché vers les bords.
-      const u = Math.random();
-      const v = Math.random() * 2 - 1;
-      const s = Math.pow(u, 0.62);
-      y = -0.12 + v * 0.3 * s;
-      const r = rayon(y) * 0.85 * Math.pow(Math.random(), 0.5) * (0.5 + 0.5 * s);
-      x = Math.cos(angle) * r;
-      z = Math.sin(angle) * r * 0.7;
-      const t = Math.random();
-      c = [0.92 + 0.08 * t, 0.8 + 0.12 * (1 - t), 1, 0.55 + (1 - s) * 0.45];
+      // Le nuage : une spirale lâche au cœur du bocal.
+      const t = (k - surContour) / (count - surContour);
+      const a = t * Math.PI * 9;
+      const r = 0.02 + t * 0.17;
+      x = Math.cos(a) * r;
+      y = -0.14 + Math.sin(a) * r * 1.15;
     }
-    // Un peu plus petit qu'une image : le bocal respire dans l'écran.
     pos[k * 4] = x * 0.86;
     pos[k * 4 + 1] = y * 0.86 - 0.02;
-    pos[k * 4 + 2] = z * 0.86;
+    pos[k * 4 + 2] = 0;
     pos[k * 4 + 3] = 1;
-    couleur.set(c, k * 4);
+    couleur.set(k < surContour ? [0.86, 0.92, 1, 0.95] : [1, 0.86, 0.98, 0.75], k * 4);
   }
   return cible(pos, couleur, n);
 }
@@ -497,10 +498,11 @@ function Particules({ images, progression, n }: { images: string[]; progression:
       uMorph: { value: 0 },
       uVortex: { value: 0 },
       uSeuil: { value: 0.1 },
+      uN: { value: n },
       uTemps: { value: 0 },
       uDensite: { value: 1 },
     }),
-    [],
+    [n],
   );
 
   useEffect(() => {
@@ -664,7 +666,8 @@ export default function ParticulesScene({
 }) {
   // Moins de particules, mais plus visibles chacune : l'image reste lisible, l'écran respire.
   // Une ficelle a besoin de points serrés pour rester continue ; elle reste légère à l'écran.
-  const n = lite ? 40 : 52;
+  // Une ligne d'un peu plus de 2 000 points : assez pour les contours, sans fouillis.
+  const n = lite ? 36 : 46;
   return (
     <Canvas
       dpr={[1, lite ? 1.25 : 1.75]}
