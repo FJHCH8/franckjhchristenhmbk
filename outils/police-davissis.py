@@ -171,8 +171,8 @@ glyphes = {}  # nom -> (chemin, chasse)
 milieux = {}  # nom -> abscisse du milieu de la lettre (pour poser les voyelles)
 
 
-APLATI = 0.78  # hauteur des lettres : plus basses, plus larges, plus modernes
-ELARGI = 1.06
+APLATI = 0.55  # hauteur des lettres : très basses et larges
+ELARGI = 1.12
 
 
 def ajouter(nom, traces, chasse, proportionnel=False):
