@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
 import { EvenementsTuiles, ProjetsPanorama, useMaintenant } from "@/components/ProjetsPanorama";
 import { EVENEMENTS } from "@/lib/paris";
+import { LogoProjets } from "@/components/LogosCases";
 import { T } from "@/components/Locale";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
@@ -142,6 +143,7 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
               >
                 <strong>{nombre}</strong>
                 <span>{nom}</span>
+                {cle === "projet" ? <LogoProjets className="pcase-logo" /> : null}
               </button>
               {ouvert ? (
                 <div className="pcase-corps">

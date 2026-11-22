@@ -1851,3 +1851,25 @@ html body .pano-mot.tavissiv {
     animation: none;
   }
 }
+
+/* Le logo de la case, en blanc plat : grand au repos, petit à côté du nom quand la case est ouverte. */
+.pcase-logo {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  width: 52%;
+  height: auto;
+  color: #fff;
+  transition: width 0.4s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.3s ease;
+}
+
+.pcase.is-grand .pcase-logo {
+  position: static;
+  width: 2.4rem;
+  margin-left: auto;
+  align-self: center;
+}
+
+.pcase.is-barre .pcase-logo {
+  opacity: 0;
+}
