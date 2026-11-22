@@ -1646,3 +1646,14 @@ html body .projets .projets-titre .scroll-cue,
 html body .projets .projets-titre .title-dock {
   display: none !important;
 }
+
+/* « vayak » en fond, écrit dans les caractères Tavissiv. */
+html body .pano-mot.tavissiv {
+  font-family: "Tavissiv", var(--font-text);
+  font-size: clamp(8rem, 40vw, 15rem);
+  letter-spacing: 0;
+  line-height: 1.3;
+  top: calc(env(safe-area-inset-top) + 9.5rem);
+  left: 0.6rem;
+  color: #181818;
+}

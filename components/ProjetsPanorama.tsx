@@ -157,7 +157,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
   return (
     <section className="pano" ref={scene} aria-label="Actualité : endurreisen, l'aube et le cadran">
       <div className="pano-fond" aria-hidden="true">
-        <span className="pano-mot">vayak</span>
+        <span className="pano-mot tavissiv" lang="x-tavissiv">vayak</span>
         <div className="pano-logo" style={{ ["--taille" as string]: (0.45 + 0.55 * courant).toFixed(3) } as CSSProperties}>
           <LogoProgression id="pano-fond" progress={courant} />
         </div>
