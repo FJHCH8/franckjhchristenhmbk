@@ -43,6 +43,14 @@ Les onglets sont des pages : `/`, `/qui-suis-je`, `/a-propos` et `/contact`. Le 
 
 Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production est indexable.
 
+## Animations
+
+- Les titres apparaissent lettre par lettre et les textes mot par mot (`components/Kinetic.tsx`, composant `Split`). Le grand titre de chaque page se disperse au défilement.
+- Sur Qui suis-je, le texte s’allume mot à mot au fil du défilement.
+- L’accueil se termine par un récit au défilement : quatre chapitres figés à l’écran, avec les photos du site (`components/Chapitres.tsx`).
+- Le changement de page fait monter la nouvelle page derrière un rideau au bord flou.
+- Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
+
 ## Scripts
 
 - `npm run dev` — serveur de développement
