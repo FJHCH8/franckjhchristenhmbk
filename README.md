@@ -61,7 +61,7 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - En passant d’un chapitre, d’une carte ou de « Suivant » à une page, le grand titre se transforme en titre de la page d’arrivée (View Transitions API).
 - Sons (`lib/sons.ts`), désactivés par défaut, à activer avec le bouton « Son » : gouttes d’eau au survol et au clic, souffle et basse aux changements de page, verre et eau à l’éclat du bocal, dans une réverbération générée. Musique « Nostalgia » (`public/audio/nostalgia.mp3`) qui démarre et s’arrête comme un vinyle (vitesse, ton, filtre, grésillement).
 - Le noir des photos est transparent, en fondu (`public/fond/*-a.*`, et directement dans le shader des chapitres) : les étoiles apparaissent derrière.
-- Section « Une partie ? » (`components/Echecs.tsx`, règles par chess.js, bot dans `lib/bot.ts`) : échecs contre un bot avec les pièces dessinées par Franck (`public/echecs/`). Les pièces glissent, et celle qui est prise saigne.
+- Section « Une partie ? » : un bouton « Jouer aux échecs » charge tout le jeu (code, pièces, bot) derrière une barre de chargement façon Wii U et un anneau façon PS2, puis l’ouvre en plein écran (`components/SalleEchecs.tsx`, `components/Echecs.tsx`). Pièces dessinées par Franck (`public/echecs/`), glisser-déposer, trois niveaux, historique, annulation ; le bot réfléchit dans un Web Worker (`lib/bot.worker.ts`) pour que la page reste fluide. La pièce prise saigne.
 - Police variable : les grands titres s’épaississent près du curseur et se resserrent quand on défile vite.
 - Verre dépoli avec une légère dispersion de couleurs sur les bords.
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
