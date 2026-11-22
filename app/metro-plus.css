@@ -966,3 +966,13 @@ html body .scroll-stage.a-fond {
 html body .scroll-stage.a-fond::after {
   height: 12%;
 }
+
+/* Le nom de la langue, Tavissiv, écrit dans ses propres caractères. */
+html body .lang .lang-tavissiv {
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: middle;
+}

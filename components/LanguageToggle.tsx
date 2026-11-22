@@ -55,8 +55,11 @@ export function LanguageToggle() {
         aria-checked={locale === "davissiv"}
         tabIndex={locale === "davissiv" ? 0 : -1}
         onClick={() => choose("davissiv")}
+        aria-label="Tavissiv"
       >
-        Davissis
+        <span className="davissis lang-tavissiv" lang="x-davissis" aria-hidden="true">
+          tavissiv
+        </span>
       </button>
     </div>
   );
