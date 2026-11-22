@@ -43,6 +43,10 @@ Les onglets sont des pages : `/`, `/qui-suis-je`, `/a-propos` et `/contact`. Le 
 
 Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production est indexable.
 
+## Direction artistique
+
+Windows Phone (Metro) et Apple, sur fond noir intégral (`app/metro.css`, chargée après `globals.css`) : grands titres fins en minuscules alignés à gauche, menu en « pivot », tuiles vivantes pour Explorer, chapitres en panorama, boutons plats à angles droits, une seule couleur d’accent (cyan `#1ba1e2`), et transition « tourniquet » entre les pages. La galaxie et le ciel ne sont plus affichés.
+
 ## Animations
 
 - Les titres apparaissent lettre par lettre et les textes mot par mot (`components/Kinetic.tsx`, composant `Split`). Le grand titre de chaque page se disperse au défilement.

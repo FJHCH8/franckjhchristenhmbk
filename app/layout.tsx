@@ -28,9 +28,7 @@ import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
 import { PowerBoot } from "@/components/PowerBoot";
-import { ProjetsSky } from "@/components/ProjetsSky";
 import { RouteTransition } from "@/components/RouteTransition";
-import { Sky } from "@/components/Sky";
 import { SonBouton } from "@/components/SonBouton";
 import { Suite } from "@/components/Suite";
 import { ThemeBoot } from "@/components/ThemeBoot";
@@ -39,6 +37,7 @@ import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIP
 import { themeInitScript } from "@/lib/theme";
 import "lenis/dist/lenis.css";
 import "./globals.css";
+import "./metro.css";
 
 /*
  * Famille Noto : dessinée pour couvrir toutes les écritures du monde.
@@ -207,8 +206,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <PowerBoot />
           <Lux />
           <PageSky />
-          <ProjetsSky />
-          <Sky />
           <p className="rail" translate="no">
             © Franck J.H. Christen
           </p>
