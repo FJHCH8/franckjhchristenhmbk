@@ -25,7 +25,7 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 UPM = 1000
 TRAIT = 58  # épaisseur du trait : fin et régulier
-APPROCHE = 46  # espace de chaque côté d'une lettre (chasse proportionnelle)
+APPROCHE = 70  # espace de chaque côté d'une lettre (chasse proportionnelle)
 LARGEUR = 640  # chasse commune des consonnes : les signes s'y posent au centre
 CENTRE = -LARGEUR / 2
 
@@ -125,11 +125,113 @@ def longueur(trait):
 TRACES = json.loads((Path(__file__).resolve().parent / "davissis-traces.json").read_text())
 
 
+# Les lignes de l'écriture : toutes les lettres s'y alignent, comme sur une grille de police.
+LIGNES = [-560, -280, 0, 310, 620, 900]
+PRISE = 95  # distance en dessous de laquelle un point se cale sur une ligne
+
+
+def caler_y(y):
+    proche = min(LIGNES, key=lambda l: abs(l - y))
+    return proche if abs(proche - y) <= PRISE else y
+
+
+def nettoyer(trait):
+    """Retire les points superflus : ceux qui sont presque alignés avec leurs voisins."""
+    pts = [trait[0]]
+    for i in range(1, len(trait) - 1):
+        a, b, c = pts[-1], trait[i], trait[i + 1]
+        aire = abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]))
+        if math.dist(a, b) < 45 or aire / max(1, math.dist(a, c)) < 22:
+            continue
+        pts.append(b)
+    pts.append(trait[-1])
+    return pts
+
+
+def orienter(trait, pas=15):
+    """Chaque segment prend l'angle régulier le plus proche (multiple de 15°) ;
+    s'il traverse une ligne de l'écriture, il s'arrête pile dessus."""
+    pts = [tuple(trait[0])]
+    for i in range(1, len(trait)):
+        x0, y0 = pts[-1]
+        x1, y1 = trait[i]
+        d = math.hypot(x1 - x0, y1 - y0)
+        if d < 1:
+            continue
+        a = math.degrees(math.atan2(y1 - y0, x1 - x0))
+        a = round(a / pas) * pas
+        ux, uy = math.cos(math.radians(a)), math.sin(math.radians(a))
+        if abs(ux) < 1e-9:
+            ux = 0.0
+        if abs(uy) < 1e-9:
+            uy = 0.0
+        nx, ny = x0 + ux * d, y0 + uy * d
+        cible = caler_y(y1)
+        if uy and cible != y1 or (uy and cible in LIGNES):
+            t = (cible - y0) / uy
+            if t > 0:
+                nx, ny = x0 + ux * t, cible
+        pts.append((round(nx), round(ny)))
+    return pts
+
+
+HAUTES = {"y"}  # lettres qui montent au-dessus des autres
+PLATES = {"uu"}  # lettres sans hauteur (un simple trait)
+
+
+def normaliser(nom, traits):
+    """Toutes les lettres courtes à la même hauteur, tous les jambages à la même profondeur ;
+    la largeur suit la hauteur, pour garder les proportions de chaque forme."""
+    ys = [y for t in traits for _, y in t]
+    if nom in PLATES:
+        moy = sum(ys) / len(ys)
+        return [[(x, y - moy + 310) for x, y in t] for t in traits]
+    haut = max(ys)
+    bas = min(ys)
+    cible = 900 if nom in HAUTES else 620
+    descend = bas < -180
+    if not descend:
+        # Posée pile sur la ligne, à la hauteur commune.
+        k = cible / max(1, haut - bas)
+        return [[(x * k, (y - bas) * k) for x, y in t] for t in traits]
+    k = max(0.7, min(1.6, cible / max(1, haut)))
+    kd = 560 / -bas
+    return [[(x * k, y * k if y >= 0 else y * kd) for x, y in t] for t in traits]
+
+
+def moderniser(traits, nom=""):
+    """La forme de Franck, mise au propre : lignes communes, verticales alignées, angles nets."""
+    traits = normaliser(nom, traits)
+    traits = [nettoyer(t) for t in traits]
+    traits = [[(x, caler_y(y)) for x, y in t] for t in traits]
+    traits = [orienter(t) for t in traits]
+    # Les abscisses proches s'alignent (les jambes d'un U, d'un M…).
+    xs = sorted({x for t in traits for x, _ in t})
+    groupes = []
+    for x in xs:
+        if groupes and x - groupes[-1][-1] <= 40:
+            groupes[-1].append(x)
+        else:
+            groupes.append([x])
+    cale = {x: round(sum(g) / len(g)) for g in groupes for x in g}
+    traits = [[(cale[x], y) for x, y in t] for t in traits]
+    # Retire les points devenus doublons.
+    propres = []
+    for t in traits:
+        u = [t[0]]
+        for p in t[1:]:
+            if math.dist(p, u[-1]) > 1:
+                u.append(p)
+        if len(u) >= 2:
+            propres.append(u)
+    return propres
+
+
 def lettre(nom):
     traits = [redresser(t) for t in TRACES[nom] if len(t) >= 2]
     # Les petites bavures du squelette (moins d'un dixième de la hauteur) sont retirées.
     gardes = [t for t in traits if longueur(t) > 70] or traits
-    return gardes
+    return moderniser(gardes, nom)
 
 
 consonnes = {nom: lettre(nom) for nom in ["g", "k", "p", "n", "t", "m", "v", "f", "s", "d", "r", "sh", "c", "mg", "l", "z", "q", "w", "x", "b", "h", "y"]}
