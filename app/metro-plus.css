@@ -543,8 +543,8 @@ html body .intro.is-fin {
 }
 
 .intro-starload {
-  width: clamp(120px, 34vw, 170px) !important;
-  height: clamp(120px, 34vw, 170px) !important;
+  width: clamp(64px, 18vw, 88px) !important;
+  height: clamp(64px, 18vw, 88px) !important;
   opacity: 0;
   animation: starload-arrive 0.7s ease 0.2s forwards;
 }
@@ -555,8 +555,8 @@ html body .intro.is-fin {
 
 /* Le Starload partout : changement de page, échecs, photos. Les anciens chargements disparaissent. */
 .starload-grand {
-  width: clamp(120px, 34vw, 170px) !important;
-  height: clamp(120px, 34vw, 170px) !important;
+  width: clamp(64px, 18vw, 88px) !important;
+  height: clamp(64px, 18vw, 88px) !important;
 }
 
 html body .chargement {

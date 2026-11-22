@@ -115,7 +115,7 @@ export function SalleEchecs() {
 
       {phase === "charge" ? createPortal(
         <div className="jeu-chargement" role="status" aria-live="polite">
-                    <AnneauPS2 taille={150} className="starload-grand" />
+                    <AnneauPS2 taille={96} className="starload-grand" />
           <p className="jeu-chargement-titre">Chargement en cours</p>
           <p className="jeu-chargement-pourcent">{pourcent} %</p>
         </div>,

@@ -67,7 +67,7 @@ export function Intro() {
     <div className="intro" ref={ref} aria-hidden="true">
       <div className="intro-scene">
         <Logo className="intro-logo" anime />
-        <AnneauPS2 taille={150} className="intro-starload" />
+        <AnneauPS2 taille={96} className="intro-starload" />
       </div>
     </div>
   );

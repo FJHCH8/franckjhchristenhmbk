@@ -63,7 +63,7 @@ export function AnneauPS2({ taille = 120, className }: { taille?: number; classN
       ctx.fillStyle = "#fff";
       for (const [x, y, z] of points) {
         const persp = 1 / (1 - z / (px * 1.4));
-        const rayon = px * 0.036 * persp;
+        const rayon = px * 0.028 * persp;
         ctx.beginPath();
         ctx.arc(px / 2 + x * persp, px / 2 + y * persp, rayon, 0, Math.PI * 2);
         ctx.fill();

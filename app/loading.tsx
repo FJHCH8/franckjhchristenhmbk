@@ -4,7 +4,7 @@ import { AnneauPS2 } from "@/components/AnneauPS2";
 export default function Loading() {
   return (
     <div className="chargement chargement-page" role="status" aria-label="Chargement en cours">
-      <AnneauPS2 taille={150} className="starload-grand" />
+      <AnneauPS2 taille={96} className="starload-grand" />
     </div>
   );
 }

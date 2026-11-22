@@ -61,7 +61,7 @@ export function Chargement() {
   return (
     <>
       <div className="chargement" role="status" aria-label="Chargement en cours">
-        {lent ? <AnneauPS2 taille={150} className="starload-grand" /> : null}
+        {lent ? <AnneauPS2 taille={96} className="starload-grand" /> : null}
       </div>
       <div className={images && !lent ? "chargement-coin is-on" : "chargement-coin"} aria-hidden="true">
         {images && !lent ? <AnneauPS2 taille={46} /> : null}
