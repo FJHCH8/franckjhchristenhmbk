@@ -72,7 +72,7 @@ Windows Phone (Metro) et Apple, sur fond noir intégral. `app/metro.css` pose le
 
 ## Écriture Davissis
 
-La police `public/fonts/davissis.woff2` (chasse proportionnelle, voyelles posées au centre de leur consonne) dessine l’écriture du Davissis, d’après les formes de Franck. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
+La police `public/fonts/davissis.woff2` dessine l’écriture du Davissis. Ses lettres viennent directement du tracé de Franck : le squelette de chaque lettre (`outils/davissis-traces.json`), simplifié en segments droits ; chasse proportionnelle, voyelles posées au centre de leur consonne. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
 
 On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
 

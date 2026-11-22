@@ -14,6 +14,7 @@ On écrit le Davissis en lettres latines ; la police l'affiche dans son écritur
 Lancer :  python3 outils/police-davissis.py
 """
 
+import json
 import math
 from pathlib import Path
 
@@ -100,38 +101,39 @@ C = courbe
 # Version géométrique : uniquement des lignes droites, mêmes structures que le dessin de Franck.
 L_ = lambda *pts: [list(pts)]
 
-consonnes = {
-    "g": L_((230, 540), (330, 640), (420, 560), (420, 0), (140, 0), (140, 260), (420, 260)),
-    "k": L_((110, -250), (250, 620), (440, 620), (440, 0)),
-    "p": L_((470, 300), (130, 300), (130, 620), (470, 620), (470, 300), (260, -250)),
-    "n": L_((120, 300), (480, 300), (480, 560), (130, 560), (130, 40), (565, 40)),
-    "t": L_((110, 620), (110, 0), (530, 0)) + L_((320, 0), (320, 520)) + L_((530, 620), (530, -250)),
-    "m": L_((110, 620), (110, 0), (530, 0), (530, 620)) + L_((320, 0), (320, 520)),
-    "y": L_((150, 860), (150, 0), (490, 0), (490, 860)),  # Y/J : un U haut
-    "v": L_((110, 0), (110, 620), (530, 620), (530, 0)) + L_((320, 620), (320, 0)),
-    "f": L_((140, 520), (250, 620), (400, 620), (400, -250), (545, -250)),
-    "s": L_((500, 620), (170, 620), (370, 320), (170, 0), (510, 0)),
-    "d": L_((160, 620), (160, 0), (480, 0), (480, 620)),  # D : un U
-    "r": L_((150, 620), (500, 620), (310, 390), (480, 240), (480, -250)),
-    "sh": L_((140, 620), (140, 260), (480, 260)) + L_((480, 620), (480, -250), (220, -250)),
-    "c": L_((470, 500), (470, 620), (240, 620), (240, -250), (450, -250)),
-    "mg": L_((150, 0), (150, 620), (490, 620), (490, 0)),
-    "l": L_((130, -250), (130, 620), (510, 620), (510, 170)),
-    "z": L_((110, 0), (300, 620), (565, -250)),
-    "q": L_((150, 0), (330, 620), (510, 0)),  # q : un ∧
-    "w": L_((120, 600), (510, 600), (210, -230)),
-    "x": L_((110, 0), (110, 620), (530, 620), (530, -250), (290, -250)) + L_((320, 620), (320, 0)),
-    "b": L_((150, 620), (500, 620), (310, 390), (500, 200), (110, -230)),
-    "h": L_((140, 620), (500, 620), (500, 0), (140, 0)),
-}
 
-voyelles_longues = {
-    "aa": L_((130, 500), (270, 620), (440, 620), (440, 0)),
-    "ii": L_((420, 620), (420, 100), (320, 0), (170, 0), (130, 80)),
-    "oo": L_((320, 620), (320, 0)),
-    "ee": L_((180, 620), (180, 0), (450, 0)),
-    "uu": L_((110, 310), (530, 310)),
-}
+def redresser(trait, angle=7):
+    """Rend parfaitement verticaux ou horizontaux les segments qui le sont presque."""
+    pts = [list(p) for p in trait]
+    lim = math.tan(math.radians(angle))
+    for i in range(len(pts) - 1):
+        (x0, y0), (x1, y1) = pts[i], pts[i + 1]
+        dx, dy = x1 - x0, y1 - y0
+        if abs(dx) <= lim * abs(dy):
+            pts[i + 1][0] = x0
+        elif abs(dy) <= lim * abs(dx):
+            pts[i + 1][1] = y0
+    return [tuple(p) for p in pts]
+
+
+def longueur(trait):
+    return sum(math.dist(trait[i], trait[i + 1]) for i in range(len(trait) - 1))
+
+
+# Les lettres viennent directement du tracé de Franck (outils/davissis-traces.json) :
+# le squelette de chaque lettre, simplifié en segments droits.
+TRACES = json.loads((Path(__file__).resolve().parent / "davissis-traces.json").read_text())
+
+
+def lettre(nom):
+    traits = [redresser(t) for t in TRACES[nom] if len(t) >= 2]
+    # Les petites bavures du squelette (moins d'un dixième de la hauteur) sont retirées.
+    gardes = [t for t in traits if longueur(t) > 70] or traits
+    return gardes
+
+
+consonnes = {nom: lettre(nom) for nom in ["g", "k", "p", "n", "t", "m", "v", "f", "s", "d", "r", "sh", "c", "mg", "l", "z", "q", "w", "x", "b", "h", "y"]}
+voyelles_longues = {nom: lettre(nom) for nom in ["aa", "ii", "oo", "ee", "uu"]}
 
 # Voyelles brèves : signes au-dessus de la consonne précédente (chasse nulle).
 def dessus(pts):
@@ -145,8 +147,8 @@ signes = {
     "e": dessus([[(-65, 900), (-65, 730), (75, 730)]]),
     "u": dessus([[(-95, 810), (95, 810)]]),
 }
-apostrophe = dessus([[(-110, -340), (110, -340)]])  # la barre de l'apostrophe se pose sous la lettre
-double = dessus([[(-100, -440), (-100, -320), (100, -320), (100, -440)]])
+apostrophe = dessus([[(-110, -130), (110, -130)]])  # la barre de l'apostrophe se pose sous la lettre
+double = dessus([[(-100, -270), (-100, -140), (100, -140), (100, -270)]])
 
 # Forme isolée d'une voyelle brève (en début de mot) : le signe à taille de lettre.
 isolees = {
@@ -169,10 +171,11 @@ ponctuation = {
 
 glyphes = {}  # nom -> (chemin, chasse)
 milieux = {}  # nom -> abscisse du milieu de la lettre (pour poser les voyelles)
+bas = {}  # nom -> point le plus bas de la lettre
 
 
-APLATI = 0.55  # hauteur des lettres : très basses et larges
-ELARGI = 1.12
+APLATI = 1.0  # proportions du tracé de Franck, telles quelles
+ELARGI = 1.0
 
 
 def ajouter(nom, traces, chasse, proportionnel=False):
@@ -184,6 +187,8 @@ def ajouter(nom, traces, chasse, proportionnel=False):
         traces = [[(x + decale, y) for x, y in t] for t in traces]
         chasse = round(max(xs) - min(xs) + TRAIT + 2 * APPROCHE)
         milieux[nom] = round(chasse / 2)
+        # Le bas de la lettre : les signes du dessous se posent juste en dessous.
+        bas[nom] = min(0, round(min(y for t in traces for _, y in t) - TRAIT / 2))
     glyphes[nom] = (epaissir(traces) if traces else pathops.Path(), chasse)
 
 
@@ -260,7 +265,7 @@ markClass [m_a m_i m_o m_e m_u] <anchor 0 0> @HAUT;
 markClass [m_double m_apos] <anchor 0 0> @BAS;
 
 feature mark {{
-{chr(10).join(f"  pos base c_{n} <anchor {milieux[f'c_{n}']} 0> mark @HAUT <anchor {milieux[f'c_{n}']} 0> mark @BAS;" for n in consonnes)}
+{chr(10).join(f"  pos base c_{n} <anchor {milieux[f'c_{n}']} 0> mark @HAUT <anchor {milieux[f'c_{n}']} {bas[f'c_{n}']}> mark @BAS;" for n in consonnes)}
 {chr(10).join(f"  pos base v_{n} <anchor {milieux[f'v_{n}']} 0> mark @HAUT;" for n in voyelles_longues)}
 }} mark;
 """
@@ -280,9 +285,9 @@ for nom, (chemin, chasse) in glyphes.items():
     g.recalcBounds(fb.font["glyf"]) if hasattr(g, "recalcBounds") else None
     metriques[nom] = (chasse, getattr(g, "xMin", 0) or 0)
 fb.setupHorizontalMetrics(metriques)
-fb.setupHorizontalHeader(ascent=1000, descent=-330)
+fb.setupHorizontalHeader(ascent=1100, descent=-1200)
 fb.setupNameTable({"familyName": "Davissis", "styleName": "Regular", "copyright": "Franck J.H. Christen"})
-fb.setupOS2(sTypoAscender=1000, sTypoDescender=-330, usWinAscent=1000, usWinDescent=330)
+fb.setupOS2(sTypoAscender=1100, sTypoDescender=-1200, usWinAscent=1100, usWinDescent=1200)
 fb.setupPost()
 addOpenTypeFeaturesFromString(fb.font, features)
 

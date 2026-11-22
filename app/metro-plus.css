@@ -522,3 +522,8 @@ html body .intro-logo {
   display: block;
   flex: none;
 }
+
+/* Davissis : les jambages sont longs, la ligne leur laisse la place. */
+html body .davissis {
+  line-height: 2.1;
+}
