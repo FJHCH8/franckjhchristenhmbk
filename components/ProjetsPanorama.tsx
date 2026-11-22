@@ -159,7 +159,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
       <div className="pano-fond" aria-hidden="true">
         <span className="pano-mot">vayak</span>
         <div className="pano-logo" style={{ ["--taille" as string]: (0.45 + 0.55 * courant).toFixed(3) } as CSSProperties}>
-          <LogoProgression id="pano-fond" progress={courant} eau={false} />
+          <LogoProgression id="pano-fond" progress={courant} />
         </div>
       </div>
       <p className="pano-actualite">actualité</p>

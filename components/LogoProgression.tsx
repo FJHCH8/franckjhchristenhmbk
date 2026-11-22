@@ -1,5 +1,3 @@
-import type { CSSProperties } from "react";
-
 /** Les points du logo, du dernier (en bas à droite) au premier (en haut) : la progression part de la fin. */
 const POINTS: [number, number][] = [
   [168.1, 176.5],
@@ -34,19 +32,17 @@ const TRACE = "M" + POINTS.map(([x, y]) => `${x} ${y}`).join(" L");
  * Le logo de Franck comme barre de progression. La ligne part du dernier point et remonte ;
  * à 100 %, tous les points sont reliés. Les points atteints sont blancs, entourés d'un léger fondu
  * bleu ; les fils prennent la même couleur, du bleu foncé (atteint il y a longtemps) au bleu clair
- * (atteint récemment). Un reflet d'eau coule le long des fils.
+ * (atteint récemment).
  */
 export function LogoProgression({
   progress,
   className,
   id,
-  eau = true,
 }: {
   progress: number;
   className?: string;
   /** Identifiant unique, pour les dégradés SVG. */
   id: string;
-  eau?: boolean;
 }) {
   const p = Math.min(1, Math.max(0, progress));
   const fait = p * TOTAL;
@@ -97,28 +93,6 @@ export function LogoProgression({
           />
         );
       })}
-
-      {/* L'eau : des reflets clairs qui coulent le long des fils tracés. */}
-      {eau && p > 0 ? (
-        <path
-          className="logo-eau"
-          d={TRACE}
-          pathLength={1}
-          fill="none"
-          stroke="#e8f6ff"
-          strokeWidth="1.3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ ["--fait" as string]: p } as CSSProperties}
-          strokeDasharray={`0.025 0.06`}
-          mask={`url(#${id}-m)`}
-        />
-      ) : null}
-      {eau && p > 0 ? (
-        <mask id={`${id}-m`} maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
-          <path d={TRACE} pathLength={1} fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${p} 1`} />
-        </mask>
-      ) : null}
 
       {/* Les points : blancs avec un léger fondu bleu s'ils sont atteints, gris sinon. */}
       {POINTS.map(([x, y], i) =>

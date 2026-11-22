@@ -7,7 +7,6 @@ import { EVENEMENTS } from "@/lib/paris";
 import { Split } from "@/components/Kinetic";
 import { T } from "@/components/Locale";
 import { LogoEau } from "@/components/LogoEau";
-import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
@@ -264,7 +263,6 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
             </li>
           ))}
         </ul>
-        <VentNordique />
         {jeton && menu ? (
           <form className="edition-menu" onSubmit={(event) => void sauver(event)}>
             <p>Étoiles des projets</p>
