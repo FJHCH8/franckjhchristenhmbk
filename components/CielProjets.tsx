@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
 import { EvenementsTuiles, ProjetsPanorama, useMaintenant } from "@/components/ProjetsPanorama";
 import { EVENEMENTS } from "@/lib/paris";
-import { Split } from "@/components/Kinetic";
 import { T } from "@/components/Locale";
-import { LogoEau } from "@/components/LogoEau";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
 
@@ -114,104 +112,75 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
     <div className="sky-stage" ref={stageRef}>
       <ProjetsPanorama comptes={ordre.map((cle) => ({ nom: nomSection(cle).toLowerCase(), nombre: groupes.get(cle)?.length ?? 0, couleur: couleurRubrique(cle) }))} />
       <div className="projets-titre">{titre}</div>
-      <div className="tuiles-rubriques">
-        {ordre.map((cle) => (
-          <button
-            key={cle}
-            type="button"
-            className="tuile-rubrique"
-            style={{ background: couleurRubrique(cle) }}
-            onClick={() => {
-              setSection(cle);
-              setActive(null);
-              window.setTimeout(() => document.getElementById(`rubrique-${cle}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
-            }}
-          >
-            <strong>{groupes.get(cle)?.length ?? 0}</strong>
-            <span>{nomSection(cle).toLowerCase()}</span>
-          </button>
-        ))}
-        <button
-          type="button"
-          className="tuile-rubrique tuile-evenements"
-          style={{ background: couleurRubrique("evenement") }}
-          onClick={() => document.getElementById("evenements")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        >
-          <strong>{evenementsFinis}</strong>
-          <span>événements</span>
-        </button>
-      </div>
-      <EvenementsTuiles />
-      <div className="rubriques">
-        {ordre.map((cle) => {
-          const liste = [...(groupes.get(cle) ?? [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      <div className="cases" data-ouvert={section ?? "aucune"}>
+        {(["citation", "projet", "evenement"] as const).map((cle) => {
           const ouvert = section === cle;
+          const etat = section == null ? "repos" : ouvert ? "grand" : "barre";
+          const liste =
+            cle === "evenement"
+              ? []
+              : [...(cle === "projet" ? ordre.filter((k) => k !== "citation").flatMap((k) => groupes.get(k) ?? []) : (groupes.get(cle) ?? []))].sort((a, b) =>
+                  (b.date || "").localeCompare(a.date || ""),
+                );
+          const nombre = cle === "evenement" ? evenementsFinis : liste.length;
+          const nom = cle === "evenement" ? "événements" : nomSection(cle).toLowerCase();
           return (
-            <section key={cle} id={`rubrique-${cle}`} className={ouvert ? "rubrique is-open" : "rubrique"} style={{ ["--couleur" as string]: couleurRubrique(cle) } as React.CSSProperties}>
-              <h2>
-                <button
-                  type="button"
-                  aria-expanded={ouvert}
-                  onClick={() => {
-                    setSection(ouvert ? null : cle);
-                    setActive(null);
-                  }}
-                >
-                  <span className="rubrique-nom">
-                    <LogoEau />
-                    <span>
-                      <Split text={nomSection(cle)} mode="chars" />
-                    </span>
-                  </span>
-                  <span className="rubrique-meta">
-                    <span>{liste.length}</span>
-                    <span className="rubrique-chevron" aria-hidden="true" />
-                  </span>
-                </button>
-              </h2>
-              <div className="rubrique-corps">
-                <div>
-                  <ul>
-                    {liste.map((etoile, index) => {
-                      const montre = active === etoile.id;
-                      return (
-                        <li key={etoile.id} style={{ ["--i" as string]: index }}>
-                          <button
-                            type="button"
-                            aria-expanded={montre}
-                            onClick={(event) => {
-                              const next = montre ? null : etoile.id;
-                              setActive(next);
-                              if (!next) return;
-                              const ligne = event.currentTarget.closest("li");
-                              const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                              window.setTimeout(() => {
-                                ligne?.querySelector(".fiche")?.scrollIntoView({ behavior: calme ? "auto" : "smooth", block: "center" });
-                              }, calme ? 0 : 60);
-                            }}
-                          >
-                            {dateFr(etoile.date) || etoile.titre || "Sans date"}
-                          </button>
-                          <div className={montre ? "fiche is-open" : "fiche"}>
-                            <div>
-                              {etoile.titre ? <p className="etoile-titre">{etoile.titre}</p> : null}
-                              {etoile.texte ? (
-                                <blockquote className="etoile-texte" data-police={etoile.police} data-style={etoile.style}>
-                                  {montre ? <Split text={etoile.texte} delay={180} /> : etoile.texte}
-                                </blockquote>
-                              ) : null}
-                              <p className="etoile-signature">
-                                <span><T>{SIGNATURE}</T></span>
-                              </p>
-                              <FermerBouton onClick={() => setActive(null)} />
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+            <section
+              key={cle}
+              className={`pcase pcase-${cle} is-${etat}`}
+              style={{ background: couleurRubrique(cle), ["--couleur" as string]: couleurRubrique(cle) } as React.CSSProperties}
+            >
+              <button
+                type="button"
+                className="pcase-tete"
+                aria-expanded={ouvert}
+                aria-label={`${nom} : ${nombre}`}
+                onClick={() => {
+                  setSection(ouvert ? null : cle);
+                  setActive(null);
+                }}
+              >
+                <strong>{nombre}</strong>
+                <span>{nom}</span>
+              </button>
+              {ouvert ? (
+                <div className="pcase-corps">
+                  {cle === "evenement" ? (
+                    <EvenementsTuiles />
+                  ) : liste.length ? (
+                    <ul>
+                      {liste.map((etoile, index) => {
+                        const montre = active === etoile.id;
+                        return (
+                          <li key={etoile.id} style={{ ["--i" as string]: index }}>
+                            <button type="button" aria-expanded={montre} onClick={() => setActive(montre ? null : etoile.id)}>
+                              <span>
+                                <strong>{etoile.titre || dateFr(etoile.date) || "Sans titre"}</strong>
+                                {etoile.titre && etoile.date ? <small>{dateFr(etoile.date)}</small> : null}
+                              </span>
+                            </button>
+                            {montre ? (
+                              <div className="pcase-fiche">
+                                {etoile.texte ? (
+                                  <blockquote className="etoile-texte" data-police={etoile.police} data-style={etoile.style}>
+                                    {etoile.texte}
+                                  </blockquote>
+                                ) : null}
+                                <p className="etoile-signature">
+                                  <span><T>{SIGNATURE}</T></span>
+                                </p>
+                                <FermerBouton onClick={() => setActive(null)} />
+                              </div>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="pcase-vide">Rien pour l&apos;instant.</p>
+                  )}
                 </div>
-              </div>
+              ) : null}
             </section>
           );
         })}

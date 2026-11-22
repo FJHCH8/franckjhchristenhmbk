@@ -1657,3 +1657,197 @@ html body .pano-mot.tavissiv {
   left: 0.6rem;
   color: #181818;
 }
+
+/* ═════════════ Les trois cases de Projets ═════════════
+   Au repos : citations et projets côte à côte, événements en large dessous.
+   Quand on appuie sur une case, elle devient un grand carré qui montre tout son contenu ;
+   les deux autres se replient en fines barres (sur le côté, en haut ou en bas). */
+.cases {
+  --barre: 2.6rem;
+  --g: 0.5rem;
+  --cote: calc((100vw - 2 * var(--gouttiere) - var(--g)) / 2);
+  display: grid;
+  gap: var(--g);
+  grid-template-areas: "c p" "e e";
+  grid-template-columns: calc(50% - var(--g) / 2) calc(50% - var(--g) / 2);
+  grid-template-rows: var(--cote) 9rem;
+  margin: 0.4rem var(--gouttiere) 2rem;
+  transition:
+    grid-template-columns 0.5s cubic-bezier(0.1, 0.9, 0.2, 1),
+    grid-template-rows 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.cases[data-ouvert="citation"] {
+  grid-template-columns: calc(100% - var(--barre) - var(--g)) var(--barre);
+  grid-template-rows: calc(78svh - var(--barre) - var(--g)) var(--barre);
+}
+
+.cases[data-ouvert="projet"] {
+  grid-template-columns: var(--barre) calc(100% - var(--barre) - var(--g));
+  grid-template-rows: calc(78svh - var(--barre) - var(--g)) var(--barre);
+}
+
+.cases[data-ouvert="evenement"] {
+  grid-template-columns: calc(50% - var(--g) / 2) calc(50% - var(--g) / 2);
+  grid-template-rows: var(--barre) calc(78svh - var(--barre) - var(--g));
+}
+
+.pcase {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: #fff;
+}
+
+.pcase-citation { grid-area: c; }
+.pcase-projet { grid-area: p; }
+.pcase-evenement { grid-area: e; }
+
+.pcase-tete {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pcase-tete strong {
+  display: block;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(3rem, 14vw, 4.4rem);
+  line-height: 1;
+}
+
+.pcase-tete span {
+  position: absolute;
+  left: 0.7rem;
+  bottom: 0.55rem;
+  font-family: var(--font-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Le grand carré : en-tête compact en haut, puis tout le contenu, qui défile à l'intérieur. */
+.pcase.is-grand .pcase-tete {
+  height: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem 0.4rem;
+}
+
+.pcase.is-grand .pcase-tete strong {
+  font-size: 2.4rem;
+}
+
+.pcase.is-grand .pcase-tete span {
+  position: static;
+  font-weight: 300;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+/* Les barres : juste la couleur, sans texte. On appuie dessus pour changer de case. */
+.pcase.is-barre .pcase-tete strong,
+.pcase.is-barre .pcase-tete span {
+  opacity: 0;
+}
+
+.pcase-corps {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.2rem 1rem 1rem;
+  background: rgba(0, 0, 0, 0.82);
+  margin: 0 0.35rem 0.35rem;
+  animation: pcase-arrive 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) 0.15s both;
+}
+
+@keyframes pcase-arrive {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.pcase-corps ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pcase-corps li {
+  border-bottom: 1px solid #1f1f1f;
+  animation: metro-ligne 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  animation-delay: calc(0.2s + var(--i, 0) * 45ms);
+}
+
+.pcase-corps li > button {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.7rem 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pcase-corps li > button::before {
+  content: "";
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: var(--couleur);
+}
+
+.pcase-corps li > button strong {
+  font-family: var(--font-text);
+  font-weight: 400;
+  font-size: 1.05rem;
+}
+
+.pcase-corps li > button small {
+  display: block;
+  color: #8a8a8a;
+  font-size: 0.8rem;
+}
+
+.pcase-corps li > button > span {
+  min-width: 0;
+}
+
+.pcase-fiche {
+  padding: 0.2rem 0 1rem 3.2rem;
+}
+
+.pcase-vide {
+  margin: 0.6rem 0;
+  color: #8a8a8a;
+}
+
+.pcase-corps .evenements {
+  margin: 0.4rem 0 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cases {
+    transition: none;
+  }
+  .pcase-corps,
+  .pcase-corps li {
+    animation: none;
+  }
+}
