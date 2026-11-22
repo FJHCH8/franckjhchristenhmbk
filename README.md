@@ -77,7 +77,7 @@ La police `public/fonts/davissis.woff2` (chasse proportionnelle, voyelles posée
 On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
 
 - `aa ii oo ee uu` : voyelles longues ; `a i o e u` après une consonne : signe posé au-dessus ;
-- `sh`, `ts` ou `c`, `mg`, `x` : lettres propres ; consonne doublée : signe « ∩ » dessous ; `'` : trait haut ;
+- `sh`, `ts` ou `c`, `mg`, `x` : lettres propres ; consonne doublée : signe « ⊓ » dessous ; `'` : barre sous la lettre ;
 - `! . , ; ?` : ponctuation du Davissis.
 
 Sur le site, en mode Davissis, tout texte qui a une traduction dans `lib/davissiv.ts` s’écrit dans cette écriture.
