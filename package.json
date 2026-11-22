@@ -18,7 +18,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@types/matter-js": "^0.19.8",
     "@vercel/blob": "^2.3.0",
+    "matter-js": "^0.20.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

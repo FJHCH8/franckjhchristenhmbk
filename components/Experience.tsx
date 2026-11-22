@@ -56,6 +56,48 @@ export function Experience() {
     };
   }, []);
 
+  // Police variable réactive : les lettres des grands titres s'épaississent près du curseur.
+  useEffect(() => {
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!fine.matches || reduce.matches) return;
+    const TITRES = ".scroll-head h1 .kt-c, .chap-mot .kt-c, .bento-titre .kt-c, .suite-titre .kt-c, .gravite-titre .kt-c";
+    let lettres: HTMLElement[] = [];
+    let lues = 0;
+    let frame = 0;
+    const pos = { x: -9999, y: -9999 };
+    const paint = () => {
+      frame = 0;
+      const now = performance.now();
+      if (now - lues > 700) {
+        lettres = [...document.querySelectorAll<HTMLElement>(TITRES)];
+        lues = now;
+      }
+      const view = window.innerHeight;
+      for (const lettre of lettres) {
+        const box = lettre.getBoundingClientRect();
+        if (box.bottom < 0 || box.top > view) continue;
+        const d = Math.hypot(box.left + box.width / 2 - pos.x, box.top + box.height / 2 - pos.y);
+        const k = Math.max(0, 1 - d / 260);
+        const value = (k * k * 260).toFixed(0);
+        if (lettre.dataset.fw !== value) {
+          lettre.dataset.fw = value;
+          lettre.style.setProperty("--dw", value);
+        }
+      }
+    };
+    const onMove = (event: PointerEvent) => {
+      pos.x = event.clientX;
+      pos.y = event.clientY;
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [pathname]);
+
   // Bordures lumineuses : les cartes proches du curseur s'éclairent sur leur contour.
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");

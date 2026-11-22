@@ -58,6 +58,10 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Sous les chapitres, une grille « bento » (`components/Bento.tsx`) mène à chaque page, avec le compte à rebours en direct.
 - En passant d’un chapitre, d’une carte ou de « Suivant » à une page, le grand titre se transforme en titre de la page d’arrivée (View Transitions API).
 - Sons d’interface synthétisés (`lib/sons.ts`), désactivés par défaut, à activer avec le bouton « Son ».
+- Le noir des photos est transparent, en fondu (`public/fond/*-a.*`, et directement dans le shader des chapitres) : les étoiles apparaissent derrière.
+- Section « Gravité » (`components/Gravite.tsx`, Matter.js chargé seulement quand on y arrive) : les lettres de « Polymathe » et les signes du site tombent, et on les attrape.
+- Police variable : les grands titres s’épaississent près du curseur et se resserrent quand on défile vite.
+- Verre dépoli avec une légère dispersion de couleurs sur les bords.
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
 
 ## Scripts

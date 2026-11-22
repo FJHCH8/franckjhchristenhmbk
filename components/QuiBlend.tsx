@@ -50,7 +50,8 @@ export function QuiBlend() {
       const midV = lite ? 0 : clamp((blur - 0.08) / 0.36) * (1 - clamp((blur - 0.52) / 0.34));
       const farV = lite ? 0 : clamp((blur - 0.4) / 0.42);
       const veil = 1 - clamp((progress - 0.22) / 0.78);
-      const stars = clamp((progress - 0.08) / 0.8);
+      // Les photos ont un noir transparent : le ciel reste allumé derrière elles dès le haut de page.
+      const stars = field.classList.contains("photo-field") ? 1 : clamp((progress - 0.08) / 0.8);
       const zoom = lite ? 1 : 1 + blur * 0.07;
       const key = `${sharpV.toFixed(3)}|${midV.toFixed(3)}|${farV.toFixed(3)}|${veil.toFixed(3)}|${stars.toFixed(3)}|${zoom.toFixed(4)}`;
       if (key === lastWrite) return;

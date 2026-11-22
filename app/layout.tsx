@@ -47,6 +47,8 @@ const texte = Noto_Sans({
   display: "swap",
   style: ["normal", "italic"],
   weight: "variable",
+  // Axe de largeur : les titres se resserrent avec la vitesse du défilement.
+  axes: ["wdth"],
   // Sans police de repli Arial intercalée : elle masquerait les polices des autres écritures.
   adjustFontFallback: false,
   variable: "--font-noto",

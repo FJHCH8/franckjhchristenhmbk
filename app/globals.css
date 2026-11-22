@@ -5954,3 +5954,153 @@ html.nav-vt::view-transition-new(titre-page) {
     overflow-wrap: anywhere;
   }
 }
+
+/* ═════════════════════════ Le noir laisse passer les étoiles ═════════════════════════ */
+
+.photo-field,
+.chap-photo {
+  background: transparent;
+}
+
+.chap-scene {
+  isolation: auto;
+}
+
+.chap-photo::after {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 30%, transparent 55%);
+}
+
+/* Sur les pages à photo, le ciel reste allumé derrière : il apparaît dans le noir de l'image. */
+html[data-page="a-propos"] .projets-sky,
+html[data-page="contact"] .projets-sky,
+html[data-page="projets"] .projets-sky,
+html.qui-driven[data-page="a-propos"] .projets-sky,
+html.qui-driven[data-page="contact"] .projets-sky,
+html.qui-driven[data-page="projets"] .projets-sky {
+  opacity: 1;
+  animation: none;
+}
+
+/* ═════════════════════════ Verre dépoli et dispersion ═════════════════════════ */
+
+.glass,
+.bento-carte,
+.title-dock-pill,
+.son-bouton,
+.chap-lien,
+.gravite-zone,
+.nav,
+.lang {
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    inset 3px 0 4px -3px rgba(255, 92, 132, 0.42),
+    inset -3px 0 4px -3px rgba(84, 176, 255, 0.42);
+}
+
+.bento-carte {
+  background: rgba(255, 255, 255, 0.035);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+}
+
+.bento-image {
+  filter: grayscale(1) brightness(0.86);
+}
+
+.bento-carte:hover .bento-image,
+.bento-carte:focus-visible .bento-image {
+  filter: grayscale(0.15) brightness(1);
+}
+
+.bento-voile {
+  background:
+    radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.12), transparent 60%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent 60%);
+}
+
+/* ═════════════════════════ Police variable réactive ═════════════════════════ */
+
+.kt-c {
+  --kt-delay: calc(var(--kt-d, 0ms) + min(var(--i, 0), 30) * 36ms);
+  transition:
+    opacity 0.85s cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 1.05s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.95s cubic-bezier(0.2, 0.8, 0.2, 1),
+    font-weight 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    font-stretch 0.35s ease;
+  transition-delay: var(--kt-delay), var(--kt-delay), var(--kt-delay), 0s, 0s;
+}
+
+.kt.kt-x .kt-c {
+  --kt-delay: calc(var(--kt-d, 0ms) + min(max(calc(var(--n, 1) - var(--i, 0)), 0), 30) * 34ms);
+  transition-delay: var(--kt-delay), var(--kt-delay), var(--kt-delay), 0s, 0s;
+}
+
+.scroll-head h1,
+.chap-mot,
+.bento-titre,
+.suite-titre,
+.gravite-titre {
+  --base-w: 600;
+}
+
+.scroll-head h1 .kt-c,
+.chap-mot .kt-c,
+.bento-titre .kt-c,
+.suite-titre .kt-c,
+.gravite-titre .kt-c {
+  font-weight: calc(var(--base-w, 600) + var(--dw, 0));
+  font-stretch: calc(100% - min(var(--vel, 0), 1.2) * 24%);
+}
+
+/* ═════════════════════════ Gravité ═════════════════════════ */
+
+.gravite {
+  position: relative;
+  z-index: 1;
+  padding: 14vh 0 10vh;
+}
+
+.gravite-titre {
+  margin: 0.7rem 0 2rem;
+  color: #fff;
+  font-size: clamp(2.6rem, 8vw, 6.8rem);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+  mix-blend-mode: difference;
+}
+
+.gravite-zone {
+  position: relative;
+  height: min(72vh, 680px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.02);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  touch-action: pan-y;
+}
+
+.gravite-zone canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gravite-zone.is-survol canvas {
+  cursor: grab;
+}
+
+.gravite-zone.is-prise canvas {
+  cursor: grabbing;
+}
+
+@media (max-width: 719px) {
+  .gravite-zone {
+    height: 62vh;
+    border-radius: 22px;
+  }
+}

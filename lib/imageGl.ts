@@ -74,9 +74,13 @@ void main() {
   float g = texture2D(uTex, c).g;
   float b = texture2D(uTex, c - vec2(shift, 0.0)).b;
   vec3 col = vec3(r, g, b);
+  // Le noir devient transparent, en fondu : les étoiles passent au travers.
+  float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+  float key = smoothstep(0.025, 0.2, lum);
   // Lueur fine le long du bord liquide.
   col += vec3(1.0) * near * (1.0 - uReveal) * 0.18;
-  gl_FragColor = vec4(col * mask, mask);
+  float alpha = mask * max(key, near * (1.0 - uReveal) * 0.5);
+  gl_FragColor = vec4(min(col, vec3(1.0)) * alpha, alpha);
 }
 `;
 
