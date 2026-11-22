@@ -7,6 +7,7 @@ On écrit le Davissis en lettres latines ; la police l'affiche dans son écritur
   aa ii oo ee uu   voyelles longues (lettres)
   a i o e u        voyelles brèves : signes posés au-dessus de la consonne
   sh, ts ou c, ng, x   lettres propres ; j s'écrit comme y
+  ch                   se dit k : s'écrit avec la lettre k
   consonne doublée     la consonne, puis le signe « ∩ » dessous
   '                    barre sous la lettre
   ! . , ; ?            ponctuation du Davissis
@@ -371,6 +372,7 @@ lookup Longues {{
   sub m_o m_o by v_oo;
   sub m_e m_e by v_ee;
   sub m_u m_u by v_uu;
+  sub c_c c_h by c_k;
   sub c_s c_h by c_sh;
   sub c_t c_s by c_c;
   sub c_n c_g by c_mg;
