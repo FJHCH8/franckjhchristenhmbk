@@ -116,6 +116,11 @@ export function CompteEndur({ children }: { children: ReactNode }) {
   return <CompteContexte.Provider value={vue}>{children}</CompteContexte.Provider>;
 }
 
+/** La progression d'Endurreisen (0 à 1), avec la même entrée en douceur que le chrono. */
+export function useCompte() {
+  return useContext(CompteContexte);
+}
+
 export function BarreCompte() {
   const vue = useContext(CompteContexte);
   return (

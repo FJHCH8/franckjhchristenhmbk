@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BarreCompte, CompteEndur, Countdown } from "@/components/Countdown";
+import { CompteEndur, Countdown } from "@/components/Countdown";
+import { EvenementsTuiles, ProjetsPanorama } from "@/components/ProjetsPanorama";
 import { Split } from "@/components/Kinetic";
 import { T } from "@/components/Locale";
 import { LogoEau } from "@/components/LogoEau";
@@ -18,6 +19,11 @@ function FermerBouton({ onClick }: { onClick: () => void }) {
       Fermer
     </button>
   );
+}
+
+/** La couleur de chaque rubrique, aux couleurs d'origine de Windows Phone. */
+function couleurRubrique(cle: string) {
+  return cle === "citation" ? "#a20025" : cle === "projet" ? "#008a00" : "#f09609";
 }
 
 function dateFr(value: string) {
@@ -104,24 +110,32 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
   return (
     <CompteEndur>
     <div className="sky-stage" ref={stageRef}>
-      <div className="voie-boucle" aria-hidden="true">
-        <img src="/ciel/voie-lactee.jpg" alt="" />
-        <img src="/ciel/voie-lactee.jpg" alt="" />
+      <ProjetsPanorama comptes={ordre.map((cle) => ({ nom: nomSection(cle).toLowerCase(), nombre: groupes.get(cle)?.length ?? 0, couleur: couleurRubrique(cle) }))} />
+      <div className="tuiles-rubriques">
+        {ordre.map((cle) => (
+          <button
+            key={cle}
+            type="button"
+            className="tuile-rubrique"
+            style={{ background: couleurRubrique(cle) }}
+            onClick={() => {
+              setSection(cle);
+              setActive(null);
+              window.setTimeout(() => document.getElementById(`rubrique-${cle}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+            }}
+          >
+            <strong>{groupes.get(cle)?.length ?? 0}</strong>
+            <span>{nomSection(cle).toLowerCase()}</span>
+          </button>
+        ))}
       </div>
-      <section className="endur-haut">
-        <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
-        <p className="endurreisen" translate="no">
-          <Split text="Endurreisen" mode="chars" />
-        </p>
-        <Countdown />
-        <BarreCompte />
-      </section>
+      <EvenementsTuiles />
       <div className="rubriques">
         {ordre.map((cle) => {
           const liste = [...(groupes.get(cle) ?? [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
           const ouvert = section === cle;
           return (
-            <section key={cle} className={ouvert ? "rubrique is-open" : "rubrique"}>
+            <section key={cle} id={`rubrique-${cle}`} className={ouvert ? "rubrique is-open" : "rubrique"} style={{ ["--couleur" as string]: couleurRubrique(cle) } as React.CSSProperties}>
               <h2>
                 <button
                   type="button"

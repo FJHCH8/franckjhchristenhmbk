@@ -1113,3 +1113,500 @@ html body .album-manege .album-nav button {
   left: auto !important;
   right: auto !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Page Projets : panorama Windows Phone (A), tuiles (B), listes Zune (C).
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* L'ancien ciel et ses étoiles laissent la place au panorama. */
+html body .projets .sky-stage {
+  background: #000;
+}
+
+html body .projets .voie-boucle,
+html body .projets .endur-haut {
+  display: none !important;
+}
+
+/* ── Le panorama ── */
+.pano {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  overflow: hidden;
+  --px: 0px;
+}
+
+.pano-fond {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* « vayak » géant : il glisse moins vite que les volets (profondeur). */
+.pano-mot {
+  position: absolute;
+  top: -0.6rem;
+  left: -1.2rem;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(11rem, 58vw, 22rem);
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: #111;
+  white-space: nowrap;
+  transform: translate3d(calc(var(--px) * 0.35), 0, 0);
+  will-change: transform;
+}
+
+/* Le logo de Franck, en fond : il grandit avec la progression et glisse un peu plus vite que le mot. */
+.pano-logo {
+  --taille: 0.5;
+  position: absolute;
+  top: 2.5rem;
+  right: -4%;
+  width: min(80vw, 460px);
+  aspect-ratio: 1;
+  opacity: 0.1;
+  transform-origin: 100% 0;
+  transform: translate3d(calc(var(--px) * 0.55), 0, 0) scale(var(--taille));
+  transition: transform 0.9s cubic-bezier(0.1, 0.9, 0.2, 1);
+  will-change: transform;
+}
+
+.pano-logo .logo-progression {
+  width: 100%;
+  height: 100%;
+}
+
+/* Le pivot : le volet actif en blanc, les autres en gris. */
+.pano-pivot {
+  display: flex;
+  gap: 1.3rem;
+  padding: 1.2rem var(--gouttiere) 0.6rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pano-pivot button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #4a4a4a;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(1.7rem, 7.4vw, 2.4rem);
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.pano-pivot button.is-actif {
+  color: #fff;
+}
+
+/* Les volets qu'on fait glisser au doigt. */
+.pano-piste {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pano-piste::-webkit-scrollbar {
+  display: none;
+}
+
+.pano-volet {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 0.4rem var(--gouttiere) 1.6rem;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.pano-etiquette {
+  margin: 0;
+  color: #8a8a8a;
+  font-family: var(--font-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pano-statut {
+  margin: 0.3rem 0 1.4rem;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 6.4vw, 2.2rem);
+  letter-spacing: -0.02em;
+}
+
+/* Endurreisen : le logo qui se trace, puis le chrono et le pourcentage. */
+.pano-logo-principal {
+  display: block;
+  width: min(100%, 420px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+
+.pano-chrono {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.4rem;
+}
+
+.pano-pourcent {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(3.2rem, 15vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+
+.pano-pourcent small {
+  font-size: 0.4em;
+  letter-spacing: 0;
+}
+
+/* Le chrono, en chiffres fins Metro. */
+html body .pano .count-bloc {
+  margin: 0.2rem 0 0;
+}
+
+html body .pano .count {
+  justify-content: flex-start;
+  gap: 0.15em;
+  font-family: var(--font-text) !important;
+  font-weight: 300 !important;
+  font-size: clamp(1.8rem, 7.6vw, 2.6rem) !important;
+  letter-spacing: 0 !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+html body .pano .count .flip {
+  width: 0.6em;
+  height: 1.15em;
+}
+
+html body .pano .count .eclair,
+html body .pano .count svg {
+  display: none !important;
+}
+
+html body .pano .count-dot {
+  width: 0.14em;
+  height: 0.14em;
+  margin: 0 0.12em;
+  background: #fff;
+  box-shadow: none;
+}
+
+/* L'eau : des reflets clairs qui coulent le long des fils du logo. */
+.logo-eau {
+  opacity: 0.55;
+  animation: logo-eau 3.2s linear infinite;
+}
+
+@keyframes logo-eau {
+  to { stroke-dashoffset: -0.17; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-eau {
+    animation: none;
+  }
+}
+
+/* ── L'aube : la frise en étapes ── */
+.aube-frise {
+  --p: 0;
+  position: relative;
+  height: 4.2rem;
+  margin: 0 0.6rem;
+}
+
+.aube-ligne {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1.05rem;
+  height: 2px;
+  background: #2a2a2a;
+}
+
+.aube-ligne-faite {
+  right: auto;
+  width: calc(var(--p) * 100%);
+  background: #fff;
+}
+
+.aube-etape {
+  position: absolute;
+  top: 0;
+  left: calc(var(--e) * 100%);
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  transform: translateX(-50%);
+}
+
+.aube-etape i {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.5rem;
+  border: 2px solid #555;
+  background: #000;
+}
+
+.aube-etape.is-on i {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.aube-etape small {
+  color: #8a8a8a;
+  font-family: var(--font-text);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.aube-curseur {
+  position: absolute;
+  top: 0.75rem;
+  left: calc(var(--p) * 100%);
+  width: 0.6rem;
+  height: 0.7rem;
+  background: #fff;
+  transform: translateX(-50%);
+}
+
+/* ── Le cadran ── */
+.cadran-corps {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 0.9rem;
+}
+
+.cadran-svg {
+  width: min(52vw, 220px);
+  height: auto;
+  flex: none;
+}
+
+.cadran-total {
+  fill: #fff;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: 40px;
+}
+
+.cadran-legende-total {
+  fill: #8a8a8a;
+  font-family: var(--font-text);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.cadran-legende {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-text);
+  font-size: 0.95rem;
+  line-height: 2.1;
+}
+
+.cadran-legende span {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.6rem;
+}
+
+/* ── Les tuiles des rubriques ── */
+.tuiles-rubriques {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0.4rem 0 1.4rem;
+}
+
+.tuile-rubrique {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0.6rem 0.7rem;
+  border: 0;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tuile-rubrique strong {
+  display: block;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(3rem, 14vw, 4.4rem);
+  line-height: 1;
+}
+
+.tuile-rubrique span {
+  position: absolute;
+  left: 0.7rem;
+  bottom: 0.55rem;
+  font-family: var(--font-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ── La case événement : le logo complet, traversé d'un reflet ── */
+.evenements {
+  margin: 0 0 1.6rem;
+}
+
+.evenements-grille {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.evenement-tuile {
+  position: relative;
+  display: block;
+  height: 11rem;
+  overflow: hidden;
+  border: 1px solid #1f1f1f;
+  background: radial-gradient(ellipse 60% 75% at 28% 48%, rgba(120, 190, 255, 0.16), transparent 70%), #0a0a0a;
+  color: #fff;
+  text-align: right;
+  cursor: pointer;
+}
+
+.evenement-logo {
+  position: absolute;
+  left: 0.4rem;
+  top: 0.3rem;
+  width: 10.2rem;
+  height: 10.2rem;
+}
+
+/* Le reflet : une bande de lumière qui traverse la case en biais, de temps en temps. */
+.evenement-reflet {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.18) 45%, transparent 55%);
+  background-size: 260% 100%;
+  animation: evenement-reflet 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes evenement-reflet {
+  0%, 55% { background-position: 120% 0; }
+  85%, 100% { background-position: -40% 0; }
+}
+
+.evenement-texte {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  font-family: var(--font-text);
+}
+
+.evenement-texte small {
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.evenement-texte strong {
+  font-weight: 300;
+  font-size: 1.7rem;
+}
+
+.evenement-texte em {
+  color: #8a8a8a;
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
+.evenement-detail {
+  padding: 1rem 0 0.4rem 1rem;
+  border-left: 4px solid var(--accent);
+  margin-top: 0.6rem;
+}
+
+.evenement-detail-logo {
+  display: block;
+  width: min(70vw, 300px);
+  aspect-ratio: 1;
+}
+
+.evenement-duree {
+  margin: 0.3rem 0 0;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+/* ── Les listes Zune : un carré de couleur devant chaque élément ── */
+html body .projets .rubrique li > button {
+  display: flex !important;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+html body .projets .rubrique li > button::before {
+  content: "";
+  display: block !important;
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: var(--couleur, var(--accent));
+}
+
+html body .projets .rubrique li > button[aria-expanded="true"]::before {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+html body .projets .rubrique-meta > span:first-child {
+  color: var(--couleur, var(--accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evenement-reflet {
+    animation: none;
+    background-position: 50% 0;
+  }
+  .pano-logo {
+    transition: none;
+  }
+}
+
+html body .projets .tuiles-rubriques,
+html body .projets .evenements {
+  margin-left: var(--gouttiere);
+  margin-right: var(--gouttiere);
+}
+
+html body .aube-frise {
+  margin: 0 2rem;
+}

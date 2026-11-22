@@ -37,3 +37,13 @@ export function countdownParts(now: number, target = PROJECTS_OPENING_MS) {
     done: left <= 0,
   };
 }
+
+/** L'aube : du 3 décembre 2026 au 3 juin 2027, heure de Paris (6 mois). */
+export const AUBE_START_MS = zonedToUtc(2026, 12, 3, 0, 0, "Europe/Paris");
+export const AUBE_END_MS = zonedToUtc(2027, 6, 3, 0, 0, "Europe/Paris");
+
+/** Les comptes à rebours : à leur fin, chacun devient une case « événement ». */
+export const EVENEMENTS = [
+  { id: "endurreisen", nom: "Endurreisen", debut: PROJECTS_START_MS, fin: PROJECTS_OPENING_MS },
+  { id: "aube", nom: "L'aube", debut: AUBE_START_MS, fin: AUBE_END_MS },
+] as const;
