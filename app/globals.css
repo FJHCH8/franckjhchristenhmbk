@@ -7750,3 +7750,39 @@ html.jeu-ouvert.has-curseur * {
 html.jeu-ouvert .jeu-case {
   cursor: pointer;
 }
+
+/* ═════════════════════════ Ficelle en vidéo ═════════════════════════ */
+
+.ficelle-video {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.ficelle-video video {
+  grid-area: 1 / 1;
+  width: min(92vh, 96vw);
+  height: min(92vh, 96vw);
+  object-fit: contain;
+  /* Le noir de la vidéo s'efface : seule la ficelle lumineuse reste sur le ciel. */
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.particules-calque {
+  mix-blend-mode: screen;
+}
+
+.ficelle-passage {
+  opacity: 0;
+}
+
+.ficelle-passage.is-visible {
+  opacity: 1;
+}
+
+/* Un peu plus d'un écran de défilement par chapitre : la transition se joue seule. */
+.chapitres.is-ouvert {
+  height: calc(var(--n, 4) * 130svh);
+}

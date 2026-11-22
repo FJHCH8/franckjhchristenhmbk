@@ -54,7 +54,7 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Sur ordinateur : curseur personnalisé et boutons aimantés (`components/Experience.tsx`).
 - À la première visite de la session, la signature de Franck (`public/signature.png`) s’écrit en blanc sur le noir sous un anneau de chargement bleu et blanc, puis le noir s’ouvre en cercle sur le site (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
-- Partie fluide de l’accueil (`components/Chapitres.tsx`, `components/Ficelle.tsx`) : une seule ficelle lumineuse, dessinée en 2D (aucune 3D), trace un bocal ; un appui long le brise, et la ficelle se délace puis se renoue en les contours des images des quatre chapitres, qui glissent à l’horizontale. Elle ondule comme de l’eau. Environ 600 points : légère même sur de vieux appareils.
+- Chapitres de l’accueil (`components/Chapitres.tsx`, `components/FicelleVideo.tsx`) : ils glissent à l’horizontale, toujours présents. La ficelle qui dessine leurs images est en vidéo (`public/ficelle/`) : une boucle qui ondule par chapitre, et une transition (délacement puis nouveau nœud) jouée une fois quand on change de chapitre. Les vidéos se régénèrent avec `node outils/videos-ficelle.js` (site lancé en local sur le port 3100).
 - Si une page met plus d’un demi-seconde à venir, l’anneau de chargement bleu et blanc apparaît (`components/Chargement.tsx`).
 - Défilement lissé avec inertie : Lenis.
 - Sous les chapitres, une grille « bento » (`components/Bento.tsx`) mène à chaque page, avec le compte à rebours en direct.
