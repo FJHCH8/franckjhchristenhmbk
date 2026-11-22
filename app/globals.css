@@ -7786,3 +7786,129 @@ html.jeu-ouvert .jeu-case {
 .chapitres.is-ouvert {
   height: calc(var(--n, 4) * 130svh);
 }
+
+/* ═════════════════════════ Chapitres : photos animées ═════════════════════════ */
+
+/* La photo, aux bords en nuage qui se fondent dans les étoiles. */
+.chap-nuage {
+  position: absolute;
+  z-index: 0;
+  inset: 8% 2% 10%;
+  margin: 0;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 62%, transparent 82%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 42%, rgba(0, 0, 0, 0.6) 62%, transparent 82%);
+  /* Entrée : elle s'ouvre en cercle depuis la gauche. */
+  clip-path: circle(0% at 22% 50%);
+  transition: clip-path 1.4s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+}
+
+.chap-nuage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  /* Du flou au net, en se posant. */
+  scale: 1.25;
+  opacity: 0;
+  filter: blur(14px) brightness(1.4);
+  translate: calc((0.62 - var(--p, 0.62)) * 14vw) 0;
+  transition:
+    scale 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 1s ease,
+    filter 1.4s ease,
+    translate 0.4s linear;
+  /* Ensuite, elle respire. */
+  animation: nuage-souffle 12s ease-in-out infinite alternate;
+  will-change: scale, translate;
+}
+
+.chap.is-actif .chap-nuage {
+  clip-path: circle(80% at 50% 50%);
+}
+
+.chap.is-actif .chap-nuage img {
+  scale: 1;
+  opacity: 1;
+  filter: none;
+}
+
+@keyframes nuage-souffle {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to { transform: scale(1.06) translate3d(-1.2%, -1.5%, 0); }
+}
+
+/* Le texte reste lisible sur la photo. */
+.chap-scene::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  pointer-events: none;
+}
+
+.chap-mot,
+.chap-pied,
+.chap-numero {
+  z-index: 2;
+}
+
+/* Un écran de défilement par chapitre. */
+.chapitres.is-ouvert {
+  height: calc(var(--n, 4) * 120svh);
+}
+
+@media (max-width: 719px) {
+  .chap-nuage {
+    inset: 14% -8% 22%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chap-nuage,
+  .chap .chap-nuage {
+    clip-path: none;
+    transition: none;
+  }
+
+  .chap-nuage img {
+    scale: 1;
+    opacity: 1;
+    filter: none;
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Le nuage épouse la photo elle-même, pas son cadre : plus aucun bord droit. */
+.chap-nuage {
+  display: grid;
+  place-items: center;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.chap-nuage img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: initial;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 48%, #000 40%, rgba(0, 0, 0, 0.55) 64%, transparent 92%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 48%, #000 40%, rgba(0, 0, 0, 0.55) 64%, transparent 92%);
+}
+
+.chap-nuage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chap-nuage img {
+  min-width: 0;
+  min-height: 0;
+  flex: none;
+}

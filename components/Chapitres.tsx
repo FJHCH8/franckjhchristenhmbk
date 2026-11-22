@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { Split } from "@/components/Kinetic";
-import { FicelleVideo } from "@/components/FicelleVideo";
 
 
 type Chapitre = {
@@ -65,14 +64,11 @@ const lisse = (t: number) => t * t * (3 - 2 * t);
 
 /**
  * Les quatre chapitres de l'accueil, toujours présents : ils glissent à l'horizontale,
- * collés les uns aux autres, et la ficelle (en vidéo) se délace d'un chapitre à l'autre.
+ * collés les uns aux autres ; la photo de chaque chapitre fait son entrée quand il arrive.
  */
 export function Chapitres() {
-  const calqueRef = useRef<HTMLDivElement>(null);
   const chapRef = useRef<HTMLDivElement>(null);
   const rangeeRef = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
-  const [actif, setActif] = useState(false);
 
   useEffect(() => {
     const chap = chapRef.current;
@@ -81,8 +77,7 @@ export function Chapitres() {
     const panneaux = [...rangee.querySelectorAll<HTMLElement>("[data-chap]")];
     const dernier = panneaux.length - 1;
     let frame = 0;
-    let enVue = false;
-    let courant = 0;
+    let courant = -1;
 
     const paint = () => {
       frame = 0;
@@ -95,21 +90,11 @@ export function Chapitres() {
       const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.15) / 0.7));
       rangee.style.setProperty("--decalage", decalage.toFixed(4));
       panneaux.forEach((panneau, j) => panneau.style.setProperty("--p", clamp(0.62 + (decalage - j) * 0.38).toFixed(4)));
-      // Le chapitre affiché change à mi-glissement : la vidéo de transition part à ce moment.
+      // Le chapitre affiché change à mi-glissement : sa photo fait son entrée.
       const proche = Math.round(decalage);
       if (proche !== courant) {
         courant = proche;
-        setIndex(proche);
-      }
-      // La ficelle apparaît en entrant dans les chapitres, et s'estompe en en sortant.
-      const entree = clamp((view - boite.top) / (view * 0.7));
-      const sortie = clamp((boite.bottom - view * 0.15) / (view * 0.85));
-      const densite = Math.min(entree, sortie);
-      if (calqueRef.current) calqueRef.current.style.opacity = densite.toFixed(3);
-      const visible = densite > 0.002;
-      if (visible !== enVue) {
-        enVue = visible;
-        setActif(visible);
+        panneaux.forEach((panneau, j) => panneau.classList.toggle("is-actif", j === proche));
       }
     };
 
@@ -128,9 +113,6 @@ export function Chapitres() {
 
   return (
     <div className="fluide">
-      <div className="particules-calque" ref={calqueRef}>
-        <FicelleVideo index={index} total={CHAPITRES.length} actif={actif} />
-      </div>
       <div className="chapitres is-ouvert" ref={chapRef} aria-label="Chapitres du site" style={{ ["--n" as string]: CHAPITRES.length } as CSSProperties}>
         <div className="chap-piste">
           <div className="chap-rangee" ref={rangeeRef}>
@@ -143,6 +125,10 @@ export function Chapitres() {
                 style={{ ["--sens" as string]: i % 2 ? -1 : 1 } as CSSProperties}
               >
                 <div className="chap-scene">
+                  <figure className="chap-nuage" aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={chapitre.photo} alt="" loading="lazy" decoding="async" draggable={false} style={{ objectPosition: chapitre.focus }} />
+                  </figure>
                   <p className="chap-numero" aria-hidden="true">
                     <span>{String(i + 1).padStart(2, "0")}</span>
                     <span className="chap-numero-trait" />
