@@ -236,6 +236,9 @@ export function Experience() {
       scaleTarget /= 0.7;
     };
 
+    // Accessible au reste du site (défilement guidé après l'éclat du bocal).
+    (window as Window & { __lenis?: Lenis }).__lenis = lenis;
+
     stopScroll.current = () => {
       // Après un changement de page, Lenis repart de la position réelle.
       lenis.scrollTo(window.scrollY, { immediate: true, force: true });
@@ -254,6 +257,7 @@ export function Experience() {
       window.removeEventListener("pointerup", onUp);
       document.documentElement.removeEventListener("pointerleave", onLeave);
       lenis.destroy();
+      delete (window as Window & { __lenis?: Lenis }).__lenis;
       stopScroll.current = () => undefined;
       root.classList.remove("has-curseur", "curseur-on", "curseur-lien", "curseur-texte");
       if (magnet) magnet.style.translate = "";

@@ -6599,3 +6599,174 @@ html.kt-on.intro-joue .kt.kt-x[data-kt="chars"] .kt-c {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
   pointer-events: none;
 }
+
+/* ═════════════════════════ Partie fluide v2 : bocal et chapitres horizontaux ═════════════════════════ */
+
+.fluide {
+  position: relative;
+}
+
+/* Les particules couvrent tout l'écran dans la partie fluide, puis s'estompent. */
+.particules-calque {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  height: 100lvh;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.particules-calque canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Le bocal (classes « flacon » : « bocal » est déjà pris par un ancien style) */
+.flacon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  padding: 8vh 1.25rem 14vh;
+}
+
+.flacon-place {
+  width: 100%;
+  height: min(78svh, 760px);
+}
+
+.flacon-bouton {
+  --f: 0;
+  display: inline-flex;
+  width: max-content;
+  max-width: calc(100vw - 2.5rem);
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.8rem 1.4rem 0.8rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f4f7ff;
+  font: 500 clamp(0.92rem, 1.6vw, 1.05rem) / 1.2 var(--font-text);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transform: translate3d(calc((var(--f) - 0.5) * var(--f) * 3px), 0, 0) scale(calc(1 - var(--f) * 0.06));
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.flacon-bouton:hover,
+.flacon-bouton:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.flacon-anneau {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.flacon-anneau svg {
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+}
+
+.flacon-anneau circle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 2;
+}
+
+.flacon-anneau .flacon-anneau-plein {
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--f));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+}
+
+/* Chapitres : fermés tant que le bocal tient. */
+.chapitres {
+  display: none;
+  margin-top: 0;
+}
+
+.chapitres.is-ouvert {
+  display: block;
+  height: calc(var(--n, 4) * 100svh);
+}
+
+/* Une piste épinglée ; les quatre écrans glissent à l'horizontale, collés les uns aux autres. */
+.chap-piste {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.chap-rangee {
+  display: flex;
+  width: calc(var(--n, 4) * 100vw);
+  height: 100%;
+  transform: translate3d(calc(var(--decalage, 0) * -100vw), 0, 0);
+  will-change: transform;
+}
+
+.chap-rangee .chap {
+  flex: 0 0 100vw;
+  height: 100%;
+}
+
+.chap-rangee .chap-scene {
+  position: relative;
+  height: 100%;
+  opacity: 1;
+}
+
+.chap-rangee .chap {
+  --lit: clamp(0, calc((var(--p) - 0.3) * 4), 1);
+}
+
+.chapitres.is-particules .chap-scene::before {
+  display: none;
+}
+
+/* Repli sans particules : la photo occupe l'écran du chapitre. */
+.chapitres.is-photos .chap-photo {
+  clip-path: none;
+}
+
+.chapitres.is-photos .chap-photo img {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapitres.is-ouvert {
+    height: auto;
+  }
+
+  .chap-piste {
+    position: static;
+    height: auto;
+  }
+
+  .chap-rangee {
+    flex-direction: column;
+    width: 100%;
+    transform: none;
+  }
+
+  .chap-rangee .chap {
+    flex-basis: 100svh;
+  }
+}

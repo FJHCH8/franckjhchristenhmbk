@@ -13,7 +13,22 @@ import { GPUComputationRenderer, type Variable } from "three/examples/jsm/misc/G
  * vitesses vivent dans des textures calculées par la carte graphique.
  */
 
-export type Progression = MutableRefObject<{ g: number; actif: boolean }>;
+export type EtatParticules = {
+  /** Avancée dans les chapitres : 0 = premier, 3 = dernier (valeurs intermédiaires pendant les glissements). */
+  g: number;
+  /** Le bocal tient encore, ou il a éclaté. */
+  phase: "bocal" | "libre";
+  /** 0 à 1 : fissure du bocal pendant qu'on appuie. */
+  fissure: number;
+  /** Instant de l'éclat (performance.now), 0 tant qu'il n'a pas eu lieu. */
+  eclat: number;
+  /** 0 à 1 : densité d'étoiles ; baisse en fondu quand on quitte la partie fluide. */
+  densite: number;
+  /** Décalage vertical de la scène, en pixels, pour qu'elle suive la page. */
+  decalage: number;
+};
+
+export type Progression = MutableRefObject<EtatParticules>;
 
 const CURL = /* glsl */ `
 vec4 permute(vec4 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
@@ -84,6 +99,8 @@ uniform float uTemps;
 uniform float uDelta;
 uniform float uEchelle;
 uniform vec3 uSouris;
+uniform float uExplosion;
+uniform float uFissure;
 ${CURL}
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution.xy;
@@ -102,7 +119,10 @@ void main() {
   // Ressort vers la cible, relâché pendant le vortex.
   vec3 force = (cible - pos) * mix(9.0, 1.2, uVortex) + flot * 3.0;
   // Souffle discret même au repos : l'image respire.
-  force += curl * 0.12 * (1.0 - uVortex);
+  force += curl * (0.12 + uFissure * 1.6) * (1.0 - uVortex);
+
+  // L'éclat du bocal : tout jaillit vers l'extérieur.
+  force += normalize(pos + vec3(0.0, 0.0, 0.001)) * uExplosion * 26.0 + curl * uExplosion * 10.0;
 
   // Répulsion par la souris ou le doigt.
   vec2 d = pos.xy - uSouris.xy;
@@ -133,6 +153,7 @@ uniform float uMorph;
 uniform float uVortex;
 uniform float uTaille;
 uniform float uTemps;
+uniform float uDensite;
 attribute vec2 aRef;
 attribute float aHasard;
 varying vec3 vCouleur;
@@ -148,7 +169,9 @@ void main() {
   // Pendant le vortex, les particules prennent la teinte bleutée des étoiles.
   vCouleur = mix(c.rgb, vec3(0.72, 0.82, 1.0) * (0.5 + c.a), uVortex * 0.65);
   float scintille = 0.75 + 0.25 * sin(uTemps * (1.0 + aHasard * 3.0) + aHasard * 40.0);
-  vAlpha = c.a * scintille;
+  // Fondu en sortie de la partie fluide : de moins en moins d'étoiles.
+  float garde = step(aHasard, uDensite);
+  vAlpha = c.a * scintille * garde * smoothstep(0.0, 0.25, uDensite);
   gl_PointSize = uTaille * (0.55 + aHasard * 0.9) * (1.0 + uVortex * 0.5) / -mv.z;
 }
 `;
@@ -265,16 +288,81 @@ function nuage(n: number): Cible {
   return { pos: texture(pos, n), couleur: texture(couleur, n) };
 }
 
-/** Pour une progression g (chapitre + avancée), donne l'image de départ, l'image d'arrivée et le mélange. */
-function etat(g: number, dernier: number): { a: number; b: number; m: number } {
-  const NUAGE = dernier + 1;
-  if (g < 0.08) return { a: NUAGE, b: 0, m: Math.min(1, Math.max(0, (g + 0.45) / 0.53)) };
-  const k = g - 0.08;
-  const i = Math.min(dernier, Math.floor(k));
-  const f = k - i;
-  if (f < 0.6) return { a: i, b: i, m: 0 };
-  const suivant = i + 1 > dernier ? NUAGE : i + 1;
-  return { a: i, b: suivant, m: Math.min(1, (f - 0.6) / 0.42) };
+/** Le bocal : un verre bombé au col étroit, et dedans un nuage dense de particules. */
+function bocal(n: number): Cible {
+  const count = n * n;
+  const pos = new Float32Array(count * 4);
+  const couleur = new Float32Array(count * 4);
+  const lisse3 = (t: number) => t * t * (3 - 2 * t);
+  const rayon = (y: number) => {
+    if (y < -0.4) return 0.27 * Math.sqrt(Math.max(0, 1 - ((-0.4 - y) / 0.1) ** 2));
+    if (y < 0.12) return 0.27 + 0.02 * Math.sin(((y + 0.4) / 0.52) * Math.PI);
+    if (y < 0.3) return 0.27 + (0.15 - 0.27) * lisse3((y - 0.12) / 0.18);
+    if (y < 0.4) return 0.15;
+    return 0.18;
+  };
+  for (let k = 0; k < count; k += 1) {
+    const tirage = Math.random();
+    const angle = Math.random() * Math.PI * 2;
+    let x: number;
+    let y: number;
+    let z: number;
+    let c: [number, number, number, number];
+    if (tirage < 0.34) {
+      // Le verre : sa surface, plus dense sur les bords vus de face.
+      y = -0.5 + Math.random() * 0.92;
+      const r = rayon(y);
+      x = Math.cos(angle) * r;
+      z = Math.sin(angle) * r * 0.7;
+      const bord = Math.abs(Math.cos(angle));
+      c = [0.82, 0.9, 1, 0.35 + bord * 0.65];
+    } else if (tirage < 0.4) {
+      // Le rebord du col.
+      y = 0.4 + Math.random() * 0.03;
+      x = Math.cos(angle) * 0.18;
+      z = Math.sin(angle) * 0.18 * 0.7;
+      c = [0.95, 0.97, 1, 0.95];
+    } else {
+      // Le nuage : dense au centre, effiloché vers les bords.
+      const u = Math.random();
+      const v = Math.random() * 2 - 1;
+      const s = Math.pow(u, 0.62);
+      y = -0.12 + v * 0.3 * s;
+      const r = rayon(y) * 0.85 * Math.pow(Math.random(), 0.5) * (0.5 + 0.5 * s);
+      x = Math.cos(angle) * r;
+      z = Math.sin(angle) * r * 0.7;
+      const t = Math.random();
+      c = [0.92 + 0.08 * t, 0.8 + 0.12 * (1 - t), 1, 0.55 + (1 - s) * 0.45];
+    }
+    // Un peu plus petit qu'une image : le bocal respire dans l'écran.
+    pos[k * 4] = x * 0.86;
+    pos[k * 4 + 1] = y * 0.86 - 0.02;
+    pos[k * 4 + 2] = z * 0.86;
+    pos[k * 4 + 3] = 1;
+    couleur.set(c, k * 4);
+  }
+  return { pos: texture(pos, n), couleur: texture(couleur, n) };
+}
+
+const lisse = (t: number) => t * t * (3 - 2 * t);
+
+/** Images de départ et d'arrivée, et le mélange, selon l'état. */
+function etat(e: EtatParticules, dernier: number, maintenant: number): { a: number; b: number; m: number; vortex: number; explosion: number } {
+  const BOCAL = dernier + 2;
+  if (e.phase === "bocal") return { a: BOCAL, b: BOCAL, m: 0, vortex: 0.04 + e.fissure * 0.12, explosion: 0 };
+  const depuis = e.eclat ? (maintenant - e.eclat) / 1000 : 99;
+  const explosion = Math.max(0, 1 - depuis / 0.7);
+  if (depuis < 2.2) {
+    const m = Math.min(1, Math.max(0, (depuis - 0.35) / 1.6));
+    return { a: BOCAL, b: 0, m, vortex: Math.max(Math.sin(m * Math.PI), explosion), explosion };
+  }
+  const g = Math.max(0, Math.min(dernier, e.g));
+  const i = Math.min(dernier, Math.floor(g));
+  const f = g - i;
+  if (i >= dernier) return { a: dernier, b: dernier, m: 0, vortex: 0, explosion: 0 };
+  // Le glissement d'un chapitre au suivant : l'image tient, puis se disperse et se recompose.
+  const m = lisse(Math.min(1, Math.max(0, (f - 0.3) / 0.7)));
+  return { a: i, b: i + 1, m, vortex: Math.sin(m * Math.PI), explosion: 0 };
 }
 
 function Particules({ images, progression, n }: { images: string[]; progression: Progression; n: number }) {
@@ -316,6 +404,7 @@ function Particules({ images, progression, n }: { images: string[]; progression:
       uVortex: { value: 0 },
       uTaille: { value: 22 },
       uTemps: { value: 0 },
+      uDensite: { value: 1 },
     }),
     [],
   );
@@ -324,11 +413,11 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     let annule = false;
     void Promise.all(images.map(charger)).then((imgs) => {
       if (annule) return;
-      const cibles = [...imgs.map((img) => echantillonner(img, n)), nuage(n)];
+      const cibles = [...imgs.map((img) => echantillonner(img, n)), nuage(n), bocal(n)];
       const gpu = new GPUComputationRenderer(n, n, gl);
       if (!gl.capabilities.isWebGL2 || /iPhone|iPad|iPod/.test(navigator.userAgent)) gpu.setDataType(THREE.HalfFloatType);
       const depart = gpu.createTexture();
-      const source = cibles[cibles.length - 1]!.pos.image.data as Float32Array;
+      const source = cibles[cibles.length - 2]!.pos.image.data as Float32Array;
       (depart.image.data as Float32Array).set(source);
       const pos = gpu.addVariable("texturePosition", POSITION, depart);
       const vel = gpu.addVariable("textureVelocity", VITESSE, gpu.createTexture());
@@ -343,6 +432,8 @@ function Particules({ images, progression, n }: { images: string[]; progression:
         uDelta: { value: 0.016 },
         uEchelle: { value: 1 },
         uSouris: { value: new THREE.Vector3(9, 9, 0) },
+        uExplosion: { value: 0 },
+        uFissure: { value: 0 },
       });
       Object.assign(pos.material.uniforms, { uDelta: { value: 0.016 } });
       let erreur = gpu.init();
@@ -393,10 +484,9 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     if (!sim) return;
     const dt = Math.min(delta, 1 / 30);
     sim.temps += dt;
-    const { g } = progression.current;
-    const dernier = sim.cibles.length - 2;
-    const { a, b, m } = etat(g, dernier);
-    const vortex = Math.sin(m * Math.PI);
+    const e = progression.current;
+    const dernier = sim.cibles.length - 3;
+    const { a, b, m, vortex, explosion } = etat(e, dernier, performance.now());
 
     // Taille visible du plan z = 0 : l'image occupe 78 % de la hauteur, sans déborder en largeur.
     const cam = camera as THREE.PerspectiveCamera;
@@ -417,7 +507,11 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     u.uTemps!.value = sim.temps;
     u.uDelta!.value = dt;
     u.uEchelle!.value = echelle;
-    (u.uSouris!.value as THREE.Vector3).set(s.x, s.y, s.force);
+    // La scène suit la page : décalage vertical converti en unités du monde.
+    const decalage = (-e.decalage / size.height) * hauteur;
+    u.uExplosion!.value = explosion;
+    u.uFissure!.value = e.phase === "bocal" ? e.fissure : 0;
+    (u.uSouris!.value as THREE.Vector3).set(s.x, s.y - decalage, s.force * e.densite);
     sim.pos.material.uniforms.uDelta!.value = dt;
     sim.gpu.compute();
 
@@ -430,10 +524,13 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     mu.uMorph!.value = m;
     mu.uVortex!.value = vortex;
     mu.uTemps!.value = sim.temps;
+    mu.uDensite!.value = e.densite;
     mu.uTaille!.value = Math.max(11, Math.min(20, size.height / 44)) * state.viewport.dpr;
 
     // Profondeur : la scène s'incline doucement vers le curseur.
     if (groupe.current) {
+      const tremble = e.phase === "bocal" ? e.fissure * e.fissure * 0.035 : 0;
+      groupe.current.position.set((Math.random() - 0.5) * tremble, decalage + (Math.random() - 0.5) * tremble, 0);
       groupe.current.rotation.y += (s.nx * 0.22 * s.force - groupe.current.rotation.y) * Math.min(1, dt * 3);
       groupe.current.rotation.x += (-s.ny * 0.14 * s.force - groupe.current.rotation.x) * Math.min(1, dt * 3);
     }

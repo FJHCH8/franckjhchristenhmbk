@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Split } from "@/components/Kinetic";
+import type { EtatParticules } from "@/components/ParticulesScene";
+import { clic, souffle } from "@/lib/sons";
 
-// La scène 3D (Three.js) n'est chargée que sur l'accueil, et seulement quand on approche des chapitres.
+// La scène 3D (Three.js) n'est chargée que sur l'accueil, et seulement quand on approche du bocal.
 const ParticulesScene = dynamic(() => import("@/components/ParticulesScene"), { ssr: false });
 
 type Chapitre = {
@@ -60,70 +62,130 @@ export const CHAPITRES: Chapitre[] = [
 ];
 
 const IMAGES = CHAPITRES.map((chapitre) => chapitre.particules);
+const CLE = "fjch-bocal";
+const MAINTIEN = 1300;
 
 function clamp(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
+const lisse = (t: number) => t * t * (3 - 2 * t);
+
+function webglPossible() {
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Récit au défilement de l'accueil. Derrière les quatre chapitres, une seule scène :
- * des milliers de particules forment la photo du chapitre, puis se dispersent dans
- * un vortex et se réassemblent en la suivante.
+ * La partie fluide de l'accueil. Un bocal plein de particules ; on appuie longtemps
+ * pour le briser ; les particules jaillissent et deviennent les images des quatre
+ * chapitres, qui glissent à l'horizontale, collés les uns aux autres.
  */
 export function Chapitres() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const progression = useRef({ g: -1, actif: false });
+  const fluideRef = useRef<HTMLDivElement>(null);
+  const calqueRef = useRef<HTMLDivElement>(null);
+  const bocalRef = useRef<HTMLDivElement>(null);
+  const chapRef = useRef<HTMLDivElement>(null);
+  const rangeeRef = useRef<HTMLDivElement>(null);
+  const progression = useRef<EtatParticules>({ g: 0, phase: "bocal", fissure: 0, eclat: 0, densite: 0, decalage: 0 });
+  const [mode, setMode] = useState<"attente" | "particules" | "photos">("attente");
+  const [brise, setBrise] = useState(false);
   const [charger, setCharger] = useState(false);
   const [pret, setPret] = useState(false);
   const [lite, setLite] = useState(false);
   const [actif, setActif] = useState(false);
+  const [fissure, setFissure] = useState(0);
+  const maintien = useRef({ depart: 0, frame: 0 });
+
+  // Particules si possible ; sinon, les photos. Le bocal reste brisé pendant toute la visite.
+  useEffect(() => {
+    const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const possible = !calme && webglPossible();
+    let deja = false;
+    try {
+      deja = sessionStorage.getItem(CLE) === "1";
+    } catch {
+      /* navigation privée */
+    }
+    if (deja || !possible) progression.current.phase = "libre";
+    const id = window.requestAnimationFrame(() => {
+      if (deja || !possible) setBrise(true);
+      setLite(document.documentElement.dataset.power === "lite");
+      setMode(possible ? "particules" : "photos");
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const tracks = [...root.querySelectorAll<HTMLElement>("[data-chap]")];
-
-    // On prépare la 3D un peu avant d'arriver aux chapitres.
+    if (mode !== "particules") return;
+    const fluide = fluideRef.current;
+    if (!fluide) return;
     const veille = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting) || motion.matches) return;
+        if (!entries.some((entry) => entry.isIntersecting)) return;
         veille.disconnect();
-        setLite(document.documentElement.dataset.power === "lite");
         setCharger(true);
       },
-      { rootMargin: "120% 0px 120% 0px" },
+      { rootMargin: "150% 0px 150% 0px" },
     );
-    veille.observe(root);
+    veille.observe(fluide);
+    return () => veille.disconnect();
+  }, [mode]);
 
+  // Défilement : glissement horizontal des chapitres, densité et ancrage des particules.
+  useEffect(() => {
+    const chap = chapRef.current;
+    const rangee = rangeeRef.current;
+    if (!chap || !rangee) return;
+    const panneaux = [...rangee.querySelectorAll<HTMLElement>("[data-chap]")];
+    const dernier = panneaux.length - 1;
     let frame = 0;
     let enVue = false;
+
     const paint = () => {
       frame = 0;
       const view = window.innerHeight;
-      // La scène 3D ne calcule que lorsque les chapitres sont à l'écran.
-      const zone = root.getBoundingClientRect();
-      const visible = zone.bottom > -view * 0.3 && zone.top < view * 1.3;
+      const e = progression.current;
+      const boite = chap.getBoundingClientRect();
+      const ouvert = boite.height > 1;
+
+      if (ouvert) {
+        const course = Math.max(1, boite.height - view);
+        const g = clamp(-boite.top / course) * dernier;
+        e.g = g;
+        const i = Math.min(dernier, Math.floor(g));
+        const f = g - i;
+        const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.3) / 0.7));
+        rangee.style.setProperty("--decalage", decalage.toFixed(4));
+        panneaux.forEach((panneau, j) => panneau.style.setProperty("--p", clamp(0.62 + (decalage - j) * 0.38).toFixed(4)));
+      }
+
+      // La partie fluide va du bocal à la fin des chapitres.
+      const bocal = bocalRef.current?.getBoundingClientRect();
+      const haut = bocal ? bocal.top : boite.top;
+      const bas = ouvert ? boite.bottom : (bocal?.bottom ?? boite.bottom);
+      const entree = clamp((view - haut) / (view * 0.7));
+      const sortie = clamp((bas - view * 0.15) / (view * 0.85));
+      e.densite = Math.min(entree, sortie);
+
+      // Ancrage : le bocal suit la page ; les chapitres restent au centre tant qu'ils sont épinglés.
+      if (e.phase === "bocal" && bocal) {
+        const place = bocalRef.current?.querySelector(".flacon-place")?.getBoundingClientRect();
+        e.decalage = place ? place.top + place.height / 2 - view / 2 : 0;
+      } else if (ouvert && boite.top > 0) e.decalage = boite.top;
+      else if (ouvert && boite.bottom < view) e.decalage = boite.bottom - view;
+      else e.decalage = 0;
+
+      if (calqueRef.current) calqueRef.current.style.opacity = e.densite.toFixed(3);
+      const visible = e.densite > 0.002;
       if (visible !== enVue) {
         enVue = visible;
         setActif(visible);
       }
-      if (motion.matches) {
-        for (const track of tracks) track.style.setProperty("--p", "0.62");
-        return;
-      }
-      let g = -1;
-      tracks.forEach((track, index) => {
-        const box = track.getBoundingClientRect();
-        const travel = Math.max(1, box.height - view);
-        const p = clamp(-box.top / travel);
-        if (box.bottom > -view * 0.2 && box.top < view * 1.2) track.style.setProperty("--p", p.toFixed(4));
-        if (index === 0 && box.top > 0) g = -Math.min(1, box.top / view);
-        else if (box.top <= 0) g = index + p;
-      });
-      const fin = tracks[tracks.length - 1]?.getBoundingClientRect();
-      if (fin && fin.bottom < view) g = tracks.length + Math.min(1, (view - fin.bottom) / view);
-      progression.current.g = g;
     };
 
     const wake = () => {
@@ -133,57 +195,164 @@ export function Chapitres() {
     paint();
     window.addEventListener("scroll", wake, { passive: true });
     window.addEventListener("resize", wake);
-    motion.addEventListener("change", wake);
+    const intervalle = window.setInterval(wake, 250);
     return () => {
-      veille.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", wake);
       window.removeEventListener("resize", wake);
-      motion.removeEventListener("change", wake);
+      window.clearInterval(intervalle);
     };
-  }, []);
+  }, [brise, mode]);
+
+  const briser = () => {
+    const e = progression.current;
+    e.phase = "libre";
+    e.eclat = performance.now();
+    e.fissure = 0;
+    setFissure(0);
+    setBrise(true);
+    souffle();
+    try {
+      sessionStorage.setItem(CLE, "1");
+    } catch {
+      /* navigation privée */
+    }
+    // Les chapitres viennent de s'ouvrir : on y glisse doucement.
+    window.setTimeout(() => {
+      const chap = chapRef.current;
+      if (!chap) return;
+      const cible = chap.getBoundingClientRect().top + window.scrollY;
+      const lenis = (window as Window & { __lenis?: { scrollTo: (y: number, o?: object) => void } }).__lenis;
+      if (lenis) lenis.scrollTo(cible, { duration: 2.2 });
+      else window.scrollTo({ top: cible, behavior: "smooth" });
+    }, 700);
+  };
+
+  const appuyer = () => {
+    if (brise || maintien.current.frame) return;
+    clic();
+    maintien.current.depart = performance.now();
+    const pas = (now: number) => {
+      const f = clamp((now - maintien.current.depart) / MAINTIEN);
+      progression.current.fissure = f;
+      setFissure(f);
+      if (f >= 1) {
+        maintien.current.frame = 0;
+        briser();
+        return;
+      }
+      maintien.current.frame = window.requestAnimationFrame(pas);
+    };
+    maintien.current.frame = window.requestAnimationFrame(pas);
+  };
+
+  const relacher = () => {
+    if (!maintien.current.frame) return;
+    window.cancelAnimationFrame(maintien.current.frame);
+    maintien.current.frame = 0;
+    // La fissure se referme doucement.
+    const debut = progression.current.fissure;
+    const t0 = performance.now();
+    const referme = (now: number) => {
+      const f = debut * (1 - clamp((now - t0) / 500));
+      progression.current.fissure = f;
+      setFissure(f);
+      if (f > 0 && !maintien.current.frame) window.requestAnimationFrame(referme);
+    };
+    window.requestAnimationFrame(referme);
+  };
+
+  const ouvert = brise || mode === "photos";
+  const classes = ["chapitres", ouvert ? "is-ouvert" : "", pret ? "is-particules" : "", mode === "photos" ? "is-photos" : ""].filter(Boolean).join(" ");
 
   return (
-    <div className={pret ? "chapitres is-particules" : "chapitres"} ref={rootRef} aria-label="Chapitres du site">
-      <div className="chap-particules" aria-hidden="true">
-        {charger ? <ParticulesScene images={IMAGES} progression={progression} lite={lite} actif={actif} onPret={() => setPret(true)} /> : null}
-      </div>
-      {CHAPITRES.map((chapitre, index) => (
-        <section
-          key={chapitre.id}
-          className={`chap chap-${chapitre.id}`}
-          data-chap=""
-          aria-labelledby={`chap-${chapitre.id}`}
-          style={{ ["--sens" as string]: index % 2 ? -1 : 1 } as CSSProperties}
-        >
-          <div className="chap-scene">
-            <figure className="chap-photo">
-              {/* Repli sans 3D : la photo, au noir transparent. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={chapitre.photo} alt="" loading="lazy" decoding="async" draggable={false} style={{ objectPosition: chapitre.focus }} />
-            </figure>
-            <p className="chap-numero" aria-hidden="true">
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <span className="chap-numero-trait" />
-              <span>{String(CHAPITRES.length).padStart(2, "0")}</span>
-            </p>
-            <h2 className="chap-mot" id={`chap-${chapitre.id}`}>
-              <Split text={chapitre.titre} mode="chars" lang className="kt-x" />
-            </h2>
-            <div className="chap-pied">
-              <p className="chap-texte">
-                <Split text={chapitre.texte} lit="css" />
-              </p>
-              <Link className="chap-lien" href={chapitre.href} aria-label={`Entrer : ${chapitre.titre}`} data-glow="">
-                <span>Entrer</span>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 12h13M13 6.5 18.5 12 13 17.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            </div>
-          </div>
+    <div className="fluide" ref={fluideRef}>
+      {mode === "particules" ? (
+        <div className="particules-calque" ref={calqueRef} aria-hidden="true">
+          {charger ? <ParticulesScene images={IMAGES} progression={progression} lite={lite} actif={actif} onPret={() => setPret(true)} /> : null}
+        </div>
+      ) : null}
+
+      {mode === "particules" && !brise ? (
+        <section className="flacon" ref={bocalRef} aria-label="Le bocal">
+          <div className="flacon-place" aria-hidden="true" />
+          <button
+            type="button"
+            className="flacon-bouton"
+            style={{ ["--f" as string]: fissure } as CSSProperties}
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              appuyer();
+            }}
+            onPointerUp={relacher}
+            onPointerCancel={relacher}
+            onKeyDown={(event) => {
+              if ((event.key === " " || event.key === "Enter") && !event.repeat) {
+                event.preventDefault();
+                appuyer();
+              }
+            }}
+            onKeyUp={(event) => {
+              if (event.key === " " || event.key === "Enter") relacher();
+            }}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            <span className="flacon-anneau" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="21" />
+                <circle className="flacon-anneau-plein" cx="24" cy="24" r="21" pathLength={1} />
+              </svg>
+            </span>
+            <span className="flacon-texte">
+              <Split text="Appuie longtemps pour briser le bocal" mode="chars" />
+            </span>
+          </button>
         </section>
-      ))}
+      ) : null}
+
+      <div className={classes} ref={chapRef} aria-label="Chapitres du site" style={{ ["--n" as string]: CHAPITRES.length } as CSSProperties}>
+        <div className="chap-piste">
+          <div className="chap-rangee" ref={rangeeRef}>
+            {CHAPITRES.map((chapitre, index) => (
+              <section
+                key={chapitre.id}
+                className={`chap chap-${chapitre.id}`}
+                data-chap=""
+                aria-labelledby={`chap-${chapitre.id}`}
+                style={{ ["--sens" as string]: index % 2 ? -1 : 1 } as CSSProperties}
+              >
+                <div className="chap-scene">
+                  {mode === "photos" ? (
+                    <figure className="chap-photo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={chapitre.photo} alt="" loading="lazy" decoding="async" draggable={false} style={{ objectPosition: chapitre.focus }} />
+                    </figure>
+                  ) : null}
+                  <p className="chap-numero" aria-hidden="true">
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <span className="chap-numero-trait" />
+                    <span>{String(CHAPITRES.length).padStart(2, "0")}</span>
+                  </p>
+                  <h2 className="chap-mot" id={`chap-${chapitre.id}`}>
+                    <Split text={chapitre.titre} mode="chars" lang className="kt-x" />
+                  </h2>
+                  <div className="chap-pied">
+                    <p className="chap-texte">
+                      <Split text={chapitre.texte} lit="css" />
+                    </p>
+                    <Link className="chap-lien" href={chapitre.href} aria-label={`Entrer : ${chapitre.titre}`} data-glow="">
+                      <span>Entrer</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h13M13 6.5 18.5 12 13 17.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
