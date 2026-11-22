@@ -670,8 +670,32 @@ body {
 
 /* La barre du haut : noir plein derrière le pivot, puis un fondu court.
    Le texte de la page ne passe plus jamais sous les rubriques. */
+/* La barre du haut, logo et menu compris : un verre flou façon Apple.
+   Le flou monte progressivement vers le haut de l'écran (du moins flou au plus flou),
+   avec un léger voile sombre pour que le menu reste lisible. */
+html body .top-frost {
+  height: calc(env(safe-area-inset-top) + 11rem) !important;
+}
+
+html body .top-frost-layer:nth-child(2) {
+  display: block !important;
+}
+
+html body .top-frost-layer {
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.8) !important;
+  backdrop-filter: blur(var(--blur)) saturate(1.8) !important;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(var(--stop) * 0.55), transparent var(--stop)) !important;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(var(--stop) * 0.55), transparent var(--stop)) !important;
+}
+
 html body .top-frost-tint {
-  background: linear-gradient(to bottom, #000 0%, #000 72%, rgba(0, 0, 0, 0.6) 86%, transparent 100%) !important;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.42) 45%, rgba(0, 0, 0, 0.12) 78%, transparent 100%) !important;
+}
+
+/* Le menu garde un léger relief pour se détacher du flou. */
+html body .nav a,
+html body .lang button {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
 }
 
 /* ── Boutons : angles droits, bordure blanche, minuscules ── */
