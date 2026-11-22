@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Lenis from "lenis";
 import { useEffect, useRef } from "react";
 import { clic, tic } from "@/lib/sons";
 
@@ -168,10 +169,15 @@ export function Experience() {
     let frame = 0;
     let last = performance.now();
 
-    // Défilement lissé
-    let target = window.scrollY;
-    let current = window.scrollY;
-    let gliding = false;
+    // Défilement lissé avec inertie : Lenis, à la molette et au pavé tactile.
+    const lenis = new Lenis({
+      autoRaf: false,
+      lerp: 0.085,
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      prevent: (node: HTMLElement) =>
+        scrollable(node, 1) || scrollable(node, -1) || document.documentElement.classList.contains("nav-vt"),
+    });
 
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -183,14 +189,7 @@ export function Experience() {
       dot.style.transform = `translate3d(${mouse.x}px, ${mouse.y}px, 0)`;
       ring.style.transform = `translate3d(${ringPos.x}px, ${ringPos.y}px, 0) scale(${scale.toFixed(3)})`;
 
-      if (gliding) {
-        current += (target - current) * (1 - Math.exp(-dt * 8.5));
-        if (Math.abs(target - current) < 0.4) {
-          current = target;
-          gliding = false;
-        }
-        window.scrollTo({ top: current, behavior: "instant" as ScrollBehavior });
-      }
+      lenis.raf(now);
       frame = window.requestAnimationFrame(tick);
     };
 
@@ -237,33 +236,10 @@ export function Experience() {
       scaleTarget /= 0.7;
     };
 
-    const onWheel = (event: WheelEvent) => {
-      if (event.defaultPrevented || event.ctrlKey || event.metaKey) return;
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-      if (scrollable(event.target as Element | null, event.deltaY)) return;
-      if (document.documentElement.classList.contains("nav-vt")) return;
-      event.preventDefault();
-      const unit = event.deltaMode === 1 ? 32 : event.deltaMode === 2 ? window.innerHeight : 1;
-      if (!gliding) {
-        current = window.scrollY;
-        target = window.scrollY;
-      }
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      target = Math.max(0, Math.min(max, target + event.deltaY * unit));
-      gliding = true;
-    };
-
-    const onScroll = () => {
-      if (!gliding) {
-        current = window.scrollY;
-        target = current;
-      }
-    };
-
     stopScroll.current = () => {
-      gliding = false;
-      current = window.scrollY;
-      target = current;
+      // Après un changement de page, Lenis repart de la position réelle.
+      lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+      lenis.resize();
     };
 
     frame = window.requestAnimationFrame(tick);
@@ -271,18 +247,14 @@ export function Experience() {
     window.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("pointerup", onUp, { passive: true });
     document.documentElement.addEventListener("pointerleave", onLeave);
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("keydown", stopScroll.current);
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
       document.documentElement.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", stopScroll.current);
+      lenis.destroy();
+      stopScroll.current = () => undefined;
       root.classList.remove("has-curseur", "curseur-on", "curseur-lien", "curseur-texte");
       if (magnet) magnet.style.translate = "";
     };

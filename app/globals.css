@@ -6564,3 +6564,38 @@ html.kt-on.intro-joue .kt.kt-x[data-kt="chars"] .kt-c {
     drop-shadow(0 0 0.8px #fff)
     drop-shadow(0 0 5px rgba(170, 195, 255, 0.6));
 }
+
+/* ═════════════════════════ Particules des chapitres ═════════════════════════ */
+
+/* Une seule scène, fixée derrière les quatre chapitres pendant toute leur traversée. */
+.chap-particules {
+  position: sticky;
+  z-index: 0;
+  top: 0;
+  height: 100svh;
+  margin-bottom: -100svh;
+  pointer-events: none;
+  /* Le noir du rendu laisse passer la galaxie. */
+  mix-blend-mode: screen;
+}
+
+.chap-particules canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chapitres.is-particules .chap-photo {
+  display: none;
+}
+
+/* Un voile bas, léger, pour que le texte reste lisible sur les particules. */
+.chapitres.is-particules .chap-scene::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}

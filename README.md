@@ -51,10 +51,11 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Le changement de page fait monter la nouvelle page derrière un rideau au bord flou.
 - Le ciel est un rendu WebGL (`lib/galaxie.ts`) : une Voie lactée dont les nuages et la poussière évoluent sans jamais se répéter, des étoiles sur plusieurs plans, une étoile filante de temps en temps, sur un fond noir. Sans WebGL, l’ancien ciel en 2D prend le relais.
 - Les grands titres inversent ce qu’il y a derrière eux (`mix-blend-mode: difference`).
-- Sur ordinateur : curseur personnalisé, boutons aimantés et défilement lissé à la molette (`components/Experience.tsx`).
+- Sur ordinateur : curseur personnalisé et boutons aimantés (`components/Experience.tsx`).
 - À la première visite de la session, une courte ouverture compose le nom (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
-- Les photos des chapitres passent par un shader (`lib/imageGl.ts`) : apparition de gauche à droite derrière un bord liquide, ondulation et séparation des couleurs selon la vitesse du défilement, ride sous le curseur.
+- Chapitres de l’accueil : les photos deviennent des milliers de particules (`components/ParticulesScene.tsx`, React Three Fiber + shaders GLSL + simulation GPGPU). Au défilement, elles se dispersent dans un vortex de bruit curl puis se réassemblent en l’image suivante ; elles fuient le curseur, avec un léger bloom. Three.js n’est chargé que sur l’accueil, à l’approche des chapitres, et la scène se met en pause hors de l’écran. Sans WebGL ou avec le mouvement réduit, les photos s’affichent telles quelles.
+- Défilement lissé avec inertie : Lenis.
 - Sous les chapitres, une grille « bento » (`components/Bento.tsx`) mène à chaque page, avec le compte à rebours en direct.
 - En passant d’un chapitre, d’une carte ou de « Suivant » à une page, le grand titre se transforme en titre de la page d’arrivée (View Transitions API).
 - Sons d’interface synthétisés (`lib/sons.ts`), désactivés par défaut, à activer avec le bouton « Son ».

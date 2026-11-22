@@ -36,6 +36,7 @@ import { ThemeBoot } from "@/components/ThemeBoot";
 import { localeInitScript } from "@/lib/locale";
 import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIPTION, PERSON_NAME, structuredData } from "@/lib/site";
 import { themeInitScript } from "@/lib/theme";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 /*
