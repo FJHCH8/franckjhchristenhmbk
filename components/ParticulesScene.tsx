@@ -149,51 +149,52 @@ void main() {
 }
 `;
 
-const POINT_VERT = /* glsl */ `
+const FIL_VERT = /* glsl */ `
 uniform sampler2D uPos;
 uniform sampler2D uCouleurA;
 uniform sampler2D uCouleurB;
 uniform float uMorph;
 uniform float uVortex;
-uniform float uTaille;
 uniform float uTemps;
 uniform float uDensite;
+uniform float uSeuil;
 attribute vec2 aRef;
+attribute vec2 aAutre;
 attribute float aHasard;
 varying vec3 vCouleur;
 varying float vAlpha;
+
+float morphIci(vec2 ref) {
+  float h = fract(sin(dot(ref, vec2(12.9898, 78.233))) * 43758.5453);
+  return clamp(uMorph * 1.7 - h * 0.7, 0.0, 1.0);
+}
+
 void main() {
   vec3 pos = texture2D(uPos, aRef).xyz;
-  vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-  gl_Position = projectionMatrix * mv;
-  float h = fract(sin(dot(aRef, vec2(12.9898, 78.233))) * 43758.5453);
-  float mi = clamp(uMorph * 1.7 - h * 0.7, 0.0, 1.0);
+  vec3 autre = texture2D(uPos, aAutre).xyz;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  float mi = morphIci(aRef);
   float m = mi * mi * (3.0 - 2.0 * mi);
   float vortexIci = max(uVortex, sin(mi * 3.14159265));
-  vec4 ca = texture2D(uCouleurA, aRef);
-  vec4 cb = texture2D(uCouleurB, aRef);
-  vec4 c = mix(ca, cb, m);
-  // Pendant le vortex, les particules prennent la teinte bleutée des étoiles.
-  vCouleur = mix(c.rgb, vec3(0.72, 0.82, 1.0) * (0.5 + c.a), vortexIci * 0.65);
-  float scintille = 0.75 + 0.25 * sin(uTemps * (1.0 + aHasard * 3.0) + aHasard * 40.0);
-  // Fondu en sortie de la partie fluide : de moins en moins d'étoiles.
+  vec4 c = mix(texture2D(uCouleurA, aRef), texture2D(uCouleurB, aRef), m);
+  vCouleur = mix(c.rgb, vec3(0.72, 0.82, 1.0) * (0.5 + c.a), vortexIci * 0.6);
+  // Un segment trop long est un saut de la courbe : il s'efface. Dans le vortex, la ficelle peut s'étirer.
+  float seuil = uSeuil * (1.0 + vortexIci * 4.0);
+  float longueur = distance(pos, autre);
+  float tenue = 1.0 - smoothstep(seuil * 0.45, seuil, longueur);
   float garde = step(aHasard, uDensite);
-  vAlpha = c.a * scintille * garde * smoothstep(0.0, 0.25, uDensite);
-  gl_PointSize = uTaille * (0.55 + aHasard * 0.9) * (1.0 + vortexIci * 0.5) / -mv.z;
+  float vibre = 0.8 + 0.2 * sin(uTemps * 1.3 + aHasard * 30.0);
+  // Pendant le tourbillon, la ficelle s'affine : elle ne fait pas une boule blanche.
+  vAlpha = (0.3 + c.a * 0.55) * (1.0 - vortexIci * 0.55) * tenue * garde * vibre * smoothstep(0.0, 0.25, uDensite);
 }
 `;
 
-const POINT_FRAG = /* glsl */ `
+const FIL_FRAG = /* glsl */ `
 varying vec3 vCouleur;
 varying float vAlpha;
 void main() {
-  vec2 p = gl_PointCoord - 0.5;
-  float d = dot(p, p);
-  float coeur = exp(-d * 34.0);
-  float halo = exp(-d * 9.0) * 0.35;
-  float a = (coeur + halo) * vAlpha * 0.85;
-  if (a < 0.003) discard;
-  gl_FragColor = vec4(vCouleur * a, a);
+  if (vAlpha < 0.004) discard;
+  gl_FragColor = vec4(vCouleur * vAlpha, vAlpha);
 }
 `;
 
@@ -215,6 +216,64 @@ function texture(data: Float32Array, n: number) {
   t.magFilter = THREE.NearestFilter;
   t.needsUpdate = true;
   return t;
+}
+
+/** Rang d'un point sur une courbe de Hilbert : deux rangs voisins sont deux points voisins. */
+function hilbert(x: number, y: number, ordre = 1024) {
+  let d = 0;
+  let px = x;
+  let py = y;
+  for (let s = ordre / 2; s >= 1; s = Math.floor(s / 2)) {
+    const rx = (px & s) > 0 ? 1 : 0;
+    const ry = (py & s) > 0 ? 1 : 0;
+    d += s * s * ((3 * rx) ^ ry);
+    if (ry === 0) {
+      if (rx === 1) {
+        px = ordre - 1 - px;
+        py = ordre - 1 - py;
+      }
+      const t = px;
+      px = py;
+      py = t;
+    }
+  }
+  return d;
+}
+
+/**
+ * Range les points le long d'une courbe de Hilbert, puis crée les textures.
+ * Reliés dans cet ordre, ils forment une seule ficelle qui dessine l'image ;
+ * et comme toutes les images sont rangées pareil, la ficelle passe de l'une à l'autre sans se rompre.
+ */
+function cible(pos: Float32Array, couleur: Float32Array, n: number): Cible {
+  const count = n * n;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let k = 0; k < count; k += 1) {
+    minX = Math.min(minX, pos[k * 4]!);
+    maxX = Math.max(maxX, pos[k * 4]!);
+    minY = Math.min(minY, pos[k * 4 + 1]!);
+    maxY = Math.max(maxY, pos[k * 4 + 1]!);
+  }
+  const etendue = Math.max(maxX - minX, maxY - minY, 1e-6);
+  const rangs = new Float64Array(count);
+  const ordre = new Uint32Array(count);
+  for (let k = 0; k < count; k += 1) {
+    const x = Math.min(1023, Math.floor(((pos[k * 4]! - minX) / etendue) * 1023));
+    const y = Math.min(1023, Math.floor(((pos[k * 4 + 1]! - minY) / etendue) * 1023));
+    rangs[k] = hilbert(x, y);
+    ordre[k] = k;
+  }
+  ordre.sort((a, b) => rangs[a]! - rangs[b]!);
+  const p2 = new Float32Array(count * 4);
+  const c2 = new Float32Array(count * 4);
+  ordre.forEach((source, rang) => {
+    p2.set(pos.subarray(source * 4, source * 4 + 4), rang * 4);
+    c2.set(couleur.subarray(source * 4, source * 4 + 4), rang * 4);
+  });
+  return { pos: texture(p2, n), couleur: texture(c2, n) };
 }
 
 /** Échantillonne une image : plus un pixel est lumineux, plus il reçoit de particules. Le noir n'en reçoit aucune. */
@@ -271,7 +330,7 @@ function echantillonner(img: HTMLImageElement, n: number): Cible {
     couleur[k * 4 + 2] = Math.min(1, B * eclat + 0.1);
     couleur[k * 4 + 3] = 0.35 + lum * 0.65;
   }
-  return { pos: texture(pos, n), couleur: texture(couleur, n) };
+  return cible(pos, couleur, n);
 }
 
 /** Nuage d'étoiles : l'état avant la première image et après la dernière. */
@@ -292,7 +351,7 @@ function nuage(n: number): Cible {
     couleur[k * 4 + 2] = 1;
     couleur[k * 4 + 3] = 0.25 + Math.random() * 0.35;
   }
-  return { pos: texture(pos, n), couleur: texture(couleur, n) };
+  return cible(pos, couleur, n);
 }
 
 /** Le bocal : un verre bombé au col étroit, et dedans un nuage dense de particules. */
@@ -348,7 +407,7 @@ function bocal(n: number): Cible {
     pos[k * 4 + 3] = 1;
     couleur.set(c, k * 4);
   }
-  return { pos: texture(pos, n), couleur: texture(couleur, n) };
+  return cible(pos, couleur, n);
 }
 
 /** Images de départ et d'arrivée, et le mélange, selon l'état. */
@@ -385,18 +444,27 @@ function Particules({ images, progression, n }: { images: string[]; progression:
   } | null>(null);
 
   const geometrie = useMemo(() => {
+    // Une ficelle : chaque point relié au suivant, sous forme de segments (deux sommets chacun).
     const geo = new THREE.BufferGeometry();
     const count = n * n;
-    const refs = new Float32Array(count * 2);
-    const hasard = new Float32Array(count);
-    for (let k = 0; k < count; k += 1) {
-      refs[k * 2] = ((k % n) + 0.5) / n;
-      refs[k * 2 + 1] = (Math.floor(k / n) + 0.5) / n;
+    const segments = count - 1;
+    const refs = new Float32Array(segments * 4);
+    const autres = new Float32Array(segments * 4);
+    const hasard = new Float32Array(segments * 2);
+    const uv = (k: number) => [((k % n) + 0.5) / n, (Math.floor(k / n) + 0.5) / n] as const;
+    for (let k = 0; k < segments; k += 1) {
+      const [ax, ay] = uv(k);
+      const [bx, by] = uv(k + 1);
+      refs.set([ax, ay, bx, by], k * 4);
+      autres.set([bx, by, ax, ay], k * 4);
       const x = Math.sin(k * 12.9898 + 78.233) * 43758.5453;
-      hasard[k] = x - Math.floor(x);
+      const h = x - Math.floor(x);
+      hasard[k * 2] = h;
+      hasard[k * 2 + 1] = h;
     }
-    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(segments * 6), 3));
     geo.setAttribute("aRef", new THREE.BufferAttribute(refs, 2));
+    geo.setAttribute("aAutre", new THREE.BufferAttribute(autres, 2));
     geo.setAttribute("aHasard", new THREE.BufferAttribute(hasard, 1));
     return geo;
   }, [n]);
@@ -409,7 +477,7 @@ function Particules({ images, progression, n }: { images: string[]; progression:
       uCouleurB: { value: null as THREE.Texture | null },
       uMorph: { value: 0 },
       uVortex: { value: 0 },
-      uTaille: { value: 22 },
+      uSeuil: { value: 0.1 },
       uTemps: { value: 0 },
       uDensite: { value: 1 },
     }),
@@ -532,7 +600,8 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     mu.uVortex!.value = vortex;
     mu.uTemps!.value = sim.temps;
     mu.uDensite!.value = e.densite;
-    mu.uTaille!.value = Math.max(17, Math.min(30, size.height / 30)) * state.viewport.dpr;
+    // Longueur au-delà de laquelle un segment est un saut : à peu près six fois l'écart entre deux points.
+    mu.uSeuil!.value = (echelle / n) * 6;
 
     // Profondeur : la scène s'incline doucement vers le curseur.
     if (groupe.current) {
@@ -545,18 +614,18 @@ function Particules({ images, progression, n }: { images: string[]; progression:
 
   return (
     <group ref={groupe}>
-      <points geometry={geometrie} frustumCulled={false}>
+      <lineSegments geometry={geometrie} frustumCulled={false}>
         <shaderMaterial
           ref={materiauRef}
-          vertexShader={POINT_VERT}
-          fragmentShader={POINT_FRAG}
+          vertexShader={FIL_VERT}
+          fragmentShader={FIL_FRAG}
           uniforms={uniforms}
           transparent
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           premultipliedAlpha
         />
-      </points>
+      </lineSegments>
     </group>
   );
 }
@@ -575,7 +644,8 @@ export default function ParticulesScene({
   onPret: () => void;
 }) {
   // Moins de particules, mais plus visibles chacune : l'image reste lisible, l'écran respire.
-  const n = lite ? 46 : 64;
+  // Une ficelle a besoin de points serrés pour rester continue ; elle reste légère à l'écran.
+  const n = lite ? 48 : 64;
   return (
     <Canvas
       dpr={[1, lite ? 1.25 : 1.75]}

@@ -18,9 +18,7 @@ type Graphe = {
 
 type Platine = {
   element: HTMLAudioElement;
-  filtre: BiquadFilterNode;
-  volume: GainNode;
-  grain: GainNode;
+  grain: GainNode | null;
   anim: number;
 };
 
@@ -57,6 +55,15 @@ function audio(): Graphe | null {
   if (!graphe) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
+    // Sur iPhone, sans cela, le mode silencieux coupe tous les sons générés.
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+    if (session) {
+      try {
+        session.type = "playback";
+      } catch {
+        /* non pris en charge */
+      }
+    }
     const ctx = new Ctor();
     const sortie = ctx.createGain();
     sortie.gain.value = 0.9;
@@ -206,61 +213,62 @@ function grain(ctx: AudioContext) {
   return buffer;
 }
 
-function preparerPlatine(g: Graphe): Platine {
+function preparerPlatine(): Platine {
   if (platine) return platine;
+  // La musique est lue directement par le navigateur, comme une vidéo :
+  // elle joue même quand l'iPhone est en mode silencieux.
   const element = new Audio(MUSIQUE);
   element.loop = true;
   element.preload = "auto";
+  element.volume = 0;
   // La vitesse change aussi le ton, comme sur une platine.
   element.preservesPitch = false;
   (element as HTMLAudioElement & { webkitPreservesPitch?: boolean }).webkitPreservesPitch = false;
   (element as HTMLAudioElement & { mozPreservesPitch?: boolean }).mozPreservesPitch = false;
-  const source = g.ctx.createMediaElementSource(element);
-  const filtre = g.ctx.createBiquadFilter();
-  filtre.type = "lowpass";
-  filtre.frequency.value = 18000;
-  const volume = g.ctx.createGain();
-  volume.gain.value = 0;
-  source.connect(filtre);
-  filtre.connect(volume);
-  volume.connect(g.ctx.destination);
 
-  const craque = g.ctx.createBufferSource();
-  craque.buffer = grain(g.ctx);
-  craque.loop = true;
-  const passe = g.ctx.createBiquadFilter();
-  passe.type = "highpass";
-  passe.frequency.value = 900;
-  const grainGain = g.ctx.createGain();
-  grainGain.gain.value = 0;
-  craque.connect(passe);
-  passe.connect(grainGain);
-  grainGain.connect(g.ctx.destination);
-  craque.start();
-
-  platine = { element, filtre, volume, grain: grainGain, anim: 0 };
+  // Le grésillement du vinyle, lui, est généré.
+  let grainGain: GainNode | null = null;
+  const g = audio();
+  if (g) {
+    const craque = g.ctx.createBufferSource();
+    craque.buffer = grain(g.ctx);
+    craque.loop = true;
+    const passe = g.ctx.createBiquadFilter();
+    passe.type = "highpass";
+    passe.frequency.value = 900;
+    grainGain = g.ctx.createGain();
+    grainGain.gain.value = 0;
+    craque.connect(passe);
+    passe.connect(grainGain);
+    grainGain.connect(g.ctx.destination);
+    craque.start();
+  }
+  platine = { element, grain: grainGain, anim: 0 };
   return platine;
 }
 
-/** Fait varier la vitesse de la platine image par image, avec le filtre et le grésillement. */
-function virer(p: Platine, g: Graphe, de: number, vers: number, duree: number, fin?: () => void) {
+/** Fait varier la vitesse (et donc le ton) de la platine image par image, avec le volume et le grésillement. */
+function virer(p: Platine, de: number, vers: number, duree: number, fin?: () => void) {
   window.cancelAnimationFrame(p.anim);
   const t0 = performance.now();
   const monte = vers > de;
   const pas = (now: number) => {
     const t = Math.min(1, (now - t0) / duree);
     const e = monte ? 1 - (1 - t) ** 3 : t * t;
-    const vitesse = de + (vers - de) * e;
     try {
-      p.element.playbackRate = Math.max(0.5, vitesse);
+      p.element.playbackRate = Math.max(0.5, de + (vers - de) * e);
     } catch {
       /* vitesse refusée par le navigateur */
     }
     const ouverture = monte ? e : 1 - e;
-    p.filtre.frequency.setTargetAtTime(280 * Math.pow(64, ouverture), g.ctx.currentTime, 0.03);
-    p.volume.gain.setTargetAtTime(VOLUME_MUSIQUE * Math.min(1, ouverture * 1.3), g.ctx.currentTime, 0.05);
-    // Le grésillement est fort pendant le virage, presque absent ensuite.
-    p.grain.gain.setTargetAtTime(0.012 + Math.sin(t * Math.PI) * 0.16, g.ctx.currentTime, 0.04);
+    // Le volume n'est pas réglable sur iPhone : là-bas, seuls la vitesse et le ton changent.
+    try {
+      p.element.volume = Math.min(1, VOLUME_MUSIQUE * Math.min(1, ouverture * 1.3));
+    } catch {
+      /* volume en lecture seule */
+    }
+    const g = graphe;
+    if (g && p.grain) p.grain.gain.setTargetAtTime(0.012 + Math.sin(t * Math.PI) * 0.16, g.ctx.currentTime, 0.04);
     if (t < 1) p.anim = window.requestAnimationFrame(pas);
     else fin?.();
   };
@@ -268,21 +276,25 @@ function virer(p: Platine, g: Graphe, de: number, vers: number, duree: number, f
 }
 
 function lancerMusique() {
-  const g = audio();
-  if (!g) return;
-  const p = preparerPlatine(g);
+  audio();
+  const p = preparerPlatine();
   p.element.playbackRate = 0.5;
-  void p.element.play().catch(() => undefined);
-  virer(p, g, 0.5, 1, 1700);
+  const lecture = p.element.play();
+  if (lecture) {
+    lecture.catch((erreur) => {
+      console.warn("musique :", erreur);
+    });
+  }
+  virer(p, 0.5, 1, 1700);
 }
 
 function couperMusique() {
-  const g = graphe;
   const p = platine;
-  if (!g || !p) return;
-  virer(p, g, p.element.playbackRate || 1, 0.5, 1500, () => {
+  if (!p) return;
+  virer(p, p.element.playbackRate || 1, 0.5, 1500, () => {
     p.element.pause();
-    p.grain.gain.setTargetAtTime(0, g.ctx.currentTime, 0.1);
+    const g = graphe;
+    if (g && p.grain) p.grain.gain.setTargetAtTime(0, g.ctx.currentTime, 0.1);
   });
 }
 
