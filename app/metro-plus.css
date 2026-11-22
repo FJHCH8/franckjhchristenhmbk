@@ -661,3 +661,284 @@ body {
     transform: translateX(calc((var(--i) - 2) * 14px));
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Metro 100 % : la barre du haut opaque, les boutons carrés, les panneaux
+ * plats, la barre d'application ronde, les animations de Windows Phone
+ * (pivotement, plume, tuiles vivantes).
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* La barre du haut : noir plein derrière le pivot, puis un fondu court.
+   Le texte de la page ne passe plus jamais sous les rubriques. */
+html body .top-frost-tint {
+  background: linear-gradient(to bottom, #000 0%, #000 72%, rgba(0, 0, 0, 0.6) 86%, transparent 100%) !important;
+}
+
+/* ── Boutons : angles droits, bordure blanche, minuscules ── */
+html body .etoile-fermer,
+html body .rubrique li button.etoile-fermer,
+html body .etoile-bulle button.etoile-fermer,
+html body .info-bubble .etoile-fermer {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.45rem;
+  width: auto !important;
+  min-height: 2.5rem;
+  margin-top: 1.1rem !important;
+  padding: 0.35rem 1.1rem !important;
+  border: 2px solid #fff !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  font-family: var(--font-text) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: lowercase !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body .etoile-fermer svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+html body .etoile-fermer:active {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* ── Panneau d'information : une feuille plate, comme une boîte de dialogue Metro ── */
+html body .info-bubble,
+html[data-page="qui-suis-je"] .info-bubble {
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-left: 4px solid var(--accent) !important;
+  background: var(--tuile) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body .info-bubble a {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+}
+
+html body .info-word {
+  font-family: var(--font-text) !important;
+  font-weight: 300 !important;
+  font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+  letter-spacing: -0.02em !important;
+  text-transform: lowercase !important;
+}
+
+html body .info-sheen {
+  display: none !important;
+}
+
+/* ── Rubriques (citations, projets) : en-têtes de liste Windows Phone ── */
+html body .rubrique h2 button {
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+html body .rubrique-nom > span:last-child,
+html body .rubrique-nom > span:last-child .kt-c {
+  font-family: var(--font-text) !important;
+  font-weight: 300 !important;
+  font-size: clamp(1.9rem, 8vw, 2.6rem) !important;
+  letter-spacing: -0.03em !important;
+  text-transform: lowercase !important;
+}
+
+html body .rubrique-meta > span:first-child {
+  color: var(--accent);
+  font-weight: 300;
+  font-size: 1.6rem;
+}
+
+html body .rubrique li > button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  font-weight: 300 !important;
+  font-size: 1.35rem !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+html body .rubrique li > button::after,
+html body .rubrique li > button::before {
+  display: none !important;
+}
+
+html body .rubrique li > button[aria-expanded="true"] {
+  color: var(--accent) !important;
+}
+
+/* La fiche ouverte : pas de halo, un trait d'accent à gauche. */
+html body .fiche > div {
+  padding-left: 1rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body .etoile-titre {
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+/* ── La barre d'application : boutons ronds cerclés de blanc, comme sur Windows Phone ── */
+html body .son-bouton,
+html body .vent-toggle {
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  bottom: calc(env(safe-area-inset-bottom) + 0.9rem) !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 2px solid #fff !important;
+  border-radius: 50% !important;
+  background: rgba(0, 0, 0, 0.72) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  z-index: 60;
+}
+
+html body .son-bouton {
+  right: var(--gouttiere) !important;
+}
+
+html body .vent-toggle {
+  right: calc(var(--gouttiere) + 3.9rem) !important;
+  overflow: hidden;
+}
+
+html body .son-bouton.is-on,
+html body .vent-toggle.is-actif {
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+}
+
+html body .son-bouton .son-texte {
+  display: none !important;
+}
+
+html body .vent-marque {
+  transform: scale(0.72);
+}
+
+html body .son-bouton:active,
+html body .vent-toggle:active {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* ── Animations Windows Phone ── */
+
+/* Pivotement (swivel) : ce qui s'ouvre bascule depuis son bord haut. */
+@media (prefers-reduced-motion: no-preference) {
+  html body .fiche.is-open > div,
+  html body .jeu-chargement,
+  html body .edition-voile {
+    transform-origin: 50% 0;
+    animation: metro-pivote 0.42s cubic-bezier(0.1, 0.9, 0.2, 1) both !important;
+  }
+
+  html body .info-bubble.is-open {
+    transform-origin: 50% 0 !important;
+    animation: metro-pivote-info 0.42s cubic-bezier(0.1, 0.9, 0.2, 1) both !important;
+  }
+
+  html body .info-bubble.is-closing {
+    transform-origin: 50% 0 !important;
+    animation: metro-pivote-info-sort 0.3s cubic-bezier(0.7, 0, 1, 0.5) both !important;
+  }
+
+  /* Plume (feather) : les lignes d'une liste qui s'ouvre arrivent l'une après l'autre. */
+  html body .rubrique.is-open li {
+    animation: metro-ligne 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+  }
+
+  /* Le pivot du haut glisse en place à chaque arrivée sur une page. */
+  html body .nav a {
+    animation: metro-ligne 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  }
+
+  html body .nav a:nth-child(3) { animation-delay: 30ms; }
+  html body .nav a:nth-child(4) { animation-delay: 60ms; }
+  html body .nav a:nth-child(5) { animation-delay: 90ms; }
+  html body .nav a:nth-child(6) { animation-delay: 120ms; }
+
+  /* Tuiles vivantes : de temps en temps, la photo se soulève et la tuile montre son nom. */
+  html body .bento-carte .bento-image,
+  html body .bento-carte .bento-voile {
+    animation: tuile-vivante 11s cubic-bezier(0.1, 0.9, 0.2, 1) infinite !important;
+  }
+
+  html body .bento-carte:nth-child(3) .bento-image,
+  html body .bento-carte:nth-child(3) .bento-voile { animation-delay: 2.6s !important; }
+  html body .bento-carte:nth-child(4) .bento-image,
+  html body .bento-carte:nth-child(4) .bento-voile { animation-delay: 5.2s !important; }
+  html body .bento-carte:nth-child(5) .bento-image,
+  html body .bento-carte:nth-child(5) .bento-voile { animation-delay: 7.8s !important; }
+}
+
+@keyframes metro-pivote {
+  from { opacity: 0; transform: perspective(900px) rotateX(-75deg); }
+  to { opacity: 1; transform: perspective(900px) rotateX(0deg); }
+}
+
+@keyframes metro-pivote-sort {
+  from { opacity: 1; transform: perspective(900px) rotateX(0deg); }
+  to { opacity: 0; transform: perspective(900px) rotateX(70deg); }
+}
+
+@keyframes metro-pivote-info {
+  from { opacity: 0; transform: translate3d(-50%, 0, 0) perspective(900px) rotateX(-75deg); }
+  to { opacity: 1; transform: translate3d(-50%, 0, 0) perspective(900px) rotateX(0deg); }
+}
+
+@keyframes metro-pivote-info-sort {
+  from { opacity: 1; transform: translate3d(-50%, 0, 0) perspective(900px) rotateX(0deg); }
+  to { opacity: 0; transform: translate3d(-50%, 0, 0) perspective(900px) rotateX(70deg); }
+}
+
+html body .info-bubble::before {
+  display: none !important;
+}
+
+@keyframes metro-ligne {
+  from { opacity: 0; transform: translateX(42px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes tuile-vivante {
+  0%, 62% { transform: translateY(0); }
+  70%, 88% { transform: translateY(-100%); }
+  96%, 100% { transform: translateY(0); }
+}
+
+/* Rien ne dépasse sur les côtés : plus de page qui flotte à gauche et à droite. */
+html,
+body {
+  overflow-x: clip;
+}
+
+html body .album-zone,
+html body #contenu {
+  overflow-x: clip;
+}
