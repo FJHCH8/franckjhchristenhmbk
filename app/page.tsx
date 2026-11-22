@@ -30,7 +30,7 @@ export default function HomePage() {
                   </p>
                 </blockquote>
                 <figcaption>
-                  <Split text="— Raphaëlle Giordano" delay={900} />
+                  <Split text="— Raphaëlle Giordano" delay={900} lang />
                 </figcaption>
               </figure>
             </Glass>

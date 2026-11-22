@@ -28,7 +28,7 @@ export const DAVISSIV: Record<string, string> = {
   "L’attente n’est pas un vide : c’est le noir où les choses prennent forme.": "",
   "Altitude de la page": "",
   "« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »": "Lannabtammive alban ash obayes e apashes paa.",
-  "— Raphaëlle Giordano": "",
+  "— Raphaëlle Giordano": "— Rafayel Gyordano",
   "Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck.": "",
   "La vie, les projets et les annonces de Franck y prennent place.": "",
   "Le site évolue, et des posts paraissent régulièrement, avec des mises à jour environ tous les 7 jours.": "",

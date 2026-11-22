@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
 import { Split } from "@/components/Kinetic";
+import { T } from "@/components/Locale";
 
 function Carte({
   href,
@@ -67,7 +68,9 @@ export function Bento() {
           <span className="bento-moyen">
             <Split text={"« Ta deuxième vie commence quand tu comprends que tu n’en as qu’une. »"} lang />
           </span>
-          <span className="bento-petit">— Raphaëlle Giordano</span>
+          <span className="bento-petit">
+            <T>— Raphaëlle Giordano</T>
+          </span>
         </Carte>
         <Carte href="/a-propos" className="bento-apropos" image="/fond/judo-960-a.webp" focus="50% 22%" index={2}>
           <span className="bento-etiquette">02 — À propos</span>
