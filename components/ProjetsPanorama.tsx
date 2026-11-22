@@ -152,7 +152,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
 
   const VOLETS = ["endurreisen", "l'aube", "cadran"];
   const finis = maintenant == null ? 0 : EVENEMENTS.filter((e) => maintenant >= e.fin).length;
-  const tousComptes = [...comptes, { nom: "événements", nombre: finis, couleur: "#1ba1e2" }];
+  const tousComptes = [...comptes, { nom: "événements", nombre: finis, couleur: "#339933" }];
 
   return (
     <section className="pano" ref={scene} aria-label="Endurreisen, l'aube et le cadran">
@@ -198,13 +198,12 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
 export function EvenementsTuiles() {
   const maintenant = useMaintenant();
   const [ouvert, setOuvert] = useState<string | null>(null);
-  if (maintenant == null) return null;
-  const finis = EVENEMENTS.filter((e) => maintenant >= e.fin);
-  if (!finis.length) return null;
+  const finis = maintenant == null ? [] : EVENEMENTS.filter((e) => maintenant >= e.fin);
   const choisi = finis.find((e) => e.id === ouvert);
   return (
-    <div className="evenements">
+    <div className="evenements" id="evenements">
       <p className="pano-etiquette">événements · {finis.length}</p>
+      {!finis.length ? <p className="evenements-vide">Aucun événement pour l&apos;instant. Chaque compte à rebours terminé viendra s&apos;y ranger.</p> : null}
       <div className="evenements-grille">
         {finis.map((e) => (
           <button key={e.id} type="button" className="evenement-tuile" aria-expanded={ouvert === e.id} onClick={() => setOuvert(ouvert === e.id ? null : e.id)}>

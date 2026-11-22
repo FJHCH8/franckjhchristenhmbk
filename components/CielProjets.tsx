@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
-import { EvenementsTuiles, ProjetsPanorama } from "@/components/ProjetsPanorama";
+import { EvenementsTuiles, ProjetsPanorama, useMaintenant } from "@/components/ProjetsPanorama";
+import { EVENEMENTS } from "@/lib/paris";
 import { Split } from "@/components/Kinetic";
 import { T } from "@/components/Locale";
 import { LogoEau } from "@/components/LogoEau";
@@ -21,9 +22,9 @@ function FermerBouton({ onClick }: { onClick: () => void }) {
   );
 }
 
-/** La couleur de chaque rubrique, aux couleurs d'origine de Windows Phone. */
+/** La couleur de chaque case : citations en beige, projets en bleu, événements en vert. */
 function couleurRubrique(cle: string) {
-  return cle === "citation" ? "#a20025" : cle === "projet" ? "#008a00" : "#f09609";
+  return cle === "citation" ? "#b9a07a" : cle === "projet" ? "#1ba1e2" : cle === "evenement" ? "#339933" : "#f09609";
 }
 
 function dateFr(value: string) {
@@ -95,6 +96,8 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
     setForm({ id: "", titre: "", texte: "", date: "", police: "fraunces", style: "italic", seuil: 0.35, genre: "projet", medias: [] });
   }
 
+  const maintenant = useMaintenant();
+  const evenementsFinis = maintenant == null ? 0 : EVENEMENTS.filter((e) => maintenant >= e.fin).length;
   const chosen = etoiles.find((item) => item.id === active) ?? null;
 
   const rang = (etoile: PublicEtoile) => etoile.genre || (etoile.texte && !etoile.titre ? "citation" : "projet");
@@ -128,6 +131,15 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
             <span>{nomSection(cle).toLowerCase()}</span>
           </button>
         ))}
+        <button
+          type="button"
+          className="tuile-rubrique tuile-evenements"
+          style={{ background: couleurRubrique("evenement") }}
+          onClick={() => document.getElementById("evenements")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        >
+          <strong>{evenementsFinis}</strong>
+          <span>événements</span>
+        </button>
       </div>
       <EvenementsTuiles />
       <div className="rubriques">

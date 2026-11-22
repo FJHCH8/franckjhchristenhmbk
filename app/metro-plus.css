@@ -1610,3 +1610,30 @@ html body .projets .evenements {
 html body .aube-frise {
   margin: 0 2rem;
 }
+
+/* La case événement, toujours là, en vert : elle prend toute la largeur sous les deux autres. */
+html body .projets .tuile-evenements {
+  grid-column: span 2;
+  aspect-ratio: auto;
+  height: 9rem;
+}
+
+.evenements-vide {
+  margin: 0.5rem 0 0;
+  color: #8a8a8a;
+  font-family: var(--font-text);
+  font-size: 0.95rem;
+}
+
+/* Les reflets du logo événement passent au vert. */
+html body .projets .evenement-tuile {
+  background: radial-gradient(ellipse 60% 75% at 28% 48%, rgba(80, 200, 110, 0.14), transparent 70%), #0a0a0a;
+}
+
+html body .projets .evenement-texte small {
+  color: #4cc35c;
+}
+
+html body .projets .evenement-detail {
+  border-left-color: #339933;
+}
