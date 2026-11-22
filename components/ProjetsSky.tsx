@@ -223,6 +223,12 @@ export function ProjetsSky() {
     let height = 0;
     let scrollDrift = 0;
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, life: 0, target: 0 };
+    // Sur téléphone, 30 images par seconde suffisent au ciel et laissent le défilement fluide.
+    const touch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const minStep = touch || lite ? 1000 / 31 : 0;
+    let lastDraw = 0;
+    let checks = 0;
+    let visible = true;
 
     const size = () => {
       const w = Math.max(1, layer.clientWidth);
@@ -236,6 +242,13 @@ export function ProjetsSky() {
 
     const paint = (now: number) => {
       frame = 0;
+      if (now - lastDraw < minStep) {
+        frame = window.requestAnimationFrame(paint);
+        return;
+      }
+      lastDraw = now;
+      // Quand une photo recouvre entièrement le ciel, inutile de le dessiner.
+      if (checks++ % 20 === 0) visible = Number(getComputedStyle(layer).opacity) > 0.01;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const still = reduce.matches;
@@ -245,7 +258,7 @@ export function ProjetsSky() {
       pointer.life += (pointer.target - pointer.life) * Math.min(1, dt * 2.5);
       pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 6);
       pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 6);
-      galaxie.render({
+      if (visible) galaxie.render({
         time,
         // Un tour complet en un peu plus d'une heure : à peine perceptible, comme le vrai ciel.
         rot: time * 0.0016,

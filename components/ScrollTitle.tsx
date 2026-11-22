@@ -36,6 +36,8 @@ export function ScrollTitle({
     if (!stage || !hero || !bar) return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // La variable de défilement vit sur <main> : l'écrire sur <html> recalculait tout le site à chaque image.
+    const host = stage.closest("main") ?? document.documentElement;
     let dockAt = 0;
     let shown = 0;
     let target = 0;
@@ -62,10 +64,11 @@ export function ScrollTitle({
       if (mark !== lastMark) {
         lastMark = mark;
         hero.style.opacity = (1 - travel).toFixed(3);
-        hero.style.transform = `translate3d(0, ${(-10 * travel).toFixed(2)}px, 0)`;
+        // Déplacements arrondis au pixel : un texte posé entre deux pixels devient flou.
+        hero.style.transform = `translate3d(0, ${Math.round(-10 * travel)}px, 0)`;
         bar.style.opacity = travel.toFixed(3);
-        bar.style.transform = `translate3d(0, ${(8 * (1 - travel)).toFixed(2)}px, 0)`;
-        document.documentElement.style.setProperty("--scroll-title", mark);
+        bar.style.transform = travel >= 0.999 ? "none" : `translate3d(0, ${Math.round(8 * (1 - travel))}px, 0)`;
+        host.style.setProperty("--scroll-title", mark);
       }
       const nextBar = travel >= 0.04;
       if (nextBar !== barOn) {
@@ -149,7 +152,7 @@ export function ScrollTitle({
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
-      document.documentElement.style.removeProperty("--scroll-title");
+      host.style.removeProperty("--scroll-title");
       document.documentElement.style.removeProperty("--title-dock");
       document.documentElement.classList.remove("title-settled");
     };

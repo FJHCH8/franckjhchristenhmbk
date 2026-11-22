@@ -187,7 +187,18 @@ export function Kinetic() {
     };
 
     scan();
-    const mutations = new MutationObserver(later);
+    // Ne réagit qu'aux éléments ajoutés : les chiffres du chrono ou de l'altimètre
+    // changent sans cesse et ne doivent pas relancer la recherche à chaque image.
+    const mutations = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node instanceof Element && (node.hasAttribute("data-kt") || node.querySelector("[data-kt]"))) {
+            later();
+            return;
+          }
+        }
+      }
+    });
     mutations.observe(document.body, { childList: true, subtree: true });
     window.addEventListener("scroll", wake, { passive: true });
     window.addEventListener("resize", wake);

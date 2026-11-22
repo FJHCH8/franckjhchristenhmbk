@@ -270,8 +270,6 @@ void main() {
   col = 1.0 - exp(-col * 1.15);
   float vig = smoothstep(1.9, 0.55, length(p * vec2(0.82, 1.0)));
   col *= mix(0.55, 1.0, vig);
-  float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
-  col += (ign - 0.5) / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }
 `;
