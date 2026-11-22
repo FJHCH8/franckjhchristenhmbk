@@ -12,7 +12,7 @@ export const metadata = pageMetadata(null, HOME_DESCRIPTION, "/");
 export default function HomePage() {
   return (
     <main id="contenu">
-      <ScrollTitle id="titre-accueil" text="Franck J.H. CHRISTEN H.M.B.K." keep max={3.5} />
+      <ScrollTitle id="titre-accueil" text="Franck J.H. CHRISTEN H.M.B.K." keep max={3.5} fond="/media/franck-enfant" />
       <section className="hero shell scroll-reveal" id="accueil" aria-labelledby="titre-accueil">
         <div className="hero-layout">
           <div className="hero-copy">

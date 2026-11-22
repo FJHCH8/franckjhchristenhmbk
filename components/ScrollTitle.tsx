@@ -15,6 +15,7 @@ export function ScrollTitle({
   icon,
   tone = "ink",
   max = 5.1,
+  fond,
 }: {
   id: string;
   text: string;
@@ -22,6 +23,8 @@ export function ScrollTitle({
   icon?: ReactNode;
   tone?: "ink" | "sea";
   max?: number;
+  /** Photo plein cadre derrière le titre ; le titre s'y inverse (couleurs en négatif). */
+  fond?: string;
 }) {
   const { locale } = useLocale();
   const label = titleLabel(locale, text, keep);
@@ -180,7 +183,23 @@ export function ScrollTitle({
   const face = label ? <Split text={text} lang={!keep} mode="chars" delay={120} /> : <span className="skel" style={{ width: "6.5em" }} aria-hidden="true" />;
 
   return (
-    <div ref={stageRef} className={tone === "sea" ? "scroll-stage tone-sea" : "scroll-stage"} style={{ ["--title-max" as string]: String(max) }}>
+    <div
+      ref={stageRef}
+      className={["scroll-stage", tone === "sea" ? "tone-sea" : "", fond ? "a-fond" : ""].filter(Boolean).join(" ")}
+      style={{ ["--title-max" as string]: String(max) }}
+    >
+      {fond ? (
+        <img
+          className="scroll-fond"
+          src={`${fond}-1500.webp`}
+          srcSet={`${fond}-900.webp 900w, ${fond}-1500.webp 1500w`}
+          sizes="100vw"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+          draggable={false}
+        />
+      ) : null}
       <div className="scroll-head" ref={heroRef}>
         <h1 id={id}>{face}</h1>
         {icon ? <div className="scroll-mark">{icon}</div> : null}
