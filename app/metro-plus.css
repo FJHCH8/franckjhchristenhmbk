@@ -469,17 +469,18 @@ html body .seal.seal-logo {
   filter: drop-shadow(0 0 14px rgba(150, 190, 255, 0.35));
 }
 
-.logo-anime .logo-traits path {
+/* Du haut vers le bas : la ligne se trace depuis le rond du haut,
+   chaque rond apparaît au moment où la ligne l'atteint. */
+.logo-anime .logo-ligne {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: logo-trace 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-  animation-delay: calc(0.25s + var(--i) * 0.22s);
+  animation: logo-trace 1.6s cubic-bezier(0.45, 0, 0.25, 1) 0.2s forwards;
 }
 
 .logo-anime .logo-ronds circle {
   transform: scale(0);
-  animation: logo-rond 0.55s cubic-bezier(0.22, 1.5, 0.36, 1) forwards;
-  animation-delay: calc(0.15s + var(--i) * 0.24s);
+  animation: logo-rond 0.45s cubic-bezier(0.22, 1.5, 0.36, 1) forwards;
+  animation-delay: calc(0.2s + var(--t) * 1.6s);
 }
 
 @keyframes logo-trace {
@@ -495,7 +496,7 @@ html body .seal.seal-logo {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-anime .logo-traits path,
+  .logo-anime .logo-ligne,
   .logo-anime .logo-ronds circle {
     animation: none;
     stroke-dashoffset: 0;
@@ -965,4 +966,10 @@ body {
 html body .album-zone,
 html body #contenu {
   overflow-x: clip;
+}
+
+/* Le logo en haut à gauche, assez grand pour que la ligne et les ronds se lisent. */
+html body .seal.seal-logo {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
 }
