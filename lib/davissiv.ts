@@ -8,11 +8,11 @@ export const LASSAVI_DE_FRANCK: Record<string, string> = {};
  * Une chaîne reste vide dès qu’un mot n’y figure pas : le site affiche alors le français.
  */
 export const DAVISSIV: Record<string, string> = {
-  Accueil: "",
-  "Qui suis-je": "Maa eebit ?",
+  Accueil: "Oveksa",
+  "Qui suis-je": "Maa eebit",
   "À propos": "Laab",
   Contact: "Abam",
-  Projets: "",
+  Projets: "Vayak",
   Bienvenue: "",
   Polymathe: "",
   "02 — Le site": "",
