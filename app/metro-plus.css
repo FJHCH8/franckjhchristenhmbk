@@ -1,0 +1,89 @@
+/*
+ * Ajouts à la version Metro : verre flou en haut, menu toujours visible,
+ * photos d'Explorer en entier, textes sans animation, tourniquet de sortie.
+ */
+
+/* Les textes s'affichent directement. */
+html body .kt-c,
+html body .kt-w,
+html body .kt-lit .kt-w,
+html body [data-kt-lit] .kt-w {
+  opacity: 1 !important;
+  translate: none !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* La barre du haut : un verre flou sombre, très discret. */
+html body .header {
+  background: rgba(0, 0, 0, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6) !important;
+  backdrop-filter: blur(24px) saturate(1.6) !important;
+}
+
+/* Le menu : les cinq rubriques toujours visibles, sans défilement. */
+html body .nav-dock {
+  overflow: visible;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+html body .nav {
+  flex-wrap: wrap;
+  width: auto;
+  row-gap: 0.2rem;
+}
+
+html body .nav a {
+  font-size: clamp(1.05rem, 2.6vw, 1.7rem);
+  padding: 0.25rem 0 !important;
+}
+
+@media (max-width: 719px) {
+  html body .nav {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.4rem;
+  }
+
+  html body .nav a {
+    font-size: clamp(0.82rem, 3.9vw, 1rem);
+    padding: 0.45rem 0 !important;
+  }
+}
+
+/* Explorer : les photos en entier. */
+html body .bento-image {
+  object-fit: contain !important;
+  object-position: center !important;
+  transform: none !important;
+  animation: none !important;
+  background: #000;
+}
+
+html body .bento-apropos,
+html body .bento-contact,
+html body .bento-projets,
+html body .bento-qui {
+  background: #000 !important;
+  outline: 1px solid #222;
+  outline-offset: -1px;
+}
+
+/* La page sort en tourniquet, sur tous les navigateurs. */
+html.nav-sort #contenu,
+html.nav-sort .footer {
+  transform-origin: left center;
+  animation: tourniquet-sort 0.24s cubic-bezier(0.55, 0, 0.9, 0.4) both !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.nav-sort #contenu,
+  html.nav-sort .footer {
+    animation: none !important;
+  }
+}

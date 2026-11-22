@@ -45,7 +45,7 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 
 ## Direction artistique
 
-Windows 7, Wii U, PS2 et Nintendo DSi, sur fond noir intégral. `app/metro.css` pose la mise en page (fond noir, chapitres, tuiles), puis `app/aero.css` le style : barre du haut en verre Aero, menu en boutons de barre des tâches toujours visibles, boutons bombés et brillants, cadres arrondis à reflets, tuiles façon menu Wii U, orbe de son façon PS2. Très peu d’animations de texte. Entre les pages : le « tourniquet » de Windows Phone, sur tous les navigateurs.
+Windows Phone (Metro) et Apple, sur fond noir intégral. `app/metro.css` pose le style (grands titres fins en minuscules, menu pivot, chapitres en panorama, tuiles, boutons plats, accent cyan `#1ba1e2`) ; `app/metro-plus.css` y ajoute le verre flou de la barre du haut, le menu toujours visible, les photos d’Explorer en entier, des textes sans animation et le tourniquet de sortie entre les pages.
 
 ## Animations
 
