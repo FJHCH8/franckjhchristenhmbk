@@ -7997,3 +7997,195 @@ html.jeu-ouvert .jeu-case {
     display: none;
   }
 }
+
+/* ═════════════════════════ Glissement des chapitres sans tremblement ═════════════════════════ */
+
+/* La photo ne glisse plus en décalé : ce petit retard faisait trembler l'image. */
+.chap-nuage img {
+  translate: none;
+  transition:
+    scale 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 1s ease,
+    filter 1.4s ease;
+}
+
+/* Le glissement suit le défilement directement, sans passer par le script de la page. */
+@supports (animation-timeline: view()) {
+  .chapitres.is-ouvert {
+    view-timeline-name: --chapitres;
+    view-timeline-axis: block;
+  }
+
+  .chap-rangee {
+    animation: chap-glisse linear both;
+    animation-timeline: --chapitres;
+    animation-range: contain 0% contain 100%;
+  }
+}
+
+@keyframes chap-glisse {
+  0%,
+  5% {
+    transform: translate3d(0, 0, 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  28.33%,
+  38.33% {
+    transform: translate3d(-100vw, 0, 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  61.67%,
+  71.67% {
+    transform: translate3d(-200vw, 0, 0);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  95%,
+  100% {
+    transform: translate3d(-300vw, 0, 0);
+  }
+}
+
+/* ═════════════════════════ Direction artistique : Apple · Igloo · SpaceX ═════════════════════════
+   Noir profond, grands titres serrés, beaucoup d'air, très peu d'interface. */
+
+/* Moins d'éléments à l'écran : le texte vertical et l'altimètre s'effacent. */
+.rail,
+.altimeter {
+  display: none !important;
+}
+
+/* La barre et les pastilles retrouvent leur verre dépoli, même sur téléphone (ce sont de petites surfaces). */
+.nav.nav,
+.lang.lang,
+.title-dock-pill.title-dock-pill,
+.son-bouton.son-bouton {
+  -webkit-backdrop-filter: blur(18px) saturate(1.5) !important;
+  backdrop-filter: blur(18px) saturate(1.5) !important;
+  background-color: rgba(18, 20, 28, 0.55);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Titres : grands, serrés, nets. */
+.chap-mot,
+.bento-titre,
+.echecs-titre,
+.suite-titre {
+  font-weight: 700;
+  letter-spacing: -0.055em;
+}
+
+.chap-mot {
+  font-size: clamp(3.6rem, 13vw, 12rem);
+}
+
+.chap-numero {
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* Le texte des chapitres, comme une accroche Apple : clair, posé, sans effet. */
+.chap-texte {
+  max-width: 30rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(1.05rem, 1.9vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.012em;
+  text-shadow: none;
+}
+
+/* Boutons façon SpaceX : rectangle fin, majuscules espacées, se remplit au survol. */
+.chap-lien {
+  gap: 0.75rem;
+  padding: 0.85rem 1.4rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 2px;
+  background: transparent !important;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+.chap-lien:hover,
+.chap-lien:focus-visible {
+  background: #fff !important;
+  color: #000;
+}
+
+.chap-lien span::after {
+  content: "";
+}
+
+/* La photo : plus grande, plus nette, plus présente. */
+.chap-nuage {
+  inset: 4% 0 6%;
+}
+
+.chap-nuage img {
+  -webkit-mask-image: radial-gradient(ellipse 52% 52% at 50% 46%, #000 48%, rgba(0, 0, 0, 0.5) 70%, transparent 96%);
+  mask-image: radial-gradient(ellipse 52% 52% at 50% 46%, #000 48%, rgba(0, 0, 0, 0.5) 70%, transparent 96%);
+}
+
+/* Explorer : des cartes pleines et sobres, sans verre, aux coins généreux. */
+.bento-carte {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  background: #0b0c10;
+  box-shadow: none;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s ease;
+}
+
+.bento-carte:hover,
+.bento-carte:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.bento-grand {
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+/* Le bouton des échecs suit le même langage. */
+.echecs-lancer {
+  border-radius: 2px;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+}
+
+.echecs-lancer:hover,
+.echecs-lancer:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.echecs-lancer:hover .echecs-lancer-piece::after {
+  background: #000;
+}
+
+/* Plus d'air entre les sections. */
+.bento,
+.echecs {
+  padding-top: 22vh;
+}
+
+.kicker {
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* Texte et bouton restent à leur place, alignés sur la marge. */
+.chap-pied,
+.chap-lien {
+  transform: none;
+}

@@ -87,6 +87,7 @@ export function Chapitres() {
       const g = clamp(-boite.top / course) * dernier;
       const i = Math.min(dernier, Math.floor(g));
       const f = g - i;
+      // Mêmes paliers que l'animation CSS (5 % de pause de chaque côté d'un glissement).
       const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.15) / 0.7));
       rangee.style.setProperty("--decalage", decalage.toFixed(4));
       panneaux.forEach((panneau, j) => panneau.style.setProperty("--p", clamp(0.62 + (decalage - j) * 0.38).toFixed(4)));
