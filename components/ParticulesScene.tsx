@@ -184,7 +184,7 @@ void main() {
   float d = dot(p, p);
   float coeur = exp(-d * 34.0);
   float halo = exp(-d * 9.0) * 0.35;
-  float a = (coeur + halo) * vAlpha * 0.42;
+  float a = (coeur + halo) * vAlpha * 0.85;
   if (a < 0.003) discard;
   gl_FragColor = vec4(vCouleur * a, a);
 }
@@ -525,7 +525,7 @@ function Particules({ images, progression, n }: { images: string[]; progression:
     mu.uVortex!.value = vortex;
     mu.uTemps!.value = sim.temps;
     mu.uDensite!.value = e.densite;
-    mu.uTaille!.value = Math.max(11, Math.min(20, size.height / 44)) * state.viewport.dpr;
+    mu.uTaille!.value = Math.max(17, Math.min(30, size.height / 30)) * state.viewport.dpr;
 
     // Profondeur : la scène s'incline doucement vers le curseur.
     if (groupe.current) {
@@ -567,7 +567,8 @@ export default function ParticulesScene({
   actif: boolean;
   onPret: () => void;
 }) {
-  const n = lite ? 112 : 190;
+  // Moins de particules, mais plus visibles chacune : l'image reste lisible, l'écran respire.
+  const n = lite ? 64 : 90;
   return (
     <Canvas
       dpr={[1, lite ? 1.25 : 1.75]}
