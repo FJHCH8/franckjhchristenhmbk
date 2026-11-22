@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, type CSSProperties } from "react";
 
-const RECIT = ["Bienvenue", "Polymathe", "Franck J.H. Christen"];
-const DUREE = 2600;
+const DUREE = 2800;
+const ORBES = 12;
 
 /**
- * Ouverture du site, une fois par session : trois mots se succèdent pendant que le
- * compteur monte, puis le rideau se lève sur la page. Le script de démarrage décide
- * avant l'affichage s'il faut la jouer (classe intro-joue) ou non (intro-vue).
+ * Ouverture du site, une fois par session : la signature de Franck s'écrit en blanc
+ * sur le noir, sous un anneau de lumières bleues et blanches qui tourne comme un
+ * chargement de console. Puis la signature s'envole, l'anneau s'éteint et le noir
+ * s'ouvre en cercle sur le site.
  */
 export function Intro() {
   const ref = useRef<HTMLDivElement>(null);
@@ -21,39 +22,39 @@ export function Intro() {
       node.remove();
       return;
     }
-    const compte = node.querySelector<HTMLElement>(".intro-compte");
-    const lignes = [...node.querySelectorAll<HTMLElement>(".intro-mot")];
     const start = performance.now();
     let frame = 0;
     let fin = 0;
-    let phase = -1;
     const ease = (t: number) => 1 - (1 - t) ** 3;
 
+    // La signature n'est révélée qu'une fois chargée.
+    const img = node.querySelector<HTMLImageElement>(".intro-signature");
+    let pret = Boolean(img?.complete);
+    img?.addEventListener("load", () => (pret = true), { once: true });
+
+    let depart = start;
     const step = (now: number) => {
-      const t = Math.min(1, (now - start) / DUREE);
-      const value = Math.round(ease(t) * 100);
-      if (compte) compte.textContent = String(value).padStart(3, "0");
-      node.style.setProperty("--intro-p", ease(t).toFixed(4));
-      const next = Math.min(RECIT.length - 1, Math.floor(t * RECIT.length));
-      if (next !== phase) {
-        lignes.forEach((ligne, index) => {
-          ligne.classList.toggle("is-on", index === next);
-          ligne.classList.toggle("is-out", index < next);
-        });
-        phase = next;
+      if (!pret && now - start < 1200) {
+        depart = now;
+        frame = window.requestAnimationFrame(step);
+        return;
       }
+      const t = Math.min(1, (now - depart) / DUREE);
+      node.style.setProperty("--intro-p", ease(Math.min(1, t / 0.75)).toFixed(4));
       if (t < 1) {
         frame = window.requestAnimationFrame(step);
         return;
       }
-      root.classList.remove("intro-joue");
       node.classList.add("is-fin");
-      try {
-        sessionStorage.setItem("fjch-intro", "1");
-      } catch {
-        /* navigation privée */
-      }
-      fin = window.setTimeout(() => node.remove(), 1300);
+      fin = window.setTimeout(() => {
+        root.classList.remove("intro-joue");
+        try {
+          sessionStorage.setItem("fjch-intro", "1");
+        } catch {
+          /* navigation privée */
+        }
+        fin = window.setTimeout(() => node.remove(), 1300);
+      }, 380);
     };
     frame = window.requestAnimationFrame(step);
     return () => {
@@ -65,25 +66,15 @@ export function Intro() {
 
   return (
     <div className="intro" ref={ref} aria-hidden="true">
-      <span className="intro-mesh" />
       <div className="intro-scene">
-        {RECIT.map((mot, ligne) => (
-          <p key={mot} className={ligne === 0 ? "intro-mot is-on" : "intro-mot"} translate="no">
-            {[...mot].map((char, index) => (
-              <span key={index} style={{ ["--i" as string]: index } as CSSProperties}>
-                {char === " " ? " " : char}
-              </span>
-            ))}
-          </p>
-        ))}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="intro-signature" src="/signature.png" alt="" width={1400} height={240} draggable={false} />
+        <div className="intro-anneau">
+          {Array.from({ length: ORBES }, (_, i) => (
+            <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: ORBES } as CSSProperties} />
+          ))}
+        </div>
       </div>
-      <p className="intro-pied">
-        <span className="intro-compte">000</span>
-        <span className="intro-ligne">
-          <span />
-        </span>
-        <span>H.M.B.K.</span>
-      </p>
     </div>
   );
 }

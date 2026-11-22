@@ -52,7 +52,7 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Le ciel est un rendu WebGL (`lib/galaxie.ts`) : une Voie lactée dont les nuages et la poussière évoluent sans jamais se répéter, des étoiles sur plusieurs plans, une étoile filante de temps en temps, sur un fond noir. Sans WebGL, l’ancien ciel en 2D prend le relais.
 - Les grands titres inversent ce qu’il y a derrière eux (`mix-blend-mode: difference`).
 - Sur ordinateur : curseur personnalisé et boutons aimantés (`components/Experience.tsx`).
-- À la première visite de la session, une courte ouverture compose le nom (`components/Intro.tsx`).
+- À la première visite de la session, la signature de Franck (`public/signature.png`) s’écrit en blanc sur le noir sous un anneau de chargement bleu et blanc, puis le noir s’ouvre en cercle sur le site (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
 - Partie fluide de l’accueil (`components/Chapitres.tsx`, `components/ParticulesScene.tsx`) : sous la citation, un bocal dessiné par une ficelle lumineuse. Un appui long le brise ; les particules jaillissent et deviennent les images des quatre chapitres, qui glissent à l’horizontale, collés les uns aux autres. React Three Fiber, shaders GLSL, simulation GPGPU, vortex de bruit curl, répulsion au curseur, bloom. Les particules couvrent l’écran dans cette partie, puis se raréfient en fondu. Sans WebGL ou avec le mouvement réduit, les chapitres s’affichent avec leurs photos.
 - Défilement lissé avec inertie : Lenis.

@@ -278,7 +278,8 @@ function cible(pos: Float32Array, couleur: Float32Array, n: number): Cible {
 
 /** Échantillonne une image : plus un pixel est lumineux, plus il reçoit de particules. Le noir n'en reçoit aucune. */
 function echantillonner(img: HTMLImageElement, n: number): Cible {
-  const max = 260;
+  // Petite taille et flou : seuls les grands contours survivent, pas les détails.
+  const max = 150;
   const ratio = img.naturalWidth / img.naturalHeight;
   const w = Math.round(ratio >= 1 ? max : max * ratio);
   const h = Math.round(ratio >= 1 ? max / ratio : max);
@@ -286,18 +287,35 @@ function echantillonner(img: HTMLImageElement, n: number): Cible {
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.filter = "blur(1.6px)";
   ctx.drawImage(img, 0, 0, w, h);
   const px = ctx.getImageData(0, 0, w, h).data;
+  const lumi = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i += 1) {
+    const a = px[i * 4 + 3]! / 255;
+    lumi[i] = ((px[i * 4]! * 0.2126 + px[i * 4 + 1]! * 0.7152 + px[i * 4 + 2]! * 0.0722) / 255) * a;
+  }
+  // Contours : là où la lumière change fort (filtre de Sobel). Seuls les plus marqués comptent.
+  const bords = new Float32Array(w * h);
+  let fort = 0;
+  for (let y = 1; y < h - 1; y += 1) {
+    for (let x = 1; x < w - 1; x += 1) {
+      const L = (dx: number, dy: number) => lumi[(y + dy) * w + x + dx]!;
+      const gx = L(1, -1) + 2 * L(1, 0) + L(1, 1) - L(-1, -1) - 2 * L(-1, 0) - L(-1, 1);
+      const gy = L(-1, 1) + 2 * L(0, 1) + L(1, 1) - L(-1, -1) - 2 * L(0, -1) - L(1, -1);
+      const g = Math.hypot(gx, gy);
+      bords[y * w + x] = g;
+      if (g > fort) fort = g;
+    }
+  }
   const poids = new Float32Array(w * h);
   let total = 0;
   for (let i = 0; i < w * h; i += 1) {
-    const a = px[i * 4 + 3]! / 255;
-    const lum = ((px[i * 4]! * 0.2126 + px[i * 4 + 1]! * 0.7152 + px[i * 4 + 2]! * 0.0722) / 255) * a;
-    // Fondu ovale vers les bords : l'image devient une nébuleuse, sans cadre rectangulaire.
     const dx = ((i % w) / w - 0.5) / 0.5;
     const dy = (Math.floor(i / w) / h - 0.5) / 0.5;
-    const bord = Math.max(0, Math.min(1, (1.05 - Math.hypot(dx * 0.92, dy)) / 0.45));
-    const v = lum < 0.05 ? 0 : Math.pow(lum, 1.15) * bord * bord;
+    const cadre = Math.max(0, Math.min(1, (1.05 - Math.hypot(dx * 0.92, dy)) / 0.3));
+    const e = bords[i]! / (fort || 1);
+    const v = e < 0.16 ? 0 : Math.pow(e, 1.6) * cadre;
     total += v;
     poids[i] = total;
   }
@@ -320,15 +338,16 @@ function echantillonner(img: HTMLImageElement, n: number): Cible {
     const G = px[lo * 4 + 1]! / 255;
     const B = px[lo * 4 + 2]! / 255;
     const lum = R * 0.2126 + G * 0.7152 + B * 0.0722;
-    pos[k * 4] = ((x + Math.random()) / w - 0.5) * largeur;
-    pos[k * 4 + 1] = -((y + Math.random()) / h - 0.5);
+    // Un léger tremblé : la ficelle est tracée à main levée, pas au compas.
+    pos[k * 4] = ((x + 0.5 + (Math.random() - 0.5) * 2.4) / w - 0.5) * largeur;
+    pos[k * 4 + 1] = -((y + 0.5 + (Math.random() - 0.5) * 2.4) / h - 0.5);
     pos[k * 4 + 2] = (lum - 0.5) * 0.22 + (Math.random() - 0.5) * 0.05;
     pos[k * 4 + 3] = 1;
-    const eclat = 0.55 + lum * 0.9;
+    const eclat = 0.9 + lum * 0.6;
     couleur[k * 4] = Math.min(1, R * eclat * 0.96 + 0.04);
     couleur[k * 4 + 1] = Math.min(1, G * eclat * 0.98 + 0.05);
     couleur[k * 4 + 2] = Math.min(1, B * eclat + 0.1);
-    couleur[k * 4 + 3] = 0.35 + lum * 0.65;
+    couleur[k * 4 + 3] = 0.6 + lum * 0.4;
   }
   return cible(pos, couleur, n);
 }
@@ -645,7 +664,7 @@ export default function ParticulesScene({
 }) {
   // Moins de particules, mais plus visibles chacune : l'image reste lisible, l'écran respire.
   // Une ficelle a besoin de points serrés pour rester continue ; elle reste légère à l'écran.
-  const n = lite ? 48 : 64;
+  const n = lite ? 40 : 52;
   return (
     <Canvas
       dpr={[1, lite ? 1.25 : 1.75]}
