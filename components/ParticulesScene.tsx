@@ -108,18 +108,22 @@ void main() {
   vec3 vel = texture2D(textureVelocity, uv).xyz;
   vec4 a = texture2D(uCibleA, uv);
   vec4 b = texture2D(uCibleB, uv);
-  float m = uMorph * uMorph * (3.0 - 2.0 * uMorph);
+  // Chaque particule part à son heure : la transition se fait petit à petit.
+  float h = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+  float mi = clamp(uMorph * 1.7 - h * 0.7, 0.0, 1.0);
+  float m = mi * mi * (3.0 - 2.0 * mi);
+  float vortexIci = max(uVortex, sin(mi * 3.14159265));
   vec3 cible = mix(a.xyz * vec3(uEchelle, uEchelle, 1.0), b.xyz * vec3(uEchelle, uEchelle, 1.0), m);
 
   // Vortex : un tourbillon autour de l'axe, porté par un champ de bruit « curl ».
   vec3 curl = curlNoise(pos * 0.55 + vec3(0.0, 0.0, uTemps * 0.12));
   vec3 tourbillon = vec3(-pos.y, pos.x, 0.0) * 0.9 + vec3(0.0, 0.0, sin(length(pos.xy) * 2.0 - uTemps) * 0.4);
-  vec3 flot = (curl * 2.2 + tourbillon) * uVortex;
+  vec3 flot = (curl * 2.2 + tourbillon) * vortexIci;
 
-  // Ressort vers la cible, relâché pendant le vortex.
-  vec3 force = (cible - pos) * mix(9.0, 1.2, uVortex) + flot * 3.0;
+  // Ressort vers la cible, relâché pendant le vortex : la particule flotte avant de se poser.
+  vec3 force = (cible - pos) * mix(6.0, 1.0, vortexIci) + flot * 2.6;
   // Souffle discret même au repos : l'image respire.
-  force += curl * (0.12 + uFissure * 1.6) * (1.0 - uVortex);
+  force += curl * (0.12 + uFissure * 1.6) * (1.0 - vortexIci);
 
   // L'éclat du bocal : tout jaillit vers l'extérieur.
   force += normalize(pos + vec3(0.0, 0.0, 0.001)) * uExplosion * 26.0 + curl * uExplosion * 10.0;
@@ -162,17 +166,20 @@ void main() {
   vec3 pos = texture2D(uPos, aRef).xyz;
   vec4 mv = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mv;
-  float m = uMorph * uMorph * (3.0 - 2.0 * uMorph);
+  float h = fract(sin(dot(aRef, vec2(12.9898, 78.233))) * 43758.5453);
+  float mi = clamp(uMorph * 1.7 - h * 0.7, 0.0, 1.0);
+  float m = mi * mi * (3.0 - 2.0 * mi);
+  float vortexIci = max(uVortex, sin(mi * 3.14159265));
   vec4 ca = texture2D(uCouleurA, aRef);
   vec4 cb = texture2D(uCouleurB, aRef);
   vec4 c = mix(ca, cb, m);
   // Pendant le vortex, les particules prennent la teinte bleutée des étoiles.
-  vCouleur = mix(c.rgb, vec3(0.72, 0.82, 1.0) * (0.5 + c.a), uVortex * 0.65);
+  vCouleur = mix(c.rgb, vec3(0.72, 0.82, 1.0) * (0.5 + c.a), vortexIci * 0.65);
   float scintille = 0.75 + 0.25 * sin(uTemps * (1.0 + aHasard * 3.0) + aHasard * 40.0);
   // Fondu en sortie de la partie fluide : de moins en moins d'étoiles.
   float garde = step(aHasard, uDensite);
   vAlpha = c.a * scintille * garde * smoothstep(0.0, 0.25, uDensite);
-  gl_PointSize = uTaille * (0.55 + aHasard * 0.9) * (1.0 + uVortex * 0.5) / -mv.z;
+  gl_PointSize = uTaille * (0.55 + aHasard * 0.9) * (1.0 + vortexIci * 0.5) / -mv.z;
 }
 `;
 
@@ -344,25 +351,25 @@ function bocal(n: number): Cible {
   return { pos: texture(pos, n), couleur: texture(couleur, n) };
 }
 
-const lisse = (t: number) => t * t * (3 - 2 * t);
-
 /** Images de départ et d'arrivée, et le mélange, selon l'état. */
 function etat(e: EtatParticules, dernier: number, maintenant: number): { a: number; b: number; m: number; vortex: number; explosion: number } {
   const BOCAL = dernier + 2;
   if (e.phase === "bocal") return { a: BOCAL, b: BOCAL, m: 0, vortex: 0.04 + e.fissure * 0.12, explosion: 0 };
+  // Note : pendant une transition, le vortex est calculé par particule dans les shaders.
   const depuis = e.eclat ? (maintenant - e.eclat) / 1000 : 99;
   const explosion = Math.max(0, 1 - depuis / 0.7);
   if (depuis < 2.2) {
     const m = Math.min(1, Math.max(0, (depuis - 0.35) / 1.6));
-    return { a: BOCAL, b: 0, m, vortex: Math.max(Math.sin(m * Math.PI), explosion), explosion };
+    return { a: BOCAL, b: 0, m, vortex: explosion, explosion };
   }
   const g = Math.max(0, Math.min(dernier, e.g));
   const i = Math.min(dernier, Math.floor(g));
   const f = g - i;
   if (i >= dernier) return { a: dernier, b: dernier, m: 0, vortex: 0, explosion: 0 };
-  // Le glissement d'un chapitre au suivant : l'image tient, puis se disperse et se recompose.
-  const m = lisse(Math.min(1, Math.max(0, (f - 0.3) / 0.7)));
-  return { a: i, b: i + 1, m, vortex: Math.sin(m * Math.PI), explosion: 0 };
+  // Le glissement d'un chapitre au suivant : l'image se disperse puis se recompose,
+  // sur presque toute la course du défilement.
+  const m = Math.min(1, Math.max(0, (f - 0.12) / 0.8));
+  return { a: i, b: i + 1, m, vortex: 0, explosion: 0 };
 }
 
 function Particules({ images, progression, n }: { images: string[]; progression: Progression; n: number }) {
@@ -568,7 +575,7 @@ export default function ParticulesScene({
   onPret: () => void;
 }) {
   // Moins de particules, mais plus visibles chacune : l'image reste lisible, l'écran respire.
-  const n = lite ? 64 : 90;
+  const n = lite ? 46 : 64;
   return (
     <Canvas
       dpr={[1, lite ? 1.25 : 1.75]}

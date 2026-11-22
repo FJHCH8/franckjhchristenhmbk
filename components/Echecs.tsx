@@ -4,7 +4,7 @@ import { Chess, type Color, type Move, type PieceSymbol, type Square } from "che
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Split } from "@/components/Kinetic";
 import { meilleurCoup } from "@/lib/bot";
-import { clic, souffle, tic } from "@/lib/sons";
+import { clic, sang, tic } from "@/lib/sons";
 
 const FICHIER: Record<PieceSymbol, string> = { k: "roi", q: "reine", r: "tour", b: "fou", n: "cavalier", p: "pion" };
 const NOM: Record<PieceSymbol, string> = { k: "roi", q: "reine", r: "tour", b: "fou", n: "cavalier", p: "pion" };
@@ -111,7 +111,7 @@ export function Echecs() {
     poser(apres);
     setDernier({ from: coup.from, to: coup.to });
     setEchec(roiEnEchec(jeu));
-    if (coup.captured) souffle();
+    if (coup.captured) sang();
     else clic();
   }, [plus, poser]);
 

@@ -6770,3 +6770,9 @@ html.kt-on.intro-joue .kt.kt-x[data-kt="chars"] .kt-c {
     flex-basis: 100svh;
   }
 }
+
+
+/* Chaque chapitre dispose de près de deux écrans de défilement : les transitions se font petit à petit. */
+.chapitres.is-ouvert {
+  height: calc(var(--n, 4) * 180svh);
+}

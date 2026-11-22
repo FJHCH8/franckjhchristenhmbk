@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Split } from "@/components/Kinetic";
 import type { EtatParticules } from "@/components/ParticulesScene";
-import { clic, souffle } from "@/lib/sons";
+import { clic, eclat } from "@/lib/sons";
 
 // La scène 3D (Three.js) n'est chargée que sur l'accueil, et seulement quand on approche du bocal.
 const ParticulesScene = dynamic(() => import("@/components/ParticulesScene"), { ssr: false });
@@ -159,7 +159,7 @@ export function Chapitres() {
         e.g = g;
         const i = Math.min(dernier, Math.floor(g));
         const f = g - i;
-        const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.3) / 0.7));
+        const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.12) / 0.8));
         rangee.style.setProperty("--decalage", decalage.toFixed(4));
         panneaux.forEach((panneau, j) => panneau.style.setProperty("--p", clamp(0.62 + (decalage - j) * 0.38).toFixed(4)));
       }
@@ -211,7 +211,7 @@ export function Chapitres() {
     e.fissure = 0;
     setFissure(0);
     setBrise(true);
-    souffle();
+    eclat();
     try {
       sessionStorage.setItem(CLE, "1");
     } catch {
