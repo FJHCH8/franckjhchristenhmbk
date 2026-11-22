@@ -5,10 +5,10 @@ import { useEffect, useRef } from "react";
 const ORBES = 7;
 
 /**
- * Le chargement de la PlayStation 2 : sept orbes blancs lumineux qui tournent sur un cercle.
+ * Le chargement de la PlayStation 2 : sept ronds blancs qui tournent sur un cercle.
  * Ils partent serrés en un amas, s'étirent en arc, s'écartent jusqu'à former l'anneau,
- * puis se resserrent ; le cercle bascule lentement en 3D. Les lueurs s'additionnent
- * quand les orbes se croisent. Dessiné en 2D, avec un seul sprite lumineux réutilisé.
+ * puis se resserrent ; le cercle bascule lentement en 3D. Des ronds blancs nets,
+ * sans halo lumineux. Dessiné en 2D.
  */
 export function AnneauPS2({ taille = 120, className }: { taille?: number; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -23,20 +23,6 @@ export function AnneauPS2({ taille = 120, className }: { taille?: number; classN
     canvas.height = px;
     const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Le sprite : un orbe blanc au cœur net et au halo doux.
-    const sprite = document.createElement("canvas");
-    const s = 64;
-    sprite.width = s;
-    sprite.height = s;
-    const sc = sprite.getContext("2d")!;
-    const g = sc.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    g.addColorStop(0, "rgba(255,255,255,1)");
-    g.addColorStop(0.22, "rgba(255,255,255,0.95)");
-    g.addColorStop(0.4, "rgba(235,240,255,0.35)");
-    g.addColorStop(1, "rgba(220,230,255,0)");
-    sc.fillStyle = g;
-    sc.fillRect(0, 0, s, s);
-
     const debut = performance.now();
     let frame = 0;
 
@@ -44,12 +30,11 @@ export function AnneauPS2({ taille = 120, className }: { taille?: number; classN
       const t = calme ? 4 : (now - debut) / 1000;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, px, px);
-      ctx.globalCompositeOperation = "lighter";
 
       const R = px * 0.3;
       // Écart entre orbes : de l'amas serré à l'anneau complet, puis retour.
       const ouverture = 0.5 - 0.5 * Math.cos(t * 0.9);
-      const ecart = 0.08 + ouverture * ((2 * Math.PI) / ORBES - 0.08);
+      const ecart = 0.3 + ouverture * ((2 * Math.PI) / ORBES - 0.3);
       const phase = t * 2.4;
       // Le cercle bascule en 3D autour de deux axes.
       const ax = 0.9 + Math.sin(t * 0.55) * 0.75;
@@ -75,14 +60,14 @@ export function AnneauPS2({ taille = 120, className }: { taille?: number; classN
         points.push([x, y, z]);
       }
       points.sort((p, q) => p[2] - q[2]);
+      ctx.fillStyle = "#fff";
       for (const [x, y, z] of points) {
         const persp = 1 / (1 - z / (px * 1.4));
-        const taillePx = px * 0.15 * persp;
-        ctx.globalAlpha = Math.min(1, 0.7 + persp * 0.3);
-        ctx.drawImage(sprite, px / 2 + x * persp - taillePx / 2, px / 2 + y * persp - taillePx / 2, taillePx, taillePx);
+        const rayon = px * 0.036 * persp;
+        ctx.beginPath();
+        ctx.arc(px / 2 + x * persp, px / 2 + y * persp, rayon, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.globalAlpha = 1;
-      ctx.globalCompositeOperation = "source-over";
       if (!calme) frame = window.requestAnimationFrame(dessiner);
     };
 

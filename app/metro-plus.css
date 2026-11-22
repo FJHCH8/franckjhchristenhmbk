@@ -906,3 +906,8 @@ html body .seal.seal-logo {
   width: 2.8rem !important;
   height: 2.8rem !important;
 }
+
+/* Pas de halo lumineux : le logo de l'ouverture reste net. */
+html body .intro-logo {
+  filter: none !important;
+}
