@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { Logo } from "@/components/Logo";
 
 const DUREE = 2800;
 const ORBES = 12;
 
 /**
- * Ouverture du site, une fois par session : la signature de Franck s'écrit en blanc
+ * Ouverture du site, une fois par session : le logo de Franck se dessine en blanc
  * sur le noir, sous un anneau de lumières bleues et blanches qui tourne comme un
- * chargement de console. Puis la signature s'envole, l'anneau s'éteint et le noir
+ * chargement de console. Puis le logo s'envole, l'anneau s'éteint et le noir
  * s'ouvre en cercle sur le site.
  */
 export function Intro() {
@@ -27,10 +28,8 @@ export function Intro() {
     let fin = 0;
     const ease = (t: number) => 1 - (1 - t) ** 3;
 
-    // La signature n'est révélée qu'une fois chargée.
-    const img = node.querySelector<HTMLImageElement>(".intro-signature");
-    let pret = Boolean(img?.complete);
-    img?.addEventListener("load", () => (pret = true), { once: true });
+    // Le logo est dessiné dans la page : il est prêt tout de suite.
+    const pret = true;
 
     let depart = start;
     const step = (now: number) => {
@@ -67,8 +66,7 @@ export function Intro() {
   return (
     <div className="intro" ref={ref} aria-hidden="true">
       <div className="intro-scene">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="intro-signature" src="/signature.png" alt="" width={1400} height={240} draggable={false} />
+        <Logo className="intro-logo" anime />
         <div className="intro-anneau">
           {Array.from({ length: ORBES }, (_, i) => (
             <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: ORBES } as CSSProperties} />

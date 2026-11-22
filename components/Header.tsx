@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { T, useLocale } from "@/components/Locale";
+import { Logo } from "@/components/Logo";
 import { TopBlur } from "@/components/TopBlur";
 
 const LINKS = [
@@ -102,16 +102,8 @@ export function Header() {
           onTouchEnd={onBrand}
           onClick={(event) => event.preventDefault()}
         >
-          <span className="seal">
-            <Image
-              src="/portrait-enfance.jpg"
-              alt=""
-              fill
-              priority
-              sizes="48px"
-              draggable={false}
-              style={{ objectFit: "cover", objectPosition: "center 12%" }}
-            />
+          <span className="seal seal-logo">
+            <Logo />
           </span>
           <span className="brand-name" translate="no">
             Franck J.H. CHRISTEN H.M.B.K.
