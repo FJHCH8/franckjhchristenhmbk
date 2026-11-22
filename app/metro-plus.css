@@ -551,3 +551,45 @@ html body .intro.is-fin {
 @keyframes starload-arrive {
   to { opacity: 1; }
 }
+
+/* Le Starload partout : changement de page, échecs, photos. Les anciens chargements disparaissent. */
+.starload-grand {
+  width: clamp(120px, 34vw, 170px) !important;
+  height: clamp(120px, 34vw, 170px) !important;
+}
+
+html body .chargement {
+  background: #000;
+}
+
+html body .chargement-page {
+  opacity: 1;
+  visibility: visible;
+}
+
+.chargement-coin {
+  position: fixed;
+  z-index: 2147482200;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.chargement-coin.is-on {
+  opacity: 1;
+}
+
+html body .jeu-chargement {
+  gap: 1.4rem;
+}
+
+html body .jeu-chargement-titre {
+  margin-top: 0.4rem;
+}
+
+.wiiu-barre,
+.intro-anneau {
+  display: none !important;
+}

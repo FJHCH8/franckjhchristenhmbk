@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ComponentType, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import { createPortal } from "react-dom";
 import { Split } from "@/components/Kinetic";
 import { clic, souffle } from "@/lib/sons";
@@ -115,13 +115,8 @@ export function SalleEchecs() {
 
       {phase === "charge" ? createPortal(
         <div className="jeu-chargement" role="status" aria-live="polite">
+                    <AnneauPS2 taille={150} className="starload-grand" />
           <p className="jeu-chargement-titre">Chargement en cours</p>
-          <div className="jeu-chargement-ligne">
-            <div className="wiiu-barre" aria-hidden="true">
-              <span style={{ ["--avance" as string]: avance } as CSSProperties} />
-            </div>
-            <AnneauPS2 taille={40} />
-          </div>
           <p className="jeu-chargement-pourcent">{pourcent} %</p>
         </div>,
         document.body,

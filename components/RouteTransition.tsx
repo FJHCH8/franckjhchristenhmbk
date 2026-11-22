@@ -40,14 +40,14 @@ function clearMorph() {
 let lent = 0;
 let enCours: { skipTransition?: () => void } | null = null;
 
-/** Si la page met plus d'un demi-seconde à venir, l'anneau de chargement apparaît. */
+/** Si la page met plus d'un quart de seconde à venir, l'anneau de chargement apparaît. */
 function armerChargement() {
   window.clearTimeout(lent);
   lent = window.setTimeout(() => {
     // La transition figerait l'ancienne page par-dessus l'anneau : on l'interrompt.
     enCours?.skipTransition?.();
     document.documentElement.classList.add("nav-lent");
-  }, 500);
+  }, 250);
   // Garde-fou : jamais d'anneau bloqué à l'écran.
   window.setTimeout(finChargement, 15000);
 }
