@@ -502,3 +502,17 @@ html body .seal.seal-logo {
     transform: none;
   }
 }
+
+/* L'anneau de chargement façon PS2 : des orbes blancs. */
+html body .intro-anneau span {
+  background: radial-gradient(circle, #fff 0%, #e8eef8 55%, #b9c4d6 100%);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 22px rgba(255, 255, 255, 0.45);
+}
+
+html body .intro-anneau {
+  animation: anneau-tourne 6s linear infinite;
+}
+
+html body .intro-logo {
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.3));
+}
