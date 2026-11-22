@@ -56,7 +56,7 @@ Windows Phone (Metro) et Apple, sur fond noir intégral. `app/metro.css` pose le
 - Le ciel est un rendu WebGL (`lib/galaxie.ts`) : une Voie lactée dont les nuages et la poussière évoluent sans jamais se répéter, des étoiles sur plusieurs plans, une étoile filante de temps en temps, sur un fond noir. Sans WebGL, l’ancien ciel en 2D prend le relais.
 - Les grands titres inversent ce qu’il y a derrière eux (`mix-blend-mode: difference`).
 - Sur ordinateur : curseur personnalisé et boutons aimantés (`components/Experience.tsx`).
-- À la première visite de la session, le logo de Franck (la constellation, `components/Logo.tsx`) se dessine en blanc sur le noir sous un anneau de chargement bleu et blanc, puis le noir s’ouvre en cercle sur le site (`components/Intro.tsx`).
+- À la première visite de la session, le logo de Franck (la constellation, `components/Logo.tsx`) se dessine en blanc sur le noir au-dessus du chargement de la PS2 (`components/AnneauPS2.tsx` : sept orbes blancs qui se regroupent, s’étirent en arc et s’ouvrent en anneau qui bascule en 3D), puis le noir s’ouvre en cercle sur le site (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
 - Chapitres de l’accueil (`components/Chapitres.tsx`) : les photos sont posées sur le bord d’un grand disque ; en défilant, le disque tourne d’un quart de tour et amène le thème suivant (animation liée au défilement, avec repli en script). L’album de « Qui suis-je » (`components/Album.tsx`) est aussi un disque qu’on fait tourner au doigt.
 - Si une page met plus d’un demi-seconde à venir, l’anneau de chargement bleu et blanc apparaît (`components/Chargement.tsx`).
@@ -77,7 +77,7 @@ La police `public/fonts/davissis.woff2` (chasse proportionnelle, voyelles posée
 On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
 
 - `aa ii oo ee uu` : voyelles longues ; `a i o e u` après une consonne : signe posé au-dessus ;
-- `sh`, `ts` ou `c`, `mg`, `x` : lettres propres ; consonne doublée : signe « ⊓ » dessous ; `'` : barre sous la lettre ;
+- `sh`, `ts` ou `c`, `ng`, `x` : lettres propres (`j` s’écrit comme `y`) ; consonne doublée : signe « ⊓ » dessous ; `'` : barre sous la lettre ;
 - `! . , ; ?` : ponctuation du Davissis.
 
 Sur le site, en mode Davissis, tout texte qui a une traduction dans `lib/davissiv.ts` s’écrit dans cette écriture.

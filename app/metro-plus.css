@@ -516,3 +516,9 @@ html body .intro-anneau {
 html body .intro-logo {
   filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.3));
 }
+
+/* Le chargement PS2 dessiné en direct : rien à styler, sinon sa place. */
+.anneau-ps2 {
+  display: block;
+  flex: none;
+}

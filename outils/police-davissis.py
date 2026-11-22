@@ -6,7 +6,7 @@ un alphabet géométrique qui garde la structure du dessin.
 On écrit le Davissis en lettres latines ; la police l'affiche dans son écriture :
   aa ii oo ee uu   voyelles longues (lettres)
   a i o e u        voyelles brèves : signes posés au-dessus de la consonne
-  sh, ts ou c, mg, x   lettres propres
+  sh, ts ou c, ng, x   lettres propres ; j s'écrit comme y
   consonne doublée     la consonne, puis le signe « ∩ » dessous
   '                    barre sous la lettre
   ! . , ; ?            ponctuation du Davissis
@@ -107,18 +107,18 @@ consonnes = {
     "n": L_((120, 300), (480, 300), (480, 560), (130, 560), (130, 40), (565, 40)),
     "t": L_((110, 620), (110, 0), (530, 0)) + L_((320, 0), (320, 520)) + L_((530, 620), (530, -250)),
     "m": L_((110, 620), (110, 0), (530, 0), (530, 620)) + L_((320, 0), (320, 520)),
-    "y": L_((140, 620), (140, 0), (500, 0), (500, 620)),
+    "y": L_((150, 860), (150, 0), (490, 0), (490, 860)),  # Y/J : un U haut
     "v": L_((110, 0), (110, 620), (530, 620), (530, 0)) + L_((320, 620), (320, 0)),
     "f": L_((140, 520), (250, 620), (400, 620), (400, -250), (545, -250)),
     "s": L_((500, 620), (170, 620), (370, 320), (170, 0), (510, 0)),
-    "d": L_((160, 620), (160, 0), (480, 0), (480, 620)) + L_((320, 680), (320, 0)),
+    "d": L_((160, 620), (160, 0), (480, 0), (480, 620)),  # D : un U
     "r": L_((150, 620), (500, 620), (310, 390), (480, 240), (480, -250)),
     "sh": L_((140, 620), (140, 260), (480, 260)) + L_((480, 620), (480, -250), (220, -250)),
     "c": L_((470, 500), (470, 620), (240, 620), (240, -250), (450, -250)),
     "mg": L_((150, 0), (150, 620), (490, 620), (490, 0)),
     "l": L_((130, -250), (130, 620), (510, 620), (510, 170)),
     "z": L_((110, 0), (300, 620), (565, -250)),
-    "q": L_((170, 640), (530, 0)) + L_((340, 330), (120, 0)),
+    "q": L_((150, 0), (330, 620), (510, 0)),  # q : un ∧
     "w": L_((120, 600), (510, 600), (210, -230)),
     "x": L_((110, 0), (110, 620), (530, 620), (530, -250), (290, -250)) + L_((320, 620), (320, 0)),
     "b": L_((150, 620), (500, 620), (310, 390), (500, 200), (110, -230)),
@@ -210,6 +210,9 @@ simples = {"g": "g", "k": "k", "p": "p", "n": "n", "t": "t", "m": "m", "y": "y",
 for lettre, nom in simples.items():
     cmap[ord(lettre)] = f"c_{nom}"
     cmap[ord(lettre.upper())] = f"c_{nom}"
+# J s'écrit comme Y.
+cmap[ord("j")] = "c_y"
+cmap[ord("J")] = "c_y"
 for v in "aioeu":
     cmap[ord(v)] = f"m_{v}"
     cmap[ord(v.upper())] = f"m_{v}"
@@ -234,7 +237,7 @@ lookup Longues {{
   sub m_u m_u by v_uu;
   sub c_s c_h by c_sh;
   sub c_t c_s by c_c;
-  sub c_m c_g by c_mg;
+  sub c_n c_g by c_mg;
   sub c_k c_s by c_x;
 }} Longues;
 

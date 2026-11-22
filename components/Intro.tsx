@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { Logo } from "@/components/Logo";
+import { AnneauPS2 } from "@/components/AnneauPS2";
 
 const DUREE = 2800;
-const ORBES = 12;
 
 /**
  * Ouverture du site, une fois par session : le logo de Franck se dessine en blanc
@@ -67,11 +67,7 @@ export function Intro() {
     <div className="intro" ref={ref} aria-hidden="true">
       <div className="intro-scene">
         <Logo className="intro-logo" anime />
-        <div className="intro-anneau">
-          {Array.from({ length: ORBES }, (_, i) => (
-            <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: ORBES } as CSSProperties} />
-          ))}
-        </div>
+        <AnneauPS2 taille={96} />
       </div>
     </div>
   );

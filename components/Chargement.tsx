@@ -1,16 +1,22 @@
-import type { CSSProperties } from "react";
+"use client";
 
-const ORBES = 12;
+import { useEffect, useState } from "react";
+import { AnneauPS2 } from "@/components/AnneauPS2";
 
-/** L'anneau de chargement façon console, affiché seulement si une page tarde à venir (classe html.nav-lent). */
+/**
+ * L'anneau de chargement façon PS2, affiché seulement si une page tarde à venir
+ * (classe html.nav-lent). Il n'est dessiné que pendant ce temps-là.
+ */
 export function Chargement() {
-  return (
-    <div className="chargement" aria-hidden="true">
-      <div className="intro-anneau">
-        {Array.from({ length: ORBES }, (_, i) => (
-          <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: ORBES } as CSSProperties} />
-        ))}
-      </div>
-    </div>
-  );
+  const [lent, setLent] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const lire = () => setLent(root.classList.contains("nav-lent"));
+    const obs = new MutationObserver(lire);
+    obs.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+
+  return <div className="chargement" aria-hidden="true">{lent ? <AnneauPS2 taille={110} /> : null}</div>;
 }

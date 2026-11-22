@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState, type ComponentType, type CSSP
 import { createPortal } from "react-dom";
 import { Split } from "@/components/Kinetic";
 import { clic, souffle } from "@/lib/sons";
+import { AnneauPS2 } from "@/components/AnneauPS2";
 
 const PIECES = ["roi", "reine", "tour", "fou", "cavalier", "pion"];
-const ORBES = 12;
 
 type JeuProps = { travailleur: Worker; onFermer: () => void };
 
@@ -120,11 +120,7 @@ export function SalleEchecs() {
             <div className="wiiu-barre" aria-hidden="true">
               <span style={{ ["--avance" as string]: avance } as CSSProperties} />
             </div>
-            <div className="intro-anneau is-petit" aria-hidden="true">
-              {Array.from({ length: ORBES }, (_, i) => (
-                <span key={i} style={{ ["--i" as string]: i, ["--n" as string]: ORBES } as CSSProperties} />
-              ))}
-            </div>
+            <AnneauPS2 taille={40} />
           </div>
           <p className="jeu-chargement-pourcent">{pourcent} %</p>
         </div>,
