@@ -2,13 +2,13 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Split } from "@/components/Kinetic";
-import type { EtatParticules } from "@/components/ParticulesScene";
+import type { EtatParticules } from "@/components/Ficelle";
 import { clic, eclat } from "@/lib/sons";
 
-// La scène 3D (Three.js) n'est chargée que sur l'accueil, et seulement quand on approche du bocal.
-const ParticulesScene = dynamic(() => import("@/components/ParticulesScene"), { ssr: false });
+// La ficelle n'est chargée que sur l'accueil, et seulement quand on approche du bocal.
+const Ficelle = dynamic(() => import("@/components/Ficelle"), { ssr: false });
 
 type Chapitre = {
   id: string;
@@ -71,10 +71,9 @@ function clamp(value: number) {
 
 const lisse = (t: number) => t * t * (3 - 2 * t);
 
-function webglPossible() {
+function dessinPossible() {
   try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+    return Boolean(document.createElement("canvas").getContext("2d"));
   } catch {
     return false;
   }
@@ -96,6 +95,7 @@ export function Chapitres() {
   const [brise, setBrise] = useState(false);
   const [charger, setCharger] = useState(false);
   const [pret, setPret] = useState(false);
+  const surPret = useCallback(() => setPret(true), []);
   const [lite, setLite] = useState(false);
   const [actif, setActif] = useState(false);
   const [fissure, setFissure] = useState(0);
@@ -104,7 +104,7 @@ export function Chapitres() {
   // Particules si possible ; sinon, les photos. Le bocal reste brisé pendant toute la visite.
   useEffect(() => {
     const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const possible = !calme && webglPossible();
+    const possible = !calme && dessinPossible();
     let deja = false;
     try {
       deja = sessionStorage.getItem(CLE) === "1";
@@ -269,7 +269,7 @@ export function Chapitres() {
     <div className="fluide" ref={fluideRef}>
       {mode === "particules" ? (
         <div className="particules-calque" ref={calqueRef} aria-hidden="true">
-          {charger ? <ParticulesScene images={IMAGES} progression={progression} lite={lite} actif={actif} onPret={() => setPret(true)} /> : null}
+          {charger ? <Ficelle images={IMAGES} progression={progression} lite={lite} actif={actif} onPret={surPret} /> : null}
         </div>
       ) : null}
 

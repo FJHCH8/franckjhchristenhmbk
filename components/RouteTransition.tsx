@@ -6,7 +6,7 @@ import { souffle } from "@/lib/sons";
 
 const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
 
-type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void> };
+type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void>; skipTransition?: () => void };
 
 function iosBrowser() {
   const ua = navigator.userAgent;
@@ -37,6 +37,26 @@ function clearMorph() {
   });
 }
 
+let lent = 0;
+let enCours: { skipTransition?: () => void } | null = null;
+
+/** Si la page met plus d'un demi-seconde à venir, l'anneau de chargement apparaît. */
+function armerChargement() {
+  window.clearTimeout(lent);
+  lent = window.setTimeout(() => {
+    // La transition figerait l'ancienne page par-dessus l'anneau : on l'interrompt.
+    enCours?.skipTransition?.();
+    document.documentElement.classList.add("nav-lent");
+  }, 500);
+  // Garde-fou : jamais d'anneau bloqué à l'écran.
+  window.setTimeout(finChargement, 15000);
+}
+
+function finChargement() {
+  window.clearTimeout(lent);
+  document.documentElement.classList.remove("nav-lent");
+}
+
 function clearNav() {
   clearMorph();
   const root = document.documentElement;
@@ -54,6 +74,7 @@ export function RouteTransition() {
     const resolve = pending.current;
     pending.current = null;
     resolve?.();
+    finChargement();
   }, [pathname]);
 
   useEffect(() => {
@@ -84,6 +105,7 @@ export function RouteTransition() {
       }
       if (url.origin !== window.location.origin) return;
       if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      armerChargement();
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const start = viewTransition();
       if (!start) return;
@@ -123,6 +145,7 @@ export function RouteTransition() {
       const failSafe = window.setTimeout(clearNav, 2600);
       try {
         const transition = start(navigate);
+        enCours = transition;
         transition.finished.finally(() => {
           window.clearTimeout(failSafe);
           clearNav();
