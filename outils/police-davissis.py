@@ -171,7 +171,13 @@ glyphes = {}  # nom -> (chemin, chasse)
 milieux = {}  # nom -> abscisse du milieu de la lettre (pour poser les voyelles)
 
 
+APLATI = 0.78  # hauteur des lettres : plus basses, plus larges, plus modernes
+ELARGI = 1.06
+
+
 def ajouter(nom, traces, chasse, proportionnel=False):
+    if traces:
+        traces = [[(x * ELARGI, y * APLATI) for x, y in t] for t in traces]
     if traces and proportionnel:
         xs = [x for t in traces for x, _ in t]
         decale = APPROCHE + TRAIT / 2 - min(xs)
