@@ -34,6 +34,13 @@ export function Header() {
     const now = performance.now();
     if (now - stamp.current < 35) return;
     stamp.current = now;
+    // Le logo se redessine : la ligne s'efface, puis revient depuis le rond du haut.
+    const logo = document.querySelector<SVGSVGElement>(".seal-logo svg");
+    if (logo && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      logo.classList.remove("logo-rejoue");
+      void logo.getBoundingClientRect();
+      logo.classList.add("logo-rejoue");
+    }
     taps.current = [...taps.current.filter((time) => now - time < 2800), now];
     window.clearTimeout(navTimer.current);
     if (taps.current.length >= 8) {

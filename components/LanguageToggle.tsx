@@ -57,7 +57,7 @@ export function LanguageToggle() {
         onClick={() => choose("tavissiv")}
         aria-label="Tavissiv"
       >
-        <span className="tavissiv lang-tavissiv" lang="x-tavissiv" aria-hidden="true">
+        <span className="tavissiv lang-tavissiv-texte" lang="x-tavissiv" aria-hidden="true">
           tavissiv
         </span>
       </button>

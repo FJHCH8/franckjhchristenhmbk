@@ -968,11 +968,38 @@ html body .scroll-stage.a-fond::after {
 }
 
 /* Le nom de la langue, Tavissiv, écrit dans ses propres caractères. */
-html body .lang .lang-tavissiv {
+html body .lang .lang-tavissiv-texte {
   display: inline-block;
   font-size: 1.15rem;
   line-height: 1;
   letter-spacing: 0;
   text-transform: none;
   vertical-align: middle;
+}
+
+/* Le logo : pas de cercle autour quand on appuie dessus. */
+html body .brand .seal::after,
+html body .brand:hover .seal::after,
+html body .brand:focus-visible .seal::after {
+  display: none !important;
+}
+
+html body .brand,
+html body .brand:focus,
+html body .brand:focus-visible {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Appui sur le logo : la ligne s'efface, puis se retrace depuis le rond du haut. */
+.logo-rejoue .logo-ligne {
+  stroke-dasharray: 1;
+  animation: logo-rejoue 1.9s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+
+@keyframes logo-rejoue {
+  0% { stroke-dashoffset: 0; opacity: 1; }
+  14% { stroke-dashoffset: 0; opacity: 0; }
+  15% { stroke-dashoffset: 1; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
 }
