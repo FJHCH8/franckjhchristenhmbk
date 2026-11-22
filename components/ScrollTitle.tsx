@@ -211,7 +211,7 @@ export function ScrollTitle({
       </div>
       <div className="title-dock" ref={barRef} aria-hidden="true">
         <p className="title-dock-pill">
-          {label && label !== text ? <span className="davissis">{label}</span> : (label ?? <span className="skel" style={{ width: "5.5em" }} />)}
+          {label && label !== text ? <span className="tavissiv">{label}</span> : (label ?? <span className="skel" style={{ width: "5.5em" }} />)}
         </p>
       </div>
     </div>

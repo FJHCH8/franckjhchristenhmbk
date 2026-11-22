@@ -70,17 +70,17 @@ Windows Phone (Metro) et Apple, sur fond noir intégral. `app/metro.css` pose le
 - Verre dépoli avec une légère dispersion de couleurs sur les bords.
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
 
-## Écriture Davissis
+## Écriture Tavissiv
 
-La police `public/fonts/davissis.woff2` dessine l’écriture du Davissis. Ses lettres viennent directement du tracé de Franck : le squelette de chaque lettre (`outils/davissis-traces.json`), simplifié en segments droits ; chasse proportionnelle, voyelles posées au centre de leur consonne. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
+La police `public/fonts/tavissiv.woff2` dessine l’écriture du Tavissiv. Ses lettres viennent directement du tracé de Franck : le squelette de chaque lettre (`outils/tavissiv-traces.json`), simplifié en segments droits ; chasse proportionnelle, voyelles posées au centre de leur consonne. Elle se régénère avec `python3 outils/police-tavissiv.py` (paquets Python : fonttools, skia-pathops, brotli).
 
-On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
+On tape le Tavissiv en lettres latines, la police l’affiche dans son écriture :
 
 - `aa ii oo ee uu` : voyelles longues ; `a i o e u` après une consonne : signe posé au-dessus ;
 - `sh`, `ts` ou `c`, `ng`, `x` : lettres propres (`j` s’écrit comme `y`) ; consonne doublée : signe « ⊓ » dessous ; `'` : barre sous la lettre ;
-- `! . , ; ?` : ponctuation du Davissis.
+- `! . , ; ?` : ponctuation du Tavissiv.
 
-Sur le site, en mode Davissis, tout texte qui a une traduction dans `lib/davissiv.ts` s’écrit dans cette écriture.
+Sur le site, en mode Tavissiv, tout texte qui a une traduction dans `lib/tavissiv.ts` s’écrit dans cette écriture.
 
 ## Scripts
 

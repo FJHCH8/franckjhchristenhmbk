@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useContext, useLayoutEffect, useSyncExternalStore, type ReactNode } from "react";
-import { texteDavissiv } from "@/lib/davissiv";
+import { texteTavissiv } from "@/lib/tavissiv";
 
-export type LocaleName = "fr" | "davissiv";
+export type LocaleName = "fr" | "tavissiv";
 
 export const LOCALE_KEY = "fjch-lang";
 
@@ -16,7 +16,7 @@ const LocaleContext = createContext<{
 });
 
 function applyLocale(locale: LocaleName) {
-  if (locale === "davissiv") document.documentElement.dataset.locale = "davissiv";
+  if (locale === "tavissiv") document.documentElement.dataset.locale = "tavissiv";
   else delete document.documentElement.dataset.locale;
 }
 
@@ -32,9 +32,10 @@ function subscribeLocale(onStoreChange: () => void) {
 function readLocale(): LocaleName {
   try {
     const stored = localStorage.getItem(LOCALE_KEY);
-    if (stored === "davissiv" || stored === "lassavi") {
-      if (stored === "lassavi") localStorage.setItem(LOCALE_KEY, "davissiv");
-      return "davissiv";
+    // Anciens noms de la langue (lassavi, davissiv) : on garde le choix du visiteur.
+    if (stored === "tavissiv" || stored === "lassavi" || stored === "davissiv") {
+      if (stored !== "tavissiv") localStorage.setItem(LOCALE_KEY, "tavissiv");
+      return "tavissiv";
     }
     return "fr";
   } catch {
@@ -67,21 +68,21 @@ export function useLocale() {
 }
 
 export function titleLabel(locale: LocaleName, text: string, keep = false) {
-  if (keep || locale !== "davissiv") return text;
-  return texteDavissiv(text);
+  if (keep || locale !== "tavissiv") return text;
+  return texteTavissiv(text);
 }
 
-/** Vrai si ce texte a une traduction en Davissis : elle s'écrit alors dans l'écriture Davissis. */
+/** Vrai si ce texte a une traduction en Tavissiv : elle s'écrit alors dans l'écriture Tavissiv. */
 export function estTraduit(locale: LocaleName, francais: string) {
-  return locale === "davissiv" && texteDavissiv(francais) !== francais;
+  return locale === "tavissiv" && texteTavissiv(francais) !== francais;
 }
 
 export function T({ children }: { children: string; width?: string }) {
   const { locale } = useLocale();
   if (!estTraduit(locale, children)) return <>{children}</>;
   return (
-    <span className="davissis" lang="x-davissis">
-      {texteDavissiv(children)}
+    <span className="tavissiv" lang="x-tavissiv">
+      {texteTavissiv(children)}
     </span>
   );
 }

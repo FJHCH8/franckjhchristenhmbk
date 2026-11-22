@@ -1,1 +1,1 @@
-export const localeInitScript = `(function(){try{var k="fjch-lang";var v=localStorage.getItem(k);if(v==="lassavi"){localStorage.setItem(k,"davissiv");v="davissiv";}if(v==="davissiv")document.documentElement.dataset.locale="davissiv";}catch(e){}})();`;
+export const localeInitScript = `(function(){try{var k="fjch-lang";var v=localStorage.getItem(k);if(v==="lassavi"||v==="davissiv"){localStorage.setItem(k,"tavissiv");v="tavissiv";}if(v==="tavissiv")document.documentElement.dataset.locale="tavissiv";}catch(e){}})();`;

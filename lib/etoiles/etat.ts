@@ -33,7 +33,7 @@ function normalize(value: Etat): Etat {
         const base = { ...etoile, auteur: SIGNATURE };
         if (base.id === "citation-2026-05-26") return { ...base, ra: 349, dec: 26, genre: "citation" as const };
         if (base.id === "endurreisen") return { ...base, titre: "Endurreisen" };
-        if (base.id === "creation-langue-davissiv") return { ...base, genre: "projet" as const, titre: "Création de la langue Davissiv", date: "2026-11-16", texte: "" };
+        if (base.id === "creation-langue-davissiv") return { ...base, genre: "projet" as const, titre: "Création de la langue Tavissiv", date: "2026-11-16", texte: "" };
         return base;
       })
     : semence();

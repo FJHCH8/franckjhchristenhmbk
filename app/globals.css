@@ -326,8 +326,8 @@ html[data-theme="sombre"][data-page="qui-suis-je"] .lang button {
 
 html[data-page="qui-suis-je"][data-theme="clair"] .opt-clair,
 html[data-page="qui-suis-je"][data-theme="sombre"] .opt-sombre,
-html[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
-html[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv {
+html[data-page="qui-suis-je"]:not([data-locale="tavissiv"]) .lang-fr,
+html[data-page="qui-suis-je"][data-locale="tavissiv"] .lang-tavissiv {
   color: #102033;
 }
 
@@ -656,12 +656,12 @@ html[data-theme="sombre"] .toggle-thumb {
   transition: transform 0.52s cubic-bezier(0.34, 1.28, 0.5, 1);
 }
 
-html[data-locale="davissiv"] .lang-thumb {
+html[data-locale="tavissiv"] .lang-thumb {
   transform: translateX(100%);
 }
 
-html:not([data-locale="davissiv"]) .lang-fr,
-html[data-locale="davissiv"] .lang-davissiv {
+html:not([data-locale="tavissiv"]) .lang-fr,
+html[data-locale="tavissiv"] .lang-tavissiv {
   color: #101826;
   font-weight: 650;
   transition: color 0.24s ease 0.24s;
@@ -1601,10 +1601,10 @@ html[data-page="contact"] .nav a[aria-current="page"] {
   color: #101826;
 }
 
-html[data-page="a-propos"]:not([data-locale="davissiv"]) .lang-fr,
-html[data-page="a-propos"][data-locale="davissiv"] .lang-davissiv,
-html[data-page="contact"]:not([data-locale="davissiv"]) .lang-fr,
-html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
+html[data-page="a-propos"]:not([data-locale="tavissiv"]) .lang-fr,
+html[data-page="a-propos"][data-locale="tavissiv"] .lang-tavissiv,
+html[data-page="contact"]:not([data-locale="tavissiv"]) .lang-fr,
+html[data-page="contact"][data-locale="tavissiv"] .lang-tavissiv {
   color: #102033;
 }
 
@@ -1804,10 +1804,10 @@ html.qui-night[data-page="qui-suis-je"] .lang button {
   color: #4e382c;
 }
 
-html[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
-html[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv,
-html.qui-night[data-page="qui-suis-je"]:not([data-locale="davissiv"]) .lang-fr,
-html.qui-night[data-page="qui-suis-je"][data-locale="davissiv"] .lang-davissiv {
+html[data-page="qui-suis-je"]:not([data-locale="tavissiv"]) .lang-fr,
+html[data-page="qui-suis-je"][data-locale="tavissiv"] .lang-tavissiv,
+html.qui-night[data-page="qui-suis-je"]:not([data-locale="tavissiv"]) .lang-fr,
+html.qui-night[data-page="qui-suis-je"][data-locale="tavissiv"] .lang-tavissiv {
   color: #101826;
   font-weight: 650;
 }
@@ -2521,8 +2521,8 @@ html[data-page="etoile"] .lang button {
 
 html[data-page="etoile"][data-theme="clair"] .opt-clair,
 html[data-page="etoile"][data-theme="sombre"] .opt-sombre,
-html[data-page="etoile"]:not([data-locale="davissiv"]) .lang-fr,
-html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
+html[data-page="etoile"]:not([data-locale="tavissiv"]) .lang-fr,
+html[data-page="etoile"][data-locale="tavissiv"] .lang-tavissiv {
   color: #102033;
 }
 
@@ -6914,16 +6914,16 @@ html.nav-lent .chargement {
   opacity: 1;
 }
 
-/* ═════════════════════════ Écriture Davissis ═════════════════════════ */
+/* ═════════════════════════ Écriture Tavissiv ═════════════════════════ */
 
 @font-face {
-  font-family: "Davissis";
-  src: url("/fonts/davissis.woff2") format("woff2");
+  font-family: "Tavissiv";
+  src: url("/fonts/tavissiv.woff2") format("woff2");
   font-display: swap;
 }
 
-.davissis {
-  font-family: "Davissis", var(--font-text);
+.tavissiv {
+  font-family: "Tavissiv", var(--font-text);
   font-weight: 400;
   font-feature-settings: "liga" 1, "calt" 1;
   letter-spacing: 0.02em;
@@ -6973,9 +6973,9 @@ html.nav-lent .chargement {
 }
 
 /* En grand, le trait de la police s'épaissit pour tenir face aux titres. */
-.scroll-head h1 .davissis,
-.chap-mot .davissis,
-.suite-titre .davissis {
+.scroll-head h1 .tavissiv,
+.chap-mot .tavissiv,
+.suite-titre .tavissiv {
   -webkit-text-stroke: 0.035em currentColor;
   paint-order: stroke fill;
 }

@@ -26,7 +26,7 @@ export function LanguageToggle() {
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
     event.preventDefault();
-    const next: LocaleName = event.key === "ArrowRight" ? "davissiv" : "fr";
+    const next: LocaleName = event.key === "ArrowRight" ? "tavissiv" : "fr";
     choose(next);
     (next === "fr" ? frRef : laRef).current?.focus();
   };
@@ -51,13 +51,13 @@ export function LanguageToggle() {
         ref={laRef}
         type="button"
         role="radio"
-        className="lang-davissiv"
-        aria-checked={locale === "davissiv"}
-        tabIndex={locale === "davissiv" ? 0 : -1}
-        onClick={() => choose("davissiv")}
+        className="lang-tavissiv"
+        aria-checked={locale === "tavissiv"}
+        tabIndex={locale === "tavissiv" ? 0 : -1}
+        onClick={() => choose("tavissiv")}
         aria-label="Tavissiv"
       >
-        <span className="davissis lang-tavissiv" lang="x-davissis" aria-hidden="true">
+        <span className="tavissiv lang-tavissiv" lang="x-tavissiv" aria-hidden="true">
           tavissiv
         </span>
       </button>

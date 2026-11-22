@@ -436,8 +436,8 @@ html body .album-roue .album-card.is-devant {
   }
 }
 
-/* Davissis : un peu plus de place sous la ligne pour le signe de doublement. */
-html body .davissis {
+/* Tavissiv : un peu plus de place sous la ligne pour le signe de doublement. */
+html body .tavissiv {
   line-height: 1.75;
 }
 
@@ -524,8 +524,8 @@ html body .intro-logo {
   flex: none;
 }
 
-/* Davissis : les jambages sont longs, la ligne leur laisse la place. */
-html body .davissis {
+/* Tavissiv : les jambages sont longs, la ligne leur laisse la place. */
+html body .tavissiv {
   line-height: 2.1;
 }
 

@@ -3,13 +3,13 @@
 import { usePathname } from "next/navigation";
 import { useEffect, type CSSProperties } from "react";
 import { useLocale } from "@/components/Locale";
-import { texteDavissiv } from "@/lib/davissiv";
+import { texteTavissiv } from "@/lib/tavissiv";
 
 type SplitProps = {
   text: string;
   /** "chars" : lettre par lettre (titres). "words" : mot par mot (textes). */
   mode?: "chars" | "words";
-  /** Traduit en davissiv quand la langue est choisie, comme <T>. */
+  /** Traduit en tavissiv quand la langue est choisie, comme <T>. */
   lang?: boolean;
   /**
    * Allume les mots au fil du défilement au lieu de les révéler d'un coup.
@@ -37,12 +37,12 @@ export function Split({ text, mode: modeDemande = "words", lang = false, lit = f
   let mode = modeDemande;
   let className = classeDemandee;
   const { locale } = useLocale();
-  const traduit = lang && locale === "davissiv" && texteDavissiv(text) !== text;
-  const value = traduit ? texteDavissiv(text) : text;
-  // L'écriture Davissis lie ses lettres et pose ses voyelles : on ne coupe pas ses mots en lettres.
+  const traduit = lang && locale === "tavissiv" && texteTavissiv(text) !== text;
+  const value = traduit ? texteTavissiv(text) : text;
+  // L'écriture Tavissiv lie ses lettres et pose ses voyelles : on ne coupe pas ses mots en lettres.
   if (traduit) {
     mode = "words";
-    className = className ? `${className} davissis` : "davissis";
+    className = className ? `${className} tavissiv` : "tavissiv";
   }
   const parts = value.split(SPACE).filter(Boolean);
   const classes = ["kt", lit === "css" ? "kt-lit" : "", className ?? ""].filter(Boolean).join(" ");

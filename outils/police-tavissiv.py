@@ -1,18 +1,18 @@
 """
-Construit la police « Davissis » (public/fonts/davissis.woff2) à partir des formes
+Construit la police « Tavissiv » (public/fonts/tavissiv.woff2) à partir des formes
 dessinées par Franck. Chaque lettre est un tracé en lignes droites, épaissi en trait régulier :
 un alphabet géométrique qui garde la structure du dessin.
 
-On écrit le Davissis en lettres latines ; la police l'affiche dans son écriture :
+On écrit le Tavissiv en lettres latines ; la police l'affiche dans son écriture :
   aa ii oo ee uu   voyelles longues (lettres)
   a i o e u        voyelles brèves : signes posés au-dessus de la consonne
   sh, ts ou c, ng, x   lettres propres ; j s'écrit comme y
   ch                   se dit k : s'écrit avec la lettre k
   consonne doublée     la consonne, puis le signe « ∩ » dessous
   '                    barre sous la lettre
-  ! . , ; ?            ponctuation du Davissis
+  ! . , ; ?            ponctuation du Tavissiv
 
-Lancer :  python3 outils/police-davissis.py
+Lancer :  python3 outils/police-tavissiv.py
 """
 
 import json
@@ -121,9 +121,9 @@ def longueur(trait):
     return sum(math.dist(trait[i], trait[i + 1]) for i in range(len(trait) - 1))
 
 
-# Les lettres viennent directement du tracé de Franck (outils/davissis-traces.json) :
+# Les lettres viennent directement du tracé de Franck (outils/tavissiv-traces.json) :
 # le squelette de chaque lettre, simplifié en segments droits.
-TRACES = json.loads((Path(__file__).resolve().parent / "davissis-traces.json").read_text())
+TRACES = json.loads((Path(__file__).resolve().parent / "tavissiv-traces.json").read_text())
 
 
 # Les lignes de l'écriture : toutes les lettres s'y alignent, comme sur une grille de police.
@@ -419,7 +419,7 @@ for nom, (chemin, chasse) in glyphes.items():
     metriques[nom] = (chasse, getattr(g, "xMin", 0) or 0)
 fb.setupHorizontalMetrics(metriques)
 fb.setupHorizontalHeader(ascent=1100, descent=-1200)
-fb.setupNameTable({"familyName": "Davissis", "styleName": "Regular", "copyright": "Franck J.H. Christen"})
+fb.setupNameTable({"familyName": "Tavissiv", "styleName": "Regular", "copyright": "Franck J.H. Christen"})
 fb.setupOS2(sTypoAscender=1100, sTypoDescender=-1200, usWinAscent=1100, usWinDescent=1200)
 fb.setupPost()
 addOpenTypeFeaturesFromString(fb.font, features)
@@ -428,7 +428,7 @@ racine = Path(__file__).resolve().parent.parent
 sortie = racine / "public" / "fonts"
 sortie.mkdir(parents=True, exist_ok=True)
 fb.font.flavor = "woff2"
-fb.save(str(sortie / "davissis.woff2"))
+fb.save(str(sortie / "tavissiv.woff2"))
 fb.font.flavor = None
-fb.save(str(sortie / "davissis.ttf"))
-print("ok :", sortie / "davissis.woff2")
+fb.save(str(sortie / "tavissiv.ttf"))
+print("ok :", sortie / "tavissiv.woff2")

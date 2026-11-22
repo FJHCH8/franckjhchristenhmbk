@@ -48,7 +48,7 @@ export function copyrightSpan(now = new Date()) {
   return year > 2026 ? `2026–${year}` : "2026";
 }
 
-/** Le copyright en trois morceaux, pour écrire le nom en Davissis quand la langue est choisie. */
+/** Le copyright en trois morceaux, pour écrire le nom en Tavissiv quand la langue est choisie. */
 export function copyrightParts(now = new Date()) {
   return {
     avant: `© ${copyrightSpan(now)} `,

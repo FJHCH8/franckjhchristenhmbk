@@ -7,7 +7,7 @@ export const LASSAVI_DE_FRANCK: Record<string, string> = {};
  * Traductions tirées uniquement du dictionnaire de Franck.
  * Une chaîne reste vide dès qu’un mot n’y figure pas : le site affiche alors le français.
  */
-export const DAVISSIV: Record<string, string> = {
+export const TAVISSIV: Record<string, string> = {
   "Franck J.H. CHRISTEN H.M.B.K.": "frank j.h christen h.m.b.k",
   "Franck J.H. Christen": "frank j.h christen h.m.b.k",
   Accueil: "Oveksa",
@@ -42,10 +42,10 @@ export const DAVISSIV: Record<string, string> = {
   "Ici, des vocaux, vidéos, photos, textes et fichiers seront partagés sur cette page. Suivez le compte Instagram de Franck et peut-être serez-vous averti des nouveautés.": "",
 };
 
-export function texteDavissiv(francais: string) {
+export function texteTavissiv(francais: string) {
   // Les espaces insécables comptent comme des espaces ordinaires.
   francais = francais.replace(/\u00a0/g, " ");
-  const propre = DAVISSIV[francais]?.trim();
+  const propre = TAVISSIV[francais]?.trim();
   if (propre) return propre;
   const ancien = LASSAVI_DE_FRANCK[francais]?.trim();
   if (ancien) return ancien;

@@ -29,7 +29,7 @@ export function semence(): Etoile[] {
     },
     {
       id: "creation-langue-davissiv",
-      titre: "Création de la langue Davissiv",
+      titre: "Création de la langue Tavissiv",
       texte: "",
       auteur: SIGNATURE,
       date: "2026-11-16",
