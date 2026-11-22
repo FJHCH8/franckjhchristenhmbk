@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createGalaxie } from "@/lib/galaxie";
 
 type Star = {
   radius: number;
@@ -28,13 +29,8 @@ function createStars(width: number, height: number, density = 1) {
   return stars;
 }
 
-export function ProjetsSky() {
-  const layerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const layer = layerRef.current;
-    const canvas = layer?.querySelector("canvas");
-    if (!layer || !canvas) return;
+/** Ancien ciel en 2D : utilisé seulement si WebGL n'est pas disponible. */
+function ciel2d(layer: HTMLDivElement, canvas: HTMLCanvasElement): (() => void) | undefined {
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) return;
     const ctx = context;
@@ -204,11 +200,122 @@ export function ProjetsSky() {
       window.removeEventListener("orientationchange", onOrientation);
       document.removeEventListener("visibilitychange", onPage);
     };
-  }, []);
+}
+
+export function ProjetsSky() {
+  const layerRef = useRef<HTMLDivElement>(null);
+  const [vivant, setVivant] = useState(0);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    const canvas = layer?.querySelector("canvas");
+    if (!layer || !canvas) return;
+    const lite = document.documentElement.dataset.power === "lite";
+    const galaxie = createGalaxie(canvas, lite);
+    if (!galaxie) return ciel2d(layer, canvas);
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Un départ différent à chaque visite : la galaxie n'a jamais la même allure.
+    let time = 400 + Math.random() * 4000;
+    let last = performance.now();
+    let frame = 0;
+    let width = 0;
+    let height = 0;
+    let scrollDrift = 0;
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0, life: 0, target: 0 };
+
+    const size = () => {
+      const w = Math.max(1, layer.clientWidth);
+      const h = Math.max(1, layer.clientHeight);
+      if (Math.abs(w - width) < 2 && Math.abs(h - height) < 2) return;
+      width = w;
+      height = h;
+      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 1 : 1.5);
+      galaxie.resize(w, h, dpr);
+    };
+
+    const paint = (now: number) => {
+      frame = 0;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const still = reduce.matches;
+      if (!still) time += dt;
+      const target = window.scrollY / Math.max(1, window.innerHeight);
+      scrollDrift += (target - scrollDrift) * Math.min(1, dt * 3);
+      pointer.life += (pointer.target - pointer.life) * Math.min(1, dt * 2.5);
+      pointer.x += (pointer.tx - pointer.x) * Math.min(1, dt * 6);
+      pointer.y += (pointer.ty - pointer.y) * Math.min(1, dt * 6);
+      galaxie.render({
+        time,
+        // Un tour complet en un peu plus d'une heure : à peine perceptible, comme le vrai ciel.
+        rot: time * 0.0016,
+        driftX: time * 0.0042,
+        driftY: scrollDrift * 0.05 + time * 0.0011,
+        pointerX: pointer.x,
+        pointerY: pointer.y,
+        pointer: still ? 0 : pointer.life,
+      });
+      if (!still && !document.hidden) frame = window.requestAnimationFrame(paint);
+    };
+
+    const wake = () => {
+      if (frame || document.hidden) return;
+      last = performance.now();
+      frame = window.requestAnimationFrame(paint);
+    };
+
+    const onPointer = (event: PointerEvent) => {
+      const h = Math.max(1, height);
+      pointer.tx = ((event.clientX - width / 2) / h) * 2;
+      pointer.ty = -((event.clientY - h / 2) / h) * 2;
+      pointer.target = 1;
+      wake();
+    };
+    const onLeave = () => {
+      pointer.target = 0;
+    };
+    const onResize = () => {
+      size();
+      wake();
+    };
+    const onLost = (event: Event) => {
+      event.preventDefault();
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    const onRestored = () => setVivant((value) => value + 1);
+
+    size();
+    wake();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    window.addEventListener("pointerdown", onPointer, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onLeave);
+    window.addEventListener("scroll", wake, { passive: true });
+    document.addEventListener("visibilitychange", wake);
+    reduce.addEventListener("change", wake);
+    canvas.addEventListener("webglcontextlost", onLost);
+    canvas.addEventListener("webglcontextrestored", onRestored);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
+      document.documentElement.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("scroll", wake);
+      document.removeEventListener("visibilitychange", wake);
+      reduce.removeEventListener("change", wake);
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+      galaxie.dispose();
+    };
+  }, [vivant]);
 
   return (
     <div ref={layerRef} className="projets-sky" aria-hidden="true">
-      <canvas />
+      <canvas key={vivant} />
     </div>
   );
 }

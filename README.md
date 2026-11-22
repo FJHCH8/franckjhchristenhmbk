@@ -49,6 +49,11 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 - Sur Qui suis-je, le texte s’allume mot à mot au fil du défilement.
 - L’accueil se termine par un récit au défilement : quatre chapitres figés à l’écran, avec les photos du site (`components/Chapitres.tsx`).
 - Le changement de page fait monter la nouvelle page derrière un rideau au bord flou.
+- Le ciel est un rendu WebGL (`lib/galaxie.ts`) : une Voie lactée dont les nuages et la poussière évoluent sans jamais se répéter, des étoiles sur plusieurs plans, une étoile filante de temps en temps, sur un fond noir. Sans WebGL, l’ancien ciel en 2D prend le relais.
+- Les grands titres inversent ce qu’il y a derrière eux (`mix-blend-mode: difference`).
+- Sur ordinateur : curseur personnalisé, boutons aimantés et défilement lissé à la molette (`components/Experience.tsx`).
+- À la première visite de la session, une courte ouverture compose le nom (`components/Intro.tsx`).
+- Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
 - Si le mouvement est réduit dans le système, tous les textes s’affichent directement, sans animation.
 
 ## Scripts

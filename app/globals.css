@@ -101,10 +101,14 @@ html {
 }
 
 body {
+  --font-text: var(--font-noto), var(--font-ar), var(--font-he), var(--font-th), var(--font-hy), var(--font-ka),
+    var(--font-bn), var(--font-ta), var(--font-et), "PingFang SC", "Hiragino Sans", "Noto Sans CJK SC",
+    "Microsoft YaHei", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-label: var(--font-mono), var(--font-text);
   margin: 0;
   max-width: 100%;
   color: var(--text);
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 400;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
@@ -448,7 +452,7 @@ video,
 }
 
 .brand-name {
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: 0.98rem;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -785,7 +789,7 @@ main {
   align-items: center;
   gap: 0.75rem;
   margin-top: 0.4rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-style: normal;
   font-weight: 400;
   font-size: clamp(1.2rem, 4.6vw, 1.55rem);
@@ -804,7 +808,7 @@ main {
 .hero h1 {
   max-width: 11em;
   margin-top: 0.45rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 560;
   font-size: clamp(1.72rem, 4.5vw, 3.15rem);
   font-variation-settings: "opsz" 72, "SOFT" 20, "WONK" 0;
@@ -825,7 +829,7 @@ main {
 .lead {
   max-width: 16em;
   margin-top: 1.6rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-style: italic;
   font-size: clamp(1.45rem, 2.5vw, 1.95rem);
   font-variation-settings: "opsz" 36, "SOFT" 30, "WONK" 1;
@@ -899,7 +903,7 @@ main {
 .section h1,
 .section h2 {
   margin: 0.7rem 0 1.15rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 500;
   font-size: clamp(2.1rem, 6vw, 3.6rem);
   letter-spacing: 0;
@@ -957,7 +961,7 @@ main {
 }
 
 .reserve dt {
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: 1.45rem;
   font-weight: 520;
   letter-spacing: -0.02em;
@@ -981,7 +985,7 @@ main {
 }
 
 .motto p {
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-style: normal;
   font-weight: 400;
   font-size: clamp(0.98rem, 4.15vw, 1.18rem);
@@ -1010,7 +1014,7 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: clamp(1.02rem, 3.5vw, 1.65rem);
   font-weight: 520;
   letter-spacing: -0.03em;
@@ -1660,7 +1664,7 @@ html[data-page="contact"][data-locale="davissiv"] .lang-davissiv {
 .qui-note-copy {
   margin: 0;
   max-width: 36em;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 430;
   font-size: clamp(1.02rem, 2.15vw, 1.2rem);
   line-height: 1.68;
@@ -1824,7 +1828,7 @@ html.qui-night[data-page="qui-suis-je"] .title-dock-pill {
 .scroll-head h1 {
   margin: 0;
   color: var(--text);
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1.3;
@@ -1868,7 +1872,7 @@ html[data-page="qui-suis-je"] .title-dock-pill {
   border-radius: 999px;
   background: var(--glass);
   color: var(--text);
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: clamp(0.74rem, 2.5vw, 1rem);
   font-weight: 520;
   letter-spacing: -0.03em;
@@ -2014,7 +2018,7 @@ html.title-settled .scroll-reveal {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: 0.92rem;
   font-weight: 460;
   letter-spacing: 0.18em;
@@ -2579,7 +2583,7 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
 
 .ice p {
   margin: 0;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: clamp(1.2rem, 2.4vw, 1.65rem);
   font-weight: 500;
   letter-spacing: -0.03em;
@@ -2612,7 +2616,7 @@ html[data-page="etoile"][data-locale="davissiv"] .lang-davissiv {
   justify-content: center;
   gap: 0.55rem;
   color: #f4f6fb;
-  font-family: var(--font-chrono), var(--font-sans), sans-serif;
+  font-family: var(--font-chrono), var(--font-text);
   font-size: clamp(1.65rem, 5.4vw, 2.8rem);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
@@ -3106,7 +3110,7 @@ html.nav-vt::view-transition-new(nav-l4) {
 
 .missing h1 {
   margin: 0.75rem 0 1rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-style: italic;
   font-weight: 520;
   font-size: clamp(2.8rem, 8vw, 5.2rem);
@@ -3379,7 +3383,7 @@ html.nav-vt::view-transition-new(nav-l4) {
 
   .alt-value {
     color: var(--text);
-    font-family: var(--font-hack), ui-monospace, monospace;
+    font-family: var(--font-text);
     font-size: 1.65rem;
     font-variant-numeric: lining-nums;
     font-weight: 520;
@@ -3591,7 +3595,7 @@ html.nav-vt::view-transition-new(nav-l4) {
 .etoile-texte,
 .contact-links,
 figcaption {
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 400;
   letter-spacing: normal;
 }
@@ -4082,7 +4086,7 @@ figcaption {
 }
 
 .bocal-titre {
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   letter-spacing: 0.08em;
 }
 
@@ -4397,13 +4401,13 @@ figcaption {
 
 .etoile-texte[data-police="fraunces"],
 .etoile-texte[data-police="outfit"],
-.etoile-texte[data-police="georgia"] { font-family: var(--font-hack), ui-monospace, monospace; }
+.etoile-texte[data-police="georgia"] { font-family: var(--font-text); }
 .etoile-texte[data-style="italic"] { font-style: italic; }
 
 .etoile-titre {
   margin: 0.7rem 0 0;
   color: #f7fbff;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: 1rem;
   font-weight: 460;
   text-shadow: 0 0 12px rgba(214, 228, 255, 0.16);
@@ -4422,7 +4426,7 @@ figcaption {
   gap: 1rem;
   margin: 0.95rem 0 0;
   color: rgba(244, 236, 220, 0.62);
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-size: 0.78rem;
   font-style: italic;
   font-weight: 400;
@@ -4694,8 +4698,8 @@ figcaption {
   margin-top: 0.7rem;
 }
 
-.police-choix button[data-police="fraunces"] { font-family: var(--font-hack), ui-monospace, monospace; }
-.police-choix button[data-police="outfit"] { font-family: var(--font-sans), sans-serif; }
+.police-choix button[data-police="fraunces"] { font-family: var(--font-text); }
+.police-choix button[data-police="outfit"] { font-family: var(--font-text); }
 .police-choix button[data-police="georgia"] { font-family: Georgia, serif; }
 .police-choix button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.18); }
 
@@ -4753,7 +4757,7 @@ figcaption {
 .edition-feuille h2,
 .edition-menu p {
   margin: 0 0 0.8rem;
-  font-family: var(--font-hack), ui-monospace, monospace;
+  font-family: var(--font-text);
   font-weight: 460;
 }
 
@@ -5125,4 +5129,283 @@ html.kt-on [data-kt-lit] .kt-w {
   .chap-bande-ligne.is-retour {
     transform: none;
   }
+}
+
+/* ───────────────────────── Typographie Noto ───────────────────────── */
+
+.kicker,
+.chap-numero,
+.rail,
+.altimeter,
+.endurreisen,
+.etoile-signature,
+.footer-note,
+.chap-lien,
+.rubrique-meta {
+  font-family: var(--font-label);
+}
+
+.scroll-head h1 {
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.chap-mot {
+  font-weight: 600;
+  letter-spacing: -0.065em;
+}
+
+.chap-bande {
+  font-weight: 300;
+  letter-spacing: -0.045em;
+}
+
+.welcome {
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+.epithet {
+  font-family: var(--font-label);
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-size: clamp(0.78rem, 1.4vw, 0.92rem);
+}
+
+.prose,
+.qui-line,
+.motto p,
+.chap-texte,
+.etoile-texte {
+  letter-spacing: -0.008em;
+}
+
+/* ───────────────────────── Titres en différence ─────────────────────────
+   Le grand titre de chaque page inverse ce qu'il y a derrière lui : blanc sur la nuit,
+   sombre sur une photo claire, et toutes les nuances entre les deux pendant le défilement. */
+
+.scroll-stage {
+  z-index: auto;
+}
+
+.scroll-head {
+  mix-blend-mode: difference;
+}
+
+.scroll-head h1,
+html.qui-night[data-page="qui-suis-je"] .scroll-head h1,
+html[data-page="qui-suis-je"] .scroll-head h1 {
+  color: #fff;
+  text-shadow: none;
+}
+
+.scroll-head .scroll-mark,
+.scroll-head .scroll-cue {
+  color: #fff;
+}
+
+/* ───────────────────────── Curseur, grain ───────────────────────── */
+
+.curseur-point,
+.curseur-anneau {
+  position: fixed;
+  z-index: 2147483000;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+
+.curseur-point {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: #fff;
+}
+
+.curseur-anneau {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    opacity 0.35s ease;
+}
+
+html.curseur-on .curseur-point,
+html.curseur-on .curseur-anneau {
+  opacity: 1;
+}
+
+html.curseur-lien .curseur-anneau {
+  background: #fff;
+  border-color: transparent;
+}
+
+html.curseur-lien .curseur-point {
+  opacity: 0;
+}
+
+html.has-curseur.curseur-on,
+html.has-curseur.curseur-on body,
+html.has-curseur.curseur-on a,
+html.has-curseur.curseur-on button,
+html.has-curseur.curseur-on label {
+  cursor: none;
+}
+
+html.has-curseur input,
+html.has-curseur textarea,
+html.has-curseur select {
+  cursor: auto;
+}
+
+.chap-lien,
+.scroll-cue,
+.return-link {
+  transition-property: translate, background-color, color, border-color, opacity;
+  transition-duration: 0.5s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.grain {
+  position: fixed;
+  z-index: 2147482000;
+  inset: -50%;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.9s steps(6) infinite;
+}
+
+@keyframes grain {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4%, 3%, 0); }
+  40% { transform: translate3d(3%, -5%, 0); }
+  60% { transform: translate3d(-6%, -2%, 0); }
+  80% { transform: translate3d(5%, 4%, 0); }
+  100% { transform: translate3d(-2%, 6%, 0); }
+}
+
+/* ───────────────────────── Ouverture ───────────────────────── */
+
+.intro {
+  --intro-p: 0;
+  position: fixed;
+  z-index: 2147482500;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2.2rem;
+  padding: 1.5rem;
+  background: #000;
+  color: #f4f7ff;
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1.05s cubic-bezier(0.76, 0, 0.24, 1);
+  /* Secours : si le script ne démarre pas, l'ouverture disparaît d'elle-même. */
+  animation: intro-secours 0.6s ease 4.6s forwards;
+}
+
+html.intro-vue .intro {
+  display: none;
+}
+
+.intro.is-fin {
+  clip-path: inset(0 0 100% 0);
+  animation: none;
+}
+
+.intro-nom {
+  font-size: clamp(2.2rem, 8vw, 6.5rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.intro-nom span {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(12px);
+  translate: 0 0.4em;
+  animation: intro-lettre 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(0.15s + var(--i) * 0.045s);
+}
+
+.intro.is-fin .intro-nom span {
+  transition: translate 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+  translate: 0 -0.6em;
+}
+
+.intro-pied {
+  display: grid;
+  grid-template-columns: auto minmax(6rem, 22rem) auto;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-label);
+  font-size: 0.74rem;
+  letter-spacing: 0.24em;
+  color: rgba(244, 247, 255, 0.72);
+}
+
+.intro-ligne {
+  height: 1px;
+  background: rgba(244, 247, 255, 0.18);
+}
+
+.intro-ligne > span {
+  display: block;
+  height: 100%;
+  background: #f4f7ff;
+  transform: scaleX(var(--intro-p));
+  transform-origin: left center;
+}
+
+@keyframes intro-lettre {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    translate: 0 0;
+  }
+}
+
+@keyframes intro-secours {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Les textes de la page attendent la fin de l'ouverture pour apparaître. */
+html.kt-on.intro-joue .kt[data-kt="chars"] .kt-c,
+html.kt-on.intro-joue .kt[data-kt="words"]:not(.kt-lit):not([data-kt-lit]) .kt-w {
+  opacity: 0;
+  translate: 0 0.5em;
+  filter: blur(9px);
+  transition-duration: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+}
+
+/* Projets suit la même règle : son titre s'inverse aussi sur la photo. */
+.projets .scroll-stage {
+  z-index: auto;
+}
+
+.projets .scroll-head h1,
+.tone-sea .scroll-head h1 {
+  color: #fff;
+  text-shadow: none;
 }

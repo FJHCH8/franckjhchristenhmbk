@@ -1,13 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, IBM_Plex_Mono, Orbitron, Outfit } from "next/font/google";
+import {
+  Noto_Sans,
+  Noto_Sans_Arabic,
+  Noto_Sans_Armenian,
+  Noto_Sans_Bengali,
+  Noto_Sans_Ethiopic,
+  Noto_Sans_Georgian,
+  Noto_Sans_Hebrew,
+  Noto_Sans_Mono,
+  Noto_Sans_Tamil,
+  Noto_Sans_Thai,
+  Orbitron,
+} from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Altimeter } from "@/components/Altimeter";
 import { Crests } from "@/components/Crests";
 import { EditionPorte } from "@/components/EditionPorte";
+import { Experience } from "@/components/Experience";
 import { Header } from "@/components/Header";
 import { Kinetic } from "@/components/Kinetic";
 import { ImageGuard } from "@/components/ImageGuard";
+import { Intro } from "@/components/Intro";
 import { Tilt } from "@/components/Tilt";
 import { LocaleProvider, T } from "@/components/Locale";
 import { Lux } from "@/components/Lux";
@@ -22,32 +36,93 @@ import { copyrightNotice, DEFAULT_SITE_URL, googleSiteVerification, HOME_DESCRIP
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
-const display = Fraunces({
-  subsets: ["latin"],
+/*
+ * Famille Noto : dessinée pour couvrir toutes les écritures du monde.
+ * Les polices des autres écritures ne sont téléchargées que si la page en contient.
+ */
+const texte = Noto_Sans({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "greek", "greek-ext", "vietnamese", "devanagari"],
   display: "swap",
   style: ["normal", "italic"],
-  variable: "--font-display",
+  weight: "variable",
+  // Sans police de repli Arial intercalée : elle masquerait les polices des autres écritures.
+  adjustFontFallback: false,
+  variable: "--font-noto",
 });
 
-const sans = Outfit({
-  subsets: ["latin"],
+const mono = Noto_Sans_Mono({
+  subsets: ["latin", "latin-ext", "cyrillic", "greek", "vietnamese"],
   display: "swap",
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-sans",
+  weight: "variable",
+  variable: "--font-mono",
 });
+
+const arabe = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-ar",
+});
+const hebreu = Noto_Sans_Hebrew({
+  subsets: ["hebrew"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-he",
+});
+const thai = Noto_Sans_Thai({
+  subsets: ["thai"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-th",
+});
+const armenien = Noto_Sans_Armenian({
+  subsets: ["armenian"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-hy",
+});
+const georgien = Noto_Sans_Georgian({
+  subsets: ["georgian"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-ka",
+});
+const bengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-bn",
+});
+const tamoul = Noto_Sans_Tamil({
+  subsets: ["tamil"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-ta",
+});
+const ethiopien = Noto_Sans_Ethiopic({
+  subsets: ["ethiopic"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  variable: "--font-et",
+});
+
+const polices = [texte, mono, arabe, hebreu, thai, armenien, georgien, bengali, tamoul, ethiopien]
+  .map((font) => font.variable)
+  .join(" ");
 
 const chrono = Orbitron({
   subsets: ["latin"],
   display: "swap",
   weight: "500",
   variable: "--font-chrono",
-});
-
-const hack = IBM_Plex_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600"],
-  variable: "--font-hack",
 });
 
 const googleVerification = googleSiteVerification();
@@ -101,7 +176,7 @@ const jsonLd = structuredData();
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${display.variable} ${sans.variable} ${chrono.variable} ${hack.variable}`}>
+      <body className={`${polices} ${chrono.variable}`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
@@ -135,6 +210,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Header />
           <ImageGuard />
           <Kinetic />
+          <Experience />
+          <Intro />
           <Tilt />
           <EditionPorte />
           {children}
