@@ -593,3 +593,71 @@ html body .jeu-chargement-titre {
 .intro-anneau {
   display: none !important;
 }
+
+/* Tirer pour actualiser : la page ne rebondit plus, les points de Windows Phone prennent le relais. */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+.actualiser {
+  --tirage: 0;
+  position: fixed;
+  z-index: 2147482100;
+  top: calc(env(safe-area-inset-top) + 62px);
+  left: 0;
+  right: 0;
+  height: 18px;
+  pointer-events: none;
+  opacity: var(--tirage);
+  overflow: hidden;
+}
+
+.actualiser.is-repos {
+  transition: opacity 0.3s ease;
+}
+
+.actualiser-points {
+  position: absolute;
+  inset: 0;
+}
+
+/* En tirant : les cinq points se rassemblent au centre. */
+.actualiser-points span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(calc((var(--i) - 2) * 14px * var(--tirage)));
+}
+
+/* En chargeant : ils filent de gauche à droite, vite aux bords, lents au milieu. */
+.actualiser.is-charge .actualiser-points span {
+  left: 0;
+  transform: none;
+  animation: wp-points 2.2s infinite;
+  animation-delay: calc(var(--i) * -0.16s + 0.64s);
+  opacity: 0;
+}
+
+@keyframes wp-points {
+  0% { translate: -10px 0; opacity: 0; animation-timing-function: cubic-bezier(0.1, 0.6, 0.4, 1); }
+  8% { opacity: 1; }
+  30% { translate: 44vw 0; animation-timing-function: linear; }
+  65% { translate: 56vw 0; animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+  92% { opacity: 1; }
+  100% { translate: 102vw 0; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actualiser.is-charge .actualiser-points span {
+    left: 50%;
+    animation: none;
+    opacity: 1;
+    transform: translateX(calc((var(--i) - 2) * 14px));
+  }
+}

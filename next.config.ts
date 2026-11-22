@@ -34,6 +34,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Identifiant de la version en ligne : le « tirer pour actualiser » le compare au serveur.
+  env: { NEXT_PUBLIC_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || String(Date.now()) },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
