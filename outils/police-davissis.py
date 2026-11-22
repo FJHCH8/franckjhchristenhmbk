@@ -199,10 +199,39 @@ def normaliser(nom, traits):
     return [[(x * k, y * k if y >= 0 else y * kd) for x, y in t] for t in traits]
 
 
+def diagonal(a, b):
+    dx, dy = abs(b[0] - a[0]), abs(b[1] - a[1])
+    return dx > 1 and dy > 1
+
+
+def equerre(trait):
+    """Angles droits nets : les petits biseaux deviennent des coins, les petits crochets
+    au bout des traits disparaissent (les vraies diagonales, longues, restent)."""
+    t = [tuple(p) for p in trait]
+    # Petits crochets au début ou à la fin.
+    while len(t) > 3 and math.dist(t[0], t[1]) < 140:
+        t = t[1:]
+    while len(t) > 3 and math.dist(t[-1], t[-2]) < 140:
+        t = t[:-1]
+    # Petits biseaux au milieu : remplacés par le coin.
+    i = 1
+    while i < len(t) - 2:
+        a, b = t[i], t[i + 1]
+        if diagonal(a, b) and math.dist(a, b) < 170:
+            avant = t[i - 1]
+            coin = (a[0], b[1]) if abs(a[0] - avant[0]) < abs(a[1] - avant[1]) else (b[0], a[1])
+            t[i:i + 2] = [coin]
+            continue
+        i += 1
+    return t
+
+
 def moderniser(traits, nom=""):
     """La forme de Franck, mise au propre : lignes communes, verticales alignées, angles nets."""
     traits = normaliser(nom, traits)
     traits = [nettoyer(t) for t in traits]
+    traits = [orienter(t, pas=45) for t in traits]
+    traits = [equerre(t) for t in traits]
     traits = [[(x, caler_y(y)) for x, y in t] for t in traits]
     traits = [orienter(t) for t in traits]
     # Les abscisses proches s'alignent (les jambes d'un U, d'un M…).
@@ -276,8 +305,8 @@ milieux = {}  # nom -> abscisse du milieu de la lettre (pour poser les voyelles)
 bas = {}  # nom -> point le plus bas de la lettre
 
 
-APLATI = 1.0  # proportions du tracé de Franck, telles quelles
-ELARGI = 1.0
+APLATI = 0.62  # rendu moderne : lettres basses et larges
+ELARGI = 1.12
 
 
 def ajouter(nom, traces, chasse, proportionnel=False):

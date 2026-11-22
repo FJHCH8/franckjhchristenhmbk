@@ -527,3 +527,27 @@ html body .intro-logo {
 html body .davissis {
   line-height: 2.1;
 }
+
+/* L'ouverture : le Starload PS2 bien visible sous le logo, à chaque chargement du site. */
+html body .intro {
+  animation: intro-secours 0.6s ease 9s forwards;
+}
+
+html body .intro.is-fin {
+  animation: none;
+}
+
+.intro .intro-scene {
+  gap: clamp(1.6rem, 5vh, 3rem);
+}
+
+.intro-starload {
+  width: clamp(120px, 34vw, 170px) !important;
+  height: clamp(120px, 34vw, 170px) !important;
+  opacity: 0;
+  animation: starload-arrive 0.7s ease 0.2s forwards;
+}
+
+@keyframes starload-arrive {
+  to { opacity: 1; }
+}

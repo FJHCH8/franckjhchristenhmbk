@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 import { Logo } from "@/components/Logo";
 import { AnneauPS2 } from "@/components/AnneauPS2";
 
-const DUREE = 2800;
+const DUREE = 2200;
 
 /**
- * Ouverture du site, une fois par session : le logo de Franck se dessine en blanc
+ * Ouverture du site, à chaque chargement : le logo de Franck se dessine en blanc
  * sur le noir, sous un anneau de lumières bleues et blanches qui tourne comme un
  * chargement de console. Puis le logo s'envole, l'anneau s'éteint et le noir
  * s'ouvre en cercle sur le site.
@@ -28,17 +28,21 @@ export function Intro() {
     let fin = 0;
     const ease = (t: number) => 1 - (1 - t) ** 3;
 
-    // Le logo est dessiné dans la page : il est prêt tout de suite.
-    const pret = true;
+    // Le chargement reste à l'écran tant que la page n'est pas entièrement chargée.
+    let pret = document.readyState === "complete";
+    const charge = () => {
+      pret = true;
+    };
+    if (!pret) window.addEventListener("load", charge, { once: true });
 
-    let depart = start;
     const step = (now: number) => {
-      if (!pret && now - start < 1200) {
-        depart = now;
+      // Le logo se dessine pendant DUREE, puis l'anneau tourne jusqu'au chargement complet (8 s max).
+      const t = Math.min(1, (now - start) / DUREE);
+      if (t >= 1 && !pret && now - start < 8000) {
+        node.style.setProperty("--intro-p", "0.9999");
         frame = window.requestAnimationFrame(step);
         return;
       }
-      const t = Math.min(1, (now - depart) / DUREE);
       node.style.setProperty("--intro-p", ease(Math.min(1, t / 0.75)).toFixed(4));
       if (t < 1) {
         frame = window.requestAnimationFrame(step);
@@ -47,11 +51,6 @@ export function Intro() {
       node.classList.add("is-fin");
       fin = window.setTimeout(() => {
         root.classList.remove("intro-joue");
-        try {
-          sessionStorage.setItem("fjch-intro", "1");
-        } catch {
-          /* navigation privée */
-        }
         fin = window.setTimeout(() => node.remove(), 1300);
       }, 380);
     };
@@ -59,6 +58,7 @@ export function Intro() {
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(fin);
+      window.removeEventListener("load", charge);
       root.classList.remove("intro-joue");
     };
   }, []);
@@ -67,7 +67,7 @@ export function Intro() {
     <div className="intro" ref={ref} aria-hidden="true">
       <div className="intro-scene">
         <Logo className="intro-logo" anime />
-        <AnneauPS2 taille={96} />
+        <AnneauPS2 taille={150} className="intro-starload" />
       </div>
     </div>
   );
