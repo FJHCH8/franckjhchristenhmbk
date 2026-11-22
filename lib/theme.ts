@@ -2,7 +2,7 @@ export const THEME_STORAGE_KEY = "fjch-theme";
 
 export type ThemeName = "clair" | "sombre";
 
-export const themeInitScript = `(function(){try{localStorage.removeItem(${JSON.stringify(THEME_STORAGE_KEY)});}catch(e){}var d=document.documentElement;if(d.dataset.theme)delete d.dataset.theme;d.classList.add("js");var p=location.pathname;var page="etoile";if(p==="/qui-suis-je")page="qui-suis-je";else if(p==="/a-propos")page="a-propos";else if(p==="/contact")page="contact";else if(p==="/projets")page="projets";d.dataset.page=page;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#000000");})();`;
+export const themeInitScript = `(function(){try{localStorage.removeItem(${JSON.stringify(THEME_STORAGE_KEY)});}catch(e){}var d=document.documentElement;if(d.dataset.theme)delete d.dataset.theme;d.classList.add("js");var p=location.pathname;var page="etoile";if(p==="/qui-suis-je")page="qui-suis-je";else if(p==="/a-propos")page="a-propos";else if(p==="/contact")page="contact";else if(p==="/projets")page="projets";d.dataset.page=page;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content","#000000");try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("kt-on");setTimeout(function(){if(!window.__kt)d.classList.remove("kt-on");},4000);}}catch(e){}})();`;
 
 export function resolveInitialTheme(): ThemeName {
   try {

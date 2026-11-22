@@ -17,6 +17,7 @@ type Vue = {
   color: string;
   glow: string;
   rolling: boolean;
+  digits: number;
 };
 
 function teinte(progress: number) {
@@ -34,14 +35,20 @@ function easeOut(t: number) {
   return 1 - (1 - t) ** 3;
 }
 
-function vueDe(remain: number, progress: number, rolling: boolean): Vue {
+/** Nombre de chiffres des jours, figé sur la valeur réelle pour que le chrono ne change jamais de largeur. */
+function chiffresJours(remain: number) {
+  return Math.max(2, String(countdownParts(PROJECTS_OPENING_MS - Math.max(0, remain)).days).length);
+}
+
+function vueDe(remain: number, progress: number, rolling: boolean, digits = chiffresJours(remain)): Vue {
   const parts = countdownParts(PROJECTS_OPENING_MS - Math.max(0, remain));
-  return { ...parts, progress, rolling, ...teinte(progress) };
+  const cap = 10 ** digits - 1;
+  return { ...parts, days: Math.min(parts.days, cap), digits, progress, rolling, ...teinte(progress) };
 }
 
 function initiale(): Vue {
   const span = Math.max(0, PROJECTS_OPENING_MS - PROJECTS_START_MS);
-  return vueDe(span, 0, true);
+  return vueDe(span, 0, true, 2);
 }
 
 const CompteContexte = createContext<Vue>(initiale());
@@ -90,7 +97,7 @@ export function CompteEndur({ children }: { children: ReactNode }) {
       const eased = reduce ? 1 : easeOut(Math.min(1, (nowPerf - born) / INTRO_MS));
       const remain = eased >= 1 ? liveRemain : span * (1 - eased) + liveRemain * eased;
       const progress = eased >= 1 ? liveProgress : liveProgress * eased;
-      const next = vueDe(remain, progress, eased < 1);
+      const next = vueDe(remain, progress, eased < 1, chiffresJours(liveRemain));
       const key = `${next.days}|${next.hours}|${next.minutes}|${next.seconds}|${Math.round(next.progress * 10000)}|${Math.floor(next.fraction * 4)}|${next.rolling ? 1 : 0}`;
       if (key !== last) {
         last = key;
@@ -113,7 +120,14 @@ export function BarreCompte() {
   const vue = useContext(CompteContexte);
   return (
     <div className="count-barre" aria-hidden="true">
-      <span style={{ width: `${(vue.progress * 100).toFixed(2)}%`, background: vue.color, boxShadow: vue.glow }} />
+      <span
+        style={{
+          transform: `scaleX(${vue.progress.toFixed(4)})`,
+          background: vue.color,
+          boxShadow: vue.glow,
+        }}
+      />
+      <i className="count-barre-tete" style={{ left: `${(vue.progress * 100).toFixed(2)}%`, background: vue.color }} />
     </div>
   );
 }
@@ -125,7 +139,9 @@ function pad(value: number) {
 function Flip({ value }: { value: string }) {
   return (
     <span className="flip" aria-hidden="true">
-      <span key={value}>{value}</span>
+      <span key={value} className="flip-in">
+        {value}
+      </span>
     </span>
   );
 }
@@ -151,7 +167,7 @@ export function Countdown() {
         aria-label={`${shown.days} jours ${pad(shown.hours)} ${pad(shown.minutes)} ${pad(shown.seconds)}`}
       >
         <Eclair />
-        <Digits value={shown.days} />
+        <Digits value={shown.days} min={shown.digits} />
         <span className="count-dot" aria-hidden="true" />
         <Digits value={shown.hours} />
         <span className="count-dot" aria-hidden="true" />

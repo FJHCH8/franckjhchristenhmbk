@@ -1,6 +1,6 @@
 import { Album } from "@/components/Album";
 import { InfoNote } from "@/components/InfoNote";
-import { Block } from "@/components/Locale";
+import { Split } from "@/components/Kinetic";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { DropsMark } from "@/components/TitleMarks";
 
@@ -22,17 +22,16 @@ export function QuiScene() {
         <Album />
         <div className="qui-note">
           <p className="qui-note-copy">
-            <Block lines={["100%", "98%", "96%", "94%", "90%", "84%", "62%"]}>
-              {LINES.map((line, index) => (
-                <span
-                  className={`qui-line qui-line-${["lead", "quiet", "strong", "body", "body", "ask", "answer"][index]}`}
-                  key={line}
-                  style={{ ["--d" as string]: `${index * 0.045}s` }}
-                >
-                  {index < LINES.length - 1 ? `${line} ` : line}
-                </span>
-              ))}
-            </Block>
+            {LINES.map((line, index) => (
+              <span
+                className={`qui-line qui-line-${["lead", "quiet", "strong", "body", "body", "ask", "answer"][index]}`}
+                key={line}
+                style={{ ["--d" as string]: `${index * 0.045}s` }}
+              >
+                <Split text={line} lit />
+                {index < LINES.length - 1 ? " " : null}
+              </span>
+            ))}
           </p>
         </div>
         <InfoNote />

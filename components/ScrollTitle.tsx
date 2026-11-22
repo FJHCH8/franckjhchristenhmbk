@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { Split } from "@/components/Kinetic";
 import { titleLabel, useLocale } from "@/components/Locale";
 
 function clamp(value: number) {
@@ -154,7 +155,7 @@ export function ScrollTitle({
     };
   }, [label]);
 
-  const face = label ?? <span className="skel" style={{ width: "6.5em" }} aria-hidden="true" />;
+  const face = label ? <Split text={label} mode="chars" delay={120} /> : <span className="skel" style={{ width: "6.5em" }} aria-hidden="true" />;
 
   return (
     <div ref={stageRef} className={tone === "sea" ? "scroll-stage tone-sea" : "scroll-stage"} style={{ ["--title-max" as string]: String(max) }}>

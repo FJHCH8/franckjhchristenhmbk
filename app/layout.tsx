@@ -6,6 +6,7 @@ import { Altimeter } from "@/components/Altimeter";
 import { Crests } from "@/components/Crests";
 import { EditionPorte } from "@/components/EditionPorte";
 import { Header } from "@/components/Header";
+import { Kinetic } from "@/components/Kinetic";
 import { ImageGuard } from "@/components/ImageGuard";
 import { Tilt } from "@/components/Tilt";
 import { LocaleProvider, T } from "@/components/Locale";
@@ -13,7 +14,6 @@ import { Lux } from "@/components/Lux";
 import { PageSky } from "@/components/PageSky";
 import { PowerBoot } from "@/components/PowerBoot";
 import { ProjetsSky } from "@/components/ProjetsSky";
-import { Recit } from "@/components/Recit";
 import { RouteTransition } from "@/components/RouteTransition";
 import { Sky } from "@/components/Sky";
 import { ThemeBoot } from "@/components/ThemeBoot";
@@ -134,7 +134,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Altimeter />
           <Header />
           <ImageGuard />
-          <Recit />
+          <Kinetic />
           <Tilt />
           <EditionPorte />
           {children}

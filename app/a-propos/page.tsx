@@ -1,6 +1,6 @@
 import { Descend } from "@/components/Descend";
 import { Glass } from "@/components/Glass";
-import { Block, T } from "@/components/Locale";
+import { Split } from "@/components/Kinetic";
 import { PhotoField } from "@/components/PhotoField";
 import { QuiBlend } from "@/components/QuiBlend";
 import { ScrollTitle } from "@/components/ScrollTitle";
@@ -22,38 +22,32 @@ export default function AboutPage() {
       <section className="section shell page-solo" aria-labelledby="titre-apropos">
         <Descend>
           <p className="kicker">
-            <T width="9em">02 — Le site</T>
+            <Split text="02 — Le site" mode="chars" lang />
           </p>
         </Descend>
         <Descend>
           <Glass>
             <p className="prose">
-              <Block lines={["100%", "86%"]}>
-                <>Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck.</>
-              </Block>
+              <Split text="Ce site est conçu pour la publication de la vie, des projets et des annonces de Franck." />
             </p>
             <dl className="reserve">
               <div>
                 <dt>
-                  <T width="8.5em">Présentation</T>
+                  <Split text="Présentation" mode="chars" lang />
                 </dt>
                 <dd>
-                  <Block lines={["100%", "78%"]}>
-                    <>La vie, les projets et les annonces de Franck y prennent place.</>
-                  </Block>
+                  <Split text="La vie, les projets et les annonces de Franck y prennent place." delay={160} />
                 </dd>
               </div>
               <div>
                 <dt>
-                  <T width="5.5em">Horizon</T>
+                  <Split text="Horizon" mode="chars" lang />
                 </dt>
                 <dd>
-                  <Block lines={["100%", "92%", "70%"]}>
-                    <>
-                      Le site évolue, et des posts paraissent régulièrement, avec des mises à jour environ tous les 7
-                      jours.
-                    </>
-                  </Block>
+                  <Split
+                    text="Le site évolue, et des posts paraissent régulièrement, avec des mises à jour environ tous les 7 jours."
+                    delay={160}
+                  />
                 </dd>
               </div>
             </dl>

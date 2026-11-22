@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BarreCompte, CompteEndur, Countdown } from "@/components/Countdown";
+import { Split } from "@/components/Kinetic";
 import { LogoEau } from "@/components/LogoEau";
 import { VentNordique } from "@/components/VentNordique";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
@@ -108,7 +109,9 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
       </div>
       <section className="endur-haut">
         <img className="bebe-endur" src="/marks/bebe-endurreisen.png" alt="" draggable={false} />
-        <p className="endurreisen" translate="no">Endurreisen</p>
+        <p className="endurreisen" translate="no">
+          <Split text="Endurreisen" mode="chars" />
+        </p>
         <Countdown />
         <BarreCompte />
       </section>
@@ -129,7 +132,9 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                 >
                   <span className="rubrique-nom">
                     <LogoEau />
-                    <span>{nomSection(cle)}</span>
+                    <span>
+                      <Split text={nomSection(cle)} mode="chars" />
+                    </span>
                   </span>
                   <span className="rubrique-meta">
                     <span>{liste.length}</span>
@@ -165,7 +170,7 @@ export function CielProjets({ initial }: { initial: PublicEtoile[] }) {
                               {etoile.titre ? <p className="etoile-titre">{etoile.titre}</p> : null}
                               {etoile.texte ? (
                                 <blockquote className="etoile-texte" data-police={etoile.police} data-style={etoile.style}>
-                                  {etoile.texte}
+                                  {montre ? <Split text={etoile.texte} delay={180} /> : etoile.texte}
                                 </blockquote>
                               ) : null}
                               <p className="etoile-signature">

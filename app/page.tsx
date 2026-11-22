@@ -1,6 +1,7 @@
 import { Crests } from "@/components/Crests";
 import { Glass } from "@/components/Glass";
-import { Block, T } from "@/components/Locale";
+import { Chapitres } from "@/components/Chapitres";
+import { Split } from "@/components/Kinetic";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { HOME_DESCRIPTION, pageMetadata } from "@/lib/site";
 
@@ -14,22 +15,20 @@ export default function HomePage() {
         <div className="hero-layout">
           <div className="hero-copy">
             <p className="welcome">
-              <T width="7.2em">Bienvenue</T>
+              <Split text="Bienvenue" mode="chars" lang />
             </p>
             <p className="epithet">
-              <T width="9em">Polymathe</T>
+              <Split text="Polymathe" mode="chars" lang delay={260} />
             </p>
             <Glass className="motto-glass">
               <figure className="motto">
                 <blockquote>
-                  <Block lines={["100%", "78%"]}>
-                    <p>«&nbsp;Ta deuxième vie commence quand tu comprends que tu n’en as qu’une.&nbsp;»</p>
-                  </Block>
+                  <p>
+                    <Split text={"«\u00a0Ta deuxième vie commence quand tu comprends que tu n’en as qu’une.\u00a0»"} delay={380} />
+                  </p>
                 </blockquote>
                 <figcaption>
-                  <Block lines={["13em"]}>
-                    <>— Raphaëlle Giordano</>
-                  </Block>
+                  <Split text="— Raphaëlle Giordano" delay={900} />
                 </figcaption>
               </figure>
             </Glass>
@@ -37,6 +36,7 @@ export default function HomePage() {
           <Crests />
         </div>
       </section>
+      <Chapitres />
     </main>
   );
 }

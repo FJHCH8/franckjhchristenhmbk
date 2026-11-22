@@ -12,23 +12,18 @@ export function Descend({ children, className }: { children: ReactNode; classNam
       node.classList.add("is-visible");
       return;
     }
-    let last = window.scrollY;
-    let down = false;
-    const reveal = () => {
-      if (!down || node.classList.contains("is-visible")) return;
-      const box = node.getBoundingClientRect();
-      const view = window.innerHeight;
-      if (box.top < view * 0.92 && box.bottom > view * 0.05) node.classList.add("is-visible");
-    };
-    const onScroll = () => {
-      const y = window.scrollY;
-      if (y > last + 0.5) down = true;
-      else if (y < last - 0.5) down = false;
-      last = y;
-      reveal();
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    // Révélé dès qu'il est à l'écran, quel que soit le sens du défilement
+    // (auparavant, arriver par le bas de la page le laissait invisible).
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        node.classList.add("is-visible");
+        observer.disconnect();
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -6% 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
   return <div ref={ref} className={className ? `descend-only ${className}` : "descend-only"}>{children}</div>;
