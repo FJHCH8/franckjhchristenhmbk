@@ -58,7 +58,7 @@ Windows Phone (Metro) et Apple, sur fond noir intégral. `app/metro.css` pose le
 - Sur ordinateur : curseur personnalisé et boutons aimantés (`components/Experience.tsx`).
 - À la première visite de la session, la signature de Franck (`public/signature.png`) s’écrit en blanc sur le noir sous un anneau de chargement bleu et blanc, puis le noir s’ouvre en cercle sur le site (`components/Intro.tsx`).
 - Police : famille Noto, conçue pour toutes les écritures. Les polices des autres alphabets ne se téléchargent que si une page en contient.
-- Chapitres de l’accueil (`components/Chapitres.tsx`) : ils glissent à l’horizontale, toujours présents. Chaque photo a des bords en nuage qui se fondent dans les étoiles ; quand son chapitre arrive, elle s’ouvre en cercle, passe du flou au net, puis respire lentement. Tout est en CSS : léger et fiable sur tous les appareils.
+- Chapitres de l’accueil (`components/Chapitres.tsx`) : les photos sont posées sur le bord d’un grand disque ; en défilant, le disque tourne d’un quart de tour et amène le thème suivant (animation liée au défilement, avec repli en script). L’album de « Qui suis-je » (`components/Album.tsx`) est aussi un disque qu’on fait tourner au doigt.
 - Si une page met plus d’un demi-seconde à venir, l’anneau de chargement bleu et blanc apparaît (`components/Chargement.tsx`).
 - Défilement lissé avec inertie : Lenis.
 - Sous les chapitres, une grille « bento » (`components/Bento.tsx`) mène à chaque page, avec le compte à rebours en direct.
