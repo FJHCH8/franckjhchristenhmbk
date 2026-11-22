@@ -60,7 +60,7 @@ function finChargement() {
 function clearNav() {
   clearMorph();
   const root = document.documentElement;
-  root.classList.remove("nav-vt", "nav-out", "nav-in");
+  root.classList.remove("nav-vt", "nav-out", "nav-in", "nav-sort");
   delete root.dataset.nav;
   document.querySelector(".theme-veil")?.remove();
 }
@@ -75,6 +75,7 @@ export function RouteTransition() {
     pending.current = null;
     resolve?.();
     finChargement();
+    document.documentElement.classList.remove("nav-sort");
   }, [pathname]);
 
   useEffect(() => {
@@ -108,7 +109,17 @@ export function RouteTransition() {
       armerChargement();
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const start = viewTransition();
-      if (!start) return;
+      if (!start) {
+        // Sans transitions de vue (iPhone) : la page pivote vers la sortie, puis la suivante pivote en entrant.
+        event.preventDefault();
+        event.stopPropagation();
+        souffle();
+        document.documentElement.classList.add("nav-sort");
+        const destination = `${url.pathname}${url.search}${url.hash}`;
+        window.setTimeout(() => router.push(destination), 220);
+        window.setTimeout(clearNav, 2500);
+        return;
+      }
 
       event.preventDefault();
       event.stopPropagation();

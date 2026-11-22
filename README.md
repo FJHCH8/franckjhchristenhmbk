@@ -45,7 +45,7 @@ Les aperçus Vercel restent non indexés (`VERCEL_ENV=preview`). La production e
 
 ## Direction artistique
 
-Windows Phone (Metro) et Apple, sur fond noir intégral (`app/metro.css`, chargée après `globals.css`) : grands titres fins en minuscules alignés à gauche, menu en « pivot », tuiles vivantes pour Explorer, chapitres en panorama, boutons plats à angles droits, une seule couleur d’accent (cyan `#1ba1e2`), et transition « tourniquet » entre les pages. La galaxie et le ciel ne sont plus affichés.
+Windows 7, Wii U, PS2 et Nintendo DSi, sur fond noir intégral. `app/metro.css` pose la mise en page (fond noir, chapitres, tuiles), puis `app/aero.css` le style : barre du haut en verre Aero, menu en boutons de barre des tâches toujours visibles, boutons bombés et brillants, cadres arrondis à reflets, tuiles façon menu Wii U, orbe de son façon PS2. Très peu d’animations de texte. Entre les pages : le « tourniquet » de Windows Phone, sur tous les navigateurs.
 
 ## Animations
 
@@ -72,7 +72,7 @@ Windows Phone (Metro) et Apple, sur fond noir intégral (`app/metro.css`, charg�
 
 ## Écriture Davissis
 
-La police `public/fonts/davissis.woff2` (6 Ko) dessine l’écriture du Davissis, d’après les formes de Franck. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
+La police `public/fonts/davissis.woff2` (chasse proportionnelle, voyelles posées au centre de leur consonne) dessine l’écriture du Davissis, d’après les formes de Franck. Elle se régénère avec `python3 outils/police-davissis.py` (paquets Python : fonttools, skia-pathops, brotli).
 
 On tape le Davissis en lettres latines, la police l’affiche dans son écriture :
 

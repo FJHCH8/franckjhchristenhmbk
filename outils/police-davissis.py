@@ -23,7 +23,8 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 UPM = 1000
-TRAIT = 74  # épaisseur du trait
+TRAIT = 62  # épaisseur du trait : plus fin, plus moderne
+APPROCHE = 46  # espace de chaque côté d'une lettre (chasse proportionnelle)
 LARGEUR = 640  # chasse commune des consonnes : les signes s'y posent au centre
 CENTRE = -LARGEUR / 2
 
@@ -140,7 +141,8 @@ voyelles_longues = {
 
 # Voyelles brèves : signes au-dessus de la consonne précédente (chasse nulle).
 def dessus(pts):
-    return [[(CENTRE + x, y) for x, y in t] for t in pts]
+    # Les signes sont centrés sur 0 : la règle « mark » les pose au milieu de leur consonne.
+    return [[(x, y) for x, y in t] for t in pts]
 
 signes = {
     "a": dessus([[(-80, 890), (80, 730)]]),
@@ -172,26 +174,33 @@ ponctuation = {
 # ───────────── Assemblage ─────────────
 
 glyphes = {}  # nom -> (chemin, chasse)
+milieux = {}  # nom -> abscisse du milieu de la lettre (pour poser les voyelles)
 
 
-def ajouter(nom, traces, chasse):
+def ajouter(nom, traces, chasse, proportionnel=False):
+    if traces and proportionnel:
+        xs = [x for t in traces for x, _ in t]
+        decale = APPROCHE + TRAIT / 2 - min(xs)
+        traces = [[(x + decale, y) for x, y in t] for t in traces]
+        chasse = round(max(xs) - min(xs) + TRAIT + 2 * APPROCHE)
+        milieux[nom] = round(chasse / 2)
     glyphes[nom] = (epaissir(traces) if traces else pathops.Path(), chasse)
 
 
 ajouter(".notdef", [[(100, 0), (100, 600), (440, 600), (440, 0), (100, 0)]], 540)
 ajouter("space", [], 320)
 for nom, t in consonnes.items():
-    ajouter(f"c_{nom}", t, LARGEUR)
+    ajouter(f"c_{nom}", t, LARGEUR, True)
 for nom, t in voyelles_longues.items():
-    ajouter(f"v_{nom}", t, 560 if nom != "oo" else 420)
+    ajouter(f"v_{nom}", t, 0, True)
 for nom, t in signes.items():
     ajouter(f"m_{nom}", t, 0)
 for nom, t in isolees.items():
-    ajouter(f"i_{nom}", t, 560 if nom != "o" else 420)
+    ajouter(f"i_{nom}", t, 0, True)
 ajouter("m_apos", apostrophe, 0)
 ajouter("m_double", double, 0)
 for nom, (t, chasse) in ponctuation.items():
-    ajouter(nom, t, chasse)
+    ajouter(nom, t, chasse, True)
 
 ordre = list(glyphes)
 cmap = {32: "space", 0xA0: "space", ord("'"): "m_apos", 0x2019: "m_apos",
@@ -239,6 +248,18 @@ lookup Initiales {{
 
 feature liga {{ lookup Longues; }} liga;
 feature calt {{ lookup Doubles; lookup Initiales; }} calt;
+
+table GDEF {{
+  GlyphClassDef [{bases} {" ".join(f"i_{v}" for v in "aioeu")}], , [m_a m_i m_o m_e m_u m_apos m_double], ;
+}} GDEF;
+
+markClass [m_a m_i m_o m_e m_u m_apos] <anchor 0 0> @HAUT;
+markClass [m_double] <anchor 0 0> @BAS;
+
+feature mark {{
+{chr(10).join(f"  pos base c_{n} <anchor {milieux[f'c_{n}']} 0> mark @HAUT <anchor {milieux[f'c_{n}']} 0> mark @BAS;" for n in consonnes)}
+{chr(10).join(f"  pos base v_{n} <anchor {milieux[f'v_{n}']} 0> mark @HAUT;" for n in voyelles_longues)}
+}} mark;
 """
 
 fb = FontBuilder(UPM, isTTF=True)

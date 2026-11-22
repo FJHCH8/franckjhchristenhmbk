@@ -38,6 +38,7 @@ import { themeInitScript } from "@/lib/theme";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./metro.css";
+import "./aero.css";
 
 /*
  * Famille Noto : dessinée pour couvrir toutes les écritures du monde.
