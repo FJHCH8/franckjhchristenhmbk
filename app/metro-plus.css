@@ -476,7 +476,7 @@ html body .seal.seal-logo {
   animation-delay: calc(0.25s + var(--i) * 0.22s);
 }
 
-.logo-anime .logo-ronds circle {
+.logo-anime .logo-ronds > path {
   transform: scale(0);
   animation: logo-rond 0.55s cubic-bezier(0.22, 1.5, 0.36, 1) forwards;
   animation-delay: calc(0.15s + var(--i) * 0.24s);
@@ -496,7 +496,7 @@ html body .seal.seal-logo {
 
 @media (prefers-reduced-motion: reduce) {
   .logo-anime .logo-traits path,
-  .logo-anime .logo-ronds circle {
+  .logo-anime .logo-ronds > path {
     animation: none;
     stroke-dashoffset: 0;
     transform: none;
@@ -965,4 +965,10 @@ body {
 html body .album-zone,
 html body #contenu {
   overflow-x: clip;
+}
+
+/* Le logo en haut à gauche, un peu plus grand pour que chaque goutte se voie. */
+html body .seal.seal-logo {
+  width: 3rem !important;
+  height: 3rem !important;
 }
