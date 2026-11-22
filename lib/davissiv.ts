@@ -16,7 +16,7 @@ export const DAVISSIV: Record<string, string> = {
   Contact: "Abam",
   Projets: "Vayak",
   Bienvenue: "Hantaamis",
-  Polymathe: "",
+  Polymathe: "Spalovaaslaaba",
   "02 — Le site": "",
   Présentation: "",
   Horizon: "",
