@@ -317,7 +317,7 @@ html body .flacon-bouton {
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
 }
 
 html body .chap-lien:hover,
@@ -328,13 +328,6 @@ html body .return-link:hover {
   color: #000 !important;
 }
 
-/* L'appui « Metro » : l'élément s'enfonce légèrement. */
-html body .chap-lien:active,
-html body .echecs-lancer:active,
-html body .jeu-bouton:active,
-html body .bento-carte:active {
-  transform: scale(0.96) !important;
-}
 
 html body .jeu-bouton.is-plein {
   background: var(--accent) !important;
@@ -531,7 +524,6 @@ html body .bento-carte {
   backdrop-filter: none !important;
   animation: none !important;
   overflow: hidden;
-  transition: transform 0.15s ease !important;
 }
 
 html body .bento-carte:hover {

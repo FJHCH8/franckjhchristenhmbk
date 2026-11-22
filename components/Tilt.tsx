@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 const HIT = "a, button, summary, [role='button'], .etoile-hit";
-const SKIP = ".nav, .lang, .toggle, .album, .vie";
+const SKIP = ".album-zone, .jeu-plateau, .vie";
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const RELEASE_MS = 550;
 const TAU = 0.042;

@@ -14,7 +14,6 @@ import {
 } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
-import { Altimeter } from "@/components/Altimeter";
 import { Chargement } from "@/components/Chargement";
 import { Crests } from "@/components/Crests";
 import { EditionPorte } from "@/components/EditionPorte";
@@ -210,7 +209,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <p className="rail" translate="no">
             © Franck J.H. Christen
           </p>
-          <Altimeter />
           <Header />
           <ImageGuard />
           <Kinetic />

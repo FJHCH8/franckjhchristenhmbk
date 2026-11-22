@@ -77,6 +77,7 @@ export function Chapitres() {
     const panneaux = [...rangee.querySelectorAll<HTMLElement>("[data-chap]")];
     const dernier = panneaux.length - 1;
     const roue = chap.querySelector<HTMLElement>(".roue-disque");
+    const cssPilote = typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()");
     const photos = roue ? [...roue.querySelectorAll<HTMLElement>(".roue-photo")] : [];
     let frame = 0;
     let courant = -1;
@@ -91,9 +92,9 @@ export function Chapitres() {
       const f = g - i;
       // Mêmes paliers que l'animation CSS (5 % de pause de chaque côté d'un glissement).
       const decalage = i >= dernier ? dernier : i + lisse(clamp((f - 0.15) / 0.7));
-      rangee.style.setProperty("--decalage", decalage.toFixed(4));
-      roue?.style.setProperty("--decalage", decalage.toFixed(4));
-      panneaux.forEach((panneau, j) => panneau.style.setProperty("--p", clamp(0.62 + (decalage - j) * 0.38).toFixed(4)));
+      // Le disque tourne par le défilement lui-même (CSS) ; le script ne prend le relais
+      // que sur les navigateurs qui ne savent pas le faire.
+      if (!cssPilote) roue?.style.setProperty("--decalage", decalage.toFixed(4));
       // Le chapitre affiché change à mi-glissement : sa photo fait son entrée.
       const proche = Math.round(decalage);
       if (proche !== courant) {

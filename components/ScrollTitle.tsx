@@ -34,6 +34,14 @@ export function ScrollTitle({
     const hero = heroRef.current;
     const bar = barRef.current;
     if (!stage || !hero || !bar) return;
+    // Le titre reste posé : plus aucun mouvement piloté par script pendant le défilement,
+    // car sur iPhone il arrive toujours une image en retard et fait trembler la page.
+    const fige = true;
+    if (fige) {
+      document.documentElement.classList.add("title-settled");
+      stage.classList.add("is-scrolled");
+      return () => document.documentElement.classList.remove("title-settled");
+    }
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     // La variable de défilement vit sur <main> : l'écrire sur <html> recalculait tout le site à chaque image.

@@ -29,6 +29,8 @@ export function QuiBlend() {
     const mid = field?.querySelector<HTMLElement>(".skin-mid");
     const far = field?.querySelector<HTMLElement>(".skin-far");
     if (!(field instanceof HTMLElement) || !(sky instanceof HTMLElement) || !sharp || !mid || !far) return;
+    // Photo de fond masquée (fond noir) : rien à fondre, donc aucun calcul au défilement.
+    if (getComputedStyle(field).display === "none") return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     // Scroll-timeline on the fixed photo locks or crashes WebKit, including iPhone.

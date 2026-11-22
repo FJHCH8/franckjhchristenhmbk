@@ -181,7 +181,8 @@ export function Kinetic() {
         seen.add(el);
         observer.observe(el);
       });
-      lits = [...document.querySelectorAll<HTMLElement>("[data-kt-lit]")];
+      // Les textes ne s'allument plus au défilement : rien n'est réécrit pendant qu'on fait défiler.
+      lits = [];
       wake();
     };
 

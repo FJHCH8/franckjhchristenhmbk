@@ -262,3 +262,176 @@ html body .album-roue .album-nav button {
   background: transparent;
   color: #fff;
 }
+
+/* ═════════════ Stabilité : rien ne bouge par script pendant le défilement ═════════════ */
+
+html body .scroll-head,
+html body .title-dock,
+html body .scroll-reveal,
+html body .hero.scroll-reveal {
+  transform: none !important;
+}
+
+html body .scroll-reveal {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+html body .chap-pied,
+html body .chap-lien,
+html body .chap-numero {
+  opacity: 1 !important;
+}
+
+html body .chap-numero-trait {
+  transform: none !important;
+}
+
+/* ═════════════ Barre du haut : un flou dégradé, du moins flou au plus flou ═════════════ */
+
+html body .header {
+  background: transparent !important;
+  border-bottom: 0 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html body .top-frost {
+  display: block !important;
+  z-index: 19;
+  height: calc(env(safe-area-inset-top) + 9rem);
+}
+
+html body .top-frost-layer {
+  display: block !important;
+}
+
+/* Quatre couches suffisent : le flou monte de 6 à 40 px vers le haut de l'écran. */
+html body .top-frost-layer:nth-child(1),
+html body .top-frost-layer:nth-child(2) {
+  display: none !important;
+}
+
+html body .top-frost-tint {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.45) 55%, transparent);
+}
+
+@media (min-width: 720px) {
+  html body .top-frost {
+    height: calc(env(safe-area-inset-top) + 7rem);
+  }
+}
+
+/* ═════════════ Fluent : l'effet d'inclinaison quand on appuie ═════════════ */
+
+html body .nav a,
+html body .lang button,
+html body .chap-lien,
+html body .echecs-lancer,
+html body .jeu-bouton,
+html body .bento-carte,
+html body .son-bouton,
+html body .return-link,
+html body .suite-lien,
+html body .contact-links a,
+html body .album-nav button,
+html body .rubrique h2 button {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* La surface appuyée s'éclaire légèrement, comme sous Windows 10. */
+html body .is-tilting {
+  filter: brightness(1.12);
+}
+
+/* ═════════════ Animations Metro, pilotées par le défilement lui-même ═════════════ */
+
+html body .bento-grille {
+  perspective: 1100px;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Les tuiles basculent en place, une rangée après l'autre. */
+    html body .bento-carte {
+      transform-origin: 50% 0;
+      animation: metro-tuile linear both !important;
+      animation-timeline: view() !important;
+      animation-range: entry 0% entry 70% !important;
+    }
+
+    /* Les blocs de texte arrivent de la droite, comme les listes de Windows Phone. */
+    html body .prose,
+    html body .reserve > div,
+    html body .contact-links a,
+    html body .qui-line,
+    html body .rubrique,
+    html body .motto,
+    html body .echecs-lancer,
+    html body .suite-lien {
+      animation: metro-plume linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+@keyframes metro-tuile {
+  from {
+    opacity: 0;
+    rotate: x -75deg;
+  }
+
+  to {
+    opacity: 1;
+    rotate: x 0deg;
+  }
+}
+
+@keyframes metro-plume {
+  from {
+    opacity: 0;
+    translate: 3.5rem 0;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ═════════════ Le disque : flou sur les photos qui ne sont pas devant ═════════════ */
+
+html body .roue-photo {
+  filter: blur(6px) brightness(0.7);
+  transition: opacity 0.5s ease, filter 0.6s ease;
+}
+
+html body .roue-photo.is-actif {
+  filter: none;
+}
+
+html body .album-roue .album-card {
+  filter: blur(5px) brightness(0.7);
+  transition: opacity 0.4s ease, filter 0.5s ease;
+}
+
+html body .album-roue .album-card.is-devant {
+  filter: none;
+}
+
+/* Entrée de page : le tourniquet, avec un léger flou qui se dissipe. */
+@keyframes tourniquet-entre {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: perspective(1400px) rotateY(-80deg);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: perspective(1400px) rotateY(0deg);
+  }
+}
