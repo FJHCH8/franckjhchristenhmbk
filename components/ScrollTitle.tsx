@@ -37,7 +37,17 @@ export function ScrollTitle({
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     // La variable de défilement vit sur <main> : l'écrire sur <html> recalculait tout le site à chaque image.
-    const host = stage.closest("main") ?? document.documentElement;
+    // La variable ne va qu'aux éléments qui l'utilisent : l'écrire sur toute la page
+    // obligeait le navigateur à tout revérifier à chaque image.
+    const racine = stage.closest("main") ?? document.documentElement;
+    const cibles = () => [stage, ...racine.querySelectorAll<HTMLElement>(".scroll-reveal")];
+    let porteurs = cibles();
+    const host = {
+      style: {
+        setProperty: (nom: string, valeur: string) => porteurs.forEach((el) => el.style.setProperty(nom, valeur)),
+        removeProperty: (nom: string) => porteurs.forEach((el) => el.style.removeProperty(nom)),
+      },
+    };
     let dockAt = 0;
     let shown = 0;
     let target = 0;
@@ -51,6 +61,7 @@ export function ScrollTitle({
     let lastMark = "";
 
     const measure = () => {
+      porteurs = cibles();
       const header = document.querySelector(".header");
       const headerH = header instanceof HTMLElement ? header.offsetHeight : 76;
       document.documentElement.style.setProperty("--title-dock", `${headerH + 8}px`);

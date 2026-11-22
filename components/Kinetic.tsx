@@ -194,30 +194,6 @@ export function Kinetic() {
       });
     };
 
-    // Vitesse du défilement, lissée, posée sur <main> : les titres variables s'y adaptent.
-    const host = document.getElementById("contenu");
-    let vitesse = 0;
-    let dernierY = window.scrollY;
-    let dernierT = performance.now();
-    let elan = 0;
-    const respire = (now: number) => {
-      elan = 0;
-      const dt = Math.max(1, now - dernierT) / 1000;
-      const brute = Math.min(4, Math.abs(window.scrollY - dernierY) / window.innerHeight / dt);
-      dernierY = window.scrollY;
-      dernierT = now;
-      vitesse += (brute - vitesse) * Math.min(1, dt * 7);
-      if (vitesse < 0.004) vitesse = 0;
-      host?.style.setProperty("--vel", vitesse.toFixed(3));
-      if (vitesse > 0 || brute > 0) elan = window.requestAnimationFrame(respire);
-    };
-    const onVitesse = () => {
-      if (!elan) {
-        dernierT = performance.now();
-        elan = window.requestAnimationFrame(respire);
-      }
-    };
-    window.addEventListener("scroll", onVitesse, { passive: true });
 
     scan();
     // Ne réagit qu'aux éléments ajoutés : les chiffres du chrono ou de l'altimètre
@@ -243,8 +219,6 @@ export function Kinetic() {
       if (pending) window.cancelAnimationFrame(pending);
       window.removeEventListener("scroll", wake);
       window.removeEventListener("resize", wake);
-      window.removeEventListener("scroll", onVitesse);
-      if (elan) window.cancelAnimationFrame(elan);
     };
   }, [pathname]);
 

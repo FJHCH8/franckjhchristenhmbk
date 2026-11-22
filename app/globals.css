@@ -7912,3 +7912,88 @@ html.jeu-ouvert .jeu-case {
   min-height: 0;
   flex: none;
 }
+
+/* ═════════════════════════ Sobriété : moins de chauffe, plus de fluidité ═════════════════════════ */
+
+/* Le haut de l'écran : un dégradé simple au lieu de six couches de flou empilées. */
+.top-frost-layer {
+  display: none;
+}
+
+.top-frost {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.35) 55%, transparent);
+}
+
+/* Les grands titres gardent leur largeur : la changer en défilant relançait la mise en page à chaque image. */
+.scroll-head h1 .kt-c,
+.chap-mot .kt-c,
+.bento-titre .kt-c,
+.suite-titre .kt-c,
+.echecs-titre .kt-c {
+  font-stretch: 100%;
+}
+
+/* Le grand mot des chapitres n'est plus flouté pendant le glissement. */
+.chap-mot {
+  filter: none;
+}
+
+/* Les dégradés organiques ne bougent plus (un flou de 36 px qui tourne coûte cher). */
+.bento-mesh,
+.intro-mesh {
+  animation: none;
+}
+
+/* Téléphones et tablettes : aucun verre dépoli, aucune décoration qui tourne en boucle. */
+@media (hover: none), (pointer: coarse) {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .glass,
+  .nav,
+  .lang,
+  .title-dock-pill,
+  .son-bouton,
+  .bento-carte,
+  .chap-lien,
+  .echecs-lancer,
+  .jeu-panneau {
+    background-color: rgba(14, 17, 26, 0.82);
+  }
+
+  .glass,
+  .ice,
+  .qui-note,
+  .contact-glyph,
+  .crest-art,
+  .crest-glow,
+  .footer-note,
+  .count-dot,
+  .scroll-mark *,
+  .scroll-cue,
+  .endurreisen,
+  .bebe-endur,
+  .eclair-trait,
+  .eclair-trait::after,
+  .eclair-cendre,
+  .chap-nuage img,
+  .echecs-lancer-piece::after,
+  .logo-eau,
+  .logo-eau *,
+  .night-star-glow,
+  .aurora-ribbon,
+  .sky-gradient,
+  .titre-lueur {
+    animation: none !important;
+  }
+
+  /* Les ombres lumineuses empilées sur les pièces d'échecs restent, le reste s'allège. */
+  [data-glow]::after,
+  .glass::after {
+    display: none;
+  }
+}

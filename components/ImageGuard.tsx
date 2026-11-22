@@ -2,11 +2,14 @@
 
 import { useEffect } from "react";
 
+/** Protège une image une seule fois : réécrire l'attribut à chaque changement de la page coûtait très cher. */
+function proteger(node: Element) {
+  if (node.getAttribute("draggable") !== "false") node.setAttribute("draggable", "false");
+}
+
 function shield(root: ParentNode) {
-  root.querySelectorAll("img, video").forEach((node) => {
-    if (node instanceof HTMLImageElement || node instanceof HTMLVideoElement) node.draggable = false;
-    node.setAttribute("draggable", "false");
-  });
+  if (root instanceof Element && root.matches("img, video")) proteger(root);
+  root.querySelectorAll("img, video").forEach(proteger);
 }
 
 export function ImageGuard() {
@@ -17,7 +20,14 @@ export function ImageGuard() {
       if (target.closest("img, picture, video, .seal, .photo-field, .skin-field, .mark, .bebe-endur")) event.preventDefault();
     };
     shield(document);
-    const observer = new MutationObserver(() => shield(document));
+    // Seulement les éléments ajoutés, et seulement s'ils contiennent des images.
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        record.addedNodes.forEach((node) => {
+          if (node instanceof Element) shield(node);
+        });
+      }
+    });
     observer.observe(document.body, { childList: true, subtree: true });
     document.addEventListener("contextmenu", block);
     document.addEventListener("dragstart", block);

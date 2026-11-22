@@ -227,8 +227,13 @@ export function ProjetsSky() {
     const touch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
     // Le ciel évolue lentement : 24 images par seconde suffisent, et soulagent tout le reste
     // (chaque surface en verre dépoli refait son flou à chaque image du ciel).
-    void touch;
-    const minStep = lite ? 1000 / 16 : 1000 / 24;
+    const minStep = lite || touch ? 1000 / 12 : 1000 / 24;
+    // Pendant le défilement, le ciel se fige : tout le calcul va au défilement.
+    let figeJusqua = 0;
+    const onDefile = () => {
+      figeJusqua = performance.now() + 220;
+    };
+    window.addEventListener("scroll", onDefile, { passive: true });
     let lastDraw = 0;
     let checks = 0;
     let visible = true;
@@ -239,13 +244,13 @@ export function ProjetsSky() {
       if (Math.abs(w - width) < 2 && Math.abs(h - height) < 2) return;
       width = w;
       height = h;
-      const dpr = Math.min(window.devicePixelRatio || 1, lite ? 0.6 : 0.85);
+      const dpr = Math.min(window.devicePixelRatio || 1, lite || touch ? 0.5 : 0.85);
       galaxie.resize(w, h, dpr);
     };
 
     const paint = (now: number) => {
       frame = 0;
-      if (now - lastDraw < minStep) {
+      if (now - lastDraw < minStep || now < figeJusqua) {
         frame = window.requestAnimationFrame(paint);
         return;
       }
@@ -316,6 +321,7 @@ export function ProjetsSky() {
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onDefile);
       window.removeEventListener("orientationchange", onResize);
       window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("pointerdown", onPointer);
