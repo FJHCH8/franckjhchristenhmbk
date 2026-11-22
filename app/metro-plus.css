@@ -435,3 +435,8 @@ html body .album-roue .album-card.is-devant {
     transform: perspective(1400px) rotateY(0deg);
   }
 }
+
+/* Davissis : un peu plus de place sous la ligne pour le signe de doublement. */
+html body .davissis {
+  line-height: 1.75;
+}
