@@ -48,12 +48,12 @@ const NUAGE = ["....oooo......", "..oooooooo....", ".oooooooooooo.", "oooooooooo
 const PALETTE_NUAGE: Palette = { o: "#dedede" };
 
 /** Le dauphin en pixels (SVG), avec sa larme s'il est triste. */
-export function DauphinPixel({ taille = 6, triste = false }: { taille?: number; triste?: boolean }) {
+export function DauphinPixel({ taille = 6, triste = false, largeur }: { taille?: number; triste?: boolean; largeur?: number }) {
   const s = taille;
   const w = DAUPHIN[0]!.length * s;
   const h = (DAUPHIN.length + (triste ? 3 : 0)) * s;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} shapeRendering="crispEdges" aria-hidden="true">
+    <svg viewBox={`0 0 ${w} ${h}`} width={largeur ?? w} height={largeur ? (largeur * h) / w : h} shapeRendering="crispEdges" aria-hidden="true">
       {DAUPHIN.flatMap((l, j) =>
         [...l].map((ch, i) => (PALETTE_DAUPHIN[ch] ? <rect key={`${i}-${j}`} x={i * s} y={j * s} width={s} height={s} fill={PALETTE_DAUPHIN[ch]} /> : null)),
       )}

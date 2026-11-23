@@ -18,7 +18,7 @@ import {
   type PointerEvent as PE,
   type ReactNode,
 } from "react";
-import { DauphinDessin, JeuDauphin } from "./Dauphin";
+import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
 
@@ -93,7 +93,7 @@ function decompte(t: number | null, cible: number) {
 function IconeDauphin({ taille }: { taille: number }) {
   return (
     <span className="os-icone os-icone-dauphin" style={{ width: taille, height: taille }}>
-      <DauphinDessin largeur={Math.round(taille * 0.86)} />
+      <DauphinPixel largeur={Math.round(taille * 0.84)} />
     </span>
   );
 }
@@ -997,7 +997,7 @@ function AppMessages() {
   const [texte, setTexte] = useState("");
   useRetour(conv, () => setConv(false));
   // eslint-disable-next-line @next/next/no-img-element
-  const avatar = <img className="msg-avatar" src="/aakanos/avatar.png" alt="" />;
+  const avatar = <img className="msg-avatar" src="/aakanos/gael.jpg" alt="" />;
   if (!conv) {
     return (
       <div className="app-defile">
@@ -1119,7 +1119,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
     return (
       <div className="app-defile">
         <div className="apropos-logo">
-          <DauphinDessin largeur={150} />
+          <DauphinPixel largeur={170} />
           <b>AakanOS</b>
         </div>
         <Titre>À PROPOS DU TÉLÉPHONE</Titre>
