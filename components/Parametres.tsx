@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { CodeEdition } from "@/components/CodeEdition";
-import { useLocale } from "@/components/Locale";
+import { T, useLocale } from "@/components/Locale";
 import { Logo } from "@/components/Logo";
 import { clic } from "@/lib/sons";
 
@@ -90,7 +90,7 @@ const LIGNES: { id: Choix; nom: string; sous: string }[] = [
 function Langue() {
   const { locale, setLocale } = useLocale();
   const options: { id: "fr" | "tavissiv"; libelle: ReactNode; sous: string; aria: string }[] = [
-    { id: "fr", libelle: "français", sous: "Bretagne", aria: "Français (Bretagne)" },
+    { id: "fr", libelle: <T>français</T>, sous: "Bretagne", aria: "Français (Bretagne)" },
     {
       id: "tavissiv",
       libelle: (
@@ -109,7 +109,9 @@ function Langue() {
           <span className="param-radio-rond" aria-hidden="true" />
           <span className="param-radio-texte">
             <span>{o.libelle}</span>
-            <small>{o.sous}</small>
+            <small>
+              <T>{o.sous}</T>
+            </small>
           </span>
         </button>
       ))}
@@ -123,7 +125,9 @@ function Contact() {
       <a href="mailto:franckjhchristen@gmail.com" translate="no" className="param-lien">
         <Icone nom="contact" />
         <span>
-          <small>e-mail</small>
+          <small>
+            <T>e-mail</T>
+          </small>
           franckjhchristen@gmail.com
         </span>
       </a>
@@ -135,11 +139,15 @@ function Contact() {
           <circle cx="19.8" cy="12.2" r=".7" fill="currentColor" />
         </svg>
         <span>
-          <small>instagram</small>
+          <small>
+            <T>instagram</T>
+          </small>
           @fjhchristenhmbk
         </span>
       </a>
-      <p className="param-texte">Une idée, une question, un projet à partager ? Deux chemins mènent jusqu&apos;à Franck.</p>
+      <p className="param-texte">
+        <T>Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à Franck.</T>
+      </p>
     </div>
   );
 }
@@ -164,7 +172,7 @@ function APropos() {
 
 /** L'easter egg : on écrit en lettres latines, le texte apparaît dans l'écriture Aaka. */
 function Transcripteur() {
-  const [texte, setTexte] = useState("frank j.h christen h.m.b.k");
+  const [texte, setTexte] = useState("franck j.h christen h.m.b.k");
   return (
     <div className="aaka">
       <p className="param-texte">Écris en Tavissiv avec les lettres latines : il s&apos;affiche aussitôt dans l&apos;écriture Aaka.</p>
@@ -303,7 +311,9 @@ export function Parametres() {
                           <button type="button" className="param-ligne" onClick={() => choisir(l.id)}>
                             <Icone nom={l.id} />
                             <span className="param-ligne-texte">
-                              <span>{l.nom}</span>
+                              <span>
+                                <T>{l.nom}</T>
+                              </span>
                               <small>{l.sous}</small>
                             </span>
                           </button>
@@ -316,7 +326,7 @@ export function Parametres() {
                     <h2 className="param-ligne param-ligne-titre">
                       <Icone nom={choix} />
                       <span className="param-ligne-texte">
-                        <span>{ligne?.nom}</span>
+                        <span>{ligne ? <T>{ligne.nom}</T> : null}</span>
                         <small>{ligne?.sous}</small>
                       </span>
                     </h2>
@@ -333,7 +343,7 @@ export function Parametres() {
               <nav className="param-barre" aria-label="Barre d'application">
                 <button type="button" className="param-barre-bouton" onClick={retour}>
                   <Icone nom="retour" />
-                  <span>{choix ? "retour" : "fermer"}</span>
+                  <span>{choix ? <T>retour</T> : "fermer"}</span>
                 </button>
               </nav>
             </div>,

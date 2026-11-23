@@ -2484,3 +2484,14 @@ html body .param {
 html body .param-barre {
   padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
 }
+
+/* Le Tavissiv dans les paramètres : lignes moins hautes, petites étiquettes lisibles. */
+html body .param .tavissiv {
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+html body .param small .tavissiv {
+  font-size: 1.45em;
+}

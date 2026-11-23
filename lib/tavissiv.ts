@@ -8,8 +8,18 @@ export const LASSAVI_DE_FRANCK: Record<string, string> = {};
  * Une chaîne reste vide dès qu’un mot n’y figure pas : le site affiche alors le français.
  */
 export const TAVISSIV: Record<string, string> = {
-  "Franck J.H. CHRISTEN H.M.B.K.": "frank j.h christen h.m.b.k",
-  "Franck J.H. Christen": "frank j.h christen h.m.b.k",
+  "Franck J.H. CHRISTEN H.M.B.K.": "franck j.h christen h.m.b.k",
+  "Franck J.H. Christen": "franck j.h christen h.m.b.k",
+  // Paramètres
+  langue: "Lassabu",
+  contact: "Abam",
+  "à propos": "Laab",
+  français: "Franka",
+  Bretagne: "Brey",
+  "e-mail": "Baashka",
+  instagram: "Instagram",
+  retour: "Kaay",
+  "Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à Franck.": "Kasamas yeeda vamoyas yeeda vayakas umaalt? Lannagaalsabu franckaast.",
   Accueil: "Oveksa",
   "Qui suis-je": "Maa eebit",
   "À propos": "Laab",
