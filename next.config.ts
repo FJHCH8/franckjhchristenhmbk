@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // À propos et Contact vivent désormais dans les paramètres.
+      { source: "/a-propos", destination: "/?parametres=apropos", permanent: false },
+      { source: "/contact", destination: "/?parametres=contact", permanent: false },
       {
         source: "/:path*",
         has: [{ type: "host", value: "franckjhchristenhmbk.vercel.app" }],

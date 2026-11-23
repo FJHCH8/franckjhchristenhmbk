@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { Parametres } from "@/components/Parametres";
+import { Suspense } from "react";
 import { T, useLocale } from "@/components/Locale";
 import { Logo } from "@/components/Logo";
 import { TopBlur } from "@/components/TopBlur";
@@ -11,8 +12,6 @@ import { TopBlur } from "@/components/TopBlur";
 const LINKS = [
   { href: "/", id: "accueil", label: "Accueil" },
   { href: "/qui-suis-je", id: "qui-suis-je", label: "Qui suis-je" },
-  { href: "/a-propos", id: "a-propos", label: "À propos" },
-  { href: "/contact", id: "contact", label: "Contact" },
   { href: "/projets", id: "projets", label: "Projets" },
 ];
 
@@ -114,7 +113,9 @@ export function Header() {
           </nav>
         </div>
         <div className="header-tools">
-          <Parametres />
+          <Suspense fallback={null}>
+            <Parametres />
+          </Suspense>
         </div>
       </header>
     </>

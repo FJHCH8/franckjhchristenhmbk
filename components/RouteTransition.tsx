@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { souffle } from "@/lib/sons";
 
-const ORDER = ["/", "/qui-suis-je", "/a-propos", "/contact", "/projets"];
+const ORDER = ["/", "/qui-suis-je", "/projets"];
 
 type StartViewTransition = (update: () => void | Promise<void>) => { finished: Promise<void>; skipTransition?: () => void };
 

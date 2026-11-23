@@ -6,8 +6,6 @@ import { Split } from "@/components/Kinetic";
 
 const ORDRE = [
   { href: "/qui-suis-je", titre: "Qui suis-je" },
-  { href: "/a-propos", titre: "À propos" },
-  { href: "/contact", titre: "Contact" },
   { href: "/projets", titre: "Projets" },
   { href: "/", titre: "Accueil" },
 ];

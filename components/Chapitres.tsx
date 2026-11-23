@@ -30,7 +30,7 @@ export const CHAPITRES: Chapitre[] = [
   {
     id: "apropos",
     titre: "À propos",
-    href: "/a-propos",
+    href: "/?parametres=apropos",
     texte: "Pourquoi ce site existe, ce qu’il va raconter, et à quel rythme il grandit. Les coulisses, en quelques lignes.",
     particules: "/fond/judo-640-a.webp",
     photo: "/fond/judo-1280-a.webp",
@@ -39,7 +39,7 @@ export const CHAPITRES: Chapitre[] = [
   {
     id: "contact",
     titre: "Contact",
-    href: "/contact",
+    href: "/?parametres=contact",
     texte: "Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à Franck. Choisissez le vôtre.",
     particules: "/fond/avion-640-a.webp",
     photo: "/fond/avion-1280-a.webp",

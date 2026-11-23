@@ -72,11 +72,11 @@ export function Bento() {
             <T>— Raphaëlle Giordano</T>
           </span>
         </Carte>
-        <Carte href="/a-propos" className="bento-apropos" image="/fond/judo-960-a.webp" focus="50% 22%" index={2}>
+        <Carte href="/?parametres=apropos" className="bento-apropos" image="/fond/judo-960-a.webp" focus="50% 22%" index={2}>
           <span className="bento-etiquette">02 — À propos</span>
           <span className="bento-petit">Les coulisses du site, et ce qui s’y prépare.</span>
         </Carte>
-        <Carte href="/contact" className="bento-contact" image="/fond/avion-960-a.webp" focus="68% 42%" index={3}>
+        <Carte href="/?parametres=contact" className="bento-contact" image="/fond/avion-960-a.webp" focus="68% 42%" index={3}>
           <span className="bento-etiquette">03 — Contact</span>
           <span className="bento-petit">Écrire à Franck, ou le suivre.</span>
         </Carte>
