@@ -1,0 +1,4 @@
+Icônes d'applications reprises du projet Android Open Source Project (AOSP), version 4.1 (Jelly Bean).
+Copyright (C) The Android Open Source Project.
+Sous licence Apache, version 2.0 : http://www.apache.org/licenses/LICENSE-2.0
+Fichiers : settings.png, mms.png, contacts.png, calendar.png, camera.png, email.png, avatar.png, phone.png, music.png
