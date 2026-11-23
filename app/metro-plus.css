@@ -2794,3 +2794,11 @@ html body .param-pied p {
   font-weight: 600;
   letter-spacing: -0.02em;
 }
+
+html body .param-signature {
+  text-transform: lowercase;
+}
+
+html body .param-signature .tavissiv {
+  font-size: 1.3em;
+}

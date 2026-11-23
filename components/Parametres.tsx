@@ -363,7 +363,9 @@ export function Parametres() {
                 )}
                 <div className="param-pied">
                   <MatriceNom />
-                  <p>franck j.h christen</p>
+                  <p className="param-signature">
+                    <T>Franck J.H. Christen</T>
+                  </p>
                 </div>
               </div>
               <nav className="param-barre" aria-label="Barre d'application">

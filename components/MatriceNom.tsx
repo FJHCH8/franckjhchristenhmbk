@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLocale } from "@/components/Locale";
 
 /** Lettres en matrice 5 × 7 (une ligne par rangée, de haut en bas). */
 const GLYPHES: Record<string, string[]> = {
@@ -34,7 +35,62 @@ const LOGO: [number, number][] = [
   [168.1, 176.5],
 ];
 
-type Lettre = { car: string; col: number; rang: number; depart: number; duree: number };
+/** Une lettre : son dessin en points (rangées de 0/1), sa place, son moment de chute. */
+type Lettre = { points: string[]; col: number; rang: number; depart: number; duree: number };
+
+/** Les lignes du nom écrites en Aaka, dessinées par la police Tavissiv puis lues point par point. */
+const LIGNES_AAKA = ["franck j.h", "christen"];
+
+/**
+ * Lit une ligne de texte Tavissiv en points : on la dessine en petit, puis on coupe aux colonnes vides
+ * pour séparer les caractères (chacun tombera de son côté).
+ */
+function aakaEnPoints(texte: string, hauteurPoints: number) {
+  const c = document.createElement("canvas");
+  const taille = hauteurPoints * 1.15;
+  c.width = Math.ceil(texte.length * taille * 1.2) + 20;
+  c.height = Math.ceil(hauteurPoints * 2.4);
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#fff";
+  g.font = `${taille}px Tavissiv`;
+  g.textBaseline = "alphabetic";
+  g.fillText(texte, 4, Math.round(hauteurPoints * 1.55));
+  const d = g.getImageData(0, 0, c.width, c.height).data;
+  const allume = (x: number, y: number) => d[(y * c.width + x) * 4 + 3]! > 110;
+  let haut = c.height;
+  let bas = 0;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (allume(x, y)) {
+    haut = Math.min(haut, y);
+    bas = Math.max(bas, y);
+  }
+  const colonnes: boolean[] = [];
+  for (let x = 0; x < c.width; x++) {
+    let v = false;
+    for (let y = haut; y <= bas && !v; y++) v = allume(x, y);
+    colonnes.push(v);
+  }
+  const morceaux: { x0: number; x1: number }[] = [];
+  let x = 0;
+  while (x < c.width) {
+    if (!colonnes[x]) {
+      x++;
+      continue;
+    }
+    const x0 = x;
+    while (x < c.width && colonnes[x]) x++;
+    morceaux.push({ x0, x1: x - 1 });
+  }
+  return {
+    largeur: morceaux.length ? morceaux[morceaux.length - 1]!.x1 - morceaux[0]!.x0 + 1 : 0,
+    hauteur: Math.max(0, bas - haut + 1),
+    lettres: morceaux.map(({ x0, x1 }) => ({
+      dx: x0 - (morceaux[0]?.x0 ?? 0),
+      points: Array.from({ length: bas - haut + 1 }, (_, yy) =>
+        Array.from({ length: x1 - x0 + 1 }, (_, xx) => (allume(x0 + xx, haut + yy) ? "1" : "0")).join(""),
+      ),
+    })),
+  };
+}
 
 /**
  * En bas des paramètres, comme une enseigne en points lumineux : le logo de Franck dessiné en points gris,
@@ -42,6 +98,8 @@ type Lettre = { car: string; col: number; rang: number; depart: number; duree: n
  */
 export function MatriceNom() {
   const ref = useRef<HTMLCanvasElement>(null);
+  const { locale } = useLocale();
+  const aaka = locale === "tavissiv";
 
   useEffect(() => {
     const canvas = ref.current;
@@ -66,7 +124,7 @@ export function MatriceNom() {
       canvas.style.height = `${hauteur}px`;
       canvas.width = Math.round(largeur * dpr);
       canvas.height = Math.round(hauteur * dpr);
-      pas = Math.max(4, Math.round(largeur / 70));
+      pas = Math.max(3, Math.round(largeur / (aaka ? 100 : 70)));
       cols = Math.floor(largeur / pas);
       rangs = Math.floor(hauteur / pas);
 
@@ -95,17 +153,29 @@ export function MatriceNom() {
       for (let i = 0; i < cols * rangs; i++) fond[i] = data[i * 4 + 3]!;
 
       // Les places des lettres : deux lignes centrées.
-      const gl = 6; // largeur d'une lettre + espace, en points
       lettres = [];
-      const hautTexte = LIGNES.length * 7 + (LIGNES.length - 1) * 3;
-      const r0 = Math.round((rangs - hautTexte) / 2);
-      LIGNES.forEach((ligne, li) => {
-        const c0 = Math.round((cols - ligne.length * gl + 1) / 2);
-        [...ligne].forEach((car, k) => {
-          if (car === " ") return;
-          lettres.push({ car, col: c0 + k * gl, rang: r0 + li * 10, depart: 0, duree: 0 });
+      if (aaka) {
+        const lignes = LIGNES_AAKA.map((t) => aakaEnPoints(t, Math.max(10, Math.round(rangs * 0.3))));
+        const ecart = 3;
+        const hautTexte = lignes.reduce((h, l) => h + l.hauteur, 0) + ecart * (lignes.length - 1);
+        let r = Math.round((rangs - hautTexte) / 2);
+        for (const l of lignes) {
+          const c0 = Math.round((cols - l.largeur) / 2);
+          for (const m of l.lettres) lettres.push({ points: m.points, col: c0 + m.dx, rang: r, depart: 0, duree: 0 });
+          r += l.hauteur + ecart;
+        }
+      } else {
+        const gl = 6; // largeur d'une lettre + espace, en points
+        const hautTexte = LIGNES.length * 7 + (LIGNES.length - 1) * 3;
+        const r0 = Math.round((rangs - hautTexte) / 2);
+        LIGNES.forEach((ligne, li) => {
+          const c0 = Math.round((cols - ligne.length * gl + 1) / 2);
+          [...ligne].forEach((car, k) => {
+            if (car === " ") return;
+            lettres.push({ points: GLYPHES[car]!, col: c0 + k * gl, rang: r0 + li * 10, depart: 0, duree: 0 });
+          });
         });
-      });
+      }
       melanger();
     };
 
@@ -153,12 +223,13 @@ export function MatriceNom() {
         const e = Math.min(1, p);
         const chute = 1 - (1 - e) ** 3; // arrive vite puis ralentit
         const rebond = e >= 1 ? 0 : 0;
-        const r = Math.round(-9 + (l.rang + 9) * chute) + rebond;
+        const haut = l.points.length + 2;
+        const r = Math.round(-haut + (l.rang + haut) * chute) + rebond;
         const pose = p >= 1;
         const age = pose ? Math.min(1, (t - l.depart - l.duree) / 0.35) : 0;
-        const g = GLYPHES[l.car]!;
-        for (let y = 0; y < 7; y++) {
-          for (let x = 0; x < 5; x++) {
+        const g = l.points;
+        for (let y = 0; y < g.length; y++) {
+          for (let x = 0; x < g[y]!.length; x++) {
             if (g[y]![x] !== "1") continue;
             const rr = r + y;
             if (rr < 0) continue;
@@ -173,6 +244,10 @@ export function MatriceNom() {
     };
 
     preparer();
+    if (aaka) void document.fonts.load("40px Tavissiv").then(() => {
+      preparer();
+      debut = performance.now();
+    });
     const io = new IntersectionObserver(([e]) => {
       visible = !!e?.isIntersecting;
       if (visible && !calme) {
@@ -192,7 +267,7 @@ export function MatriceNom() {
       io.disconnect();
       window.removeEventListener("resize", surTaille);
     };
-  }, []);
+  }, [aaka]);
 
   return <canvas ref={ref} className="matrice-nom" aria-label="Franck J.H Christen" role="img" />;
 }
