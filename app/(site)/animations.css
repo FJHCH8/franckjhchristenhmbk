@@ -202,3 +202,68 @@
   0% { box-shadow: 0 0 0 0 rgba(27, 161, 226, 0.55); }
   100% { box-shadow: 0 0 0 10px rgba(27, 161, 226, 0); }
 }
+
+/* ═════════════ Odyssée : animations communes ═════════════ */
+
+/* L'onde Material au toucher. */
+.a-onde {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.onde {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+  transform: scale(0);
+  animation: onde 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes onde {
+  60% { opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Les lignes de « qui suis-je » arrivent l'une après l'autre en défilant. */
+  @supports (animation-timeline: view()) {
+    html body :is(.qui-line, .infobloc, .gt-bande, .stories, .pcase, .pano-volet, .param-liste li) {
+      animation: mac-apparait linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+
+  /* Le titre des paramètres et de la recherche glisse en place. */
+  html body .recherche-titre,
+  html body .systeme-nom,
+  html body .systeme-infos div {
+    animation: metro-ligne 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  html body .systeme-infos div:nth-child(2) { animation-delay: 60ms; }
+  html body .systeme-infos div:nth-child(3) { animation-delay: 120ms; }
+
+  /* Les icônes de la barre du haut tournent ou rebondissent légèrement à l'appui. */
+  html body .recherche-ouvrir:active .icone {
+    transform: scale(0.85) rotate(-12deg);
+  }
+
+  html body .recherche-ouvrir .icone,
+  html body .param-ouvrir .icone {
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* La flèche d'une ligne glisse quand on appuie. */
+  html body :is(.param-ligne, .recherche-liste li > button, .infobloc-tete):active :is(.param-chevron, .recherche-fleche, .infobloc-chevron) {
+    transform: translateX(4px);
+  }
+}
+
+/* Material : la ligne ne se décale plus à l'appui, c'est l'onde qui répond. */
+html body .param-ligne:active,
+html body .pcase-corps li > button:active {
+  transform: none !important;
+}

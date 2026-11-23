@@ -4630,3 +4630,40 @@ html body .pcase-evenement.is-repos::after {
 html body .pcase-projet.is-repos::after {
   background: linear-gradient(to top, rgba(0, 40, 90, 0.35), rgba(0, 0, 0, 0) 50%) !important;
 }
+
+/* Bug : l'appui sur une ligne des paramètres affichait un carré blanc autour de l'icône. */
+html body .param .param-ligne:active .param-tuile,
+html body .param .param-lien:active .param-tuile {
+  background: none !important;
+  color: inherit !important;
+  transform: none !important;
+}
+
+html body .param .param-ligne:active .param-tuile .icone {
+  color: inherit;
+}
+
+/* ═════════════ Espaces vides corrigés ═════════════ */
+/* Qui suis-je : le titre ne prend plus la moitié de l'écran, et plus de grand vide en bas. */
+html[data-page="qui-suis-je"] body .scroll-stage {
+  min-height: 0 !important;
+  padding-top: calc(env(safe-area-inset-top) + 8rem) !important;
+  padding-bottom: 1.2rem !important;
+}
+
+html body .qui-follow {
+  padding-bottom: 2.5rem !important;
+}
+
+/* Projets : la page ne force plus la hauteur d'un écran entier. */
+html body .projets .sky-stage {
+  min-height: 0 !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Le bas de page « suivant » : plus compact. */
+html body .suite {
+  padding-top: 1.5rem !important;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 2rem) !important;
+  min-height: 0 !important;
+}

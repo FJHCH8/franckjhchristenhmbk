@@ -15,6 +15,7 @@ import {
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Chargement } from "@/components/Chargement";
+import { Onde } from "@/components/Onde";
 import { Crests } from "@/components/Crests";
 import { Experience } from "@/components/Experience";
 import { Header } from "@/components/Header";
@@ -215,6 +216,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Experience />
           <Intro />
           <Chargement />
+          <Onde />
           <SonBouton />
           <Tilt />
           {children}
