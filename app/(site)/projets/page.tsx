@@ -6,7 +6,9 @@ import { SmileyMark } from "@/components/TitleMarks";
 import { readEtat, vuePublique } from "@/lib/etoiles/etat";
 import { pageMetadata } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
+// Pré-construite et rafraîchie toutes les minutes : la page s'ouvre instantanément ; les citations et projets
+// récents sont rechargés par la page elle-même une fois affichée.
+export const revalidate = 60;
 
 export const metadata = pageMetadata("Projets", "Citations et projets.", "/projets");
 

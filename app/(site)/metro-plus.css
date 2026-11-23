@@ -3730,3 +3730,9 @@ html body .album-manege .album-fleche svg {
   width: 1.4rem;
   background: var(--qui-vert, #5fbf6a);
 }
+
+/* En changeant de page, « suivant » s'efface avec le reste (plus de bas de page seul à l'écran). */
+html.nav-sort .suite {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
