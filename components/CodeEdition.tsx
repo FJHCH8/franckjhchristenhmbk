@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { T } from "@/components/Locale";
 
 const EMPTY = ["", "", "", "", "", ""];
 
@@ -61,7 +62,9 @@ export function CodeEdition({ onOk }: { onOk: () => void }) {
           }
         }}
       >
-        <p className="code-edition-aide">Entre le code à six chiffres pour ouvrir l&apos;édition.</p>
+        <p className="code-edition-aide">
+          <T>{"Entre le code à six chiffres pour ouvrir l’édition."}</T>
+        </p>
         <div className="code-edition-cases">
           {digits.map((digit, index) => (
             <input

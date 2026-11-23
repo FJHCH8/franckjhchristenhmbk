@@ -95,11 +95,11 @@ function Tuile({ nom, couleur }: { nom: NomIcone; couleur: string }) {
 }
 
 const LIGNES: { id: Choix; nom: string; couleur: string }[] = [
-  { id: "langue", nom: "langue", couleur: "#1ba1e2" },
-  { id: "contact", nom: "contact", couleur: "#00aba9" },
-  { id: "apropos", nom: "à propos", couleur: "#6a00ff" },
-  { id: "edition", nom: "édition", couleur: "#d80073" },
-  { id: "oeuf", nom: "easter egg", couleur: "#f0a30a" },
+  { id: "langue", nom: "langue", couleur: "#262626" },
+  { id: "contact", nom: "contact", couleur: "#262626" },
+  { id: "apropos", nom: "à propos", couleur: "#262626" },
+  { id: "edition", nom: "édition", couleur: "#262626" },
+  { id: "oeuf", nom: "easter egg", couleur: "#262626" },
 ];
 
 function Langue() {
@@ -138,7 +138,7 @@ function Contact() {
   return (
     <div className="param-liens">
       <a href="mailto:franckjhchristen@gmail.com" translate="no" className="param-lien">
-        <Tuile nom="contact" couleur="#00aba9" />
+        <Tuile nom="contact" couleur="#262626" />
         <span>
           <small>
             <T>e-mail</T>
@@ -147,7 +147,7 @@ function Contact() {
         </span>
       </a>
       <a href="https://instagram.com/fjhchristenhmbk" rel="noopener noreferrer" target="_blank" translate="no" className="param-lien">
-        <Tuile nom="instagram" couleur="#c1355b" />
+        <Tuile nom="instagram" couleur="#262626" />
         <span>
           <small>
             <T>instagram</T>

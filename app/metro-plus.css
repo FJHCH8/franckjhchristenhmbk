@@ -2589,3 +2589,16 @@ html body .param .param-tuile .param-icone {
 html body .param .param-tuile .param-icone g {
   stroke-width: 1.7;
 }
+
+/* Tuiles sans couleur : gris foncé ; à l'appui, elles passent en blanc, pictogramme noir. */
+html body .param .param-ligne:active .param-tuile,
+html body .param .param-lien:active .param-tuile {
+  background: #fff !important;
+  color: #000;
+  filter: none;
+}
+
+html body .param .param-ligne:active .param-tuile .param-icone g,
+html body .param .param-lien:active .param-tuile .param-icone g {
+  color: #000;
+}
