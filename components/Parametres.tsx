@@ -325,7 +325,6 @@ export function Parametres() {
         ? createPortal(
             <div className={fermant ? "param is-fermant" : "param"} role="dialog" aria-modal="true" aria-label="Paramètres">
               <div className="param-defile" data-lenis-prevent="">
-                <p className="param-app">franck j.h christen</p>
                 <div className="param-logo">
                   <Logo className="param-logo-svg" anime />
                 </div>
@@ -370,9 +369,6 @@ export function Parametres() {
                 )}
                 <div className="param-pied">
                   <MatriceNom />
-                  <p className="param-signature">
-                    <T>Franck J.H. Christen</T>
-                  </p>
                 </div>
               </div>
               <nav className="param-barre" aria-label="Barre d'application">

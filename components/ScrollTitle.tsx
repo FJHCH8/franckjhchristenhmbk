@@ -16,6 +16,7 @@ export function ScrollTitle({
   tone = "ink",
   max = 5.1,
   fond,
+  sous,
 }: {
   id: string;
   text: string;
@@ -25,6 +26,8 @@ export function ScrollTitle({
   max?: number;
   /** Photo plein cadre derrière le titre ; le titre s'y inverse (couleurs en négatif). */
   fond?: string;
+  /** Une ligne sous le titre (ex. « Polymathe »). */
+  sous?: ReactNode;
 }) {
   const { locale } = useLocale();
   const label = titleLabel(locale, text, keep);
@@ -202,6 +205,7 @@ export function ScrollTitle({
       ) : null}
       <div className="scroll-head" ref={heroRef}>
         <h1 id={id}>{face}</h1>
+        {sous ? <p className="scroll-sous">{sous}</p> : null}
         {icon ? <div className="scroll-mark">{icon}</div> : null}
         <span className="scroll-cue" aria-hidden="true">
           <svg viewBox="0 0 24 24">

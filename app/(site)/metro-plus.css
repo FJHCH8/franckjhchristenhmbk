@@ -3480,3 +3480,24 @@ html body .param-barre {
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
+
+/* Paramètres : de l'air sous le titre. */
+html body .param-titre {
+  margin-bottom: 1.6rem !important;
+}
+
+html body .param-defile {
+  padding-top: calc(env(safe-area-inset-top) + 1.4rem);
+}
+
+/* Accueil : « Polymathe » juste sous le nom, sur la photo. */
+html body .scroll-sous {
+  position: relative;
+  margin: 0.55rem 0 0;
+  color: #fff;
+  font-family: var(--font-text);
+  font-size: clamp(0.72rem, 2.6vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
