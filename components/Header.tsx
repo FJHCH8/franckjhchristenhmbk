@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { Parametres } from "@/components/Parametres";
 import { T, useLocale } from "@/components/Locale";
 import { Logo } from "@/components/Logo";
 import { TopBlur } from "@/components/TopBlur";
@@ -23,8 +23,6 @@ export function Header() {
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
   const ready = useRef(false);
-  const taps = useRef<number[]>([]);
-  const navTimer = useRef(0);
 
   const stamp = useRef(0);
 
@@ -41,21 +39,8 @@ export function Header() {
       void logo.getBoundingClientRect();
       logo.classList.add("logo-rejoue");
     }
-    taps.current = [...taps.current.filter((time) => now - time < 2800), now];
-    window.clearTimeout(navTimer.current);
-    if (taps.current.length >= 8) {
-      taps.current = [];
-      window.dispatchEvent(new Event("fjch-edition"));
-      return;
-    }
-    // Hors de l'accueil, le premier appui y ramène tout de suite (il n'y a plus de barre en bas).
-    if (pathname !== "/" && taps.current.length === 1) {
-      router.push("/");
-      return;
-    }
-    navTimer.current = window.setTimeout(() => {
-      taps.current = [];
-    }, 2800);
+    // Hors de l'accueil, un appui sur le logo y ramène.
+    if (pathname !== "/") router.push("/");
   };
 
   useLayoutEffect(() => {
@@ -129,7 +114,7 @@ export function Header() {
           </nav>
         </div>
         <div className="header-tools">
-          <LanguageToggle />
+          <Parametres />
         </div>
       </header>
     </>

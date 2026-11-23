@@ -54,7 +54,18 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
       void fetch("/api/edition/session")
         .then((res) => res.json())
         .then((data: { ok?: boolean; jeton?: string }) => {
-          if (data.ok && data.jeton) setJeton(data.jeton);
+          if (data.ok && data.jeton) {
+            setJeton(data.jeton);
+            // Le code vient d'être entré dans les paramètres, sur une autre page : on ouvre l'édition.
+            try {
+              if (sessionStorage.getItem("fjch-edition-ouvrir")) {
+                sessionStorage.removeItem("fjch-edition-ouvrir");
+                setMenu(true);
+              }
+            } catch {
+              /* navigation privée */
+            }
+          }
         })
         .catch(() => undefined);
     };

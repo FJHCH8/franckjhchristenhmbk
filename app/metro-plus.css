@@ -1873,3 +1873,396 @@ html body .pano-mot.tavissiv {
 .pcase.is-barre .pcase-logo {
   opacity: 0;
 }
+
+/* ═════════════ Les paramètres ═════════════ */
+
+/* L'icône en haut à droite, à la place de « français / tavissiv ». */
+.param-ouvrir {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.param-ouvrir .param-icone {
+  width: 1.7rem;
+  height: 1.7rem;
+  transition: transform 0.6s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.param-ouvrir:active .param-icone {
+  transform: rotate(60deg);
+}
+
+.param-icone {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+}
+
+/* L'écran des paramètres : noir, plein écran, il entre en tourniquet. */
+.param {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  display: flex;
+  flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 1.4rem) var(--gouttiere) calc(env(safe-area-inset-bottom) + 1.4rem);
+  overflow-y: auto;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-text);
+  transform-origin: 0 50%;
+  animation: param-entre 0.42s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+}
+
+@keyframes param-entre {
+  from { opacity: 0; transform: perspective(1200px) rotateY(-70deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Le logo de Franck au milieu : la ligne se trace, s'efface et revient, en boucle. */
+.param-logo {
+  display: grid;
+  place-items: center;
+  margin: 0.4rem 0 1.4rem;
+}
+
+.param-logo-svg {
+  width: min(42vw, 180px);
+  height: auto;
+  color: #fff;
+}
+
+.param-logo .logo-anime .logo-ligne,
+.param-logo .logo-ligne {
+  stroke-dasharray: 1;
+  animation: param-logo-boucle 5s cubic-bezier(0.45, 0, 0.25, 1) infinite !important;
+}
+
+.param-logo .logo-ronds circle {
+  animation: param-rond 5s ease infinite !important;
+  animation-delay: calc(var(--t, 0) * 1.9s) !important;
+  transform: scale(1);
+}
+
+@keyframes param-logo-boucle {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  40% { stroke-dashoffset: 0; opacity: 1; }
+  82% { stroke-dashoffset: 0; opacity: 1; }
+  95% { stroke-dashoffset: 0; opacity: 0; }
+  100% { stroke-dashoffset: 1; opacity: 0; }
+}
+
+@keyframes param-rond {
+  0%, 100% { transform: scale(1); }
+  6% { transform: scale(1.45); }
+  14% { transform: scale(1); }
+}
+
+.param-titre {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 0 1.2rem;
+  font-weight: 300;
+  font-size: clamp(2.6rem, 12vw, 3.6rem);
+  letter-spacing: -0.03em;
+  animation: metro-ligne 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+}
+
+.param-titre .param-icone {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.param-liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.param-liste li {
+  animation: metro-ligne 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  animation-delay: calc(0.08s + var(--i) * 0.05s);
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.7, 0, 1, 0.5);
+}
+
+/* Les autres lignes partent vers la gauche, l'une après l'autre ; celle choisie reste. */
+.param-liste.is-partant li:not(.is-choisi) {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition-delay: calc(var(--i) * 0.03s);
+}
+
+.param-ligne {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.55rem 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-family: var(--font-text);
+  font-weight: 300;
+  font-size: clamp(1.7rem, 7.5vw, 2.3rem);
+  letter-spacing: -0.02em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.param-ligne:active {
+  color: var(--accent);
+}
+
+/* La ligne choisie monte sous le logo, puis son contenu apparaît. */
+.param-detail .param-ligne-titre {
+  margin: 0;
+  cursor: default;
+  transform: translateY(46px);
+  opacity: 0.4;
+  transition: transform 0.45s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.3s ease;
+}
+
+.param-detail.is-monte .param-ligne-titre {
+  transform: none;
+  opacity: 1;
+}
+
+.param-contenu {
+  padding: 1rem 0 0 0.1rem;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.4s ease 0.18s, transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) 0.18s;
+}
+
+.param-detail.is-monte .param-contenu {
+  opacity: 1;
+  transform: none;
+}
+
+/* Langue : des boutons radio Metro (un rond, plein quand il est choisi). */
+.param-radios {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.param-radio {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-family: var(--font-text);
+  font-size: 1.4rem;
+  font-weight: 300;
+  text-align: left;
+  cursor: pointer;
+}
+
+.param-radio small {
+  color: #8a8a8a;
+  font-size: 0.8em;
+}
+
+.param-radio-rond {
+  position: relative;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.param-radio[aria-checked="true"] .param-radio-rond::after {
+  content: "";
+  position: absolute;
+  inset: 0.28rem;
+  border-radius: 50%;
+  background: #fff;
+  animation: param-coche 0.25s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+@keyframes param-coche {
+  from { transform: scale(0); }
+}
+
+.param-radio .tavissiv {
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Liens, textes et boutons. */
+.param-liens {
+  display: grid;
+  gap: 1rem;
+}
+
+.param-liens a:not(.param-bouton) {
+  display: grid;
+  color: #fff;
+  font-size: 1.15rem;
+  text-decoration: none;
+}
+
+.param-liens small {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.param-texte {
+  margin: 0;
+  color: #cfcfcf;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.param-bouton {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0.35rem 1.4rem;
+  border: 2px solid #fff;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--font-text);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: lowercase;
+  cursor: pointer;
+}
+
+.param-bouton:active {
+  background: #fff;
+  color: #000;
+}
+
+.param-bouton:disabled {
+  opacity: 0.35;
+}
+
+.param-retour {
+  align-self: center;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.param-liste + .param-retour,
+.param-detail + .param-retour {
+  margin-top: 2.4rem;
+}
+
+/* Édition : six cases carrées, la case active soulignée de bleu. */
+.code-edition {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.code-edition-aide {
+  margin: 0;
+  color: #cfcfcf;
+}
+
+.code-edition-cases {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.45rem;
+  max-width: 22rem;
+}
+
+.code-edition-cases input {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border: 2px solid #3a3a3a;
+  border-radius: 0;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-text);
+  font-size: 1.8rem;
+  font-weight: 300;
+  text-align: center;
+  caret-color: var(--accent);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.code-edition-cases input:focus {
+  border-color: var(--accent);
+  background: #0b1a24;
+}
+
+.code-edition.is-error .code-edition-cases {
+  animation: code-secoue 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.code-edition.is-error .code-edition-cases input {
+  border-color: #e51400;
+}
+
+@keyframes code-secoue {
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.code-edition-erreur {
+  margin: 0;
+  color: #ff6b5a;
+}
+
+/* L'easter egg : le transcripteur en écriture Aaka. */
+.aaka {
+  display: grid;
+  gap: 1rem;
+}
+
+.aaka-saisie {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 2px solid #3a3a3a;
+  border-radius: 0;
+  background: #111;
+  color: #fff;
+  font-family: var(--font-text);
+  font-size: 1.05rem;
+  resize: vertical;
+  outline: none;
+}
+
+.aaka-saisie:focus {
+  border-color: var(--accent);
+}
+
+.aaka-rendu {
+  min-height: 3rem;
+  margin: 0;
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .param,
+  .param-titre,
+  .param-liste li,
+  .param-logo .logo-ligne,
+  .param-logo .logo-ronds circle {
+    animation: none !important;
+  }
+  .param-logo .logo-ligne {
+    stroke-dashoffset: 0;
+  }
+}

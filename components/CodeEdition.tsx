@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 const EMPTY = ["", "", "", "", "", ""];
 
-export function EditionPorte() {
-  const [open, setOpen] = useState(false);
+/**
+ * Le code d'accès à l'édition : six cases, une par chiffre, façon Windows Phone.
+ * Utilisé dans les paramètres ; quand le code est bon, l'édition s'ouvre.
+ */
+export function CodeEdition({ onOk }: { onOk: () => void }) {
   const [digits, setDigits] = useState(EMPTY);
   const [message, setMessage] = useState("");
   const [shake, setShake] = useState(false);
@@ -13,23 +16,9 @@ export function EditionPorte() {
   const boxes = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    const onAsk = () => {
-      setOpen(true);
-      setMessage("");
-      setDigits(EMPTY);
-      setShake(false);
-    };
-    window.addEventListener("fjch-edition", onAsk);
-    return () => window.removeEventListener("fjch-edition", onAsk);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const focus = window.setTimeout(() => boxes.current[0]?.focus(), 40);
+    const focus = window.setTimeout(() => boxes.current[0]?.focus(), 380);
     return () => window.clearTimeout(focus);
-  }, [open]);
-
-  if (!open) return null;
+  }, []);
 
   const code = digits.join("");
 
@@ -39,12 +28,9 @@ export function EditionPorte() {
   }
 
   return (
-    <div className={shake ? "edition-voile is-error" : "edition-voile"} role="presentation">
       <form
-        className="edition-code"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="edition-titre"
+        className={shake ? "code-edition is-error" : "code-edition"}
+        aria-label="Code d'édition"
         onSubmit={async (event) => {
           event.preventDefault();
           if (code.length !== 6 || busy) return;
@@ -64,7 +50,7 @@ export function EditionPorte() {
               window.setTimeout(() => setShake(false), 520);
               return;
             }
-            setOpen(false);
+            onOk();
             window.dispatchEvent(new CustomEvent("fjch-edition-ok", { detail: data.jeton }));
           } catch {
             setShake(true);
@@ -75,9 +61,8 @@ export function EditionPorte() {
           }
         }}
       >
-        <p className="edition-kicker">Édition</p>
-        <h2 id="edition-titre">Code à six chiffres</h2>
-        <div className="code-cases">
+        <p className="code-edition-aide">Entre le code à six chiffres pour ouvrir l&apos;édition.</p>
+        <div className="code-edition-cases">
           {digits.map((digit, index) => (
             <input
               key={index}
@@ -115,11 +100,10 @@ export function EditionPorte() {
             />
           ))}
         </div>
-        <button type="submit" disabled={busy || code.length !== 6}>
-          Entrer
+        {message ? <p className="code-edition-erreur" role="alert">{message}</p> : null}
+        <button type="submit" className="param-bouton" disabled={busy || code.length !== 6}>
+          {busy ? "vérification…" : "entrer"}
         </button>
-        {message ? <p role="alert">{message}</p> : null}
       </form>
-    </div>
   );
 }

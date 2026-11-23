@@ -16,7 +16,6 @@ import Script from "next/script";
 import type { ReactNode } from "react";
 import { Chargement } from "@/components/Chargement";
 import { Crests } from "@/components/Crests";
-import { EditionPorte } from "@/components/EditionPorte";
 import { Experience } from "@/components/Experience";
 import { Header } from "@/components/Header";
 import { Kinetic } from "@/components/Kinetic";
@@ -217,7 +216,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <Chargement />
           <SonBouton />
           <Tilt />
-          <EditionPorte />
           {children}
           <Suite />
           <footer className="footer">
