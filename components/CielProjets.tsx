@@ -157,7 +157,7 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
                 {cle === "projet" ? <LogoProjets className="pcase-logo" /> : null}
               </button>
               {ouvert ? (
-                <div className="pcase-corps">
+                <div className="pcase-corps" data-lenis-prevent="">
                   {cle === "evenement" ? (
                     <EvenementsTuiles />
                   ) : liste.length ? (

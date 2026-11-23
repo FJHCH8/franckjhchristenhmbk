@@ -289,7 +289,7 @@ export function Parametres() {
       {ouvert
         ? createPortal(
             <div className="param" role="dialog" aria-modal="true" aria-label="Paramètres">
-              <div className="param-defile">
+              <div className="param-defile" data-lenis-prevent="">
                 <p className="param-app">franck j.h christen</p>
                 <div className="param-logo">
                   <Logo className="param-logo-svg" anime />
