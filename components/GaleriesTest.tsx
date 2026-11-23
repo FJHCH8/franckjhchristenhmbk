@@ -29,29 +29,39 @@ const POINTS: [number, number][] = [
 const PLACES: Record<string, number> = { insta: 0, projets: 2, qui: 4, apropos: 6, contact: 8 };
 
 export function GalerieConstellation() {
-  const [choix, setChoix] = useState("qui");
-  const r = RUBRIQUES.find((x) => x.id === choix)!;
+  const [choix, setChoix] = useState<string | null>(null);
+  const [fermant, setFermant] = useState(false);
+  const r = RUBRIQUES.find((x) => x.id === choix);
+  const origine = r ? POINTS[PLACES[r.id]!]! : null;
+
+  const fermer = () => {
+    setFermant(true);
+    window.setTimeout(() => {
+      setFermant(false);
+      setChoix(null);
+    }, 380);
+  };
+
   return (
     <section className="gt gt-constellation">
       <p className="gt-kicker">explorer</p>
       <h2 className="gt-titre">la constellation</h2>
-      <div className="gt-ciel">
+      <div className={choix && !fermant ? "gt-ciel is-retire" : "gt-ciel"}>
         <svg viewBox="0 0 200 200" aria-hidden="true">
-          <path d={"M" + POINTS.map(([x, y]) => `${x} ${y}`).join(" L")} fill="none" stroke="#3a3a3a" strokeWidth="1" strokeLinejoin="round" />
+          <path className="gt-trace" pathLength={1} d={"M" + POINTS.map(([x, y]) => `${x} ${y}`).join(" L")} fill="none" stroke="#4a4a4a" strokeWidth="0.9" strokeLinejoin="round" />
           {POINTS.map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r="2" fill="#555" />
+            <circle key={i} className="gt-scintille" cx={x} cy={y} r="1.8" fill="#888" style={{ ["--i" as string]: i } as CSSProperties} />
           ))}
         </svg>
-        {RUBRIQUES.map((x) => {
+        {RUBRIQUES.map((x, i) => {
           const [px, py] = POINTS[PLACES[x.id]!]!;
           return (
             <button
               key={x.id}
               type="button"
-              className={x.id === choix ? "gt-astre is-actif" : "gt-astre"}
-              style={{ left: `${(px / 200) * 100}%`, top: `${(py / 200) * 100}%` } as CSSProperties}
+              className="gt-astre"
+              style={{ left: `${(px / 200) * 100}%`, top: `${(py / 200) * 100}%`, ["--i" as string]: i } as CSSProperties}
               onClick={() => setChoix(x.id)}
-              aria-pressed={x.id === choix}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={x.photo} alt="" style={{ objectPosition: x.cadre }} />
@@ -59,11 +69,29 @@ export function GalerieConstellation() {
             </button>
           );
         })}
-      </div>
-      <div className="gt-fiche" key={r.id}>
-        <p className="gt-kicker">0{RUBRIQUES.indexOf(r) + 1} · {r.titre}</p>
-        <p className="gt-fiche-texte">{r.texte}</p>
-        <Ouvrir r={r} className="gt-bouton" />
+        <p className="gt-indice">touche une étoile</p>
+
+        {r && origine ? (
+          <article
+            className={fermant ? "gt-zoom is-fermant" : "gt-zoom"}
+            style={{ ["--ox" as string]: `${(origine[0] / 200) * 100}%`, ["--oy" as string]: `${(origine[1] / 200) * 100}%` } as CSSProperties}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={r.photo} alt="" style={{ objectPosition: r.cadre }} />
+            <div className="gt-zoom-voile" />
+            <button type="button" className="gt-zoom-fermer" aria-label="Revenir à la constellation" onClick={fermer}>
+              <svg viewBox="0 0 16 16">
+                <path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+            <div className="gt-zoom-texte">
+              <p className="gt-kicker">0{RUBRIQUES.indexOf(r) + 1} · étoile</p>
+              <h3>{r.titre}</h3>
+              <p>{r.texte}</p>
+              <Ouvrir r={r} className="gt-bouton gt-bouton-plein" />
+            </div>
+          </article>
+        ) : null}
       </div>
     </section>
   );
