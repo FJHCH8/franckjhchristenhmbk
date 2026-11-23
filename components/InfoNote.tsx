@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { Icone } from "@/components/Icone";
 import { T } from "@/components/Locale";
 
 const BUBBLE =
@@ -17,27 +18,18 @@ export function InfoNote() {
     <div className={ouvert ? "infobloc is-ouvert" : "infobloc"}>
       <button type="button" className="infobloc-tete" aria-expanded={ouvert} aria-controls={id} onClick={() => setOuvert((o) => !o)}>
         <span className="infobloc-tuile" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 10v9.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            <circle cx="12" cy="5.6" r="1.5" fill="currentColor" />
-          </svg>
+          <Icone nom="info" />
         </span>
         <span className="infobloc-titre">
           <T>information</T>
         </span>
-        <svg className="infobloc-chevron" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <Icone nom="chevron_right" className="infobloc-chevron" />
       </button>
       <div className="infobloc-corps" id={id} role="region" aria-hidden={!ouvert} inert={ouvert ? undefined : true}>
         <div>
           <p>{BUBBLE}</p>
           <a href="https://www.instagram.com/fjhchristenhmbk/" rel="noopener noreferrer" target="_blank" translate="no">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="4" y="4" width="16" height="16" rx="4.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-              <circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
-              <circle cx="16.8" cy="7.2" r="1" fill="currentColor" />
-            </svg>
+            <Icone nom="photo_camera" />
             @fjhchristenhmbk
           </a>
         </div>

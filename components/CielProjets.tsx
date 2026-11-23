@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
 import { EvenementsTuiles, ProjetsPanorama, useMaintenant } from "@/components/ProjetsPanorama";
 import { EVENEMENTS } from "@/lib/paris";
+import { Icone } from "@/components/Icone";
 import { T } from "@/components/Locale";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
@@ -11,9 +12,7 @@ import { SIGNATURE } from "@/lib/etoiles/semence";
 function FermerBouton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" className="etoile-fermer" onClick={onClick}>
-      <svg viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5" fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" />
-      </svg>
+      <Icone nom="close" />
       Fermer
     </button>
   );
@@ -170,9 +169,7 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
                 <span>{nom}</span>
                 {ouvert ? (
                   <i className="pcase-fermer" aria-hidden="true">
-                    <svg viewBox="0 0 16 16">
-                      <path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                    </svg>
+                    <Icone nom="close" />
                   </i>
                 ) : null}
               </button>
@@ -191,9 +188,7 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
                                 <strong>{etoile.titre || (etoile.texte ? `« ${etoile.texte.slice(0, 42)}${etoile.texte.length > 42 ? "…" : ""} »` : dateFr(etoile.date)) || "Sans titre"}</strong>
                                 <small>{dateFr(etoile.date)}</small>
                               </span>
-                              <svg className="pcase-chevron" viewBox="0 0 16 16" aria-hidden="true">
-                                <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
+                              <Icone nom="chevron_right" className="pcase-chevron" />
                             </button>
                             {montre ? (
                               <div className="pcase-fiche">

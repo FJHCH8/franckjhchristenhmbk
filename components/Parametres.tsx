@@ -5,92 +5,31 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { CodeEdition } from "@/components/CodeEdition";
 import { T, useLocale } from "@/components/Locale";
+import { Icone, type NomIcone } from "@/components/Icone";
 import { Logo } from "@/components/Logo";
 import { MatriceNom } from "@/components/MatriceNom";
 import { clic } from "@/lib/sons";
 
-type Choix = "langue" | "contact" | "apropos" | "edition" | "oeuf";
+type Choix = "langue" | "contact" | "apropos" | "systeme" | "edition" | "oeuf";
 
-const trait = { fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+/** Correspondance entre les rubriques et les icônes du système. */
+const ICONE_DE = {
+  langue: "language",
+  contact: "mail",
+  apropos: "info",
+  edition: "edit",
+  oeuf: "egg_alt",
+  systeme: "phone_iphone",
+  reglages: "settings",
+  retour: "arrow_back",
+  instagram: "photo_camera",
+} as const satisfies Record<string, NomIcone>;
 
-/** Les pictogrammes, dessinés dans un carré de 24 : traits fins et réguliers, formes simples. */
-function Glyphe({ nom }: { nom: NomIcone }) {
-  switch (nom) {
-    case "reglages":
-      return (
-        <g {...trait}>
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.6 7.6 0 0 0-2.6-1.5L14.2 2.6h-4.4l-.3 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.6 7.6 0 0 0 2.6 1.5l.3 2.5h4.4l.3-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3 1 2-3.4z" />
-        </g>
-      );
-    case "langue":
-      return (
-        <g {...trait}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z" />
-        </g>
-      );
-    case "contact":
-      return (
-        <g {...trait}>
-          <path d="M3.5 6.5h17v11h-17z" />
-          <path d="M3.8 6.8 12 13l8.2-6.2" />
-        </g>
-      );
-    case "apropos":
-      return (
-        <g {...trait}>
-          <path d="M12 10v9.5" strokeWidth="2.4" />
-          <circle cx="12" cy="5.6" r="1.5" fill="currentColor" stroke="none" />
-        </g>
-      );
-    case "edition":
-      return (
-        <g {...trait}>
-          <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
-          <path d="M13.5 6.5l4 4" />
-        </g>
-      );
-    case "oeuf":
-      return (
-        <g {...trait}>
-          <path d="M12 3.2c3.5 0 6.2 5.1 6.2 9.2a6.2 6.2 0 0 1-12.4 0c0-4.1 2.7-9.2 6.2-9.2z" />
-          <path d="M6.3 11.8 8.6 13l2.2-1.5 2.4 1.5 2.2-1.5 2.3 1.2" />
-        </g>
-      );
-    case "retour":
-      return (
-        <g {...trait}>
-          <path d="M19 12H5M11 6l-6 6 6 6" />
-        </g>
-      );
-    case "instagram":
-      return (
-        <g {...trait}>
-          <rect x="4" y="4" width="16" height="16" rx="4.5" />
-          <circle cx="12" cy="12" r="3.6" />
-          <path d="M16.8 7.2v.1" strokeWidth="2.2" />
-        </g>
-      );
-  }
-}
-
-type NomIcone = Choix | "reglages" | "retour" | "instagram";
-
-/** Le pictogramme seul. */
-function Icone({ nom }: { nom: NomIcone }) {
+/** Une petite tuile argentée en relief, façon vieil iPhone, avec l'icône pleine au centre. */
+function Tuile({ nom }: { nom: keyof typeof ICONE_DE; couleur?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="param-icone">
-      <Glyphe nom={nom} />
-    </svg>
-  );
-}
-
-/** Une petite tuile Metro carrée, de couleur, avec le pictogramme blanc au centre. */
-function Tuile({ nom, couleur }: { nom: NomIcone; couleur: string }) {
-  return (
-    <span className="param-tuile" style={{ background: couleur }}>
-      <Icone nom={nom} />
+    <span className="param-tuile">
+      <Icone nom={ICONE_DE[nom]} />
     </span>
   );
 }
@@ -99,6 +38,7 @@ const LIGNES: { id: Choix; nom: string; couleur: string }[] = [
   { id: "langue", nom: "langue", couleur: "#262626" },
   { id: "contact", nom: "contact", couleur: "#262626" },
   { id: "apropos", nom: "à propos", couleur: "#262626" },
+  { id: "systeme", nom: "système", couleur: "#262626" },
   { id: "edition", nom: "édition", couleur: "#262626" },
   { id: "oeuf", nom: "easter egg", couleur: "#262626" },
 ];
@@ -139,7 +79,7 @@ function Contact() {
   return (
     <div className="param-liens">
       <a href="mailto:franckjhchristen@gmail.com" translate="no" className="param-lien">
-        <Tuile nom="contact" couleur="#262626" />
+        <Tuile nom="contact" />
         <span>
           <small>
             <T>e-mail</T>
@@ -148,7 +88,7 @@ function Contact() {
         </span>
       </a>
       <a href="https://instagram.com/fjhchristenhmbk" rel="noopener noreferrer" target="_blank" translate="no" className="param-lien">
-        <Tuile nom="instagram" couleur="#262626" />
+        <Tuile nom="instagram" />
         <span>
           <small>
             <T>instagram</T>
@@ -181,6 +121,29 @@ function APropos() {
   );
 }
 
+/** « Système » : le nom de l'interface du site et sa version, comme dans les réglages d'un téléphone. */
+function Systeme() {
+  return (
+    <div className="systeme">
+      <div className="systeme-carte">
+        <Logo className="systeme-logo" />
+        <p className="systeme-nom">{SYSTEME.nom}</p>
+        <p className="systeme-version">
+          version {SYSTEME.version} · <i>{SYSTEME.code}</i>
+        </p>
+      </div>
+      <dl className="systeme-infos">
+        {SYSTEME.lignes.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 /** L'easter egg : on écrit en lettres latines, le texte apparaît dans l'écriture Aaka. */
 function Transcripteur() {
   const [texte, setTexte] = useState("franck j.h christen h.m.b.k");
@@ -198,7 +161,22 @@ function Transcripteur() {
   );
 }
 
-const CHOIX: Choix[] = ["langue", "contact", "apropos", "edition", "oeuf"];
+/** La fiche du système. Le nom et le nom de code se changent ici. */
+const SYSTEME = {
+  nom: "Constellation",
+  version: "1.0",
+  code: "L’aube",
+  lignes: [
+    ["interface", "Constellation 1.0"],
+    ["nom de code", "L’aube"],
+    ["créée par", "Franck J.H. Christen"],
+    ["mise à jour", "23 novembre 2026"],
+    ["icônes", "Material Icons (pleines)"],
+    ["écriture", "Tavissiv · Aaka"],
+  ] as [string, string][],
+};
+
+const CHOIX: Choix[] = ["langue", "contact", "apropos", "systeme", "edition", "oeuf"];
 
 /**
  * Les paramètres, comme ceux de Windows Phone : le nom du site en petites capitales,
@@ -319,7 +297,7 @@ export function Parametres() {
           ouvrirSur(null);
         }}
       >
-        <Icone nom="reglages" />
+        <Icone nom="settings" />
       </button>
       {ouvert
         ? createPortal(
@@ -337,7 +315,7 @@ export function Parametres() {
                       {LIGNES.map((l, i) => (
                         <li key={l.id} className={partant === l.id ? "is-choisi" : undefined} style={{ ["--i" as string]: i } as CSSProperties}>
                           <button type="button" className="param-ligne" onClick={() => choisir(l.id)}>
-                            <Tuile nom={l.id} couleur={l.couleur} />
+                            <Tuile nom={l.id} />
                             <span className="param-ligne-texte">
                               <T>{l.nom}</T>
                             </span>
@@ -355,7 +333,7 @@ export function Parametres() {
                 ) : (
                   <div className={monte ? "param-detail is-monte" : "param-detail"}>
                     <h2 className="param-ligne param-ligne-titre">
-                      {ligne ? <Tuile nom={choix} couleur={ligne.couleur} /> : null}
+                      {ligne ? <Tuile nom={choix} /> : null}
                       <span className="param-ligne-texte">{ligne ? <T>{ligne.nom}</T> : null}</span>
                     </h2>
                     <div className="param-contenu">
@@ -364,6 +342,7 @@ export function Parametres() {
                       {choix === "apropos" ? <APropos /> : null}
                       {choix === "edition" ? <CodeEdition onOk={editionOk} /> : null}
                       {choix === "oeuf" ? <Transcripteur /> : null}
+                      {choix === "systeme" ? <Systeme /> : null}
                     </div>
                   </div>
                 )}
@@ -373,7 +352,7 @@ export function Parametres() {
               </div>
               <nav className="param-barre" aria-label="Barre d'application">
                 <button type="button" className="param-barre-bouton" onClick={retour}>
-                  <Icone nom="retour" />
+                  <Icone nom="arrow_back" />
                   <span>{choix ? <T>retour</T> : "fermer"}</span>
                 </button>
               </nav>
