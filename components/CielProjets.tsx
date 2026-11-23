@@ -18,8 +18,8 @@ function FermerBouton({ onClick }: { onClick: () => void }) {
   );
 }
 
-/** La vidéo de chaque case : le ciel pour les projets, le blé pour les citations, l'herbe pour les événements. */
-const VIDEO: Record<string, string> = { projet: "ciel", citation: "ble", evenement: "herbe" };
+/** Le fond animé de chaque case : verre holographique (projets), lumière de Windows 7 (citations), accueil Wii U (événements). */
+const FOND: Record<string, string> = { projet: "holo", citation: "seven", evenement: "wiiu" };
 
 /** La couleur de chaque case : citations en beige, projets en bleu, événements en vert. */
 function couleurRubrique(cle: string) {
@@ -143,18 +143,12 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
               className={`pcase pcase-${cle} is-${etat}`}
               style={{ background: couleurRubrique(cle), ["--couleur" as string]: couleurRubrique(cle) } as React.CSSProperties}
             >
-              {/* Au repos, une vidéo apaisante en boucle ; dès qu'une case s'ouvre, il ne reste que la couleur. */}
-              <video
-                className="pcase-video"
-                src={`/videos/${VIDEO[cle]}.mp4`}
-                poster={`/videos/${VIDEO[cle]}.jpg`}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                aria-hidden="true"
-              />
+              {/* Au repos, un fond animé façon vieille interface ; dès qu'une case s'ouvre, il ne reste que la couleur. */}
+              <div className={`pcase-fond pcase-fond-${FOND[cle]}`} aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </div>
               <button
                 type="button"
                 className="pcase-tete"

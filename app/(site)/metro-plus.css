@@ -4436,3 +4436,197 @@ html body .stories {
 .recherche-effacer {
   border-radius: 0 !important;
 }
+
+/* ═════════════ Fonds animés des cases (remplacent les vidéos) ═════════════ */
+.pcase-fond {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.pcase:not(.is-repos) .pcase-fond {
+  opacity: 0;
+}
+
+.pcase-fond i {
+  position: absolute;
+  display: block;
+}
+
+/* ── Projets (bleu) : film holographique ── */
+.pcase-fond-holo {
+  background: linear-gradient(115deg, #ff9ad5, #a5f3ff, #fff3a5, #b6a5ff, #a5ffcf, #ff9ad5);
+  background-size: 400% 400%;
+  animation: holo-teinte 14s ease-in-out infinite alternate;
+}
+
+/* La couleur de la case, posée sur l'arc-en-ciel comme un filtre. */
+.pcase-fond-holo i:nth-child(1) {
+  inset: 0;
+  background: #1ba1e2;
+  mix-blend-mode: multiply;
+}
+
+/* Le reflet qui glisse en biais. */
+.pcase-fond-holo i:nth-child(2) {
+  inset: -50% -100%;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.4) 50%, transparent 58%);
+  animation: holo-reflet 6.5s ease-in-out infinite;
+}
+
+.pcase-fond-holo i:nth-child(3) {
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 45%);
+}
+
+@keyframes holo-teinte {
+  from { background-position: 0% 30%; }
+  to { background-position: 100% 70%; }
+}
+
+@keyframes holo-reflet {
+  0%, 30% { transform: translateX(-35%); }
+  70%, 100% { transform: translateX(35%); }
+}
+
+/* ── Citations (beige) : lumière de Windows 7 ── */
+.pcase-fond-seven {
+  background: radial-gradient(circle at 58% 55%, #f3e3c4 0%, #c9a874 32%, #6d5333 100%);
+}
+
+/* Les rubans de lumière qui partent du centre et tournent lentement. */
+.pcase-fond-seven i:nth-child(1) {
+  left: 58%;
+  top: 55%;
+  width: 260%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.28) 0deg 4deg, rgba(255, 255, 255, 0) 7deg 22deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, rgba(0, 0, 0, 0.6) 25%, transparent 60%);
+  mask-image: radial-gradient(circle, #000 0%, rgba(0, 0, 0, 0.6) 25%, transparent 60%);
+  filter: blur(5px);
+  animation: seven-tourne 40s linear infinite;
+}
+
+/* Le cœur lumineux qui respire. */
+.pcase-fond-seven i:nth-child(2) {
+  left: 58%;
+  top: 55%;
+  width: 46%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 245, 220, 0.25) 45%, transparent 70%);
+  animation: seven-respire 5s ease-in-out infinite;
+}
+
+.pcase-fond-seven i:nth-child(3) {
+  inset: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), transparent 40%);
+}
+
+@keyframes seven-tourne {
+  to { rotate: 360deg; }
+}
+
+@keyframes seven-respire {
+  0%, 100% { opacity: 0.75; scale: 0.92; }
+  50% { opacity: 1; scale: 1.08; }
+}
+
+/* ── Événements (vert) : l'accueil de la Wii U, en mieux ── */
+.pcase-fond-wiiu {
+  background: linear-gradient(135deg, #dff5d8 0%, #a9e29b 45%, #5fbf55 100%);
+}
+
+/* La grille de petits points blancs qui dérive lentement. */
+.pcase-fond-wiiu i:nth-child(1) {
+  inset: -30px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.8) 1.4px, transparent 1.8px);
+  background-size: 18px 18px;
+  -webkit-mask-image: linear-gradient(115deg, #000, rgba(0, 0, 0, 0.25) 70%);
+  mask-image: linear-gradient(115deg, #000, rgba(0, 0, 0, 0.25) 70%);
+  animation: wiiu-points 9s linear infinite;
+}
+
+/* Deux grandes formes douces et translucides qui flottent. */
+.pcase-fond-wiiu i:nth-child(2),
+.pcase-fond-wiiu i:nth-child(3) {
+  width: 90%;
+  aspect-ratio: 1.6;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
+}
+
+.pcase-fond-wiiu i:nth-child(2) {
+  left: -20%;
+  top: 30%;
+  animation: wiiu-flotte 12s ease-in-out infinite alternate;
+}
+
+.pcase-fond-wiiu i:nth-child(3) {
+  right: -25%;
+  top: -30%;
+  animation: wiiu-flotte 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes wiiu-points {
+  to { transform: translate(18px, -18px); }
+}
+
+@keyframes wiiu-flotte {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(18%, -12%) scale(1.15); }
+}
+
+/* Sur les fonds clairs, le nombre et le nom restent lisibles. */
+html body .pcase-evenement.is-repos .pcase-tete strong,
+html body .pcase-evenement.is-repos .pcase-tete span {
+  text-shadow: 0 1px 10px rgba(0, 60, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcase-fond,
+  .pcase-fond i {
+    animation: none !important;
+  }
+}
+
+/* Réglages : un holographique lumineux (teinte bleue, pas assombri), des formes Wii U bien visibles. */
+.pcase-fond-holo i:nth-child(1) {
+  background: #1ba1e2 !important;
+  mix-blend-mode: color !important;
+  opacity: 0.7;
+}
+
+.pcase-fond-holo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(200deg, rgba(10, 60, 120, 0) 40%, rgba(10, 60, 120, 0.45));
+}
+
+.pcase-fond-wiiu i:nth-child(2),
+.pcase-fond-wiiu i:nth-child(3) {
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.25) 45%, rgba(255, 255, 255, 0) 70%) !important;
+}
+
+html body .pcase-evenement.is-repos::after {
+  background: linear-gradient(to top, rgba(20, 70, 20, 0.45), rgba(0, 0, 0, 0) 55%) !important;
+}
+
+.pcase-fond-holo i:nth-child(1) {
+  background: #5fb8ec !important;
+  mix-blend-mode: multiply !important;
+  opacity: 1;
+}
+
+.pcase-fond-holo::after {
+  background: linear-gradient(200deg, rgba(10, 60, 120, 0) 50%, rgba(10, 60, 140, 0.3)) !important;
+}
+
+html body .pcase-projet.is-repos::after {
+  background: linear-gradient(to top, rgba(0, 40, 90, 0.35), rgba(0, 0, 0, 0) 50%) !important;
+}
