@@ -4087,3 +4087,31 @@ html body .systeme-nom {
   border-left-color: #fff;
   color: #fff;
 }
+
+/* Le cheval d'Odyssée se dessine une fois, trait après trait, puis ne bouge plus. */
+.logo-odyssee path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: odyssee-trait var(--duree) cubic-bezier(0.45, 0.05, 0.4, 1) var(--debut) forwards;
+}
+
+@keyframes odyssee-trait {
+  to { stroke-dashoffset: 0; }
+}
+
+html body .systeme-image {
+  aspect-ratio: auto;
+  padding: 1.2rem 0;
+}
+
+html body .systeme-image .logo-odyssee {
+  width: min(58%, 15rem);
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-odyssee path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

@@ -7,6 +7,7 @@ import { CodeEdition } from "@/components/CodeEdition";
 import { T, useLocale } from "@/components/Locale";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { Logo } from "@/components/Logo";
+import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { MatriceNom } from "@/components/MatriceNom";
 import { clic } from "@/lib/sons";
 
@@ -128,7 +129,7 @@ function Systeme() {
   return (
     <div className="systeme">
       <div className="systeme-image">
-        <Logo className="systeme-logo" />
+        <LogoOdyssee className="systeme-logo" />
       </div>
       <p className="systeme-nom">{SYSTEME.nom}</p>
       <dl className="systeme-infos">
