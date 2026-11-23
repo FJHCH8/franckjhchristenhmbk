@@ -62,11 +62,11 @@ export function MatriceNom() {
 
     const preparer = () => {
       largeur = canvas.clientWidth;
-      hauteur = Math.round(largeur * 0.62);
+      hauteur = Math.round(largeur * 0.4);
       canvas.style.height = `${hauteur}px`;
       canvas.width = Math.round(largeur * dpr);
       canvas.height = Math.round(hauteur * dpr);
-      pas = Math.max(4, Math.round(largeur / 64));
+      pas = Math.max(4, Math.round(largeur / 70));
       cols = Math.floor(largeur / pas);
       rangs = Math.floor(hauteur / pas);
 

@@ -2735,3 +2735,62 @@ html body .bento-carte .bento-image {
 .param-pied p span:last-child {
   color: #8a8a8a;
 }
+
+/* Paramètres compacts : tout tient à l'écran, sans faire défiler. */
+html body .param-defile {
+  padding-top: calc(env(safe-area-inset-top) + 0.8rem);
+  padding-bottom: 0.8rem;
+}
+
+html body .param-logo {
+  margin: 0.2rem 0 0.1rem;
+}
+
+html body .param-logo-svg {
+  width: min(24vw, 9svh, 110px);
+}
+
+html body .param-titre {
+  margin-bottom: 0.5rem;
+  font-size: clamp(2.2rem, min(11vw, 6.5svh), 3.2rem);
+}
+
+html body .param-liste li + li {
+  margin-top: 0.1rem;
+}
+
+html body .param-ligne {
+  gap: 0.8rem;
+  padding: 0.3rem 0;
+}
+
+html body .param .param-tuile {
+  width: 2.3rem;
+  height: 2.3rem;
+}
+
+html body .param .param-tuile .param-icone {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+}
+
+html body .param-ligne-texte {
+  font-size: clamp(1.3rem, min(6vw, 3.4svh), 1.7rem);
+}
+
+html body .param-ligne-titre .param-tuile {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+html body .param-pied {
+  margin-top: 1.1rem;
+  padding-bottom: 0;
+}
+
+html body .param-pied p {
+  margin-top: 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
