@@ -80,6 +80,8 @@ export function Chapitres() {
     const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let frame = 0;
     let dernier = -1;
+    const chaps = Array.from(node.querySelectorAll<HTMLElement>(".cine-chap"));
+    const images = node.querySelector<HTMLElement>(".cine-images");
     const peindre = () => {
       frame = 0;
       const r = node.getBoundingClientRect();
@@ -88,7 +90,15 @@ export function Chapitres() {
       const v = calme ? Math.round(p * (CHAPITRES.length - 1)) / (CHAPITRES.length - 1) : p;
       if (Math.abs(v - dernier) < 0.0005) return;
       dernier = v;
-      node.style.setProperty("--p", v.toFixed(4));
+      // Chaque chapitre reçoit sa propre position ; ceux qui sont loin sont retirés du calcul.
+      const pos = v * (CHAPITRES.length - 1);
+      chaps.forEach((chap, i) => {
+        const d = pos - i;
+        const loin = Math.abs(d) > 0.5;
+        if (chap.hidden !== loin) chap.hidden = loin;
+        if (!loin) chap.style.setProperty("--d", d.toFixed(4));
+      });
+      images?.style.setProperty("--p", v.toFixed(4));
     };
     const surDefilement = () => {
       if (!frame) frame = window.requestAnimationFrame(peindre);
@@ -107,7 +117,7 @@ export function Chapitres() {
     <section className="cine" ref={scene} aria-label="Chapitres du site" style={{ ["--n" as string]: CHAPITRES.length } as CSSProperties}>
       <div className="cine-plateau">
         {CHAPITRES.map((c, i) => (
-          <article key={c.id} className="cine-chap" style={{ ["--i" as string]: i } as CSSProperties} aria-labelledby={`cine-${c.id}`}>
+          <article key={c.id} className="cine-chap" hidden={i > 0} style={{ ["--i" as string]: i } as CSSProperties} aria-labelledby={`cine-${c.id}`}>
             <p className={`cine-mot ${anton.className}`} aria-hidden="true" style={{ ["--len" as string]: c.mot.length } as CSSProperties}>
               {c.mot}
             </p>

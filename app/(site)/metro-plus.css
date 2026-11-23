@@ -2960,7 +2960,7 @@ html body .pcase-evenement.is-repos .pcase-tete span {
 }
 
 .cine-chap {
-  --d: calc(var(--p) * (var(--n) - 1) - var(--i));
+  --d: 0;
   --a: max(var(--d), calc(var(--d) * -1)); /* distance au centre */
   --ouvert: clamp(0, calc(1 - var(--a) * 2.2), 1); /* l'objectif s'ouvre près du centre */
   --vis: clamp(0, calc(1 - var(--a) * 2.3), 1);
@@ -2971,6 +2971,10 @@ html body .pcase-evenement.is-repos .pcase-tete span {
 }
 
 /* Le chapitre au centre est le seul qu'on peut toucher. */
+.cine-chap[hidden] {
+  display: none;
+}
+
 .cine-chap .cine-entrer {
   pointer-events: auto;
 }
@@ -3179,6 +3183,7 @@ html body .cine-entrer {
 }
 
 .cine-images {
+  --p: 0;
   display: flex;
   gap: 0.5rem;
   height: 100%;
