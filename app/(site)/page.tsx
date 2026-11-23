@@ -1,6 +1,5 @@
 import { Crests } from "@/components/Crests";
 import { Galerie } from "@/components/Galerie";
-import { Chapitres } from "@/components/Chapitres";
 import { Split } from "@/components/Kinetic";
 import { ScrollTitle } from "@/components/ScrollTitle";
 import { HOME_DESCRIPTION, pageMetadata } from "@/lib/site";
@@ -21,7 +20,6 @@ export default function HomePage() {
           <Crests />
         </div>
       </section>
-      <Chapitres />
       <Galerie />
     </main>
   );
