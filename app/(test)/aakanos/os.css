@@ -241,3 +241,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 @media (prefers-reduced-motion: reduce) {
   .os *, .os *::before { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+.os-quitter { display: grid; gap: 2px; margin: 8px 0 0; padding: 14px 16px; text-align: left; background: #1b1b1b; border-top: 1px solid #333; border-bottom: 1px solid #000; }
+.os-quitter span { font-size: 16px; }
+.os-quitter small { font-size: 12px; color: var(--holo); text-transform: uppercase; letter-spacing: 1px; }
+.os-quitter:active { background: rgba(51, 181, 229, .35); }

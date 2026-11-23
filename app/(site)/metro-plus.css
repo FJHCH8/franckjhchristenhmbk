@@ -4667,3 +4667,24 @@ html body .suite {
   padding-bottom: calc(env(safe-area-inset-bottom) + 2rem) !important;
   min-height: 0 !important;
 }
+
+/* Apparence : bouton « lancer AakanOS » (plat, carré, Odyssée) */
+html body .param-lancer {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  margin-top: 1.2rem;
+  padding: 0.95rem 1rem;
+  background: #fff;
+  color: #000;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  font-size: 1.02rem;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s ease;
+}
+html body .param-lancer svg { width: 1.4rem; height: 1.4rem; fill: currentColor; }
+html body .param-lancer:hover { background: #e8e8e8; }
+html body .param-lancer:active { transform: scale(0.98); }

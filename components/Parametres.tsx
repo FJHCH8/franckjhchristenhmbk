@@ -11,10 +11,11 @@ import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { MatriceNom } from "@/components/MatriceNom";
 import { clic } from "@/lib/sons";
 
-type Choix = "langue" | "contact" | "apropos" | "systeme" | "edition" | "oeuf";
+type Choix = "apparence" | "langue" | "contact" | "apropos" | "systeme" | "edition" | "oeuf";
 
 /** Correspondance entre les rubriques et les icônes du système. */
 const ICONE_DE = {
+  apparence: "palette",
   langue: "language",
   contact: "mail",
   apropos: "info",
@@ -36,6 +37,7 @@ function Tuile({ nom }: { nom: keyof typeof ICONE_DE; couleur?: string }) {
 }
 
 const LIGNES: { id: Choix; nom: string; couleur: string }[] = [
+  { id: "apparence", nom: "apparence", couleur: "#262626" },
   { id: "langue", nom: "langue", couleur: "#262626" },
   { id: "contact", nom: "contact", couleur: "#262626" },
   { id: "apropos", nom: "à propos", couleur: "#262626" },
@@ -43,6 +45,65 @@ const LIGNES: { id: Choix; nom: string; couleur: string }[] = [
   { id: "edition", nom: "édition", couleur: "#262626" },
   { id: "oeuf", nom: "easter egg", couleur: "#262626" },
 ];
+
+/** Apparence : le site classique, ou AakanOS (le site comme un système de téléphone). */
+const CLE_APPARENCE = "fjch-apparence";
+function Apparence() {
+  const [mode, setMode] = useState<"classique" | "aakanos">(() => {
+    try {
+      return typeof window !== "undefined" && localStorage.getItem(CLE_APPARENCE) === "aakanos" ? "aakanos" : "classique";
+    } catch {
+      return "classique";
+    }
+  });
+  const dansAakanOS = typeof window !== "undefined" && window.top !== window.self;
+  const choisir = (m: "classique" | "aakanos") => {
+    setMode(m);
+    try {
+      localStorage.setItem(CLE_APPARENCE, m);
+    } catch {
+      /* navigation privée */
+    }
+    // Depuis une appli d'AakanOS, revenir au site classique quitte le système entier.
+    if (m === "classique" && dansAakanOS && window.top) window.top.location.assign("/");
+  };
+  const options = [
+    { id: "classique" as const, nom: "site classique", sous: "Odyssée" },
+    { id: "aakanos" as const, nom: "AakanOS", sous: "le site comme un téléphone" },
+  ];
+  return (
+    <>
+      <div className="param-radios" role="radiogroup" aria-label="Apparence">
+        {options.map((o) => (
+          <button key={o.id} type="button" role="radio" aria-checked={mode === o.id} className="param-radio" onClick={() => choisir(o.id)}>
+            <span className="param-radio-rond" aria-hidden="true" />
+            <span className="param-radio-texte">
+              <T>{o.nom}</T>
+              <small>
+                (<T>{o.sous}</T>)
+              </small>
+            </span>
+          </button>
+        ))}
+      </div>
+      {!dansAakanOS ? (
+        <button
+          type="button"
+          className="param-lancer"
+          onClick={() => {
+            choisir("aakanos");
+            window.location.assign("/aakanos");
+          }}
+        >
+          <Icone nom="phone_iphone" />
+          <span>
+            <T>lancer AakanOS</T>
+          </span>
+        </button>
+      ) : null}
+    </>
+  );
+}
 
 function Langue() {
   const { locale, setLocale } = useLocale();
@@ -191,7 +252,7 @@ const SYSTEME = {
   ],
 };
 
-const CHOIX: Choix[] = ["langue", "contact", "apropos", "systeme", "edition", "oeuf"];
+const CHOIX: Choix[] = ["apparence", "langue", "contact", "apropos", "systeme", "edition", "oeuf"];
 
 /**
  * Les paramètres, comme ceux de Windows Phone : le nom du site en petites capitales,
@@ -231,6 +292,16 @@ export function Parametres() {
     setMonte(false);
     if (id) window.requestAnimationFrame(() => window.requestAnimationFrame(() => setMonte(true)));
   };
+
+  // Apparence AakanOS choisie : le site s'ouvre directement dans le système (sauf depuis ses propres applis).
+  useEffect(() => {
+    try {
+      if (!demande && window.top === window.self && localStorage.getItem(CLE_APPARENCE) === "aakanos") window.location.replace("/aakanos");
+    } catch {
+      /* navigation privée */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Un lien « /?parametres=contact » (ou les anciennes pages) ouvre directement la bonne rubrique.
   useEffect(() => {
@@ -352,6 +423,7 @@ export function Parametres() {
                       <span className="param-ligne-texte">{ligne ? <T>{ligne.nom}</T> : null}</span>
                     </h2>
                     <div className="param-contenu">
+                      {choix === "apparence" ? <Apparence /> : null}
                       {choix === "langue" ? <Langue /> : null}
                       {choix === "contact" ? <Contact /> : null}
                       {choix === "apropos" ? <APropos /> : null}

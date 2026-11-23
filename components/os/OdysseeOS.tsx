@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Odyssée, version test : le site comme un vrai système de téléphone, style Jelly Bean (Holo).
+ * AakanOS : le site comme un vrai système de téléphone, style Jelly Bean (Holo).
  * Verrouillage à anneau → bureau (recherche, horloge, icônes, dock) → tiroir d'applis,
  * rideau de notifications tiré du haut, applis ouvertes en zoom depuis leur icône,
  * barre de navigation ◁ ⌂ ▭ (retour, accueil, applis récentes).
@@ -20,7 +20,7 @@ const APPLIS: Appli[] = [
   { id: "aaka", nom: "Aaka", url: "/?parametres=oeuf" },
   { id: "contact", nom: "Contact", url: "/?parametres=contact" },
   { id: "instagram", nom: "Instagram", url: "https://instagram.com/fjhchristenhmbk", externe: true },
-  { id: "reglages", nom: "Réglages", url: "/?parametres=langue" },
+  { id: "reglages", nom: "Réglages", url: "/?parametres=apparence" },
   { id: "recherche", nom: "Recherche", url: "" },
   { id: "endurreisen", nom: "Endurreisen", url: "/projets" },
   { id: "langue", nom: "Langue", url: "/?parametres=langue" },
@@ -109,6 +109,13 @@ export function OdysseeOS() {
     }, 260);
   }, [fenetre]);
 
+  const quitter = () => {
+    try {
+      localStorage.setItem("fjch-apparence", "classique");
+    } catch {}
+    window.location.assign("/");
+  };
+
   const retour = () => {
     if (rideau) return setRideau(false);
     if (recents) return setRecents(false);
@@ -180,8 +187,8 @@ export function OdysseeOS() {
     {
       id: "maj",
       icone: "odyssee" as NomAppli,
-      titre: "Odyssée 0.1 (test)",
-      texte: "Mise à jour installée",
+      titre: "AakanOS",
+      texte: "Lancé depuis l'apparence · Odyssée 0.1",
       h: "09:12",
       appli: par("odyssee"),
     },
@@ -244,7 +251,7 @@ export function OdysseeOS() {
           {/* Bureau */}
           <div className={`os-bureau${tiroir || fenetre ? " os-recule" : ""}`}>
             <button className="os-cherche" onClick={() => setRecherche(true)}>
-              <b>Odyssée</b>
+              <b>AakanOS</b>
               <span />
               <svg viewBox="0 0 24 24" width="22" height="22" fill="#ccc" aria-hidden="true">
                 <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
@@ -336,7 +343,7 @@ export function OdysseeOS() {
                 </div>
                 <div className="os-widget-apercu">
                   <div className="os-cherche" style={{ margin: 0, pointerEvents: "none" }}>
-                    <b>Odyssée</b>
+                    <b>AakanOS</b>
                   </div>
                   <span>Recherche · 4 × 1</span>
                 </div>
@@ -352,7 +359,7 @@ export function OdysseeOS() {
             <div className="os-recherche">
               <div className="os-recherche-barre">
                 <IconeAncienne nom="recherche" taille={28} />
-                <input autoFocus placeholder="Rechercher dans Odyssée" value={requete} onChange={(e) => setRequete(e.target.value)} />
+                <input autoFocus placeholder="Rechercher dans AakanOS" value={requete} onChange={(e) => setRequete(e.target.value)} />
                 <button onClick={() => (requete ? setRequete("") : setRecherche(false))}>✕</button>
               </div>
               <div className="os-titre-holo">APPLIS</div>
@@ -434,6 +441,10 @@ export function OdysseeOS() {
             ) : (
               <p className="os-vide">Aucune notification</p>
             )}
+            <button className="os-quitter" onClick={quitter}>
+              <span>Revenir au site classique</span>
+              <small>quitter AakanOS</small>
+            </button>
             <button className="os-rideau-poignee" aria-label="Fermer" onClick={() => setRideau(false)} />
           </div>
         </>
