@@ -2495,3 +2495,97 @@ html body .param .tavissiv {
 html body .param small .tavissiv {
   font-size: 1.45em;
 }
+
+/* ── Paramètres : tuiles carrées, plus de sous-titres ── */
+.param-tuile {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  color: #fff;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1), filter 0.18s ease;
+}
+
+html body .param-tuile .param-icone {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+html body .param-ligne {
+  gap: 1rem;
+  padding: 0.45rem 0;
+}
+
+html body .param-liste li + li {
+  margin-top: 0.35rem;
+}
+
+html body .param-ligne-texte {
+  font-size: clamp(1.7rem, 7.4vw, 2.2rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Appui : la tuile s'enfonce légèrement, comme sur Windows Phone. */
+html body .param-ligne:active .param-tuile,
+html body .param-lien:active .param-tuile {
+  transform: scale(0.92);
+  filter: brightness(1.15);
+}
+
+html body .param-ligne:active .param-icone circle:first-child,
+html body .param-barre-bouton:active .param-icone circle:first-child {
+  fill: none;
+}
+
+html body .param-ligne:active .param-icone g {
+  color: #fff;
+}
+
+/* Le titre de la rubrique ouverte : même tuile, en un peu plus grand. */
+html body .param-ligne-titre .param-tuile {
+  width: 3.4rem;
+  height: 3.4rem;
+}
+
+/* La barre du bas : juste la flèche et son nom. */
+html body .param-barre-bouton .param-icone {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+html body .param-barre-bouton:active {
+  color: var(--accent);
+}
+
+html body .param-barre-bouton:active .param-icone g {
+  color: inherit;
+}
+
+/* Langue : le nom et la région sur la même ligne. */
+html body .param-radio-texte {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+html body .param-radio-texte small {
+  font-size: 0.95rem;
+}
+
+/* Contact : tuiles comme dans la liste. */
+html body .param-lien {
+  gap: 1rem;
+}
+
+html body .param .param-tuile .param-icone {
+  width: 1.9rem !important;
+  height: 1.9rem !important;
+}
+
+html body .param .param-tuile .param-icone g {
+  stroke-width: 1.7;
+}
