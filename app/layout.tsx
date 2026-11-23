@@ -37,6 +37,7 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./metro.css";
 import "./metro-plus.css";
+import "./animations.css";
 
 /*
  * Famille Noto : dessinée pour couvrir toutes les écritures du monde.

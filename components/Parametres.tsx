@@ -210,6 +210,21 @@ export function Parametres() {
   const [choix, setChoix] = useState<Choix | null>(null);
   const [monte, setMonte] = useState(false);
   const [partant, setPartant] = useState<Choix | null>(null);
+  const [fermant, setFermant] = useState(false);
+
+  /** Fermeture : la fenêtre se referme en zoomant vers la roue dentée, puis disparaît. */
+  const fermer = () => {
+    const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (calme) {
+      setOuvert(false);
+      return;
+    }
+    setFermant(true);
+    window.setTimeout(() => {
+      setFermant(false);
+      setOuvert(false);
+    }, 260);
+  };
   const pathname = usePathname();
   const router = useRouter();
   const params = useSearchParams();
@@ -272,7 +287,7 @@ export function Parametres() {
     if (choix) {
       setChoix(null);
       setMonte(false);
-    } else setOuvert(false);
+    } else fermer();
   }
 
   const editionOk = () => {
@@ -306,7 +321,7 @@ export function Parametres() {
       </button>
       {ouvert
         ? createPortal(
-            <div className="param" role="dialog" aria-modal="true" aria-label="Paramètres">
+            <div className={fermant ? "param is-fermant" : "param"} role="dialog" aria-modal="true" aria-label="Paramètres">
               <div className="param-defile" data-lenis-prevent="">
                 <p className="param-app">franck j.h christen</p>
                 <div className="param-logo">

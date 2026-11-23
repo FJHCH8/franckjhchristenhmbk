@@ -1,0 +1,204 @@
+/*
+ * Animations de tout le site, façon Mac OS X (Aqua) : tout bouge, en douceur.
+ * Uniquement des transformations et de la transparence, calculées par la carte graphique :
+ * aucune ne recalcule la page, aucune ne fait trembler le défilement.
+ */
+
+:root {
+  --ressort: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --doux: cubic-bezier(0.22, 1, 0.36, 1);
+  --sortie: cubic-bezier(0.55, 0, 0.9, 0.35);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ── Appui : tout ce qui se touche s'enfonce, puis rebondit en place ── */
+  html body :is(button, a, [role="button"], summary, label[for]):not(.param-ligne):not(.pcase-tete):not(.jeu-case) {
+    transition-property: transform, opacity, color, background-color, border-color, filter;
+    transition-duration: 0.45s;
+    transition-timing-function: var(--ressort);
+  }
+
+  html body :is(button, a, [role="button"], summary):not(.param-ligne):not(.pcase-tete):not(.jeu-case):active {
+    transform: scale(0.94);
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+  }
+
+  /* Survol (souris) : les liens et boutons se soulèvent légèrement, comme les icônes du Dock. */
+  @media (hover: hover) {
+    html body :is(.bento-carte, .tuile-rubrique, .pcase-tete, .echecs-lancer, .chap-lien, .param-bouton, .suite-lien):hover {
+      transform: translateY(-2px) scale(1.015);
+    }
+
+    html body .seal-logo:hover svg {
+      animation: logo-hoche 0.7s var(--ressort);
+    }
+  }
+
+  /* ── Les lignes des paramètres et des cases : l'appui les décale un peu, comme un clic Aqua ── */
+  html body .param-ligne,
+  html body .pcase-tete {
+    transition: transform 0.4s var(--ressort);
+  }
+
+  html body .param-ligne:active,
+  html body .pcase-corps li > button:active {
+    transform: translateX(6px) scale(0.98);
+    transition-duration: 0.08s;
+  }
+
+  /* ── Les paramètres s'ouvrent en zoomant depuis la roue dentée, en haut à droite ── */
+  html body .param {
+    transform-origin: calc(100% - 2.2rem) 2.2rem;
+    animation: mac-zoom-ouvre 0.48s var(--doux) both !important;
+  }
+
+  html body .param.is-fermant {
+    animation: mac-zoom-ferme 0.28s var(--sortie) both !important;
+  }
+
+  html body .param-ouvrir[aria-expanded="true"] .param-icone {
+    transform: rotate(120deg);
+  }
+
+  html body .param-ouvrir .param-icone {
+    transition: transform 0.6s var(--ressort);
+  }
+
+  /* Le contenu d'une rubrique arrive en se dépliant légèrement. */
+  html body .param-detail.is-monte .param-contenu > * {
+    animation: mac-arrive 0.5s var(--doux) both;
+    animation-delay: 0.16s;
+  }
+
+  /* ── Le bouton son sautille comme une icône du Dock quand on l'allume ou l'éteint ── */
+  html body .son-bouton.is-on {
+    animation: dock-saut-a 0.7s var(--doux);
+  }
+
+  html body .son-bouton:not(.is-on) {
+    animation: dock-saut-b 0.5s var(--doux);
+  }
+
+  /* ── Les cases de Projets : le grand carré « respire » à l'ouverture ── */
+  html body .pcase.is-grand {
+    animation: mac-respire 0.6s var(--ressort);
+  }
+
+  html body .pcase-logo {
+    transition: transform 0.5s var(--ressort), width 0.4s var(--doux), opacity 0.3s ease;
+  }
+
+  html body .pcase.is-repos:active .pcase-logo {
+    transform: rotate(-8deg) scale(0.92);
+  }
+
+  /* Les tuiles du panorama et le pourcentage apparaissent en glissant. */
+  html body .pano-pourcent {
+    animation: mac-arrive 0.8s var(--doux) 0.3s both;
+  }
+
+  html body .pano-pivot button {
+    transition: color 0.3s ease, transform 0.45s var(--ressort);
+  }
+
+  html body .pano-pivot button.is-actif {
+    transform: scale(1.04);
+    transform-origin: 0 100%;
+  }
+
+  /* ── Le contenu apparaît en douceur pendant le défilement (zoom léger + fondu) ── */
+  @supports (animation-timeline: view()) {
+    html body :is(
+      .welcome, .epithet, .crests, .bento-titre, .bento-kicker, .echecs-titre, .projets-titre,
+      .album-manege, .info-note, .pano, .cases, .footer-inner, .scroll-head h1, .kicker
+    ) {
+      animation: mac-apparait linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+
+  /* ── Les images arrivent en fondu doux au chargement de la page ── */
+  html body main img:not(.scroll-fond):not(.bento-image) {
+    animation: mac-fondu 0.9s var(--doux) both;
+  }
+
+  html body .scroll-fond {
+    animation: mac-fond 1.6s var(--doux) both;
+  }
+
+  /* ── Le menu du haut : la rubrique active grandit à peine ── */
+  html body .nav a {
+    transition: color 0.3s ease, transform 0.45s var(--ressort) !important;
+  }
+
+  html body .nav a[aria-current="page"] {
+    transform: translateY(-1px);
+  }
+
+  /* ── Les champs de saisie s'éclairent quand on écrit dedans ── */
+  html body :is(input, textarea):focus {
+    animation: mac-focus 0.5s var(--doux);
+  }
+}
+
+@keyframes mac-zoom-ouvre {
+  from { opacity: 0; transform: scale(0.06); border-radius: 40%; }
+  60% { opacity: 1; }
+  to { opacity: 1; transform: none; border-radius: 0; }
+}
+
+@keyframes mac-zoom-ferme {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(0.06); border-radius: 40%; }
+}
+
+@keyframes mac-arrive {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mac-apparait {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mac-fondu {
+  from { opacity: 0; transform: scale(1.03); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mac-fond {
+  from { opacity: 0; transform: scale(1.08); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mac-respire {
+  0% { transform: scale(0.97); }
+  55% { transform: scale(1.012); }
+  100% { transform: none; }
+}
+
+@keyframes dock-saut-a {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-16px); }
+  55% { transform: translateY(0); }
+  72% { transform: translateY(-6px); }
+}
+
+@keyframes dock-saut-b {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-8px); }
+}
+
+@keyframes logo-hoche {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-9deg); }
+  60% { transform: rotate(6deg); }
+}
+
+@keyframes mac-focus {
+  0% { box-shadow: 0 0 0 0 rgba(27, 161, 226, 0.55); }
+  100% { box-shadow: 0 0 0 10px rgba(27, 161, 226, 0); }
+}
