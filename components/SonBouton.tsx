@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { Icone } from "@/components/Icone";
 import { reglerSons, reprendreAuPremierGeste, sonsActifs } from "@/lib/sons";
 
 function abonner(onChange: () => void) {
@@ -21,12 +22,7 @@ export function SonBouton() {
       data-magnet=""
       onClick={() => reglerSons(!on)}
     >
-      <span className="son-barres" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
+      <Icone nom={on ? "volume_up" : "volume_off"} />
       <span className="son-texte">Son</span>
     </button>
   );

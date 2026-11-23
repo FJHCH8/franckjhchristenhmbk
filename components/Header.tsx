@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { Parametres } from "@/components/Parametres";
+import { Recherche } from "@/components/Recherche";
 import { Suspense } from "react";
 import { T, useLocale } from "@/components/Locale";
 import { Logo } from "@/components/Logo";
@@ -113,6 +114,7 @@ export function Header() {
           </nav>
         </div>
         <div className="header-tools">
+          <Recherche />
           <Suspense fallback={null}>
             <Parametres />
           </Suspense>
