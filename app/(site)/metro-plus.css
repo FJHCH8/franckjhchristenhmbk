@@ -3932,3 +3932,158 @@ html body .etoile-fermer .icone {
   width: 1.05rem;
   height: 1.05rem;
 }
+
+/* ═════════════ Système Odyssée : réglages en Material plein, plat (version 5) ═════════════
+   Fond noir, icônes blanches pleines sans tuile, fines séparations, gris pour l'inactif. */
+html body .param {
+  background: #000 !important;
+}
+
+html body .param-liste,
+html body .param-contenu {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html body .param-liste li + li {
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+
+html body .param-liste li {
+  border-bottom: 1px solid #1f1f1f;
+}
+
+html body .param-liste .param-ligne {
+  padding: 0.85rem 0 !important;
+}
+
+html body .param-liste .param-ligne:active {
+  background: transparent !important;
+  color: #8a8a8a !important;
+}
+
+html body .param .param-tuile,
+html body .param-ligne-titre .param-tuile {
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #fff;
+}
+
+html body .param .param-tuile .icone {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  filter: none !important;
+}
+
+html body .param-ligne-titre .param-tuile .icone {
+  width: 1.9rem !important;
+  height: 1.9rem !important;
+}
+
+html body .param-contenu {
+  padding: 0.6rem 0 0 !important;
+}
+
+html body .param-radio + .param-radio {
+  border-top: 1px solid #1f1f1f;
+}
+
+html body .param-radio[aria-checked="true"] .param-radio-rond {
+  border-color: #fff !important;
+}
+
+html body .param-radio[aria-checked="true"] .param-radio-rond::after {
+  background: #fff !important;
+}
+
+html body .param-barre {
+  background: #111 !important;
+  border-top: 1px solid #222 !important;
+  box-shadow: none !important;
+}
+
+html body .param-barre-bouton {
+  color: #fff;
+  font-weight: 400;
+  text-shadow: none;
+}
+
+/* ── Odyssée : grande image, nom, version, date ── */
+.systeme-image {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  margin: 0.2rem 0 1rem;
+  background: #0d0d0d;
+  border: 1px solid #1f1f1f;
+}
+
+html body .systeme-logo {
+  width: 38%;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+}
+
+html body .systeme-nom {
+  margin: 0 0 0.6rem;
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+.systeme-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8a8a8a;
+  font: inherit;
+  cursor: pointer;
+}
+
+.systeme-date .icone {
+  width: 1.1rem;
+  height: 1.1rem;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.systeme-date[aria-expanded="true"] {
+  color: #fff;
+}
+
+.systeme-date[aria-expanded="true"] .icone {
+  transform: rotate(90deg);
+}
+
+.systeme-historique {
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  animation: mac-arrive 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.systeme-historique li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0 0.55rem 0.9rem;
+  border-left: 2px solid #333;
+  color: #8a8a8a;
+  font-size: 0.95rem;
+}
+
+.systeme-historique li:first-child {
+  border-left-color: #fff;
+  color: #fff;
+}

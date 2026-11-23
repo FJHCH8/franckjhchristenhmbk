@@ -121,25 +121,45 @@ function APropos() {
   );
 }
 
-/** « Système » : le nom de l'interface du site et sa version, comme dans les réglages d'un téléphone. */
+/** « Système » : le nom de l'interface, sa version et la date de mise à jour ; un appui sur la date montre l'historique. */
 function Systeme() {
+  const [historique, setHistorique] = useState(false);
+  const actuelle = SYSTEME.versions[0]!;
   return (
     <div className="systeme">
-      <div className="systeme-carte">
+      <div className="systeme-image">
         <Logo className="systeme-logo" />
-        <p className="systeme-nom">{SYSTEME.nom}</p>
-        <p className="systeme-version">
-          version {SYSTEME.version} · <i>{SYSTEME.code}</i>
-        </p>
       </div>
+      <p className="systeme-nom">{SYSTEME.nom}</p>
       <dl className="systeme-infos">
-        {SYSTEME.lignes.map(([k, v]) => (
-          <div key={k}>
-            <dt>{k}</dt>
-            <dd>{v}</dd>
-          </div>
-        ))}
+        <div>
+          <dt>version</dt>
+          <dd>{actuelle.numero}</dd>
+        </div>
+        <div>
+          <dt>nom</dt>
+          <dd>{SYSTEME.nom}</dd>
+        </div>
+        <div>
+          <dt>mise à jour</dt>
+          <dd>
+            <button type="button" className="systeme-date" aria-expanded={historique} onClick={() => setHistorique((h) => !h)}>
+              {actuelle.date}
+              <Icone nom="chevron_right" />
+            </button>
+          </dd>
+        </div>
       </dl>
+      {historique ? (
+        <ol className="systeme-historique">
+          {SYSTEME.versions.map((v) => (
+            <li key={v.numero}>
+              <span>{v.numero}</span>
+              <span>{v.date}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
     </div>
   );
 }
@@ -161,19 +181,13 @@ function Transcripteur() {
   );
 }
 
-/** La fiche du système. Le nom et le nom de code se changent ici. */
+/** La fiche du système. Pour une nouvelle version, on l'ajoute en tête de liste. */
 const SYSTEME = {
-  nom: "Constellation",
-  version: "1.0",
-  code: "L’aube",
-  lignes: [
-    ["interface", "Constellation 1.0"],
-    ["nom de code", "L’aube"],
-    ["créée par", "Franck J.H. Christen"],
-    ["mise à jour", "23 novembre 2026"],
-    ["icônes", "Material Icons (pleines)"],
-    ["écriture", "Tavissiv · Aaka"],
-  ] as [string, string][],
+  nom: "Odyssée",
+  versions: [
+    { numero: "0.1", date: "23 novembre 2026" },
+    { numero: "0.0", date: "9 novembre 2026" },
+  ],
 };
 
 const CHOIX: Choix[] = ["langue", "contact", "apropos", "systeme", "edition", "oeuf"];
