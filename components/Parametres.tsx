@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { CodeEdition } from "@/components/CodeEdition";
 import { T, useLocale } from "@/components/Locale";
 import { Logo } from "@/components/Logo";
+import { MatriceNom } from "@/components/MatriceNom";
 import { clic } from "@/lib/sons";
 
 type Choix = "langue" | "contact" | "apropos" | "edition" | "oeuf";
@@ -360,6 +361,13 @@ export function Parametres() {
                     </div>
                   </div>
                 )}
+                <div className="param-pied">
+                  <MatriceNom />
+                  <p>
+                    <span>franck j.h christen</span>
+                    <span>tous droits réservés</span>
+                  </p>
+                </div>
               </div>
               <nav className="param-barre" aria-label="Barre d'application">
                 <button type="button" className="param-barre-bouton" onClick={retour}>

@@ -2705,3 +2705,33 @@ html body .suite-lien {
 html body .bento-carte .bento-image {
   background: transparent !important;
 }
+
+/* Le pied des paramètres : l'enseigne en points lumineux, puis la signature. */
+.param-pied {
+  margin-top: 3rem;
+  padding-bottom: 0.5rem;
+}
+
+.matrice-nom {
+  display: block;
+  width: 100%;
+}
+
+.param-pied p {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 1.2rem 0 0;
+  font-size: 0.85rem;
+}
+
+.param-pied p span:first-child {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.param-pied p span:last-child {
+  color: #8a8a8a;
+}
