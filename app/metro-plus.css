@@ -2602,3 +2602,8 @@ html body .param .param-ligne:active .param-tuile .param-icone g,
 html body .param .param-lien:active .param-tuile .param-icone g {
   color: #000;
 }
+
+html body .param-titre .tavissiv {
+  font-size: 0.8em;
+  line-height: 1.3;
+}

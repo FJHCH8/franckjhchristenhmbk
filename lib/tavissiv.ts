@@ -19,6 +19,7 @@ export const TAVISSIV: Record<string, string> = {
   "e-mail": "Baashka",
   instagram: "Instagram",
   retour: "Kaay",
+  paramètres: "Obaayaa",
   édition: "Aspasas",
   "easter egg": "Ballaaalseyaat",
   "Entre le code à six chiffres pour ouvrir l’édition.": "Shaapa paaspay ovammaaapa aspasaalt.",

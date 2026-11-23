@@ -314,7 +314,9 @@ export function Parametres() {
                 </div>
                 {!choix ? (
                   <>
-                    <h2 className="param-titre">paramètres</h2>
+                    <h2 className="param-titre">
+                      <T>paramètres</T>
+                    </h2>
                     <ul className={partant ? "param-liste is-partant" : "param-liste"}>
                       {LIGNES.map((l, i) => (
                         <li key={l.id} className={partant === l.id ? "is-choisi" : undefined} style={{ ["--i" as string]: i } as CSSProperties}>
