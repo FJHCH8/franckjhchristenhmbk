@@ -310,9 +310,28 @@ APLATI = 0.62  # rendu moderne : lettres basses et larges
 ELARGI = 1.12
 
 
+BOITE_L = 380  # toutes les lettres ont la même largeur…
+BOITE_H = 420  # … et la même hauteur, alignées en haut et en bas, comme dans une vraie police
+
+
+def uniformiser(traces):
+    """Fait tenir la lettre dans la même boîte que toutes les autres, sans changer son dessin."""
+    xs = [x for t in traces for x, _ in t]
+    ys = [y for t in traces for _, y in t]
+    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+    lw, lh = x1 - x0, y1 - y0
+    sx = BOITE_L / lw if lw > 1 else 1
+    sy = BOITE_H / lh if lh > 1 else 1
+    ox = 0 if lw > 1 else BOITE_L / 2 - x0
+    oy = 0 if lh > 1 else BOITE_H / 2 - y0
+    return [[((x - x0) * sx + ox if lw > 1 else x + ox, (y - y0) * sy + oy if lh > 1 else y + oy) for x, y in t] for t in traces]
+
+
 def ajouter(nom, traces, chasse, proportionnel=False):
     if traces:
         traces = [[(x * ELARGI, y * APLATI) for x, y in t] for t in traces]
+    if traces and proportionnel and nom.startswith(("c_", "v_", "i_")):
+        traces = uniformiser(traces)
     if traces and proportionnel:
         xs = [x for t in traces for x, _ in t]
         decale = APPROCHE + TRAIT / 2 - min(xs)
