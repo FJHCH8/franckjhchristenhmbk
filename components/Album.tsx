@@ -1,193 +1,141 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 
-const PHOTOS = [
-  { kind: "video" as const, src: "/media/franck.mp4", poster: "/media/franck-poster.jpg" },
-  { kind: "photo" as const, src: "/media/franck.jpg" },
+type Element = { kind: "video" | "photo"; src: string; poster?: string; etiquette: string; cadre?: string };
+
+const ELEMENTS: Element[] = [
+  { kind: "video", src: "/media/franck.mp4", poster: "/media/franck-poster.jpg", etiquette: "vidéo" },
+  { kind: "photo", src: "/media/franck.jpg", etiquette: "photo", cadre: "50% 30%" },
 ];
 
-/** Places sur le manège : les photos se répètent pour le remplir tout autour. */
-const PLACES = Math.max(6, PHOTOS.length);
+/** Durée d'une photo à l'écran ; une vidéo, elle, dure sa propre longueur. */
+const DUREE_PHOTO = 5;
 
 /**
- * L'album est un manège vu de devant : les photos sont posées debout sur un cercle à plat.
- * Celle de devant est proche, donc grande ; celles des côtés sont loin, donc petites ;
- * toutes reposent sur le même sol. On fait tourner le manège au doigt, sans fin,
- * et il s'arrête sur la photo la plus proche.
+ * L'album comme des « stories » : une photo ou la vidéo en grand, des barres en haut qui se remplissent.
+ * Toucher à droite avance, à gauche recule ; laisser le doigt appuyé met en pause ; glisser change aussi.
  */
 export function Album() {
-  const scene = useRef<HTMLDivElement>(null);
-  const position = useRef(0); // en places : 0 = la première photo devant
-  const geste = useRef<{ id: number; x: number; depart: number; bouge: boolean } | null>(null);
-  const anim = useRef(0);
-  const devant = useRef(-1);
+  const [index, setIndex] = useState(0);
+  const [pause, setPause] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [dureeVideo, setDureeVideo] = useState(8);
   const racine = useRef<HTMLDivElement>(null);
+  const videos = useRef<Array<HTMLVideoElement | null>>([]);
+  const appui = useRef<{ x: number; t: number; long: number } | null>(null);
 
-  /** Le manège prend toute la largeur de l'écran, quelle que soit la colonne qui le contient. */
-  const caler = useCallback(() => {
+  const aller = useCallback((pas: number) => {
+    setIndex((i) => (i + pas + ELEMENTS.length) % ELEMENTS.length);
+  }, []);
+
+  // L'album ne défile que lorsqu'il est à l'écran.
+  useEffect(() => {
     const node = racine.current;
     if (!node) return;
-    node.style.marginLeft = "0px";
-    node.style.marginLeft = `${-node.getBoundingClientRect().left}px`;
+    const io = new IntersectionObserver(([e]) => setVisible(!!e && e.intersectionRatio > 0.45), { threshold: [0, 0.45, 1] });
+    io.observe(node);
+    return () => io.disconnect();
   }, []);
 
-  const peindre = useCallback(() => {
-    const node = scene.current;
-    if (!node) return;
-    const cartes = node.querySelectorAll<HTMLElement>("[data-place]");
-    const largeur = node.clientWidth || 360;
-    const rayon = Math.min(largeur * 0.42, 320);
-    const proche = ((Math.round(position.current) % PLACES) + PLACES) % PLACES;
-    cartes.forEach((carte) => {
-      const i = Number(carte.dataset.place);
-      const angle = ((i - position.current) / PLACES) * Math.PI * 2;
-      const x = Math.sin(angle) * rayon;
-      const z = (Math.cos(angle) - 1) * rayon; // 0 devant, -2R derrière
-      // Plus c'est loin, plus c'est sombre.
-      const lumiere = 0.35 + 0.65 * ((Math.cos(angle) + 1) / 2);
-      // Chaque photo se tourne légèrement vers le centre, comme sur un vrai manège.
-      carte.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), 0, ${z.toFixed(1)}px) rotateY(${(-angle * 0.45).toFixed(3)}rad)`;
-      carte.style.zIndex = String(Math.round(1000 + z));
-      carte.style.filter = `brightness(${lumiere.toFixed(3)})`;
-      carte.classList.toggle("is-devant", i === proche);
+  // La vidéo en cours joue depuis le début ; les autres attendent.
+  useEffect(() => {
+    videos.current.forEach((v, i) => {
+      if (!v) return;
+      v.muted = true;
+      if (i === index) {
+        if (v.currentTime > 0.2 && !pause) v.currentTime = 0;
+        if (visible && !pause) void v.play().catch(() => undefined);
+        else v.pause();
+      } else v.pause();
     });
-    // Les points sous l'album suivent la photo de devant.
-    if (devant.current !== proche) {
-      devant.current = proche;
-      node.parentElement?.querySelectorAll<HTMLElement>("[data-point]").forEach((pt) => {
-        pt.classList.toggle("is-actif", Number(pt.dataset.point) === proche % PHOTOS.length);
-      });
-    }
-  }, []);
-
-  const aller = useCallback(
-    (cible: number) => {
-      window.cancelAnimationFrame(anim.current);
-      const debut = position.current;
-      const t0 = performance.now();
-      const duree = 820;
-      const pas = (now: number) => {
-        const t = Math.min(1, (now - t0) / duree);
-        const e = 1 - (1 - t) ** 4;
-        position.current = debut + (cible - debut) * e;
-        peindre();
-        if (t < 1) anim.current = window.requestAnimationFrame(pas);
-      };
-      anim.current = window.requestAnimationFrame(pas);
-    },
-    [peindre],
-  );
-
-  // Toutes les vidéos tournent en boucle, même quand elles ne sont pas de face.
-  useEffect(() => {
-    const videos = Array.from(scene.current?.querySelectorAll("video") ?? []);
-    const lancer = () =>
-      videos.forEach((v) => {
-        v.muted = true;
-        if (v.paused) void v.play().catch(() => undefined);
-      });
-    lancer();
-    document.addEventListener("visibilitychange", lancer);
-    window.addEventListener("pointerdown", lancer, { once: true });
-    return () => document.removeEventListener("visibilitychange", lancer);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, visible]);
 
   useEffect(() => {
-    caler();
-    peindre();
-    const surTaille = () => {
-      caler();
-      peindre();
-    };
-    window.addEventListener("resize", surTaille);
-    return () => {
-      window.cancelAnimationFrame(anim.current);
-      window.removeEventListener("resize", surTaille);
-    };
-  }, [caler, peindre]);
+    const v = videos.current[index];
+    if (!v) return;
+    if (pause || !visible) v.pause();
+    else void v.play().catch(() => undefined);
+  }, [pause, visible, index]);
 
-  const onDown = (event: PointerEvent<HTMLDivElement>) => {
-    window.cancelAnimationFrame(anim.current);
-    geste.current = { id: event.pointerId, x: event.clientX, depart: position.current, bouge: false };
+  const onDown = (e: PointerEvent<HTMLDivElement>) => {
+    appui.current = { x: e.clientX, t: performance.now(), long: window.setTimeout(() => setPause(true), 260) };
+  };
+  const onUp = (e: PointerEvent<HTMLDivElement>) => {
+    const a = appui.current;
+    appui.current = null;
+    if (!a) return;
+    window.clearTimeout(a.long);
+    const dx = e.clientX - a.x;
+    const long = performance.now() - a.t > 260;
+    setPause(false);
+    if (Math.abs(dx) > 40) return aller(dx < 0 ? 1 : -1);
+    if (long) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    aller(e.clientX - r.left > r.width * 0.35 ? 1 : -1);
   };
 
-  const onMove = (event: PointerEvent<HTMLDivElement>) => {
-    const g = geste.current;
-    if (!g || g.id !== event.pointerId) return;
-    const dx = event.clientX - g.x;
-    if (!g.bouge) {
-      if (Math.abs(dx) < 8) return;
-      g.bouge = true;
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }
-    const largeur = event.currentTarget.clientWidth || 360;
-    position.current = g.depart - dx / (largeur * 0.45);
-    peindre();
-  };
-
-  const onUp = (event: PointerEvent<HTMLDivElement>) => {
-    const g = geste.current;
-    geste.current = null;
-    if (!g || !g.bouge) return;
-    const dx = event.clientX - g.x;
-    const elan = Math.abs(dx) > 40 ? Math.sign(-dx) * 0.35 : 0;
-    aller(Math.round(position.current + elan));
-  };
-
-  const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowRight") aller(Math.round(position.current) + 1);
-    else if (event.key === "ArrowLeft") aller(Math.round(position.current) - 1);
-    else return;
-    event.preventDefault();
-  };
+  const enCours = visible && !pause;
+  const duree = ELEMENTS[index]!.kind === "video" ? dureeVideo : DUREE_PHOTO;
 
   return (
-    <div ref={racine} className="album album-manege" tabIndex={0} role="group" aria-label="Franck J.H. CHRISTEN H.M.B.K." onKeyDown={onKey}>
-      <div className="album-zone" ref={scene} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-        <div className="manege-sol" aria-hidden="true" />
-        {Array.from({ length: PLACES }, (_, i) => {
-          const photo = PHOTOS[i % PHOTOS.length];
-          return (
-            <article key={i} className="manege-carte" data-place={i}>
-              {photo.kind === "video" ? (
-                <video src={photo.src} poster={photo.poster} autoPlay muted loop playsInline preload="metadata" />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo.src} alt="Franck J.H. CHRISTEN H.M.B.K." draggable={false} loading="lazy" decoding="async" />
-              )}
-            </article>
-          );
-        })}
+    <div className="stories" ref={racine} role="group" aria-roledescription="album" aria-label="Album de Franck">
+      <div className="stories-barres" aria-hidden="true">
+        {ELEMENTS.map((_, i) => (
+          <span key={i} className="stories-barre">
+            <span
+              key={i === index ? `actif-${index}` : `b-${i}`}
+              className={i < index ? "is-fait" : i === index ? (enCours ? "is-actif" : "is-actif is-pause") : ""}
+              style={{ ["--duree" as string]: `${duree}s` } as CSSProperties}
+              onAnimationEnd={i === index ? () => aller(1) : undefined}
+            />
+          </span>
+        ))}
       </div>
-      <div className="album-nav">
-        <button type="button" className="album-fleche" aria-label="Photo précédente" onClick={() => aller(Math.round(position.current) - 1)}>
-          <Chevron dir="left" />
-        </button>
-        <div className="album-points" aria-hidden="true">
-          {PHOTOS.map((_, i) => (
-            <span key={i} data-point={i} className={i === 0 ? "is-actif" : undefined} />
-          ))}
+
+      <div
+        className="stories-scene"
+        onPointerDown={onDown}
+        onPointerUp={onUp}
+        onPointerCancel={() => {
+          if (appui.current) window.clearTimeout(appui.current.long);
+          appui.current = null;
+          setPause(false);
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        {ELEMENTS.map((el, i) => (
+          <figure key={el.src} className={i === index ? "stories-el is-actif" : "stories-el"} aria-hidden={i !== index}>
+            {el.kind === "video" ? (
+              <video
+                ref={(v) => {
+                  videos.current[i] = v;
+                }}
+                src={el.src}
+                poster={el.poster}
+                muted
+                playsInline
+                preload="metadata"
+                onLoadedMetadata={(e) => {
+                  if (Number.isFinite(e.currentTarget.duration)) setDureeVideo(Math.max(3, e.currentTarget.duration));
+                }}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={el.src} alt="Franck" style={{ objectPosition: el.cadre }} draggable={false} />
+            )}
+          </figure>
+        ))}
+        <div className="stories-voile" aria-hidden="true" />
+        <div className="stories-legende">
+          <span>{ELEMENTS[index]!.etiquette}</span>
+          <span>
+            {index + 1} / {ELEMENTS.length}
+          </span>
         </div>
-        <button type="button" className="album-fleche" aria-label="Photo suivante" onClick={() => aller(Math.round(position.current) + 1)}>
-          <Chevron dir="right" />
-        </button>
+        {pause ? <span className="stories-pause" aria-hidden="true" /> : null}
       </div>
     </div>
-  );
-}
-
-function Chevron({ dir }: { dir: "left" | "right" }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d={dir === "left" ? "M14.5 5.5 8 12l6.5 6.5" : "M9.5 5.5 16 12l-6.5 6.5"}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
