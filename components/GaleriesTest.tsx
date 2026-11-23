@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 
 type Rubrique = { id: string; titre: string; texte: string; href: string; photo: string; cadre: string; externe?: boolean };
 
@@ -30,52 +30,71 @@ const PLACES: Record<string, number> = { insta: 0, projets: 2, qui: 4, apropos: 
 
 export function GalerieConstellation() {
   const [choix, setChoix] = useState<string | null>(null);
-  const [fermant, setFermant] = useState(false);
+  const [phase, setPhase] = useState<"repos" | "zoom" | "dezoom">("repos");
+  const [depart, setDepart] = useState<CSSProperties>({});
+  const ciel = useRef<HTMLDivElement>(null);
   const r = RUBRIQUES.find((x) => x.id === choix);
-  const origine = r ? POINTS[PLACES[r.id]!]! : null;
+
+  /** Point de départ du zoom : la bulle touchée, mesurée dans le ciel. */
+  const ouvrir = (id: string, bulle: HTMLElement) => {
+    const c = ciel.current!.getBoundingClientRect();
+    const b = bulle.getBoundingClientRect();
+    const cx = b.left + b.width / 2 - c.left;
+    const cy = b.top + b.height / 2 - c.top;
+    setDepart({
+      ["--ox" as string]: `${cx}px`,
+      ["--oy" as string]: `${cy}px`,
+      ["--ct" as string]: `${b.top - c.top}px`,
+      ["--cr" as string]: `${c.right - b.right}px`,
+      ["--cb" as string]: `${c.bottom - b.bottom}px`,
+      ["--cl" as string]: `${b.left - c.left}px`,
+      // Les autres étoiles s'écartent depuis ce point.
+    } as CSSProperties);
+    setChoix(id);
+    setPhase("zoom");
+  };
 
   const fermer = () => {
-    setFermant(true);
+    setPhase("dezoom");
     window.setTimeout(() => {
-      setFermant(false);
+      setPhase("repos");
       setChoix(null);
-    }, 380);
+    }, 620);
   };
 
   return (
     <section className="gt gt-constellation">
       <p className="gt-kicker">explorer</p>
       <h2 className="gt-titre">la constellation</h2>
-      <div className={choix && !fermant ? "gt-ciel is-retire" : "gt-ciel"}>
-        <svg viewBox="0 0 200 200" aria-hidden="true">
-          <path className="gt-trace" pathLength={1} d={"M" + POINTS.map(([x, y]) => `${x} ${y}`).join(" L")} fill="none" stroke="#4a4a4a" strokeWidth="0.9" strokeLinejoin="round" />
-          {POINTS.map(([x, y], i) => (
-            <circle key={i} className="gt-scintille" cx={x} cy={y} r="1.8" fill="#888" style={{ ["--i" as string]: i } as CSSProperties} />
-          ))}
-        </svg>
-        {RUBRIQUES.map((x, i) => {
-          const [px, py] = POINTS[PLACES[x.id]!]!;
-          return (
-            <button
-              key={x.id}
-              type="button"
-              className="gt-astre"
-              style={{ left: `${(px / 200) * 100}%`, top: `${(py / 200) * 100}%`, ["--i" as string]: i } as CSSProperties}
-              onClick={() => setChoix(x.id)}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={x.photo} alt="" style={{ objectPosition: x.cadre }} />
-              <span>{x.titre}</span>
-            </button>
-          );
-        })}
+      <div ref={ciel} className={`gt-ciel is-${phase}`} style={depart}>
+        <div className="gt-monde">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <path className="gt-trace" pathLength={1} d={"M" + POINTS.map(([x, y]) => `${x} ${y}`).join(" L")} fill="none" stroke="#4a4a4a" strokeWidth="0.9" strokeLinejoin="round" />
+            {POINTS.map(([x, y], i) => (
+              <circle key={i} className="gt-scintille" cx={x} cy={y} r="1.8" fill="#888" style={{ ["--i" as string]: i } as CSSProperties} />
+            ))}
+          </svg>
+          {RUBRIQUES.map((x, i) => {
+            const [px, py] = POINTS[PLACES[x.id]!]!;
+            return (
+              <button
+                key={x.id}
+                type="button"
+                className={x.id === choix ? "gt-astre is-choisi" : "gt-astre"}
+                style={{ left: `${(px / 200) * 100}%`, top: `${(py / 200) * 100}%`, ["--i" as string]: i } as CSSProperties}
+                onClick={(e) => phase === "repos" && ouvrir(x.id, e.currentTarget)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={x.photo} alt="" style={{ objectPosition: x.cadre }} />
+                <span>{x.titre}</span>
+              </button>
+            );
+          })}
+        </div>
         <p className="gt-indice">touche une étoile</p>
 
-        {r && origine ? (
-          <article
-            className={fermant ? "gt-zoom is-fermant" : "gt-zoom"}
-            style={{ ["--ox" as string]: `${(origine[0] / 200) * 100}%`, ["--oy" as string]: `${(origine[1] / 200) * 100}%` } as CSSProperties}
-          >
+        {r ? (
+          <article className="gt-zoom">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={r.photo} alt="" style={{ objectPosition: r.cadre }} />
             <div className="gt-zoom-voile" />

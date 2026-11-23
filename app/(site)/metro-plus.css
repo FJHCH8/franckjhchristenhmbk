@@ -4445,3 +4445,124 @@ html body .gt-zoom-fermer svg {
   position: static;
   margin: 0;
 }
+
+/* ═════ Constellation v3 : zoom caméra et dézoom ═════ */
+.gt-monde {
+  position: absolute;
+  inset: 0;
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+  transition: transform 0.75s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.6s ease, filter 0.6s ease;
+}
+
+/* Zoom : le ciel plonge vers l'étoile touchée, s'agrandit, se floute et s'éteint. */
+.gt-ciel.is-zoom .gt-monde {
+  transform: scale(3.2);
+  opacity: 0;
+  filter: blur(6px);
+}
+
+/* Dézoom : le ciel revient de loin, encore légèrement flou, puis se pose. */
+.gt-ciel.is-dezoom .gt-monde {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s, opacity 0.45s ease 0.08s, filter 0.5s ease 0.08s;
+}
+
+.gt-ciel.is-zoom .gt-indice,
+.gt-ciel.is-dezoom .gt-indice {
+  opacity: 0;
+}
+
+/* Les autres étoiles sont écartées vers l'extérieur par le zoom ; celle choisie passe devant. */
+html body .gt-ciel.is-zoom .gt-astre:not(.is-choisi) {
+  opacity: 0;
+}
+
+html body .gt-ciel .gt-astre.is-choisi {
+  z-index: 3;
+}
+
+/* La carte part exactement de la bulle touchée (un rond), puis s'élargit jusqu'au cadre. */
+html body .gt-zoom {
+  inset: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  clip-path: inset(var(--ct) var(--cr) var(--cb) var(--cl) round 50%);
+  animation: gt-zoom-v3 0.75s cubic-bezier(0.7, 0, 0.2, 1) both !important;
+}
+
+@keyframes gt-zoom-v3 {
+  0% { clip-path: inset(var(--ct) var(--cr) var(--cb) var(--cl) round 50%); }
+  100% { clip-path: inset(0 0 0 0 round 22px); }
+}
+
+html body .gt-ciel.is-dezoom .gt-zoom {
+  animation: gt-dezoom-v3 0.6s cubic-bezier(0.7, 0, 0.3, 1) both !important;
+}
+
+@keyframes gt-dezoom-v3 {
+  0% { clip-path: inset(0 0 0 0 round 22px); }
+  85% { opacity: 1; }
+  100% { clip-path: inset(var(--ct) var(--cr) var(--cb) var(--cl) round 50%); opacity: 0.6; }
+}
+
+/* La photo elle-même : elle arrive très zoomée et recule doucement (profondeur). */
+html body .gt-zoom > img {
+  animation: gt-photo-v3 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gt-photo-v3 {
+  from { transform: scale(1.9); filter: grayscale(1) blur(4px); }
+  to { transform: scale(1.04); filter: grayscale(1) blur(0); }
+}
+
+html body .gt-ciel.is-dezoom .gt-zoom > img {
+  animation: gt-photo-v3-retour 0.6s cubic-bezier(0.7, 0, 0.3, 1) both;
+}
+
+@keyframes gt-photo-v3-retour {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.7); filter: grayscale(1) blur(3px); }
+}
+
+/* Le texte monte ligne après ligne une fois le zoom fini, et repart en premier au dézoom. */
+html body .gt-zoom-texte {
+  animation: none;
+}
+
+html body .gt-zoom-texte > * {
+  animation: mac-arrive 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html body .gt-zoom-texte > :nth-child(1) { animation-delay: 0.55s; }
+html body .gt-zoom-texte > :nth-child(2) { animation-delay: 0.62s; }
+html body .gt-zoom-texte > :nth-child(3) { animation-delay: 0.69s; }
+html body .gt-zoom-texte > :nth-child(4) { animation-delay: 0.76s; }
+
+html body .gt-zoom-fermer {
+  animation: mac-arrive 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+
+html body .gt-ciel.is-dezoom .gt-zoom-texte > *,
+html body .gt-ciel.is-dezoom .gt-zoom-fermer {
+  animation: gt-texte-part 0.22s ease both;
+}
+
+@keyframes gt-texte-part {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+html body .gt-zoom-voile {
+  animation: mac-fondu 0.8s ease 0.3s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gt-monde,
+  html body .gt-zoom,
+  html body .gt-zoom > img,
+  html body .gt-zoom-texte > *,
+  html body .gt-zoom-fermer {
+    animation: none !important;
+    transition: none !important;
+    clip-path: none;
+  }
+}
