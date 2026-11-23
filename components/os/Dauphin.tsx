@@ -41,9 +41,32 @@ const MINE = [
   ".....o.....",
 ];
 const PALETTE_MINE: Palette = { o: "#2b2b2b", X: "#4a4a4a", w: "#9a9a9a" };
-const OISEAU_HAUT = ["o.......o", "oo.....oo", ".oo.o.oo.", "..ooooo..", "....o...."];
-const OISEAU_BAS = ["....o....", "..ooooo..", ".oo.o.oo.", "oo.....oo", "o.......o"];
-const PALETTE_OISEAU: Palette = { o: "#535353" };
+// L'oiseau-ptérodactyle (il vient de la droite, bec à gauche)
+const OISEAU_HAUT = [
+  "........oo............",
+  "........ooo...........",
+  "........oooo..........",
+  "........ooooo.........",
+  "..oo....oooooo........",
+  ".oooo...ooooooo.......",
+  "oowooooooooooooooooo..",
+  "....oooooooooooooooooo",
+  ".........oooooo.......",
+  "..........ooo.........",
+];
+const OISEAU_BAS = [
+  "......................",
+  "......................",
+  "......................",
+  "..oo..................",
+  ".oooo.................",
+  "oowooooooooooooooooo..",
+  "....oooooooooooooooooo",
+  "........ooooooo.......",
+  "........oooooo........",
+  "........ooooo.........",
+];
+const PALETTE_OISEAU: Palette = { o: "#535353", w: "#f7f7f3" };
 const NUAGE = ["....oooo......", "..oooooooo....", ".oooooooooooo.", "oooooooooooooo"];
 const PALETTE_NUAGE: Palette = { o: "#dedede" };
 
@@ -125,11 +148,18 @@ function sprite(lignes: string[], pal: Palette, s: number) {
   return c;
 }
 
-type Obstacle = { type: "mine" | "oiseau"; x: number; y: number; phase: number; pris?: boolean };
+type Obstacle = { type: "mine" | "oiseau"; x: number; y: number; phase: number; haut?: boolean };
 type Particule = { x: number; y: number; vx: number; vy: number; vie: number; couleur: string; t: number };
+type Etat = "pret" | "jeu" | "explose" | "emporte" | "fini";
 
 const CLE_RECORD = "aakanos-dauphin-record";
 
+/**
+ * Le jeu : le dauphin nage à la surface.
+ * - Mines (amarrées au fond par une chaîne) : il faut SAUTER (toucher l'écran, espace, flèche haut).
+ * - Oiseaux-ptérodactyles au ras de l'eau : il faut PLONGER (glisser vers le bas, flèche bas).
+ * Une mine : il explose. Un oiseau : il l'emporte dans le ciel… et le mange.
+ */
 export function JeuDauphin() {
   const toile = useRef<HTMLCanvasElement>(null);
 
@@ -137,8 +167,8 @@ export function JeuDauphin() {
     const c = toile.current!;
     const ctx = c.getContext("2d")!;
     const S = 3;
-    const H = 230;
-    const EAU = 165;
+    const H = 240;
+    const EAU = 150;
     let W = 360;
     const redim = () => {
       W = c.parentElement!.clientWidth;
@@ -155,11 +185,15 @@ export function JeuDauphin() {
 
     const spDauphin = sprite(DAUPHIN, PALETTE_DAUPHIN, S - 1);
     const spMine = sprite(MINE, PALETTE_MINE, S);
-    const spOiseau = [sprite(OISEAU_HAUT, PALETTE_OISEAU, S), sprite(OISEAU_BAS, PALETTE_OISEAU, S)];
+    const spOiseau = [sprite(OISEAU_HAUT, PALETTE_OISEAU, S - 1), sprite(OISEAU_BAS, PALETTE_OISEAU, S - 1)];
     const spNuage = sprite(NUAGE, PALETTE_NUAGE, S);
     const DW = spDauphin.width;
     const DH = spDauphin.height;
-    const SOL = EAU - DH + 12; // le dauphin nage à moitié dans l'eau
+    const OW = spOiseau[0]!.width;
+    const OH = spOiseau[0]!.height;
+    const SURFACE = EAU - DH + 12; // le dauphin nage à moitié dans l'eau
+    const FOND = EAU + 26; // plongé sous l'eau
+    const X = 46;
 
     let record = 0;
     try {
@@ -167,9 +201,10 @@ export function JeuDauphin() {
     } catch {}
 
     const j = {
-      etat: "pret" as "pret" | "jeu" | "explose" | "envol" | "fini",
-      y: SOL,
+      etat: "pret" as Etat,
+      y: SURFACE,
       vy: 0,
+      plonge: false,
       vitesse: 4,
       score: 0,
       obs: [] as Obstacle[],
@@ -178,59 +213,88 @@ export function JeuDauphin() {
       t: 0,
       tEtat: 0,
       nuages: [
-        { x: 60, y: 30 },
-        { x: 240, y: 55 },
+        { x: 60, y: 22 },
+        { x: 240, y: 46 },
       ],
-      bonus: 0,
+      mangeur: null as Obstacle | null,
+      texte: "",
     };
 
-    const eclabousse = (x: number, n: number, couleurs = ["#4aa3df", "#9fd3f0"]) => {
+    const eclabousse = (x: number, n: number, y = EAU) => {
       for (let i = 0; i < n; i++)
-        j.parts.push({ x, y: EAU, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 4 - 1, vie: 30 + Math.random() * 20, couleur: couleurs[i % couleurs.length]!, t: 0 });
+        j.parts.push({ x, y, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 4 - 1, vie: 30 + Math.random() * 20, couleur: i % 2 ? "#4aa3df" : "#9fd3f0", t: 0 });
     };
-    const explose = (x: number, y: number) => {
-      const couleurs = ["#f6c343", "#e2582b", "#ff8a3d", "#535353", "#ffffff"];
-      for (let i = 0; i < 70; i++) {
+    const eclats = (x: number, y: number, couleurs: string[], n: number, force = 5) => {
+      for (let i = 0; i < n; i++) {
         const a = Math.random() * Math.PI * 2;
-        const v = 1 + Math.random() * 5;
+        const v = 1 + Math.random() * force;
         j.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, vie: 30 + Math.random() * 40, couleur: couleurs[i % couleurs.length]!, t: 0 });
       }
     };
+    const finPartie = () => {
+      const s = Math.floor(j.score);
+      if (s > record) {
+        record = s;
+        try {
+          localStorage.setItem(CLE_RECORD, String(record));
+        } catch {}
+      }
+    };
     const depart = () => {
-      j.etat = "jeu";
-      j.y = SOL;
-      j.vy = 0;
-      j.vitesse = 4;
-      j.score = 0;
-      j.obs = [];
-      j.parts = [];
-      j.prochain = 50;
-      j.tEtat = 0;
+      Object.assign(j, { etat: "jeu", y: SURFACE, vy: 0, plonge: false, vitesse: 4, score: 0, obs: [], parts: [], prochain: 50, tEtat: 0, mangeur: null, texte: "" });
     };
     const saute = () => {
-      if (j.etat === "pret" || j.etat === "fini") {
-        if (j.etat === "fini" && j.tEtat < 30) return;
-        depart();
-        return;
-      }
-      if (j.etat === "jeu" && j.y >= SOL - 1) {
+      if (j.etat === "pret" || (j.etat === "fini" && j.tEtat > 30)) return depart();
+      if (j.etat === "jeu" && !j.plonge && j.y >= SURFACE - 1) {
         j.vy = -9.2;
-        eclabousse(50 + DW / 2, 10);
+        eclabousse(X + DW / 2, 10);
       }
     };
+    const plonge = (oui: boolean) => {
+      if (j.etat !== "jeu") return;
+      if (oui && !j.plonge && j.y >= SURFACE - 1) eclabousse(X + DW / 2, 12);
+      if (oui && j.y < SURFACE - 1) j.vy = Math.max(j.vy, 6); // plongeon en plein saut
+      j.plonge = oui;
+    };
 
-    const touche = (e: KeyboardEvent) => {
+    const bas = (e: KeyboardEvent) => {
       if (e.code === "Space" || e.code === "ArrowUp") {
         e.preventDefault();
         saute();
+      } else if (e.code === "ArrowDown") {
+        e.preventDefault();
+        plonge(true);
       }
     };
-    const tape = (e: PointerEvent) => {
-      e.preventDefault();
-      saute();
+    const haut = (e: KeyboardEvent) => {
+      if (e.code === "ArrowDown") plonge(false);
     };
-    window.addEventListener("keydown", touche);
-    c.addEventListener("pointerdown", tape);
+    let depY: number | null = null;
+    let aPlonge = false;
+    const pDown = (e: PointerEvent) => {
+      e.preventDefault();
+      depY = e.clientY;
+      aPlonge = false;
+      c.setPointerCapture(e.pointerId);
+    };
+    const pMove = (e: PointerEvent) => {
+      if (depY !== null && !aPlonge && e.clientY - depY > 24) {
+        aPlonge = true;
+        plonge(true);
+      }
+    };
+    const pUp = () => {
+      if (depY === null) return;
+      if (aPlonge) plonge(false);
+      else saute();
+      depY = null;
+    };
+    window.addEventListener("keydown", bas);
+    window.addEventListener("keyup", haut);
+    c.addEventListener("pointerdown", pDown);
+    c.addEventListener("pointermove", pMove);
+    c.addEventListener("pointerup", pUp);
+    c.addEventListener("pointercancel", pUp);
 
     const chevauche = (ax: number, ay: number, aw: number, ah: number, bx: number, by: number, bw: number, bh: number) =>
       ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
@@ -242,76 +306,78 @@ export function JeuDauphin() {
       avant = maintenant;
       j.t += dt;
       j.tEtat += dt;
-      const X = 50;
 
-      // --- logique
-      if (j.etat === "jeu" || j.etat === "envol") {
+      // ---- logique
+      if (j.etat === "jeu") {
         j.vitesse = Math.min(11, 4 + j.score / 900);
         j.score += j.vitesse * dt * 0.25;
-        for (const o of j.obs) o.x -= (o.type === "oiseau" ? j.vitesse * 1.15 : j.vitesse) * dt;
-        j.obs = j.obs.filter((o) => o.x > -60 && !(o.pris && j.etat === "jeu"));
+        for (const o of j.obs) o.x -= (o.type === "oiseau" ? j.vitesse * 1.2 : j.vitesse) * dt;
+        j.obs = j.obs.filter((o) => o.x > -80);
         j.prochain -= dt;
-        if (j.prochain <= 0 && j.etat === "jeu") {
-          const oiseau = Math.random() < 0.3 && j.score > 60;
-          j.obs.push(oiseau ? { type: "oiseau", x: W + 20, y: 40 + Math.random() * 50, phase: 0 } : { type: "mine", x: W + 20, y: EAU - spMine.height + 10, phase: Math.random() * 6 });
-          j.prochain = (Math.random() * 60 + 55) * (4 / j.vitesse) + 25;
+        if (j.prochain <= 0) {
+          const oiseau = j.score > 80 && Math.random() < 0.38;
+          if (oiseau) {
+            const enHaut = Math.random() < 0.25;
+            j.obs.push({ type: "oiseau", x: W + 20, y: enHaut ? SURFACE - 78 : SURFACE + 2, phase: 0, haut: enHaut });
+          } else j.obs.push({ type: "mine", x: W + 20, y: EAU - spMine.height + 10, phase: Math.random() * 6 });
+          j.prochain = (Math.random() * 55 + 60) * (4 / j.vitesse) + 22;
         }
-      }
-      if (j.etat === "jeu") {
-        j.vy += 0.5 * dt;
-        j.y += j.vy * dt;
-        if (j.y >= SOL) {
-          if (j.vy > 3) eclabousse(X + DW / 2, 14);
-          j.y = SOL;
+        // mouvement du dauphin
+        if (j.plonge && j.y >= SURFACE - 1) {
+          j.y += (FOND - j.y) * Math.min(1, 0.35 * dt);
           j.vy = 0;
-        }
-        for (const o of j.obs) {
-          if (o.type === "mine") {
-            if (chevauche(X + 8, j.y + 8, DW - 16, DH - 16, o.x + 6, o.y + 6, spMine.width - 12, spMine.height - 12)) {
-              explose(X + DW / 2, j.y + DH / 2);
-              j.etat = "explose";
-              j.tEtat = 0;
-              const s = Math.floor(j.score);
-              if (s > record) {
-                record = s;
-                try {
-                  localStorage.setItem(CLE_RECORD, String(record));
-                } catch {}
-              }
-            }
-          } else if (!o.pris && chevauche(X + 4, j.y, DW - 8, DH, o.x, o.y, spOiseau[0]!.width, spOiseau[0]!.height + 10)) {
-            o.pris = true;
-            j.etat = "envol";
-            j.tEtat = 0;
-            j.bonus = 60;
-            j.score += 500;
-          }
-        }
-      } else if (j.etat === "envol") {
-        const oiseau = j.obs.find((o) => o.pris);
-        if (j.tEtat < 70) {
-          j.y -= 2.4 * dt;
-          if (oiseau) {
-            oiseau.x = X + DW / 2 - spOiseau[0]!.width / 2;
-            oiseau.y = j.y - spOiseau[0]!.height - 4;
-          }
         } else {
-          if (oiseau) {
-            oiseau.pris = false;
-            oiseau.x += 0; // il repart
-            oiseau.y -= 3 * dt;
-          }
           j.vy += 0.5 * dt;
           j.y += j.vy * dt;
-          if (j.y >= SOL) {
-            eclabousse(X + DW / 2, 24);
-            j.y = SOL;
+          if (j.y >= SURFACE && !j.plonge) {
+            if (j.vy > 3) eclabousse(X + DW / 2, 14);
+            j.y = j.y > SURFACE + 2 ? j.y - (j.y - SURFACE) * Math.min(1, 0.3 * dt) : SURFACE;
+            if (Math.abs(j.y - SURFACE) < 1) j.y = SURFACE;
             j.vy = 0;
-            j.etat = "jeu";
-            j.obs = j.obs.filter((o) => o.type !== "oiseau" || o.x > X + 40);
           }
         }
-      } else if (j.etat === "explose" && j.tEtat > 70) {
+        if (!j.plonge && j.y > SURFACE + 1 && j.y < SURFACE + 3) eclabousse(X + DW / 2, 6);
+        // collisions
+        for (const o of j.obs) {
+          if (o.type === "mine") {
+            const my = o.y + Math.sin(j.t / 9 + o.phase) * 2;
+            const touche =
+              chevauche(X + 10, j.y + 8, DW - 20, DH - 16, o.x + 6, my + 6, spMine.width - 12, spMine.height - 12) ||
+              chevauche(X + 10, j.y + 8, DW - 20, DH - 16, o.x + spMine.width / 2 - 3, my + spMine.height, 6, H); // la chaîne
+            if (touche) {
+              eclats(X + DW / 2, j.y + DH / 2, ["#f6c343", "#e2582b", "#ff8a3d", "#535353", "#ffffff"], 80);
+              j.etat = "explose";
+              j.tEtat = 0;
+              j.texte = "BOUM !";
+              finPartie();
+            }
+          } else if (chevauche(X + 6, j.y + 4, DW - 12, DH - 10, o.x + 4, o.y + 4, OW - 8, OH - 6) && j.y < EAU - 4) {
+            j.etat = "emporte";
+            j.tEtat = 0;
+            j.mangeur = o;
+            finPartie();
+          }
+        }
+      } else if (j.etat === "emporte") {
+        // l'oiseau l'emporte dans le ciel… puis le mange
+        const o = j.mangeur!;
+        if (j.tEtat < 60) {
+          j.y -= 2.6 * dt;
+          o.x += (X + DW / 2 - OW / 2 - o.x) * 0.2;
+          o.y = j.y - OH + 6;
+        } else if (j.texte === "") {
+          eclats(X + DW / 2, j.y + DH / 2, ["#ddd8c8", "#a9b8bd", "#6b7476", "#ece9dd", "#e2582b"], 60, 3);
+          j.texte = "CROC !";
+          j.tEtat = 60;
+        } else {
+          o.x -= 3 * dt;
+          o.y -= 1.5 * dt;
+          if (j.tEtat > 140) {
+            j.etat = "fini";
+            j.tEtat = 0;
+          }
+        }
+      } else if (j.etat === "explose" && j.tEtat > 75) {
         j.etat = "fini";
         j.tEtat = 0;
       }
@@ -326,45 +392,56 @@ export function JeuDauphin() {
         n.x -= 0.4 * dt;
         if (n.x < -60) n.x = W + 20;
       }
-      if (j.bonus > 0) j.bonus -= dt;
 
-      // --- dessin
+      // ---- dessin
       ctx.fillStyle = "#f7f7f3";
       ctx.fillRect(0, 0, W, H);
       for (const n of j.nuages) ctx.drawImage(spNuage, Math.round(n.x), n.y);
-      // eau
+      // fond marin
       ctx.fillStyle = "#d9eef8";
       ctx.fillRect(0, EAU + 4, W, H - EAU);
-      ctx.fillStyle = "#4aa3df";
+      ctx.fillStyle = "#c2e2f3";
+      ctx.fillRect(0, H - 14, W, 14);
       const dec = Math.floor((j.t * (j.etat === "jeu" ? j.vitesse : 1)) % 18);
+      ctx.fillStyle = "#b5dcf0";
+      for (let x = (-dec * 2) % 40; x < W; x += 40) ctx.fillRect(x + 12, EAU + 30, 6, 3);
+      // mines et leurs chaînes
+      for (const o of j.obs) {
+        if (o.type !== "mine") continue;
+        const my = Math.round(o.y + Math.sin(j.t / 9 + o.phase) * 2);
+        ctx.fillStyle = "#7a7a7a";
+        for (let y = my + spMine.height; y < H - 14; y += 6) ctx.fillRect(Math.round(o.x + spMine.width / 2 - 1), y, 3, 4);
+        ctx.drawImage(spMine, Math.round(o.x), my);
+      }
+      // dauphin
+      if (j.etat !== "fini" && !(j.etat === "explose") && !(j.etat === "emporte" && j.texte)) {
+        const bob = j.etat === "jeu" && Math.abs(j.y - SURFACE) < 1 ? Math.round(Math.sin(j.t / 6) * 1.5) : 0;
+        ctx.save();
+        ctx.translate(X + DW / 2, j.y + DH / 2 + bob);
+        const angle = j.etat === "emporte" ? -0.35 + Math.sin(j.t / 3) * 0.15 : j.plonge && j.y > SURFACE + 2 ? 0.08 : Math.max(-0.45, Math.min(0.45, j.vy * 0.05));
+        ctx.rotate(angle);
+        ctx.drawImage(spDauphin, -DW / 2, -DH / 2);
+        ctx.restore();
+      }
+      // surface de l'eau (par-dessus le dauphin plongé)
+      ctx.fillStyle = "rgba(74, 163, 223, .28)";
+      ctx.fillRect(0, EAU + 4, W, H - EAU - 4);
+      ctx.fillStyle = "#4aa3df";
       for (let x = -dec; x < W; x += 18) {
         ctx.fillRect(x, EAU, 9, 3);
         ctx.fillRect(x + 9, EAU + 3, 9, 3);
       }
-      ctx.fillStyle = "#b5dcf0";
-      for (let x = (-dec * 2) % 40; x < W; x += 40) ctx.fillRect(x + 12, EAU + 22, 6, 3);
-      // obstacles
+      // oiseaux
       for (const o of j.obs) {
-        if (o.type === "mine") ctx.drawImage(spMine, Math.round(o.x), Math.round(o.y + Math.sin(j.t / 9 + o.phase) * 2));
-        else ctx.drawImage(spOiseau[Math.floor(j.t / 8) % 2]!, Math.round(o.x), Math.round(o.y));
+        if (o.type === "oiseau") ctx.drawImage(spOiseau[Math.floor(j.t / 7) % 2]!, Math.round(o.x), Math.round(o.y));
       }
-      // dauphin
-      if (j.etat !== "explose" && j.etat !== "fini") {
-        const bob = j.etat === "jeu" && j.y >= SOL - 1 ? Math.round(Math.sin(j.t / 6) * 1.5) : 0;
-        ctx.save();
-        ctx.translate(X + DW / 2, j.y + DH / 2 + bob);
-        ctx.rotate(j.etat === "envol" ? -0.25 : Math.max(-0.45, Math.min(0.45, j.vy * 0.05)));
-        ctx.drawImage(spDauphin, -DW / 2, -DH / 2);
-        ctx.restore();
-      }
-      // particules (éclaboussures, explosion)
+      // particules
       for (const p of j.parts) {
         ctx.fillStyle = p.couleur;
         const t = p.t < p.vie * 0.7 ? S : 2;
         ctx.fillRect(Math.round(p.x), Math.round(p.y), t, t);
       }
-      if (j.etat === "explose" && j.tEtat < 14) {
-        // éclair blanc puis boule de feu en anneaux
+      if (j.etat === "explose" && j.tEtat < 16) {
         const r = 6 + j.tEtat * 3;
         ctx.fillStyle = j.tEtat < 3 ? "#ffffff" : j.tEtat < 8 ? "#f6c343" : "#e2582b";
         for (let a = 0; a < Math.PI * 2; a += 0.35) ctx.fillRect(Math.round(X + DW / 2 + Math.cos(a) * r), Math.round(j.y + DH / 2 + Math.sin(a) * r), S * 2, S * 2);
@@ -374,22 +451,24 @@ export function JeuDauphin() {
       ctx.font = "bold 13px 'Courier New', monospace";
       ctx.textAlign = "right";
       ctx.fillText(`HI ${String(record).padStart(5, "0")}  ${String(Math.floor(j.score)).padStart(5, "0")}`, W - 10, 18);
-      if (j.bonus > 0) {
-        ctx.fillStyle = "#4aa3df";
-        ctx.textAlign = "left";
-        ctx.fillText("+500  ENVOL !", 12, 18);
-      }
       ctx.textAlign = "center";
+      if (j.texte && j.etat !== "fini") {
+        ctx.fillStyle = j.texte === "BOUM !" ? "#e2582b" : "#535353";
+        ctx.font = "bold 18px 'Courier New', monospace";
+        ctx.fillText(j.texte, W / 2, 60);
+      }
       if (j.etat === "pret") {
         ctx.fillStyle = "#535353";
-        ctx.fillText("TOUCHE POUR NAGER", W / 2, 70);
+        ctx.font = "bold 12px 'Courier New', monospace";
+        ctx.fillText("TOUCHE : SAUTER LES MINES", W / 2, 56);
+        ctx.fillText("GLISSE VERS LE BAS : PLONGER", W / 2, 74);
       }
       if (j.etat === "fini") {
         ctx.fillStyle = "#535353";
         ctx.font = "bold 20px 'Courier New', monospace";
-        ctx.fillText("G A M E   O V E R", W / 2, 72);
+        ctx.fillText("G A M E   O V E R", W / 2, 62);
         ctx.font = "bold 12px 'Courier New', monospace";
-        if (Math.floor(j.tEtat / 20) % 2 === 0) ctx.fillText("TOUCHE POUR REJOUER", W / 2, 96);
+        if (Math.floor(j.tEtat / 20) % 2 === 0) ctx.fillText("TOUCHE POUR REJOUER", W / 2, 86);
       }
       raf = requestAnimationFrame(boucle);
     };
@@ -397,14 +476,18 @@ export function JeuDauphin() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", redim);
-      window.removeEventListener("keydown", touche);
-      c.removeEventListener("pointerdown", tape);
+      window.removeEventListener("keydown", bas);
+      window.removeEventListener("keyup", haut);
+      c.removeEventListener("pointerdown", pDown);
+      c.removeEventListener("pointermove", pMove);
+      c.removeEventListener("pointerup", pUp);
+      c.removeEventListener("pointercancel", pUp);
     };
   }, []);
 
   return (
     <div className="jeu-dauphin">
-      <canvas ref={toile} aria-label="Jeu du dauphin : touche l'écran ou espace pour sauter" />
+      <canvas ref={toile} aria-label="Jeu du dauphin : toucher pour sauter les mines, glisser vers le bas pour plonger sous les oiseaux" />
     </div>
   );
 }

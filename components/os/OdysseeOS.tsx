@@ -65,6 +65,18 @@ const ALBUM = [
   { kind: "photo" as const, src: "/media/franck.jpg", poster: undefined, nom: "Photo" },
 ];
 
+type MsgGael = { id: number; de: "moi" | "gael"; texte: string; h: string; lu?: boolean };
+const REPONSES_GAEL = [
+  "Je suis désolé, mais moi, je ne peux pas te répondre. Il faut que tu envoies un mail à Franck.",
+  "Je suis désolé. Mais je ne peux pas te répondre.",
+  "Putain, tu commences à vraiment me faire chier, va te faire enculer 😂",
+];
+const CLE_GAEL = "aakanos-gael";
+const heureCourte = () => {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
 type Etoile = { id: string; titre: string; texte: string; auteur: string; date: string; genre?: "citation" | "projet" };
 
 const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
@@ -150,9 +162,39 @@ function useRetour(actif: boolean, f: () => void) {
   }, [actif, poser]);
 }
 
+/* ---------------- Sous-écrans (activités) ---------------- */
+
+type Act<E extends string> = { ecran: E; sens: "init" | "avant" | "arriere"; sortie: boolean; aller: (e: E) => void; retour: () => void };
+/** Pile d'écrans d'une appli : ouverture = activity_open_enter, retour = activity_close_exit (300 ms). */
+function useActivite<E extends string>(depart: E): Act<E> {
+  const [pile, setPile] = useState<E[]>([depart]);
+  const [sens, setSens] = useState<"init" | "avant" | "arriere">("init");
+  const [sortie, setSortie] = useState(false);
+  const aller = useCallback((e: E) => {
+    setSens("avant");
+    setPile((p) => [...p, e]);
+  }, []);
+  const retour = useCallback(() => {
+    setSortie(true);
+    window.setTimeout(() => {
+      setSortie(false);
+      setSens("arriere");
+      setPile((p) => (p.length > 1 ? p.slice(0, -1) : p));
+    }, 280);
+  }, []);
+  return { ecran: pile[pile.length - 1]!, sens, sortie, aller, retour };
+}
+function Activite<E extends string>({ act, children }: { act: Act<E>; children: ReactNode }) {
+  return (
+    <div key={act.ecran} className={`os-act${act.sortie ? " sort" : act.sens === "avant" ? " entre" : ""}`}>
+      {children}
+    </div>
+  );
+}
+
 /* ---------------- Le système ---------------- */
 
-type Fenetre = { appli: Appli; depuis: { x: number; y: number } | null };
+type Fenetre = { appli: Appli; depuis: { x: number; y: number; w: number; h: number; W: number; H: number } | null };
 
 export function OdysseeOS() {
   const t = useMaintenant();
@@ -169,6 +211,51 @@ export function OdysseeOS() {
   const [historique, setHistorique] = useState<Appli[]>([]);
   const [effacees, setEffacees] = useState<string[]>([]);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
+  const [msgs, setMsgs] = useState<MsgGael[]>(() => {
+    try {
+      const v = typeof window !== "undefined" ? localStorage.getItem(CLE_GAEL) : null;
+      return v ? (JSON.parse(v) as MsgGael[]).map((m) => ({ ...m, lu: m.de === "moi" ? true : m.lu })) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [gaelEcrit, setGaelEcrit] = useState(false);
+  const [nonLu, setNonLu] = useState(0);
+  const minuteurs = useRef<number[]>([]);
+  const convOuverte = useRef(false);
+  useEffect(() => {
+    try {
+      localStorage.setItem(CLE_GAEL, JSON.stringify(msgs.slice(-60)));
+    } catch {}
+  }, [msgs]);
+  useEffect(() => () => minuteurs.current.forEach((m) => clearTimeout(m)), []);
+  const envoyerAGael = useCallback((texte: string) => {
+    const id = Date.now();
+    let rang = 0;
+    setMsgs((m) => {
+      rang = m.filter((x) => x.de === "moi").length;
+      return [...m, { id, de: "moi", texte, h: heureCourte() }];
+    });
+    const plus = (f: () => void, ms: number) => minuteurs.current.push(window.setTimeout(f, ms));
+    // Il voit le message entre 5 et 10 secondes plus tard…
+    const vu = 5000 + Math.random() * 5000;
+    plus(() => setMsgs((m) => m.map((x) => (x.id === id ? { ...x, lu: true } : x))), vu);
+    // …puis il écrit, et il répond (trois fois au plus).
+    plus(() => {
+      const reponse = REPONSES_GAEL[rang];
+      if (!reponse) return;
+      setGaelEcrit(true);
+      plus(() => {
+        setGaelEcrit(false);
+        setMsgs((m) => [...m, { id: Date.now(), de: "gael", texte: reponse, h: heureCourte() }]);
+        if (!convOuverte.current) setNonLu((n) => n + 1);
+      }, 2200 + reponse.length * 35);
+    }, vu + 900);
+  }, []);
+  const vuConv = useCallback((o: boolean) => {
+    convOuverte.current = o;
+    if (o) setNonLu(0);
+  }, []);
   const retourAppli = useRef<(() => boolean) | null>(null);
   const poser = useCallback((f: (() => boolean) | null) => {
     retourAppli.current = f;
@@ -204,7 +291,7 @@ export function OdysseeOS() {
     const r = el?.getBoundingClientRect();
     const o = document.querySelector(".os")?.getBoundingClientRect();
     setFermeture(false);
-    setFenetre({ appli: a, depuis: r && o ? { x: r.left - o.left + r.width / 2, y: r.top - o.top + r.height / 2 } : null });
+    setFenetre({ appli: a, depuis: r && o ? { x: r.left - o.left, y: r.top - o.top, w: r.width, h: r.height, W: o.width, H: o.height - 48 } : null });
     setHistorique((h) => [a, ...h.filter((x) => x.id !== a.id)].slice(0, 8));
     setTiroir(false);
     setRecents(false);
@@ -217,7 +304,7 @@ export function OdysseeOS() {
     setTimeout(() => {
       setFenetre(null);
       setFermeture(false);
-    }, 240);
+    }, 375);
   }, []);
 
   const retour = () => {
@@ -285,9 +372,17 @@ export function OdysseeOS() {
       h: "10:00",
       appli: par("endurreisen"),
     },
-    { id: "gael", icone: <IconeAppli id="messages" taille={40} />, titre: "Gaël", texte: "📎 2 contacts : e-mail, Instagram", h: "09:41", appli: par("messages") },
+    {
+      id: "gael",
+      icone: <IconeAppli id="messages" taille={40} />,
+      titre: nonLu > 1 ? `Gaël (${nonLu} messages)` : "Gaël",
+      texte: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.texte ?? "" : "📎 2 contacts : e-mail, Instagram",
+      h: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.h ?? "09:41" : "09:41",
+      appli: par("messages"),
+    },
   ];
-  const notifs = toutes.filter((n): n is Notif => !!n && !effacees.includes(n.id));
+  const notifs = toutes.filter((n): n is Notif => !!n && (!effacees.includes(n.id) || (n.id === "gael" && nonLu > 0)));
+  const notifsTriees = nonLu ? [...notifs.filter((n) => n.id === "gael"), ...notifs.filter((n) => n.id !== "gael")] : notifs;
 
   const correspond = (e: Etoile) => sansAccent(`${e.titre} ${e.texte}`).includes(sansAccent(requete));
   const resultats = APPLIS.filter((a) => sansAccent(a.nom).includes(sansAccent(requete)));
@@ -348,7 +443,7 @@ export function OdysseeOS() {
           <Verrouillage heure={heure} date={date} onOuvrir={() => setVerrou(false)} />
         ) : (
           <>
-            <div className={`os-bureau${tiroir || fenetre ? " os-recule" : ""}`}>
+            <div className={`os-bureau${tiroir ? " os-cache" : ""}`}>
               <button className="os-cherche" onClick={() => setRecherche(true)}>
                 <b>AakanOS</b>
                 <span />
@@ -463,7 +558,14 @@ export function OdysseeOS() {
 
             {fenetre ? (
               <FenetreAppli f={fenetre} fermeture={fermeture} onRetour={retour}>
-                <ContenuAppli id={fenetre.appli.id} t={t} etoiles={etoiles} ouvrir={ouvrir} quitter={quitter} />
+                <ContenuAppli
+                  id={fenetre.appli.id}
+                  t={t}
+                  etoiles={etoiles}
+                  ouvrir={ouvrir}
+                  quitter={quitter}
+                  gael={{ msgs, ecrit: gaelEcrit, envoyer: envoyerAGael, vu: vuConv }}
+                />
               </FenetreAppli>
             ) : null}
 
@@ -527,7 +629,7 @@ export function OdysseeOS() {
                 </button>
               </div>
               <div className="os-rideau-liste">
-                {notifs.map((n, i) => (
+                {notifsTriees.map((n, i) => (
                   <div key={n.id} className="os-notif-bloc" style={{ animationDelay: `${i * 40}ms` }}>
                     <button className={`os-notif${i === 0 ? " grande" : ""}`} onClick={(e) => ouvrir(n.appli, e.currentTarget)}>
                       <span className="os-notif-ic">{n.icone}</span>
@@ -675,7 +777,7 @@ function Verrouillage({ heure, date, onOuvrir }: { heure: string; date: string; 
     (code: string) => {
       if (code === CODE) {
         setPart(true);
-        setTimeout(onOuvrir, 420);
+        setTimeout(onOuvrir, 200);
       } else {
         setErreur(true);
         setTimeout(() => {
@@ -739,9 +841,17 @@ function Verrouillage({ heure, date, onOuvrir }: { heure: string; date: string; 
 /* ---------------- Fenêtre d'appli ---------------- */
 
 function FenetreAppli({ f, fermeture, onRetour, children }: { f: Fenetre; fermeture: boolean; onRetour: () => void; children: ReactNode }) {
-  const origine = f.depuis ? `${f.depuis.x}px ${f.depuis.y}px` : "50% 50%";
+  // ActivityOptions.makeScaleUpAnimation : la fenêtre grandit depuis le rectangle de l'icône (300 ms, decelerate_cubic).
+  const d = f.depuis;
+  const sx = d ? d.w / d.W : 0.8;
+  const sy = d ? d.h / d.H : 0.8;
+  const px = d ? d.x / (1 - sx) : d === null ? 0 : 0;
+  const py = d ? d.y / (1 - sy) : 0;
+  const style = (d
+    ? { "--sx": sx, "--sy": sy, transformOrigin: fermeture ? "50% 50%" : `${px}px ${py}px` }
+    : { "--sx": 0.8, "--sy": 0.8, transformOrigin: "50% 50%" }) as CSSProperties;
   return (
-    <div className={`os-fenetre${fermeture ? " ferme" : ""}`} style={{ transformOrigin: origine } as CSSProperties}>
+    <div className={`os-fenetre${fermeture ? " ferme" : ""}`} style={style}>
       <div className="os-barre-action">
         <button className="os-barre-retour" onClick={onRetour} aria-label="Retour">
           <svg viewBox="0 0 12 24" width="10" height="22">
@@ -763,12 +873,14 @@ function ContenuAppli({
   etoiles,
   ouvrir,
   quitter,
+  gael,
 }: {
   id: IdAppli;
   t: number | null;
   etoiles: Etoile[] | null;
   ouvrir: (a: Appli, el?: Element | null) => void;
   quitter: () => void;
+  gael: PropsGael;
 }) {
   switch (id) {
     case "qui":
@@ -782,7 +894,7 @@ function ContenuAppli({
     case "endurreisen":
       return <AppEndurreisen t={t} />;
     case "messages":
-      return <AppMessages />;
+      return <AppMessages {...gael} />;
     case "nounou":
       return (
         <NavigateurNounou
@@ -798,7 +910,7 @@ function ContenuAppli({
         <div className="app-defile app-clair">
           <div className="nounou-jeu">
             <JeuDauphin />
-            <p>Touche l’écran (ou espace) pour sauter les mines. Attrape un oiseau pour t’envoler.</p>
+            <p>Touche l’écran (ou espace) pour sauter les mines. Glisse vers le bas (ou flèche bas) pour plonger sous les oiseaux.</p>
           </div>
         </div>
       );
@@ -992,89 +1104,133 @@ function AppEndurreisen({ t }: { t: number | null }) {
   );
 }
 
-function AppMessages() {
-  const [conv, setConv] = useState(false);
+type PropsGael = { msgs: MsgGael[]; ecrit: boolean; envoyer: (t: string) => void; vu: (ouverte: boolean) => void };
+
+function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
+  const act = useActivite<"liste" | "conv">("liste");
   const [texte, setTexte] = useState("");
-  useRetour(conv, () => setConv(false));
+  const liste = useRef<HTMLDivElement>(null);
+  useRetour(act.ecran === "conv", act.retour);
+  useEffect(() => {
+    vu(act.ecran === "conv");
+    return () => vu(false);
+  }, [act.ecran, vu]);
+  useEffect(() => {
+    const l = liste.current;
+    if (l) l.scrollTo({ top: l.scrollHeight, behavior: "smooth" });
+  }, [msgs.length, ecrit, act.ecran]);
   // eslint-disable-next-line @next/next/no-img-element
   const avatar = <img className="msg-avatar" src="/aakanos/gael.jpg" alt="" />;
-  if (!conv) {
+  const dernier = msgs.at(-1);
+  const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
+
+  if (act.ecran === "liste") {
     return (
-      <div className="app-defile">
-        <button className="msg-conv" onClick={() => setConv(true)}>
-          {avatar}
-          <div>
-            <b>Gaël</b>
-            <span>📎 2 contacts : e-mail, Instagram</span>
-          </div>
-          <em>09:41</em>
-        </button>
-        <p className="os-vide">Un seul contact</p>
-      </div>
+      <Activite act={act}>
+        <div className="app-defile">
+          <button className="msg-conv" onClick={() => act.aller("conv")}>
+            {avatar}
+            <div>
+              <b>Gaël</b>
+              <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : "📎 2 contacts : e-mail, Instagram"}</span>
+            </div>
+            <em>{dernier?.h ?? "09:41"}</em>
+          </button>
+          <p className="os-vide">Un seul contact</p>
+        </div>
+      </Activite>
     );
   }
   return (
-    <div className="msg-fil">
-      <div className="msg-entete">
-        {avatar}
-        <b>Gaël</b>
-      </div>
-      <div className="msg-liste">
-        <div className="msg-date">AUJOURD’HUI</div>
-        <div className="msg-bulle">
-          {avatar}
-          <p>
-            Salut ! Tu veux joindre Franck ? Voilà ses contacts 👇<em>09:40</em>
-          </p>
-        </div>
-        <div className="msg-bulle suite">
-          <i />
-          <a className="msg-carte" href={`mailto:${MAIL}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/email.png" alt="" />
-            <div>
-              <small>E-MAIL</small>
-              <b>{MAIL}</b>
+    <Activite act={act}>
+      <div className="msg-fil">
+        <div className="msg-liste" ref={liste}>
+          <div className="msg-date">AUJOURD’HUI</div>
+          <div className="msg-bulle">
+            {avatar}
+            <p>
+              Salut ! Tu veux joindre Franck ? Voilà ses contacts 👇<em>09:40</em>
+            </p>
+          </div>
+          <div className="msg-bulle suite">
+            <i />
+            <a className="msg-carte" href={`mailto:${MAIL}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/aakanos/email.png" alt="" />
+              <div>
+                <small>E-MAIL</small>
+                <b>{MAIL}</b>
+              </div>
+              <span>ÉCRIRE</span>
+            </a>
+          </div>
+          <div className="msg-bulle suite">
+            <i />
+            <a className="msg-carte" href={INSTA} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/aakanos/camera.png" alt="" />
+              <div>
+                <small>INSTAGRAM</small>
+                <b>@fjhchristenhmbk</b>
+              </div>
+              <span>OUVRIR</span>
+            </a>
+          </div>
+          <div className="msg-bulle suite">
+            <i />
+            <p>
+              Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui.<em>09:41</em>
+            </p>
+          </div>
+          {msgs.map((m) =>
+            m.de === "moi" ? (
+              <div key={m.id} className="msg-bulle moi">
+                <p>
+                  {m.texte}
+                  <em>{m === derniersMoi ? (m.lu ? `Lu · ${m.h}` : `Envoyé · ${m.h}`) : m.h}</em>
+                </p>
+              </div>
+            ) : (
+              <div key={m.id} className="msg-bulle">
+                {avatar}
+                <p>
+                  {m.texte}
+                  <em>{m.h}</em>
+                </p>
+              </div>
+            ),
+          )}
+          {ecrit ? (
+            <div className="msg-bulle">
+              {avatar}
+              <p className="msg-ecrit">
+                <span />
+                <span />
+                <span />
+              </p>
             </div>
-            <span>ÉCRIRE</span>
-          </a>
+          ) : null}
         </div>
-        <div className="msg-bulle suite">
-          <i />
-          <a className="msg-carte" href={INSTA} target="_blank" rel="noopener noreferrer">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/camera.png" alt="" />
-            <div>
-              <small>INSTAGRAM</small>
-              <b>@fjhchristenhmbk</b>
-            </div>
-            <span>OUVRIR</span>
-          </a>
-        </div>
-        <div className="msg-bulle suite">
-          <i />
-          <p>
-            Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui.<em>09:41</em>
-          </p>
-        </div>
+        {ecrit ? <div className="msg-statut">Gaël est en train d’écrire…</div> : null}
+        <form
+          className="msg-saisie"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const v = texte.trim();
+            if (!v) return;
+            envoyer(v);
+            setTexte("");
+          }}
+        >
+          <input value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Écrire un message à Gaël" enterKeyHint="send" />
+          <button aria-label="Envoyer" disabled={!texte.trim()}>
+            <svg viewBox="0 0 24 24" width="26" height="26" fill={texte.trim() ? "#33b5e5" : "#555"}>
+              <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </form>
       </div>
-      <form
-        className="msg-saisie"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!texte.trim()) return;
-          window.location.assign(`mailto:${MAIL}?body=${encodeURIComponent(texte)}`);
-          setTexte("");
-        }}
-      >
-        <input value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Écrire à Franck (par e-mail)" />
-        <button aria-label="Envoyer">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="#33b5e5">
-            <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        </button>
-      </form>
-    </div>
+    </Activite>
   );
 }
 
@@ -1096,8 +1252,18 @@ const ic = (d: string) => (
 );
 
 function AppReglages({ quitter }: { quitter: () => void }) {
-  const [ecran, setEcran] = useState<"liste" | "apropos">("liste");
-  const [dialogue, setDialogue] = useState<null | "apparence" | "langue">(null);
+  const act = useActivite<"liste" | "apropos">("liste");
+  const ecran = act.ecran;
+  const [dialogue, setDialogueBrut] = useState<null | "apparence" | "langue">(null);
+  const [dlgSort, setDlgSort] = useState(false);
+  const setDialogue = (v: null | "apparence" | "langue") => {
+    if (v) return setDialogueBrut(v);
+    setDlgSort(true);
+    window.setTimeout(() => {
+      setDlgSort(false);
+      setDialogueBrut(null);
+    }, 220);
+  };
   const [langue, setLangue] = useState<"fr" | "tavissiv">(() => {
     try {
       return typeof window !== "undefined" && localStorage.getItem("fjch-lang") === "tavissiv" ? "tavissiv" : "fr";
@@ -1105,7 +1271,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       return "fr";
     }
   });
-  useRetour(ecran !== "liste" || dialogue !== null, () => (dialogue ? setDialogue(null) : setEcran("liste")));
+  useRetour(ecran !== "liste" || dialogue !== null, () => (dialogue ? setDialogue(null) : act.retour()));
 
   const choisirLangue = (l: "fr" | "tavissiv") => {
     setLangue(l);
@@ -1117,6 +1283,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
 
   if (ecran === "apropos") {
     return (
+      <Activite act={act}>
       <div className="app-defile">
         <div className="apropos-logo">
           <DauphinPixel largeur={170} />
@@ -1141,10 +1308,12 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           <span>Icônes système : Android Open Source Project, licence Apache 2.0</span>
         </a>
       </div>
+      </Activite>
     );
   }
 
   return (
+    <Activite act={act}>
     <div className="app-defile">
       <Titre>PERSONNEL</Titre>
       <LigneReglage
@@ -1177,12 +1346,12 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         icone={ic("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z")}
         titre="À propos du téléphone"
         sous="AakanOS · Odyssée 0.1"
-        onClick={() => setEcran("apropos")}
+        onClick={() => act.aller("apropos")}
       />
       <LigneReglage icone={ic("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z")} titre="Revenir au site classique" sous="Quitter AakanOS" onClick={quitter} />
 
       {dialogue ? (
-        <div className="dlg-fond" onClick={() => setDialogue(null)}>
+        <div className={`dlg-fond${dlgSort ? " sort" : ""}`} onClick={() => setDialogue(null)}>
           <div className="dlg" onClick={(e) => e.stopPropagation()}>
             <div className="dlg-titre">{dialogue === "apparence" ? "Apparence" : "Langue"}</div>
             {dialogue === "apparence" ? (
@@ -1211,5 +1380,6 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         </div>
       ) : null}
     </div>
+    </Activite>
   );
 }

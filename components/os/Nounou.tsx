@@ -110,7 +110,7 @@ export function NavigateurNounou({ raccourcis }: { raccourcis: { nom: string; ic
         {vue === "jeu" ? (
           <div className="nounou-jeu">
             <JeuDauphin />
-            <p>Touche l’écran (ou espace) pour sauter les mines. Attrape un oiseau pour t’envoler.</p>
+            <p>Touche l’écran (ou espace) pour sauter les mines. Glisse vers le bas (ou flèche bas) pour plonger sous les oiseaux.</p>
           </div>
         ) : null}
       </div>

@@ -345,3 +345,59 @@ a.app-ligne:active { background: var(--presse); }
   .os *, .os *::before { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 .os-widget > .os-icone { flex: none; }
+
+/* ================= Animations d'Android 4.1 (valeurs du code source AOSP) ================= */
+:root {
+  --dec-cubic: cubic-bezier(.215, .61, .355, 1);
+  --dec-quint: cubic-bezier(.23, 1, .32, 1);
+  --dec-quad: cubic-bezier(.25, .46, .45, .94);
+  --acc-dec: cubic-bezier(.455, .03, .515, .955);
+  --acc-quint: cubic-bezier(.755, .05, .855, .06);
+  --acc-quad: cubic-bezier(.55, .085, .68, .53);
+}
+/* Lancement d'une appli depuis le bureau : la fenêtre grandit depuis l'icône (makeScaleUpAnimation, 300 ms) */
+.os-fenetre { animation: jb-scaleup 300ms var(--dec-cubic) both; }
+@keyframes jb-scaleup { from { transform: scale(var(--sx), var(--sy)); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Retour au bureau : wallpaper_open_exit (échelle 1 → 0,5 en 375 ms, opacité 1 → 0 en 200 ms) */
+.os-fenetre.ferme { animation: jb-ferme-echelle 375ms var(--dec-quad) both, jb-ferme-alpha 200ms var(--acc-dec) both; }
+@keyframes jb-ferme-echelle { from { transform: none; } to { transform: scale(.5); } }
+@keyframes jb-ferme-alpha { from { opacity: 1; } to { opacity: 0; } }
+/* Écrans dans une appli : activity_open_enter / activity_close_exit (0,8 ↔ 1, 300 ms) */
+.os-act { position: absolute; inset: 0; background: #000; }
+.os-act.entre { animation: jb-act-entre 300ms var(--dec-cubic) both; }
+.os-act.sort { animation: jb-act-sort 300ms var(--dec-cubic) both; }
+@keyframes jb-act-entre { from { opacity: 0; transform: scale(.8); } }
+@keyframes jb-act-sort { to { opacity: 0; transform: scale(.8); } }
+/* Boîtes de dialogue : dialog_enter / dialog_exit (0,9 ↔ 1 en 220 ms, opacité en 150 ms) */
+.dlg { animation: jb-dlg-echelle 220ms var(--dec-quint) both, jb-dlg-alpha 150ms var(--dec-cubic) both; }
+.dlg-fond { animation: jb-dlg-alpha 150ms var(--dec-cubic) both; }
+.dlg-fond.sort { animation: jb-dlg-alpha-out 150ms var(--dec-cubic) both; }
+.dlg-fond.sort .dlg { animation: jb-dlg-echelle-out 220ms var(--dec-quint) both, jb-dlg-alpha-out 150ms var(--dec-cubic) both; }
+@keyframes jb-dlg-echelle { from { transform: scale(.9); } }
+@keyframes jb-dlg-alpha { from { opacity: 0; } }
+@keyframes jb-dlg-echelle-out { to { transform: scale(.9); } }
+@keyframes jb-dlg-alpha-out { to { opacity: 0; } }
+/* Déverrouillage : lock_screen_exit (échelle 1 → 1,1 et fondu, 200 ms) */
+.os-verrou { transition: transform 200ms var(--acc-quint), opacity 200ms var(--acc-quad); }
+.os-verrou.part { transform: scale(1.1); opacity: 0; }
+/* Le bureau reste en place derrière les applis (wallpaper_close_exit) */
+.os-bureau { animation: none; transition: opacity 250ms var(--dec-cubic); }
+.os-bureau.os-cache { transform: none; opacity: 0; }
+/* Tiroir d'applis (Launcher2) : zoom 7 → 1 et fondu en 250 ms ; fermeture en 200 ms */
+.os-tiroir { transform: scale(7); transform-origin: 50% 50%; opacity: 0; transition: transform 200ms var(--acc-quad), opacity 200ms var(--acc-quad); }
+.os-tiroir.ouvert { transform: none; opacity: 1; transition: transform 250ms var(--dec-quint), opacity 250ms var(--dec-cubic); }
+.os-grille-case, .os-widget-apercu { animation: none; }
+/* Rideau de notifications */
+.os-rideau { transition: transform 300ms var(--dec-cubic); }
+
+/* Messages : bulles envoyées, « en train d'écrire » */
+.msg-bulle.moi { justify-content: flex-end; }
+.msg-bulle.moi p { background: #e9ecef; color: #222; border-left: 0; border-right: 3px solid #99cc00; }
+.msg-bulle.moi em { color: #777; text-align: right; }
+.msg-ecrit { display: flex; gap: 5px; align-items: center; min-height: 40px; }
+.msg-ecrit span { width: 8px; height: 8px; border-radius: 50%; background: #9ab; animation: msg-point 1.2s infinite ease-in-out; }
+.msg-ecrit span:nth-child(2) { animation-delay: .15s; }
+.msg-ecrit span:nth-child(3) { animation-delay: .3s; }
+@keyframes msg-point { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-5px); opacity: 1; } }
+.msg-statut { flex: none; padding: 4px 12px; font-size: 12px; color: var(--holo); background: #111; }
+.msg-saisie button:disabled { cursor: default; }
