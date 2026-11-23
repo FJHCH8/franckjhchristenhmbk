@@ -4430,3 +4430,9 @@ html body .stories {
   border-radius: 0;
   box-shadow: none;
 }
+
+/* La barre de recherche : embouts carrés, comme partout. */
+.recherche-champ,
+.recherche-effacer {
+  border-radius: 0 !important;
+}
