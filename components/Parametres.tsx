@@ -207,6 +207,7 @@ const CHOIX: Choix[] = ["langue", "contact", "apropos", "edition", "oeuf"];
  * s'effacent et elle monte sous le logo ; la barre d'application en bas permet de revenir.
  */
 export function Parametres() {
+  const { locale } = useLocale();
   const [ouvert, setOuvert] = useState(false);
   const [choix, setChoix] = useState<Choix | null>(null);
   const [monte, setMonte] = useState(false);
@@ -341,6 +342,12 @@ export function Parametres() {
                             <span className="param-ligne-texte">
                               <T>{l.nom}</T>
                             </span>
+                            {l.id === "langue" ? (
+                              <span className="param-valeur">{locale === "tavissiv" ? <span className="tavissiv" lang="x-tavissiv">tavissiv</span> : "français"}</span>
+                            ) : null}
+                            <svg className="param-chevron" viewBox="0 0 16 16" aria-hidden="true">
+                              <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </button>
                         </li>
                       ))}

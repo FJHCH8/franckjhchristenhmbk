@@ -3388,3 +3388,95 @@ html body .pcase-fiche .etoile-fermer {
   min-height: 2.1rem;
   font-size: 0.85rem !important;
 }
+
+/* ═════════════ Paramètres, version soignée ═════════════ */
+/* La liste devient un bloc : fond légèrement plus clair, séparateurs fins, flèche à droite. */
+html body .param-liste {
+  overflow: hidden;
+  border: 1px solid #1c1c1c;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #111, #0b0b0b);
+}
+
+html body .param-liste li + li {
+  margin-top: 0 !important;
+  border-top: 1px solid #1c1c1c;
+}
+
+html body .param-liste .param-ligne {
+  padding: 0.55rem 0.8rem !important;
+  transition: background-color 0.2s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html body .param-liste .param-ligne:active {
+  background: #181818;
+  transform: none;
+}
+
+html body .param .param-tuile {
+  border-radius: 9px;
+  background: linear-gradient(180deg, #2c2c2c, #1d1d1d) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html body .param-ligne-texte {
+  flex: 1;
+}
+
+.param-valeur {
+  color: #7d7d7d;
+  font-size: 0.95rem;
+}
+
+.param-valeur .tavissiv {
+  font-size: 1.25rem;
+}
+
+.param-chevron {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  color: #4d4d4d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.param-ligne:active .param-chevron {
+  transform: translateX(3px);
+}
+
+/* Le titre de la rubrique ouverte et son contenu, dans le même esprit. */
+html body .param-detail .param-ligne-titre {
+  margin-bottom: 0.3rem;
+}
+
+html body .param-contenu {
+  padding: 1rem;
+  border: 1px solid #1c1c1c;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #111, #0b0b0b);
+}
+
+html body .param-radio + .param-radio {
+  border-top: 1px solid #1c1c1c;
+}
+
+html body .param-radio-rond {
+  border-color: #5a5a5a;
+  transition: border-color 0.2s ease;
+}
+
+html body .param-radio[aria-checked="true"] .param-radio-rond {
+  border-color: #fff;
+}
+
+html body .param .param-tuile .param-icone g {
+  stroke-width: 1.6;
+}
+
+/* La barre du bas, plus légère. */
+html body .param-barre {
+  background: rgba(18, 18, 18, 0.92);
+  border-top: 1px solid #1c1c1c;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
