@@ -46,19 +46,17 @@ export function Album() {
       const z = (Math.cos(angle) - 1) * rayon; // 0 devant, -2R derrière
       // Plus c'est loin, plus c'est sombre.
       const lumiere = 0.35 + 0.65 * ((Math.cos(angle) + 1) / 2);
-      carte.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), 0, ${z.toFixed(1)}px)`;
+      // Chaque photo se tourne légèrement vers le centre, comme sur un vrai manège.
+      carte.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), 0, ${z.toFixed(1)}px) rotateY(${(-angle * 0.45).toFixed(3)}rad)`;
       carte.style.zIndex = String(Math.round(1000 + z));
       carte.style.filter = `brightness(${lumiere.toFixed(3)})`;
       carte.classList.toggle("is-devant", i === proche);
     });
-    // Seule la vidéo de devant joue.
+    // Les points sous l'album suivent la photo de devant.
     if (devant.current !== proche) {
       devant.current = proche;
-      cartes.forEach((carte) => {
-        const video = carte.querySelector("video");
-        if (!video) return;
-        if (Number(carte.dataset.place) === proche) void video.play().catch(() => undefined);
-        else video.pause();
+      node.parentElement?.querySelectorAll<HTMLElement>("[data-point]").forEach((pt) => {
+        pt.classList.toggle("is-actif", Number(pt.dataset.point) === proche % PHOTOS.length);
       });
     }
   }, []);
@@ -68,10 +66,10 @@ export function Album() {
       window.cancelAnimationFrame(anim.current);
       const debut = position.current;
       const t0 = performance.now();
-      const duree = 620;
+      const duree = 820;
       const pas = (now: number) => {
         const t = Math.min(1, (now - t0) / duree);
-        const e = 1 - (1 - t) ** 3;
+        const e = 1 - (1 - t) ** 4;
         position.current = debut + (cible - debut) * e;
         peindre();
         if (t < 1) anim.current = window.requestAnimationFrame(pas);
@@ -80,6 +78,20 @@ export function Album() {
     },
     [peindre],
   );
+
+  // Toutes les vidéos tournent en boucle, même quand elles ne sont pas de face.
+  useEffect(() => {
+    const videos = Array.from(scene.current?.querySelectorAll("video") ?? []);
+    const lancer = () =>
+      videos.forEach((v) => {
+        v.muted = true;
+        if (v.paused) void v.play().catch(() => undefined);
+      });
+    lancer();
+    document.addEventListener("visibilitychange", lancer);
+    window.addEventListener("pointerdown", lancer, { once: true });
+    return () => document.removeEventListener("visibilitychange", lancer);
+  }, []);
 
   useEffect(() => {
     caler();
@@ -139,7 +151,7 @@ export function Album() {
           return (
             <article key={i} className="manege-carte" data-place={i}>
               {photo.kind === "video" ? (
-                <video src={photo.src} poster={photo.poster} muted loop playsInline preload={i === 0 ? "metadata" : "none"} />
+                <video src={photo.src} poster={photo.poster} autoPlay muted loop playsInline preload="metadata" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo.src} alt="Franck J.H. CHRISTEN H.M.B.K." draggable={false} loading="lazy" decoding="async" />
@@ -149,10 +161,15 @@ export function Album() {
         })}
       </div>
       <div className="album-nav">
-        <button type="button" aria-label="Photo précédente" onClick={() => aller(Math.round(position.current) - 1)}>
+        <button type="button" className="album-fleche" aria-label="Photo précédente" onClick={() => aller(Math.round(position.current) - 1)}>
           <Chevron dir="left" />
         </button>
-        <button type="button" aria-label="Photo suivante" onClick={() => aller(Math.round(position.current) + 1)}>
+        <div className="album-points" aria-hidden="true">
+          {PHOTOS.map((_, i) => (
+            <span key={i} data-point={i} className={i === 0 ? "is-actif" : undefined} />
+          ))}
+        </div>
+        <button type="button" className="album-fleche" aria-label="Photo suivante" onClick={() => aller(Math.round(position.current) + 1)}>
           <Chevron dir="right" />
         </button>
       </div>

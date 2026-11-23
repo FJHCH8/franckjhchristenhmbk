@@ -3501,3 +3501,232 @@ html body .scroll-sous {
   letter-spacing: 0.32em;
   text-transform: uppercase;
 }
+
+/* ═════════════ Qui suis-je, aux couleurs du reste ═════════════ */
+html[data-page="qui-suis-je"] {
+  --qui-vert: #5fbf6a;
+}
+
+/* Le texte de présentation, posé dans un bloc comme les paramètres. */
+html body .qui-follow .qui-note {
+  width: 100%;
+  margin-top: 1.4rem;
+  padding: 1.3rem 1.2rem !important;
+  border: 1px solid #1c1c1c !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, #111, #0b0b0b) !important;
+}
+
+html body .qui-follow .qui-note::after,
+html body .qui-follow .qui-note::before {
+  display: none;
+}
+
+html body .qui-note-copy {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+}
+
+html body .qui-line {
+  display: block;
+  color: #cfcfcf !important;
+  font-size: 1.02rem !important;
+  line-height: 1.6 !important;
+}
+
+html body .qui-line-lead {
+  color: #fff !important;
+  font-size: 1.35rem !important;
+  font-weight: 300 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.01em;
+}
+
+html body .qui-line-quiet {
+  color: #8a8a8a !important;
+}
+
+html body .qui-line-strong {
+  padding: 0.2rem 0 0.2rem 0.9rem !important;
+  border-left: 3px solid var(--qui-vert) !important;
+  color: #fff !important;
+  font-style: italic;
+}
+
+html body .qui-line-ask,
+html body .qui-line-ask .kt-w,
+html body .qui-line-ask .kt-c {
+  margin-top: 0.4rem;
+  color: var(--qui-vert) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase;
+}
+
+/* « Information » : une ligne comme dans les paramètres, qui se déplie. */
+.infobloc {
+  margin: 1rem 0 0;
+  overflow: hidden;
+  border: 1px solid #1c1c1c;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #111, #0b0b0b);
+}
+
+.infobloc-tete {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  background: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.infobloc-tuile {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: none;
+  border-radius: 9px;
+  background: var(--qui-vert, #5fbf6a);
+  color: #000;
+}
+
+.infobloc-tuile svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.infobloc-titre {
+  flex: 1;
+  font-family: var(--font-text);
+  font-size: 1.35rem;
+  font-weight: 300;
+}
+
+.infobloc-chevron {
+  width: 1rem;
+  height: 1rem;
+  color: #5a5a5a;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+
+.infobloc.is-ouvert .infobloc-chevron {
+  transform: rotate(90deg);
+  color: var(--qui-vert, #5fbf6a);
+}
+
+.infobloc-corps {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.infobloc.is-ouvert .infobloc-corps {
+  grid-template-rows: 1fr;
+}
+
+.infobloc-corps > div {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 0.9rem;
+  opacity: 0;
+  transition: opacity 0.3s ease, padding 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.infobloc.is-ouvert .infobloc-corps > div {
+  padding: 0 0.9rem 1rem;
+  border-top: 1px solid #1c1c1c;
+  opacity: 1;
+}
+
+.infobloc-corps p {
+  margin: 0.9rem 0 0.8rem;
+  color: #cfcfcf;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.infobloc-corps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--qui-vert, #5fbf6a);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.infobloc-corps a svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* L'ancien bouton « information » à gemme n'existe plus. */
+html body .info-note {
+  display: none !important;
+}
+
+/* ═════════════ L'album : manège soigné ═════════════ */
+html body .album-manege .album-zone {
+  perspective: 1100px !important;
+}
+
+html body .album-manege .manege-carte {
+  border-radius: 14px;
+  box-shadow: 0 24px 50px -18px rgba(0, 0, 0, 0.9);
+  -webkit-box-reflect: below 6px linear-gradient(transparent 70%, rgba(255, 255, 255, 0.16));
+  transition: filter 0.3s ease;
+}
+
+html body .album-manege .manege-carte.is-devant {
+  outline: 1px solid rgba(255, 255, 255, 0.18);
+  outline-offset: -1px;
+}
+
+html body .album-manege .manege-sol {
+  display: none;
+}
+
+/* Sous l'album : deux petites flèches et des points, la photo de devant en vert. */
+html body .album-manege .album-nav {
+  align-items: center;
+  gap: 1.1rem !important;
+}
+
+html body .album-manege .album-fleche {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 50% !important;
+  background: #111 !important;
+  color: #fff;
+}
+
+html body .album-manege .album-fleche svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.album-points {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.album-points span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #3a3a3a;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease;
+}
+
+.album-points span.is-actif {
+  width: 1.4rem;
+  background: var(--qui-vert, #5fbf6a);
+}
