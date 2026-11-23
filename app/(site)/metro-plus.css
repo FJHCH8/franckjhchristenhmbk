@@ -2802,3 +2802,69 @@ html body .param-signature {
 html body .param-signature .tavissiv {
   font-size: 1.3em;
 }
+
+/* ═════════════ Échelle : tout était trop grand ═════════════
+   Le texte de base passe à 15 px (au lieu de 16) et les très grands titres sont ramenés à une taille raisonnable. */
+html {
+  font-size: 93.75%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html body .scroll-head h1,
+html body .projets .scroll-head h1 {
+  font-size: clamp(2.4rem, 9vw, 5.5rem) !important;
+}
+
+html body #titre-accueil {
+  font-size: clamp(2rem, 7vw, 4.6rem) !important;
+}
+
+html body .chap-mot,
+html body .bento-titre,
+html body .suite-titre {
+  font-size: clamp(1.9rem, 7.5vw, 3.6rem) !important;
+}
+
+html body .nav a {
+  font-size: clamp(1.15rem, 4.6vw, 1.6rem) !important;
+}
+
+/* La photo de l'accueil : moins haute, et entière plutôt que recadrée de très près. */
+html body .scroll-stage.a-fond {
+  min-height: 82svh;
+}
+
+html body .scroll-fond {
+  object-position: 50% 22% !important;
+}
+
+/* ═════════════ La barre du haut en couleurs inversées ═════════════
+   Le logo, le menu et la roue prennent la couleur inverse de ce qui passe dessous (sur le flou),
+   comme le nom sur la photo de l'accueil. */
+html body .header {
+  mix-blend-mode: difference;
+  isolation: auto;
+}
+
+html body .header,
+html body .header a,
+html body .header button,
+html body .header .brand-name,
+html body .header .logo,
+html body .nav a[aria-current="page"] {
+  color: #fff !important;
+}
+
+html body .nav a:not([aria-current="page"]) {
+  color: #fff !important;
+  opacity: 0.45;
+}
+
+html body .top-frost-tint {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.1) 55%, transparent) !important;
+}
+
+html body .header .nav a {
+  text-shadow: none !important;
+}
