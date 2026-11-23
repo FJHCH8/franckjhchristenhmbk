@@ -2607,3 +2607,101 @@ html body .param-titre .tavissiv {
   font-size: 0.8em;
   line-height: 1.3;
 }
+
+/* ═════════════ Mise à jour générale : corrections ═════════════ */
+
+/* Le menu du haut reste aligné à gauche, même avec trois rubriques. */
+html body .nav {
+  margin: 0 !important;
+}
+
+/* Explorer : chaque tuile a un fond gris foncé, la photo entière posée dedans,
+   et son étiquette sur un léger dégradé, lisible en toutes circonstances. */
+html body .bento-carte {
+  background: #1f1f1f !important;
+  outline: 0 !important;
+}
+
+html body .bento-carte .bento-voile {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0) 55%) !important;
+  opacity: 1 !important;
+}
+
+html body .bento-carte .bento-contenu {
+  position: relative;
+  z-index: 2;
+}
+
+html body .bento-etiquette {
+  color: #fff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Le chrono de la tuile Projets, en chiffres fins Metro comme sur la page Projets. */
+html body .bento .count {
+  justify-content: flex-start;
+  gap: 0.1em;
+  font-family: var(--font-text) !important;
+  font-weight: 300 !important;
+  font-size: clamp(1.1rem, 5vw, 1.6rem) !important;
+  letter-spacing: 0 !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+html body .bento .count .flip {
+  width: 0.6em;
+}
+
+html body .bento .count .eclair,
+html body .bento .count svg {
+  display: none !important;
+}
+
+html body .bento .count-dot {
+  width: 0.14em;
+  height: 0.14em;
+  margin: 0 0.12em;
+  background: #fff;
+  box-shadow: none;
+}
+
+/* Le bouton son ne recouvre plus la flèche « suivant » en bas des pages. */
+html body .suite-lien {
+  padding-right: 4.5rem !important;
+}
+
+/* Sur ordinateur, la page Projets garde une largeur de lecture : panorama et cases centrés. */
+@media (min-width: 900px) {
+  html body .projets .pano {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  html body .projets .cases {
+    --cote: calc((min(100vw, 760px) - 2 * var(--gouttiere) - var(--g)) / 2);
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  html body .projets .projets-titre {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .cases[data-ouvert="citation"],
+  .cases[data-ouvert="projet"] {
+    grid-template-rows: calc(70vh - var(--barre) - var(--g)) var(--barre);
+  }
+
+  .cases[data-ouvert="evenement"] {
+    grid-template-rows: var(--barre) calc(70vh - var(--barre) - var(--g));
+  }
+}
+
+/* La photo entière se pose sur le gris de la tuile (plus de bandes noires). */
+html body .bento-carte .bento-image {
+  background: transparent !important;
+}
