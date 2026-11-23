@@ -2868,3 +2868,72 @@ html body .top-frost-tint {
 html body .header .nav a {
   text-shadow: none !important;
 }
+
+/* ═════════════ Projets, à l'échelle ═════════════ */
+html body .pano-logo-principal {
+  width: min(62%, 250px) !important;
+}
+
+html body .pano-pivot button {
+  font-size: clamp(1.25rem, 5.4vw, 1.7rem) !important;
+}
+
+html body .pano .count {
+  font-size: clamp(1.35rem, 5.6vw, 1.9rem) !important;
+}
+
+html body .pano-pourcent {
+  font-size: clamp(2.2rem, 10vw, 3.2rem) !important;
+}
+
+html body .pano-statut {
+  font-size: clamp(1.2rem, 5vw, 1.6rem) !important;
+}
+
+html body .cadran-svg {
+  width: min(42vw, 170px) !important;
+}
+
+html body .pano-mot {
+  font-size: clamp(6rem, 30vw, 11rem) !important;
+}
+
+/* Les trois cases au repos : bien moins hautes. */
+html body .cases {
+  --cote: calc((100vw - 2 * var(--gouttiere) - var(--g)) / 2 * 0.62);
+  grid-template-rows: var(--cote) 4.6rem;
+}
+
+html body .pcase-tete strong {
+  font-size: clamp(1.9rem, 8vw, 2.6rem) !important;
+}
+
+html body .pcase-logo {
+  width: 30% !important;
+}
+
+html body .pcase.is-grand .pcase-tete strong {
+  font-size: 1.8rem !important;
+}
+
+html body .pcase.is-grand .pcase-tete span {
+  font-size: 1.4rem !important;
+}
+
+html body .projets-titre .scroll-head h1 {
+  font-size: clamp(2rem, 8vw, 3.2rem) !important;
+}
+
+html body .pcase-evenement.is-repos .pcase-tete {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+html body .pcase-evenement.is-repos .pcase-tete strong {
+  line-height: 0.9;
+}
+
+html body .pcase-evenement.is-repos .pcase-tete span {
+  position: static;
+}
