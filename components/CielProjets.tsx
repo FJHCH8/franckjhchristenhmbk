@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { CompteEndur, Countdown } from "@/components/Countdown";
 import { EvenementsTuiles, ProjetsPanorama, useMaintenant } from "@/components/ProjetsPanorama";
 import { EVENEMENTS } from "@/lib/paris";
-import { LogoProjets } from "@/components/LogosCases";
 import { T } from "@/components/Locale";
 import type { GenreEtoile, Media, Police, PublicEtoile, StyleTexte } from "@/lib/etoiles/types";
 import { SIGNATURE } from "@/lib/etoiles/semence";
@@ -19,6 +18,9 @@ function FermerBouton({ onClick }: { onClick: () => void }) {
     </button>
   );
 }
+
+/** La vidéo de chaque case : le ciel pour les projets, le blé pour les citations, l'herbe pour les événements. */
+const VIDEO: Record<string, string> = { projet: "ciel", citation: "ble", evenement: "herbe" };
 
 /** La couleur de chaque case : citations en beige, projets en bleu, événements en vert. */
 function couleurRubrique(cle: string) {
@@ -142,6 +144,18 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
               className={`pcase pcase-${cle} is-${etat}`}
               style={{ background: couleurRubrique(cle), ["--couleur" as string]: couleurRubrique(cle) } as React.CSSProperties}
             >
+              {/* Au repos, une vidéo apaisante en boucle ; dès qu'une case s'ouvre, il ne reste que la couleur. */}
+              <video
+                className="pcase-video"
+                src={`/videos/${VIDEO[cle]}.mp4`}
+                poster={`/videos/${VIDEO[cle]}.jpg`}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-hidden="true"
+              />
               <button
                 type="button"
                 className="pcase-tete"
@@ -154,7 +168,13 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
               >
                 <strong>{nombre}</strong>
                 <span>{nom}</span>
-                {cle === "projet" ? <LogoProjets className="pcase-logo" /> : null}
+                {ouvert ? (
+                  <i className="pcase-fermer" aria-hidden="true">
+                    <svg viewBox="0 0 16 16">
+                      <path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                  </i>
+                ) : null}
               </button>
               {ouvert ? (
                 <div className="pcase-corps" data-lenis-prevent="">
@@ -168,9 +188,12 @@ export function CielProjets({ initial, titre }: { initial: PublicEtoile[]; titre
                           <li key={etoile.id} style={{ ["--i" as string]: index }}>
                             <button type="button" aria-expanded={montre} onClick={() => setActive(montre ? null : etoile.id)}>
                               <span>
-                                <strong>{etoile.titre || dateFr(etoile.date) || "Sans titre"}</strong>
-                                {etoile.titre && etoile.date ? <small>{dateFr(etoile.date)}</small> : null}
+                                <strong>{etoile.titre || (etoile.texte ? `« ${etoile.texte.slice(0, 42)}${etoile.texte.length > 42 ? "…" : ""} »` : dateFr(etoile.date)) || "Sans titre"}</strong>
+                                <small>{dateFr(etoile.date)}</small>
                               </span>
+                              <svg className="pcase-chevron" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
                             </button>
                             {montre ? (
                               <div className="pcase-fiche">

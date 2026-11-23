@@ -3223,3 +3223,168 @@ html body .chapitres,
 html body .roue {
   display: none !important;
 }
+
+/* ═════════════ Les cases : vidéo au repos, couleur ouverte ═════════════ */
+.pcase-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+
+/* Un léger voile en bas pour que le nombre et le nom restent lisibles sur la vidéo. */
+.pcase.is-repos::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 60%);
+  pointer-events: none;
+}
+
+.pcase:not(.is-repos) .pcase-video {
+  opacity: 0;
+}
+
+html body .pcase-tete {
+  position: relative;
+  z-index: 1;
+}
+
+html body .pcase.is-repos .pcase-tete strong,
+html body .pcase.is-repos .pcase-tete span {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ═════════════ Intérieur d'une case ouverte ═════════════ */
+html body .pcase.is-grand .pcase-tete {
+  align-items: center;
+  padding: 0.9rem 1rem 0.8rem;
+}
+
+html body .pcase.is-grand .pcase-tete strong {
+  order: 2;
+  min-width: 1.9rem;
+  padding: 0.05rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.95rem !important;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+}
+
+html body .pcase.is-grand .pcase-tete span {
+  order: 1;
+  font-size: 1.7rem !important;
+  letter-spacing: -0.02em;
+}
+
+.pcase-fermer {
+  order: 3;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin-left: auto;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pcase-fermer svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.pcase-tete:active .pcase-fermer {
+  transform: rotate(90deg) scale(0.9);
+}
+
+html body .pcase-corps {
+  margin: 0 0.4rem 0.4rem;
+  padding: 0.3rem 0.2rem 0.8rem;
+  border-radius: 0;
+  background: #0b0b0b;
+}
+
+/* Chaque élément : un carré de couleur fin à gauche, le titre, la date, une flèche. */
+html body .pcase-corps li {
+  border-bottom: 1px solid #1a1a1a;
+}
+
+html body .pcase-corps li > button {
+  gap: 0.85rem;
+  padding: 0.8rem 0.7rem;
+  transition: background-color 0.2s ease;
+}
+
+html body .pcase-corps li > button:active {
+  background: #161616;
+}
+
+html body .pcase-corps li > button::before {
+  width: 4px !important;
+  height: 2.4rem !important;
+  border-radius: 2px;
+}
+
+html body .pcase-corps li > button > span {
+  flex: 1;
+}
+
+html body .pcase-corps li > button strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+html body .pcase-corps li > button small {
+  margin-top: 0.15rem;
+  color: #7a7a7a;
+  font-size: 0.78rem;
+}
+
+.pcase-chevron {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  color: #5a5a5a;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+
+.pcase-corps li > button[aria-expanded="true"] .pcase-chevron {
+  transform: rotate(90deg);
+  color: var(--couleur);
+}
+
+/* La fiche ouverte : la citation en grand, bordée de la couleur de la case. */
+html body .pcase-fiche {
+  margin: 0 0.7rem 1rem;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid var(--couleur);
+  background: #121212;
+  animation: pcase-arrive 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html body .pcase-fiche .etoile-texte {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+html body .pcase-fiche .etoile-signature {
+  margin: 0.8rem 0 0;
+  color: #8a8a8a;
+  font-size: 0.8rem;
+}
+
+html body .pcase-fiche .etoile-fermer {
+  margin-top: 0.8rem !important;
+  min-height: 2.1rem;
+  font-size: 0.85rem !important;
+}
