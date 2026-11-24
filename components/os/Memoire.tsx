@@ -98,7 +98,7 @@ export function Bandeau({ ouvrir }: { ouvrir: (appli: string) => void }) {
       <span className="os-ticker">
         {b.icone ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={b.icone} alt="" width={18} height={18} />
+          <img draggable={false} src={b.icone} alt="" width={18} height={18} />
         ) : null}
         <span>
           <b style={{ animationDuration: `${duree}s` }}>
@@ -192,7 +192,7 @@ export function GardienAlarmes({ actif }: { actif: boolean }) {
       </div>
       <div className="oas-libelle">{a.libelle || a.texte || "Alarme"}</div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="oas-icone" src="/aakanos/aosp/ic_lock_idle_alarm.svg" alt="" width={64} height={64} />
+      <img draggable={false} className="oas-icone" src="/aakanos/aosp/ic_lock_idle_alarm.svg" alt="" width={64} height={64} />
       <div className="oas-boutons">
         <button type="button" className="oas-repeter" onClick={repeter}>
           <b>Répéter</b>

@@ -90,7 +90,7 @@ export function AppSamTelecom() {
     <div className="st">
       <div className="st-haut">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="st-sam" src="/aakanos/sam-telecom.png" alt="" />
+        <img draggable={false} className="st-sam" src="/aakanos/sam-telecom.png" alt="" />
         <div className="st-titre">
           <small>{`// ${bonjour}`}</small>
           <b>SAM-TELECOM</b>

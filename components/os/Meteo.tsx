@@ -34,9 +34,9 @@ function RoueHolo() {
   return (
     <span className="nm-roue" aria-hidden="true">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`${A}/spinner_76_outer_holo.svg`} alt="" />
+      <img draggable={false} src={`${A}/spinner_76_outer_holo.svg`} alt="" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`${A}/spinner_76_inner_holo.svg`} alt="" />
+      <img draggable={false} src={`${A}/spinner_76_inner_holo.svg`} alt="" />
     </span>
   );
 }
@@ -62,7 +62,7 @@ export function AppMeteo() {
     <div className="app-defile nm">
       <div className="nm-actuel">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="nm-icone" src={`${A}/lockclock-weather_na.svg`} alt="" />
+        <img draggable={false} className="nm-icone" src={`${A}/lockclock-weather_na.svg`} alt="" />
         <div className="nm-infos">
           <b translate="no">--°</b>
           <span>{charge ? "Mise à jour…" : "Ciel inconnu"}</span>
@@ -73,7 +73,7 @@ export function AppMeteo() {
             <RoueHolo />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={`${A}/ic_menu_refresh.svg`} alt="" width={32} height={32} />
+            <img draggable={false} src={`${A}/ic_menu_refresh.svg`} alt="" width={32} height={32} />
           )}
         </button>
       </div>
@@ -94,14 +94,14 @@ export function AppMeteo() {
         <div key={j} className="nm-jour">
           <span>{j}</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${A}/lockclock-weather_na.svg`} alt="" />
+          <img draggable={false} src={`${A}/lockclock-weather_na.svg`} alt="" />
           <b translate="no">--° / --°</b>
         </div>
       ))}
       {etat === "horsligne" ? (
         <div className="nm-vide">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${A}/ic_dialog_alert_holo_dark.svg`} alt="" width={32} height={32} />
+          <img draggable={false} src={`${A}/ic_dialog_alert_holo_dark.svg`} alt="" width={32} height={32} />
           <b>Pas de connexion</b>
           <p>Nounou ne voit pas le ciel d’ici. Votre forfait Sam-Telecom ne comprend pas internet, ni la météo.</p>
           <button className="jb-bouton nm-reessayer" onClick={reessayer}>
