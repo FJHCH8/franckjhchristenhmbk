@@ -11,7 +11,7 @@ import {
   Noto_Sans_Tamil,
   Noto_Sans_Thai,
   Orbitron,
-  Rajdhani,
+  Chakra_Petch,
   Share_Tech_Mono,
 } from "next/font/google";
 import Script from "next/script";
@@ -124,7 +124,7 @@ const ethiopien = Noto_Sans_Ethiopic({
 });
 
 // Polices des paramètres (style Odyssée × tactique), téléchargées seulement à leur ouverture.
-const tacTitre = Rajdhani({ subsets: ["latin", "latin-ext"], weight: ["500", "600", "700"], display: "swap", preload: false, variable: "--f-titre" });
+const tacTitre = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["500", "600", "700"], display: "swap", preload: false, variable: "--f-titre" });
 const tacMono = Share_Tech_Mono({ subsets: ["latin"], weight: "400", display: "swap", preload: false, variable: "--f-mono" });
 
 const polices = [texte, mono, tacTitre, tacMono, arabe, hebreu, thai, armenien, georgien, bengali, tamoul, ethiopien]

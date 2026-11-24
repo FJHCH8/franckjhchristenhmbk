@@ -4,7 +4,6 @@
  * Page test : le nouveau site, avec le style et les animations des paramètres partout.
  * Fond noir pur, barre du haut (constellation + cheval + ODYSSÉE), menu numéroté,
  * Accueil, Qui suis-je, Projets (tuiles de mission + intérieur), recherche, vrais Paramètres.
- * Un petit sélecteur permet d'essayer les 6 polices proposées en direct.
  */
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
@@ -26,7 +25,6 @@ const AUBE_DEBUT = new Date("2026-12-03T00:00:00+01:00").getTime();
 const AUBE_FIN = new Date("2027-06-03T00:00:00+02:00").getTime();
 const CARS = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#/%&";
 const deux = (n: number) => String(n).padStart(2, "0");
-const POLICES = ["Rajdhani", "Chakra Petch", "Oxanium", "Barlow Condensed", "Saira Semi Condensed", "Space Grotesk"];
 
 /* ---------- sons ---------- */
 let audio: AudioContext | null = null;
@@ -252,23 +250,6 @@ function Site() {
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
-  const [police, setPolice] = useState(0);
-
-  useEffect(() => {
-    try {
-      const p = Number(localStorage.getItem("nouveau-police"));
-      // Lu après l'affichage (la page est préparée à l'avance sans connaître ce choix).
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (p >= 0 && p < POLICES.length) setPolice(p);
-    } catch {}
-  }, []);
-  useEffect(() => {
-    document.body.style.setProperty("--f-titre", `var(--p${police + 1}), "${POLICES[police]}", sans-serif`);
-    try {
-      localStorage.setItem("nouveau-police", String(police));
-    } catch {}
-  }, [police]);
-
   useEffect(() => {
     const debut = performance.now();
     let raf = 0;
@@ -359,10 +340,10 @@ function Site() {
       </header>
 
       {pret ? (
-        <main className="n-scene" key={`${vue}-${rubrique ?? ""}`}>
+        <main className="n-scene" key={vue}>
           {vue === "accueil" ? <Accueil aller={aller} /> : null}
           {vue === "qui" ? <Qui /> : null}
-          {vue === "projets" && !rubrique ? (
+          {vue === "projets" ? (
             <>
               <section className="n-sec n-pano">
                 <CompteEndur>
@@ -374,16 +355,11 @@ function Site() {
                   />
                 </CompteEndur>
               </section>
-              <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} ouvrir={(r) => aller("projets", r)} />
+              <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} initial={rubrique} />
             </>
           ) : null}
-          {!rubrique ? (
-            <>
-              <Suivant nom={vue === "accueil" ? "QUI SUIS-JE" : vue === "qui" ? "PROJETS" : "ACCUEIL"} aller={() => aller(vue === "accueil" ? "qui" : vue === "qui" ? "projets" : "accueil")} />
-              <Pied />
-            </>
-          ) : null}
-          {vue === "projets" && rubrique ? <Interieur t={t} rubrique={rubrique} citations={citations} projets={projets} retour={retour} /> : null}
+            <Suivant nom={vue === "accueil" ? "QUI SUIS-JE" : vue === "qui" ? "PROJETS" : "ACCUEIL"} aller={() => aller(vue === "accueil" ? "qui" : vue === "qui" ? "projets" : "accueil")} />
+            <Pied />
         </main>
       ) : null}
 
@@ -397,15 +373,6 @@ function Site() {
       </footer>
 
 
-      <div className="n-police">
-        <small>{"// POLICE"}</small>
-        {POLICES.map((p, k) => (
-          <button key={p} type="button" className={k === police ? "on" : ""} title={p} onClick={() => (sonSurvol(), setPolice(k))}>
-            {deux(k + 1)}
-          </button>
-        ))}
-        <span>{POLICES[police]}</span>
-      </div>
 
       {recherche ? <Recherche etoiles={etoiles ?? []} fermer={() => (sonRetour(), setRecherche(false))} aller={(r) => (setRecherche(false), aller("projets", r))} /> : null}
 
@@ -467,11 +434,11 @@ function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
           {rubriques.map((r, k) => (
             <Tq key={r.titre} i={k}>
               <div className={`n-ac${ouvert === k ? " ouvert" : ""}`}>
-                <div className="n-ac-img">
+                <div className="n-ac-img" aria-hidden="true">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={r.photo} alt="" style={{ objectPosition: r.cadre }} />
-                  <div className="viseur petit" />
                 </div>
+                <div className="n-ac-espace" />
                 <Ligne
                   n={k + 1}
                   sel={ouvert === k}
@@ -663,7 +630,6 @@ function Album() {
         // eslint-disable-next-line @next/next/no-img-element
         <img key={m.src} src={m.src} alt="" />
       )}
-      <div className="viseur" key={`v${k}`} />
       <button type="button" className="n-story-g" aria-label="Précédent" onClick={() => aller(-1)} />
       <button type="button" className="n-story-d" aria-label="Suivant" onClick={() => aller(1)} />
       <div className="n-story-bas">
@@ -697,8 +663,9 @@ function Titre({ sous, children }: { sous: string; children: string }) {
 
 /* ---------- Projets : tuiles ---------- */
 
-function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; citations: Etoile[]; projets: Etoile[]; charge: boolean; ouvrir: (r: Rubrique) => void }) {
+function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; citations: Etoile[]; projets: Etoile[]; charge: boolean; initial: Rubrique | null }) {
   const [face, setFace] = useState(0);
+  const [sel, setSel] = useState<Rubrique | null>(initial);
   useEffect(() => {
     const id = setInterval(() => setFace((f) => f + 1), 5000);
     return () => clearInterval(id);
@@ -708,68 +675,93 @@ function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; c
   const finis = t == null ? 0 : [OUVERTURE, AUBE_FIN].filter((f) => t >= f).length;
   const derCit = citations[0];
   const derPro = projets[0];
+  const choisir = (r: Rubrique) => {
+    sonValide();
+    setSel(r);
+  };
+  const etat = (r: Rubrique) => (sel === r ? " grand" : sel ? " reduit" : "");
+  const dedans = (r: Rubrique) => (
+    <div className="pt-dedans">
+      <button type="button" className="pt-fermer" aria-label="Revenir aux tuiles" onClick={() => (sonRetour(), setSel(null))}>
+        <Icone nom="close" />
+      </button>
+      <Interieur t={t} rubrique={r} citations={citations} projets={projets} />
+    </div>
+  );
   return (
     <div className="n-page">
       <Titre sous="// SÉLECTION DE MISSION">PROJETS</Titre>
       {charge ? <p className="p2-decode">RÉCEPTION…</p> : null}
-      <div className="pts">
-        <Tq i={0}>
-          <button type="button" className={`pt pt-cit${face % 3 === 1 ? " retourne" : ""}`} onClick={() => ouvrir("citations")} onMouseEnter={sonSurvol}>
-            <div className="pt-fond" />
-            <div className="pt-int">
-              <div className="pt-face">
-                <small>{"// INTERCEPTIONS"}</small>
-                <div className="pt-n">
-                  <Compteur valeur={citations.length} delai={250} />
+      <div className={`pts sel-${sel ?? "aucun"}`}>
+        <div className={`tq pt pt-cit${face % 3 === 1 && !sel ? " retourne" : ""}${etat("citations")}`} style={{ "--i": 0, gridArea: "a" } as CSSProperties}>
+          <div className="pt-fond" />
+          {sel === "citations" ? (
+            dedans("citations")
+          ) : (
+            <button type="button" className="pt-btn" onClick={() => choisir("citations")} onMouseEnter={sonSurvol} aria-label="Citations">
+              <div className="pt-int">
+                <div className="pt-face">
+                  <small>{"// INTERCEPTIONS"}</small>
+                  <div className="pt-n">
+                    <Compteur valeur={citations.length} delai={250} />
+                  </div>
+                  <b>CITATIONS</b>
                 </div>
-                <b>CITATIONS</b>
-              </div>
-              <div className="pt-face dos">
-                <small>{"// DERNIÈRE"}</small>
-                <q>{derCit ? derCit.texte : "—"}</q>
-              </div>
-            </div>
-            <Segments p={citations.length ? 1 : 0} delai={500} />
-            <Coins />
-          </button>
-        </Tq>
-        <Tq i={1}>
-          <button type="button" className={`pt pt-pro${face % 3 === 2 ? " retourne" : ""}`} onClick={() => ouvrir("projets")} onMouseEnter={sonSurvol}>
-            <div className="pt-fond" />
-            <div className="pt-int">
-              <div className="pt-face">
-                <small>{"// MISSIONS"}</small>
-                <div className="pt-n">
-                  <Compteur valeur={projets.length} delai={350} />
+                <div className="pt-face dos">
+                  <small>{"// DERNIÈRE"}</small>
+                  <q>{derCit ? derCit.texte : "—"}</q>
                 </div>
-                <b>PROJETS</b>
               </div>
-              <div className="pt-face dos">
-                <small>{"// DERNIER"}</small>
-                <q>{derPro ? derPro.titre : "—"}</q>
+              <Segments p={citations.length ? 1 : 0} delai={500} />
+            </button>
+          )}
+          <Coins />
+        </div>
+        <div className={`tq pt pt-pro${face % 3 === 2 && !sel ? " retourne" : ""}${etat("projets")}`} style={{ "--i": 1, gridArea: "b" } as CSSProperties}>
+          <div className="pt-fond" />
+          {sel === "projets" ? (
+            dedans("projets")
+          ) : (
+            <button type="button" className="pt-btn" onClick={() => choisir("projets")} onMouseEnter={sonSurvol} aria-label="Projets">
+              <div className="pt-int">
+                <div className="pt-face">
+                  <small>{"// MISSIONS"}</small>
+                  <div className="pt-n">
+                    <Compteur valeur={projets.length} delai={350} />
+                  </div>
+                  <b>PROJETS</b>
+                </div>
+                <div className="pt-face dos">
+                  <small>{"// DERNIER"}</small>
+                  <q>{derPro ? derPro.titre : "—"}</q>
+                </div>
               </div>
-            </div>
-            <Segments p={Math.min(1, projets.length / 24)} delai={600} />
-            <Coins />
-          </button>
-        </Tq>
-        <Tq i={2} className="large">
-          <button type="button" className="pt pt-eve large" onClick={() => ouvrir("evenements")} onMouseEnter={sonSurvol}>
-            <div className="pt-fond" />
-            <small>{"// OPÉRATIONS"}</small>
-            <div className="pt-ligne">
-              <div className="pt-n">
-                <Compteur valeur={finis} delai={450} />
+              <Segments p={Math.min(1, projets.length / 24)} delai={600} />
+            </button>
+          )}
+          <Coins />
+        </div>
+        <div className={`tq pt pt-eve large${etat("evenements")}`} style={{ "--i": 2, gridArea: "c" } as CSSProperties}>
+          <div className="pt-fond" />
+          {sel === "evenements" ? (
+            dedans("evenements")
+          ) : (
+            <button type="button" className="pt-btn" onClick={() => choisir("evenements")} onMouseEnter={sonSurvol} aria-label="Événements">
+              <small>{"// OPÉRATIONS"}</small>
+              <div className="pt-ligne">
+                <div className="pt-n">
+                  <Compteur valeur={finis} delai={450} />
+                </div>
+                <b>ÉVÉNEMENTS</b>
               </div>
-              <b>ÉVÉNEMENTS</b>
-            </div>
-            <em className="cpt">
-              ENDURREISEN · {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
-            </em>
-            <Segments p={pE} delai={700} />
-            <Coins />
-          </button>
-        </Tq>
+              <em className="cpt">
+                ENDURREISEN · {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
+              </em>
+              <Segments p={pE} delai={700} />
+            </button>
+          )}
+          <Coins />
+        </div>
       </div>
     </div>
   );
@@ -779,7 +771,7 @@ function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; c
 
 type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string } };
 
-function Interieur({ t, rubrique, citations, projets, retour }: { t: number | null; rubrique: Rubrique; citations: Etoile[]; projets: Etoile[]; retour: () => void }) {
+function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubrique: Rubrique; citations: Etoile[]; projets: Etoile[] }) {
   const [sel, setSel] = useState(0);
   const [ouvert, setOuvert] = useState<number | null>(null);
   const elements: Element[] =
@@ -803,11 +795,13 @@ function Interieur({ t, rubrique, citations, projets, retour }: { t: number | nu
   const e = elements[actif];
 
   return (
-    <div className="n-page">
-      <button type="button" className="n-retour" onClick={retour}>
-        <Icone nom="arrow_back" /> PROJETS
-      </button>
-      <Titre sous={`// ${deux(elements.length)} ${rubrique === "citations" ? "INTERCEPTIONS" : rubrique === "projets" ? "MISSIONS" : "OPÉRATIONS"}`}>{titre}</Titre>
+    <div className="pt-int-page">
+      <div className="ptac-titre n-titre pt-titre">
+        <small>{`// ${deux(elements.length)} ${rubrique === "citations" ? "INTERCEPTIONS" : rubrique === "projets" ? "MISSIONS" : "OPÉRATIONS"}`}</small>
+        <h2>
+          <Decode texte={titre} duree={500} />
+        </h2>
+      </div>
       <div className={`n-int${ouvert !== null ? " ouvert" : ""}`}>
         <div className="p2-liste">
           {elements.length === 0 ? <p className="p2-decode">AUCUN ÉLÉMENT POUR L’INSTANT.</p> : null}

@@ -1,6 +1,6 @@
 
 /* ================= Paramètres du site : Odyssée × tactique, fond noir pur ================= */
-.ptac { --ambre: #ffb000; --ambre2: #ffcf5a; --gris: #8a949c; --metro: cubic-bezier(.1, .9, .2, 1);
+.ptac { --ambre: #8fd0ff; --ambre2: #eef8ff; --gris: #8a949c; --metro: cubic-bezier(.1, .9, .2, 1);
   position: fixed; inset: 0; z-index: 2147483000; background: #000; color: #e8eef2; display: flex; flex-direction: column;
   font-family: var(--f-titre), "Rajdhani", var(--font-noto), sans-serif; -webkit-font-smoothing: antialiased;
   animation: ptac-ouvre .38s var(--metro) both; }
@@ -15,8 +15,8 @@
 .ptac::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px); }
 .ptac-glitch { position: absolute; inset: 0; pointer-events: none; z-index: 6; animation: ptac-glitch .32s steps(4) .05s both; }
 @keyframes ptac-glitch {
-  0% { background: linear-gradient(transparent 30%, rgba(255, 176, 0, .3) 30% 33%, transparent 33% 62%, rgba(0, 255, 255, .2) 62% 64%, transparent 64%); transform: translateX(-6px); }
-  50% { background: linear-gradient(transparent 12%, rgba(255, 255, 255, .2) 12% 13%, transparent 13% 78%, rgba(255, 176, 0, .28) 78% 81%, transparent 81%); transform: translateX(5px); }
+  0% { background: linear-gradient(transparent 30%, rgba(143, 208, 255, .3) 30% 33%, transparent 33% 62%, rgba(0, 255, 255, .2) 62% 64%, transparent 64%); transform: translateX(-6px); }
+  50% { background: linear-gradient(transparent 12%, rgba(255, 255, 255, .2) 12% 13%, transparent 13% 78%, rgba(143, 208, 255, .28) 78% 81%, transparent 81%); transform: translateX(5px); }
   100% { background: none; transform: none; }
 }
 .ptac-haut, .ptac-bas { flex: none; height: 38px; display: flex; align-items: center; gap: 24px; padding: 0 22px; font-family: var(--f-mono), monospace; font-size: 12px; letter-spacing: 1.5px; color: var(--gris); }
@@ -46,7 +46,7 @@
 @keyframes ptac-tq { from { opacity: 0; transform: rotateY(80deg) translateX(-20px); } }
 .ptac .p2-liste { border-top: 1px solid rgba(255, 255, 255, .14); perspective: 900px; background: rgba(0, 0, 0, .35); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
 .ptac .p2-ligne { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; height: 58px; padding: 0 12px; border-bottom: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 20px; letter-spacing: 2px; isolation: isolate; transition: color .15s, opacity .3s var(--metro), transform .3s var(--metro); }
-.ptac .p2-ligne::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--ambre), var(--ambre2)); transform: scaleX(0); transform-origin: 0 50%; transition: transform .25s var(--metro); }
+.ptac .p2-ligne::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, #6fbdf5 0%, #b9e3ff 30%, #f4fbff 46%, #b9e3ff 62%, #6fbdf5 100%) 0 0 / 240% 100%; transform: scaleX(0); transform-origin: 0 50%; transition: transform .25s var(--metro); }
 .ptac .p2-ligne .cn { opacity: 0; transition: opacity .2s, transform .25s var(--metro); }
 .ptac .p2-ligne.sel { color: #000; }
 .ptac .p2-ligne.sel::before { transform: none; }
@@ -55,7 +55,7 @@
 .ptac .p2-ligne.part { opacity: 0; transform: translateX(-40px) rotateY(30deg); }
 .ptac .p2-ligne.choisie { transform: scale(1.03); }
 .ptac .p2-num { font-family: var(--f-mono); font-weight: 400; font-size: 11px; color: #666; width: 18px; }
-.ptac .p2-ligne.sel .p2-num, .ptac .p2-ligne.sel em { color: #5a3e00; }
+.ptac .p2-ligne.sel .p2-num, .ptac .p2-ligne.sel em { color: #123a57; }
 .ptac .p2-tuile { width: 36px; height: 36px; flex: none; display: grid; place-items: center; background: rgba(255, 255, 255, .08); color: #fff; transition: background .2s; }
 .ptac .p2-tuile svg { width: 22px; height: 22px; fill: currentColor; }
 .ptac .p2-ligne.sel .p2-tuile { background: #000; }
@@ -82,20 +82,20 @@
 .ptac .p2-touche { display: block; margin-top: 18px; font-family: var(--f-mono); font-size: 11px; color: #777; letter-spacing: 1.5px; }
 .ptac .p2-texte { font-size: 18px; line-height: 1.4; color: #d5dce0; font-weight: 500; margin: 0 0 12px; }
 .ptac .p2-radio { display: flex; align-items: center; gap: 14px; width: 100%; height: 56px; border-top: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 20px; letter-spacing: 2px; color: #aab; transition: color .15s, background .15s; }
-.ptac .p2-radio:hover { background: rgba(255, 176, 0, .08); }
+.ptac .p2-radio:hover { background: rgba(143, 208, 255, .08); }
 .ptac .p2-radio i { width: 18px; height: 18px; border: 2px solid #666; transition: border-color .2s, background .2s; }
 .ptac .p2-radio.sel { color: #fff; } .p2-radio.sel i { border-color: var(--ambre); background: radial-gradient(var(--ambre) 0 40%, transparent 45%); }
 .ptac .p2-radio em { margin-left: auto; font-style: normal; font-family: var(--f-mono); font-size: 12px; color: #777; }
 .ptac .p2-radio .tav { font-size: 22px; letter-spacing: 0; }
 .ptac .p2-canal { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, .14); transition: background .15s; }
-.ptac .p2-canal:hover { background: rgba(255, 176, 0, .08); }
+.ptac .p2-canal:hover { background: rgba(143, 208, 255, .08); }
 .ptac .p2-canal > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
 .ptac .p2-canal small { font-family: var(--f-mono); font-size: 11px; color: #888; letter-spacing: 2px; }
 .ptac .p2-canal b { font-weight: 600; font-size: 18px; overflow-wrap: anywhere; }
 .ptac .p2-canal > svg { width: 20px; height: 20px; fill: #888; }
-.ptac .p2-fermer { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 8px 14px; font-family: var(--f-mono); font-size: 12px; letter-spacing: 2px; color: var(--ambre); border: 1px solid rgba(255, 176, 0, .4); }
+.ptac .p2-fermer { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 8px 14px; font-family: var(--f-mono); font-size: 12px; letter-spacing: 2px; color: var(--ambre); border: 1px solid rgba(143, 208, 255, .4); }
 .ptac .p2-fermer svg { width: 16px; height: 16px; fill: currentColor; }
-.ptac .p2-fermer:hover { background: rgba(255, 176, 0, .12); }
+.ptac .p2-fermer:hover { background: rgba(143, 208, 255, .12); }
 /* système : le cheval se dessine */
 .ptac .p2-sys { display: grid; justify-items: center; text-align: center; }
 .ptac .p2-sys-logo { position: relative; margin: 6px 0 4px; }
@@ -115,7 +115,7 @@
 .ptac .p2-ver em { margin-left: auto; font-style: normal; color: var(--ambre); }
 .ptac .p2-ver.act, .ptac .p2-ver.act b { color: #fff; }
 .ptac .p2-sons { border-bottom: 1px solid rgba(255, 255, 255, .14); margin-top: 8px; }
-.ptac .p2-sons:hover { background: rgba(255, 176, 0, .08); }
+.ptac .p2-sons:hover { background: rgba(143, 208, 255, .08); }
 /* édition : code */
 .ptac .p2-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 .ptac .p2-code i { height: 52px; border: 1px solid rgba(255, 255, 255, .22); display: grid; place-items: center; font-style: normal; font-size: 26px; color: #000; transition: background .12s, border-color .12s; }
@@ -128,13 +128,13 @@
 .ptac .p2-pave > * { height: 56px; display: grid; place-items: center; border-bottom: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 24px; }
 .ptac .p2-pave > :nth-child(3n + 2) { border-left: 1px solid rgba(255, 255, 255, .14); border-right: 1px solid rgba(255, 255, 255, .14); }
 .ptac .p2-pave button { transition: background .1s, color .1s; }
-.ptac .p2-pave button:hover { background: rgba(255, 176, 0, .1); }
+.ptac .p2-pave button:hover { background: rgba(143, 208, 255, .1); }
 .ptac .p2-pave button:active { background: var(--ambre); color: #000; }
 .ptac .p2-pave svg { width: 22px; height: 22px; fill: currentColor; }
 /* easter egg : Aaka */
 .ptac .p2-saisie { width: 100%; resize: none; background: rgba(0, 0, 0, .4); border: 1px solid rgba(255, 255, 255, .2); color: #fff; font: 500 18px var(--f-titre), sans-serif; letter-spacing: 1px; padding: 10px 12px; outline: none; }
 .ptac .p2-saisie:focus { border-color: var(--ambre); }
-.ptac .p2-aaka { margin-top: 14px; padding: 14px; border: 1px solid rgba(255, 176, 0, .35); }
+.ptac .p2-aaka { margin-top: 14px; padding: 14px; border: 1px solid rgba(143, 208, 255, .35); }
 .ptac .p2-aaka p { margin: 8px 0 0; font-size: 34px; line-height: 1.3; color: #fff; overflow-wrap: anywhere; }
 
 .ptac .segs { display: flex; gap: 3px; }
@@ -148,7 +148,7 @@
 .ptac .p2-def { border-top: 1px solid #1f1f1f; padding-top: 10px; }
 .ptac .p2-texte.petit { font-size: 15px; color: #9aa; }
 .ptac .p2-radio span, .ptac .p2-radio em, .ptac .p2-canal small { text-transform: uppercase; }
-.ptac .p2-action { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 14px 16px !important; background: linear-gradient(90deg, var(--ambre), var(--ambre2)) !important; color: #000; font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; transition: transform .12s; }
+.ptac .p2-action { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 14px 16px !important; background: linear-gradient(100deg, #6fbdf5 0%, #b9e3ff 30%, #f4fbff 46%, #b9e3ff 62%, #6fbdf5 100%) 0 0 / 240% 100% !important; color: #000; font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; transition: transform .12s; }
 .ptac .p2-action svg { width: 22px; height: 22px; fill: currentColor; }
 .ptac .p2-action:active { transform: scale(.98); }
 .ptac .p2-fermer { text-transform: uppercase; }
@@ -166,3 +166,7 @@
 }
 @keyframes tac-clignote { 50% { opacity: 0; } }
 .ptac .p2-panneau > small, .ptac .p2-sys-v, .ptac .p2-h, .ptac .p2-ver em, .ptac .p2-ver span, .ptac .p2-fermer, .ptac-quitter { text-transform: uppercase; }
+
+/* reflet blanc bleuté qui se déplace dans les sélections */
+@keyframes reflet-bleu { from { background-position: 0 0; } to { background-position: -240% 0; } }
+.ptac .p2-ligne::before, .ptac .p2-action { animation: reflet-bleu 3.4s linear infinite; }
