@@ -11,6 +11,8 @@ import {
   Noto_Sans_Tamil,
   Noto_Sans_Thai,
   Orbitron,
+  Rajdhani,
+  Share_Tech_Mono,
 } from "next/font/google";
 import Script from "next/script";
 import type { ReactNode } from "react";
@@ -39,6 +41,7 @@ import "./globals.css";
 import "./metro.css";
 import "./metro-plus.css";
 import "./animations.css";
+import "./parametres-tactique.css";
 
 /*
  * Famille Noto : dessinée pour couvrir toutes les écritures du monde.
@@ -120,7 +123,11 @@ const ethiopien = Noto_Sans_Ethiopic({
   variable: "--font-et",
 });
 
-const polices = [texte, mono, arabe, hebreu, thai, armenien, georgien, bengali, tamoul, ethiopien]
+// Polices des paramètres (style Odyssée × tactique), téléchargées seulement à leur ouverture.
+const tacTitre = Rajdhani({ subsets: ["latin", "latin-ext"], weight: ["500", "600", "700"], display: "swap", preload: false, variable: "--f-titre" });
+const tacMono = Share_Tech_Mono({ subsets: ["latin"], weight: "400", display: "swap", preload: false, variable: "--f-mono" });
+
+const polices = [texte, mono, tacTitre, tacMono, arabe, hebreu, thai, armenien, georgien, bengali, tamoul, ethiopien]
   .map((font) => font.variable)
   .join(" ");
 

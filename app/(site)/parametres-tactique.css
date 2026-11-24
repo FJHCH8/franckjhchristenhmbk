@@ -1,0 +1,168 @@
+
+/* ================= Paramètres du site : Odyssée × tactique, fond noir pur ================= */
+.ptac { --ambre: #ffb000; --ambre2: #ffcf5a; --gris: #8a949c; --metro: cubic-bezier(.1, .9, .2, 1);
+  position: fixed; inset: 0; z-index: 2147483000; background: #000; color: #e8eef2; display: flex; flex-direction: column;
+  font-family: var(--f-titre), "Rajdhani", var(--font-noto), sans-serif; -webkit-font-smoothing: antialiased;
+  animation: ptac-ouvre .38s var(--metro) both; }
+.ptac.ferme { animation: ptac-ferme .32s cubic-bezier(.6, 0, .9, .3) both; }
+@keyframes ptac-ouvre { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes ptac-ferme { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 0 100% 0); } }
+.ptac *, .ptac *::before, .ptac *::after { box-sizing: border-box; }
+.ptac button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: left; border-radius: 0; box-shadow: none; }
+.ptac a { color: inherit; text-decoration: none; }
+.ptac .tavissiv { text-transform: none !important; letter-spacing: 0 !important; }
+.ptac .ambre { color: var(--ambre); }
+.ptac::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px); }
+.ptac-glitch { position: absolute; inset: 0; pointer-events: none; z-index: 6; animation: ptac-glitch .32s steps(4) .05s both; }
+@keyframes ptac-glitch {
+  0% { background: linear-gradient(transparent 30%, rgba(255, 176, 0, .3) 30% 33%, transparent 33% 62%, rgba(0, 255, 255, .2) 62% 64%, transparent 64%); transform: translateX(-6px); }
+  50% { background: linear-gradient(transparent 12%, rgba(255, 255, 255, .2) 12% 13%, transparent 13% 78%, rgba(255, 176, 0, .28) 78% 81%, transparent 81%); transform: translateX(5px); }
+  100% { background: none; transform: none; }
+}
+.ptac-haut, .ptac-bas { flex: none; height: 38px; display: flex; align-items: center; gap: 24px; padding: 0 22px; font-family: var(--f-mono), monospace; font-size: 12px; letter-spacing: 1.5px; color: var(--gris); }
+.ptac-haut { border-bottom: 1px solid #1f1f1f; padding-top: env(safe-area-inset-top); height: calc(38px + env(safe-area-inset-top)); }
+.ptac-bas { border-top: 1px solid #1f1f1f; padding-bottom: env(safe-area-inset-bottom); height: calc(48px + env(safe-area-inset-bottom)); }
+.ptac .droite { margin-left: auto; }
+.ptac-logo { display: flex; align-items: center; gap: 8px; color: #fff; font-family: var(--f-titre); font-weight: 700; font-size: 15px; letter-spacing: 3px; }
+.ptac-logo .logo-odyssee { width: 14px; height: auto; }
+.ptac-logo .logo-odyssee path { animation: none; stroke-dashoffset: 0; }
+.ptac-logo .logo-odyssee g { stroke-width: 40; }
+.ptac-quitter { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px !important; font-family: var(--f-mono), monospace; font-size: 13px; letter-spacing: 2px; color: #fff; border: 1px solid #333 !important; text-transform: uppercase; }
+.ptac-quitter:hover { border-color: var(--ambre) !important; color: var(--ambre); }
+.ptac-quitter svg { width: 18px; height: 18px; fill: currentColor; }
+.ptac-defile { flex: 1; overflow: auto; overscroll-behavior: contain; }
+.ptac-contenu { max-width: 1000px; margin: 0 auto; padding: 34px 32px 50px; display: grid; grid-template-columns: minmax(0, 480px) minmax(0, 1fr); gap: 0 44px; align-items: start; perspective: 1100px; }
+.ptac-titre { grid-column: 1 / -1; margin-bottom: 22px; }
+.ptac-titre small { font-family: var(--f-mono), monospace; font-size: 12px; color: var(--ambre); letter-spacing: 2px; }
+.ptac-titre h2 { margin: 0; font-weight: 700; font-size: 48px; letter-spacing: 3px; text-transform: uppercase; line-height: 1.05; animation: ptac-tq .55s var(--metro) .08s both; transform-origin: 0 50%; }
+
+/* coins */
+.ptac .cn { position: absolute; width: 11px; height: 11px; border-color: var(--ambre); border-style: solid; pointer-events: none; transition: opacity .2s, transform .25s var(--metro); }
+.ptac .tl { left: -1px; top: -1px; border-width: 2px 0 0 2px; } .ptac .tr { right: -1px; top: -1px; border-width: 2px 2px 0 0; }
+.ptac .bl { left: -1px; bottom: -1px; border-width: 0 0 2px 2px; } .ptac .br { right: -1px; bottom: -1px; border-width: 0 2px 2px 0; }
+
+/* tourniquet Metro */
+.ptac .tq { transform-origin: 0 50%; animation: ptac-tq .55s var(--metro) both; animation-delay: calc(var(--i) * 60ms + .12s); }
+@keyframes ptac-tq { from { opacity: 0; transform: rotateY(80deg) translateX(-20px); } }
+.ptac .p2-liste { border-top: 1px solid rgba(255, 255, 255, .14); perspective: 900px; background: rgba(0, 0, 0, .35); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
+.ptac .p2-ligne { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; height: 58px; padding: 0 12px; border-bottom: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 20px; letter-spacing: 2px; isolation: isolate; transition: color .15s, opacity .3s var(--metro), transform .3s var(--metro); }
+.ptac .p2-ligne::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--ambre), var(--ambre2)); transform: scaleX(0); transform-origin: 0 50%; transition: transform .25s var(--metro); }
+.ptac .p2-ligne .cn { opacity: 0; transition: opacity .2s, transform .25s var(--metro); }
+.ptac .p2-ligne.sel { color: #000; }
+.ptac .p2-ligne.sel::before { transform: none; }
+.ptac .p2-ligne.sel .cn { opacity: 1; }
+.ptac .p2-ligne.sel .tl { transform: translate(-4px, -4px); } .p2-ligne.sel .tr { transform: translate(4px, -4px); } .p2-ligne.sel .bl { transform: translate(-4px, 4px); } .p2-ligne.sel .br { transform: translate(4px, 4px); }
+.ptac .p2-ligne.part { opacity: 0; transform: translateX(-40px) rotateY(30deg); }
+.ptac .p2-ligne.choisie { transform: scale(1.03); }
+.ptac .p2-num { font-family: var(--f-mono); font-weight: 400; font-size: 11px; color: #666; width: 18px; }
+.ptac .p2-ligne.sel .p2-num, .ptac .p2-ligne.sel em { color: #5a3e00; }
+.ptac .p2-tuile { width: 36px; height: 36px; flex: none; display: grid; place-items: center; background: rgba(255, 255, 255, .08); color: #fff; transition: background .2s; }
+.ptac .p2-tuile svg { width: 22px; height: 22px; fill: currentColor; }
+.ptac .p2-ligne.sel .p2-tuile { background: #000; }
+.ptac .p2-nom { flex: 1; }
+.ptac .p2-ligne em { font-style: normal; font-family: var(--f-mono); font-size: 12px; color: #888; letter-spacing: 1px; }
+.ptac .p2-chev { display: grid; } .p2-chev svg { width: 20px; height: 20px; fill: currentColor; opacity: .6; }
+.ptac .p2-ligne:active { transform: translateX(4px); }
+/* matrice de points */
+.ptac .matrice { margin-top: 22px; display: grid; gap: 10px; }
+.ptac .matrice-ligne { display: flex; gap: 6px; }
+.ptac .matrice-lettre { display: grid; gap: 2px; }
+.ptac .matrice-lettre i { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, .07); }
+.ptac .matrice-lettre i.on { background: #fff; box-shadow: 0 0 6px rgba(255, 255, 255, .6); animation: mat-allume .25s steps(2) both; animation-delay: calc(var(--d) * 9ms + .4s); }
+@keyframes mat-allume { from { background: rgba(255, 255, 255, .07); box-shadow: none; } }
+/* panneau de droite, en verre dépoli */
+.ptac .p2-panneau { position: relative; padding: 22px 24px; background: rgba(8, 8, 8, .45); border: 1px solid rgba(255, 255, 255, .16); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 20px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08); animation: p2-ouvre .45s var(--metro) both; }
+@keyframes p2-ouvre { from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-10px); } to { clip-path: inset(0 0 0 0); } }
+.ptac .p2-apercu { animation-duration: .3s; }
+.ptac .p2-panneau > small, .ptac .p2-h, .ptac .p2-aaka small { font-family: var(--f-mono); font-size: 12px; color: var(--ambre); letter-spacing: 2px; }
+.ptac .p2-panneau h3 { font-weight: 600; font-size: 26px; letter-spacing: 1px; margin: 6px 0 18px; white-space: pre-wrap; }
+.ptac .p2-decode { font-family: var(--f-mono); font-size: 13px; color: var(--ambre); letter-spacing: 1px; margin: 22px 0 0; white-space: pre-wrap; }
+.ptac .p2-decode b { font-weight: 400; animation: tac-clignote .9s steps(2) infinite; }
+.ptac .p2-decode.centre { text-align: center; } .p2-decode.erreur { color: #ff4d3d; } .p2-decode.ok { color: #7dff9a; }
+.ptac .p2-touche { display: block; margin-top: 18px; font-family: var(--f-mono); font-size: 11px; color: #777; letter-spacing: 1.5px; }
+.ptac .p2-texte { font-size: 18px; line-height: 1.4; color: #d5dce0; font-weight: 500; margin: 0 0 12px; }
+.ptac .p2-radio { display: flex; align-items: center; gap: 14px; width: 100%; height: 56px; border-top: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 20px; letter-spacing: 2px; color: #aab; transition: color .15s, background .15s; }
+.ptac .p2-radio:hover { background: rgba(255, 176, 0, .08); }
+.ptac .p2-radio i { width: 18px; height: 18px; border: 2px solid #666; transition: border-color .2s, background .2s; }
+.ptac .p2-radio.sel { color: #fff; } .p2-radio.sel i { border-color: var(--ambre); background: radial-gradient(var(--ambre) 0 40%, transparent 45%); }
+.ptac .p2-radio em { margin-left: auto; font-style: normal; font-family: var(--f-mono); font-size: 12px; color: #777; }
+.ptac .p2-radio .tav { font-size: 22px; letter-spacing: 0; }
+.ptac .p2-canal { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, .14); transition: background .15s; }
+.ptac .p2-canal:hover { background: rgba(255, 176, 0, .08); }
+.ptac .p2-canal > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.ptac .p2-canal small { font-family: var(--f-mono); font-size: 11px; color: #888; letter-spacing: 2px; }
+.ptac .p2-canal b { font-weight: 600; font-size: 18px; overflow-wrap: anywhere; }
+.ptac .p2-canal > svg { width: 20px; height: 20px; fill: #888; }
+.ptac .p2-fermer { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; padding: 8px 14px; font-family: var(--f-mono); font-size: 12px; letter-spacing: 2px; color: var(--ambre); border: 1px solid rgba(255, 176, 0, .4); }
+.ptac .p2-fermer svg { width: 16px; height: 16px; fill: currentColor; }
+.ptac .p2-fermer:hover { background: rgba(255, 176, 0, .12); }
+/* système : le cheval se dessine */
+.ptac .p2-sys { display: grid; justify-items: center; text-align: center; }
+.ptac .p2-sys-logo { position: relative; margin: 6px 0 4px; }
+.ptac .p2-sys-logo .logo-odyssee { width: 104px; height: auto; color: #fff; display: block; }
+.ptac .p2-sys-logo .logo-odyssee path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: odyssee-trait var(--duree) cubic-bezier(.45, .05, .4, 1) var(--debut) forwards; }
+@keyframes odyssee-trait { to { stroke-dashoffset: 0; } }
+.ptac .p2-trace { position: absolute; left: 118px; bottom: 6px; white-space: nowrap; font-family: var(--f-mono); font-size: 11px; color: var(--ambre); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+.ptac .p2-sys-nom { font-weight: 700; font-size: 34px; letter-spacing: 8px; white-space: pre; }
+.ptac .p2-sys-v { font-family: var(--f-mono); font-size: 12px; color: var(--gris); letter-spacing: 2px; }
+.ptac .p2-sys .segs { width: 100%; margin: 10px 0 14px; }
+.ptac .p2-sys .segs i.on { animation: none; }
+.ptac .p2-h { justify-self: start; margin-bottom: 6px; }
+.ptac .p2-sys .tq { width: 100%; }
+.ptac .p2-ver { display: flex; width: 100%; gap: 16px; align-items: center; height: 44px; border-top: 1px solid rgba(255, 255, 255, .14); font-family: var(--f-mono); font-size: 13px; letter-spacing: 1px; color: #888; }
+.ptac .p2-ver b { font-family: var(--f-titre); font-size: 20px; color: #999; width: 40px; text-align: left; display: grid; }
+.ptac .p2-ver b svg { width: 20px; height: 20px; fill: currentColor; }
+.ptac .p2-ver em { margin-left: auto; font-style: normal; color: var(--ambre); }
+.ptac .p2-ver.act, .ptac .p2-ver.act b { color: #fff; }
+.ptac .p2-sons { border-bottom: 1px solid rgba(255, 255, 255, .14); margin-top: 8px; }
+.ptac .p2-sons:hover { background: rgba(255, 176, 0, .08); }
+/* édition : code */
+.ptac .p2-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.ptac .p2-code i { height: 52px; border: 1px solid rgba(255, 255, 255, .22); display: grid; place-items: center; font-style: normal; font-size: 26px; color: #000; transition: background .12s, border-color .12s; }
+.ptac .p2-code i.plein { background: var(--ambre); border-color: var(--ambre); animation: p2-pop .18s var(--metro); }
+@keyframes p2-pop { from { transform: scale(.7); } }
+.ptac .p2-code.erreur { animation: p2-secoue .45s; } .p2-code.erreur i.plein { background: #ff4d3d; border-color: #ff4d3d; }
+.ptac .p2-code.ok i.plein { background: #7dff9a; border-color: #7dff9a; }
+@keyframes p2-secoue { 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+.ptac .p2-pave { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 18px; border-top: 1px solid rgba(255, 255, 255, .14); }
+.ptac .p2-pave > * { height: 56px; display: grid; place-items: center; border-bottom: 1px solid rgba(255, 255, 255, .14); font-weight: 600; font-size: 24px; }
+.ptac .p2-pave > :nth-child(3n + 2) { border-left: 1px solid rgba(255, 255, 255, .14); border-right: 1px solid rgba(255, 255, 255, .14); }
+.ptac .p2-pave button { transition: background .1s, color .1s; }
+.ptac .p2-pave button:hover { background: rgba(255, 176, 0, .1); }
+.ptac .p2-pave button:active { background: var(--ambre); color: #000; }
+.ptac .p2-pave svg { width: 22px; height: 22px; fill: currentColor; }
+/* easter egg : Aaka */
+.ptac .p2-saisie { width: 100%; resize: none; background: rgba(0, 0, 0, .4); border: 1px solid rgba(255, 255, 255, .2); color: #fff; font: 500 18px var(--f-titre), sans-serif; letter-spacing: 1px; padding: 10px 12px; outline: none; }
+.ptac .p2-saisie:focus { border-color: var(--ambre); }
+.ptac .p2-aaka { margin-top: 14px; padding: 14px; border: 1px solid rgba(255, 176, 0, .35); }
+.ptac .p2-aaka p { margin: 8px 0 0; font-size: 34px; line-height: 1.3; color: #fff; overflow-wrap: anywhere; }
+
+.ptac .segs { display: flex; gap: 3px; }
+.ptac .segs i { flex: 1; height: 7px; background: #1e1e1e; }
+.ptac .segs i.on { background: var(--ambre); }
+.ptac .p2-nom { text-transform: uppercase; }
+.ptac .p2-liste, .ptac .p2-panneau { background: #050505; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+.ptac .p2-panneau { border-color: #262626; }
+.ptac .p2-panneau h3 { text-transform: none; }
+.ptac .p2-def small { font-family: var(--f-mono), monospace; font-size: 11px; color: var(--gris); letter-spacing: 2px; text-transform: uppercase; }
+.ptac .p2-def { border-top: 1px solid #1f1f1f; padding-top: 10px; }
+.ptac .p2-texte.petit { font-size: 15px; color: #9aa; }
+.ptac .p2-radio span, .ptac .p2-radio em, .ptac .p2-canal small { text-transform: uppercase; }
+.ptac .p2-action { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 16px; padding: 14px 16px !important; background: linear-gradient(90deg, var(--ambre), var(--ambre2)) !important; color: #000; font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; transition: transform .12s; }
+.ptac .p2-action svg { width: 22px; height: 22px; fill: currentColor; }
+.ptac .p2-action:active { transform: scale(.98); }
+.ptac .p2-fermer { text-transform: uppercase; }
+.ptac .cache-mobile {}
+@media (max-width: 860px) {
+  .ptac .cache-mobile { display: none !important; }
+  .ptac-haut, .ptac-bas { gap: 12px; padding-left: 14px; padding-right: 14px; }
+  .ptac-contenu { grid-template-columns: 1fr; padding: 22px 14px 40px; gap: 16px; }
+  .ptac-titre h2 { font-size: 38px; }
+  .ptac .p2-ligne { height: 54px; font-size: 18px; }
+  .ptac .matrice-lettre i { width: 3px; height: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ptac, .ptac *, .ptac *::before, .ptac *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+}
+@keyframes tac-clignote { 50% { opacity: 0; } }
+.ptac .p2-panneau > small, .ptac .p2-sys-v, .ptac .p2-h, .ptac .p2-ver em, .ptac .p2-ver span, .ptac .p2-fermer, .ptac-quitter { text-transform: uppercase; }
