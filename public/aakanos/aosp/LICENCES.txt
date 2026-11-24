@@ -1,0 +1,8 @@
+Icônes reprises telles quelles (PNG d'origine intégré dans un fichier SVG du même nom), sous licence Apache 2.0 (http://www.apache.org/licenses/LICENSE-2.0) :
+- ic_menu_*.svg, btn_star_big_*.svg, sym_action_email.svg, ic_lock_idle_alarm.svg, ic_dialog_alert_holo_dark.svg,
+  spinner_76_outer_holo.svg, spinner_76_inner_holo.svg : Android Open Source Project, platform/frameworks/base
+  (jb-mr1-release), core/res/res/drawable-xhdpi. Copyright (C) The Android Open Source Project.
+- ic_launcher_email.svg : Android Open Source Project, platform/packages/apps/Email (jb-mr1-release), res/mipmap-xhdpi.
+  Copyright (C) The Android Open Source Project.
+- lockclock-weather_na.svg, lockclock-weather_30.svg : CyanogenMod LockClock (cm-10.1, Android 4.2), res/drawable-xhdpi.
+  Copyright (C) 2012 The CyanogenMod Project.
