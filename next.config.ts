@@ -32,6 +32,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Une seule page 404 pour tout le site (il a plusieurs mises en page racines).
+  experimental: { globalNotFound: true },
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {
