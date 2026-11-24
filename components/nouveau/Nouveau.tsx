@@ -11,6 +11,9 @@ import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider } from "@/components/Locale";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { Parametres } from "@/components/Parametres";
+import { CompteEndur } from "@/components/Countdown";
+import { ProjetsPanorama } from "@/components/ProjetsPanorama";
+import { TopBlur } from "@/components/TopBlur";
 
 type Vue = "accueil" | "qui" | "projets";
 type Media = { id: string; kind: "photo" | "video" | "audio" | "fichier"; nom: string };
@@ -334,33 +337,26 @@ function Site() {
         <Segments p={charge} n={24} />
       </div>
 
-      <header className="n-haut">
-        <button type="button" className="n-marque" onClick={() => aller("accueil")} aria-label="Accueil">
+      <TopBlur />
+      <header className="n-tete">
+        <button type="button" className="n-logo" onClick={() => aller("accueil")} aria-label="Accueil">
           <Constellation />
-          <i className="n-sep" />
-          <LogoOdyssee />
-          <b>ODYSSÉE</b>
         </button>
-        <span className="cache-mobile">ODYSSÉE 0.1</span>
-        <span className="cache-mobile">CONNEXION ÉTABLIE</span>
-        <span className="ambre">{heure}</span>
-        <span className="droite cache-mobile">FJHC // H.M.B.K.</span>
         <span className="n-outils">
+          <span className="n-heure">{heure}</span>
           <button type="button" className="n-ic" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
             <Icone nom="search" />
           </button>
           <Parametres />
         </span>
+        <nav className="n-liens" aria-label="Navigation principale">
+          {MENU.map((m, k) => (
+            <button key={m.id} type="button" aria-current={vue === m.id ? "page" : undefined} style={{ "--i": k } as CSSProperties} onMouseEnter={sonSurvol} onClick={() => aller(m.id)}>
+              {m.nom.toLowerCase()}
+            </button>
+          ))}
+        </nav>
       </header>
-
-      <nav className="n-nav" aria-label="Menu">
-        {MENU.map((m, k) => (
-          <button key={m.id} type="button" className={vue === m.id ? "on" : ""} style={{ "--i": k } as CSSProperties} onMouseEnter={sonSurvol} onClick={() => aller(m.id)}>
-            <b>{deux(k + 1)}</b>
-            {m.nom}
-          </button>
-        ))}
-      </nav>
 
       {pret ? (
         <main className="n-scene" key={`${vue}-${rubrique ?? ""}`}>
@@ -368,7 +364,16 @@ function Site() {
           {vue === "qui" ? <Qui /> : null}
           {vue === "projets" && !rubrique ? (
             <>
-              <Actualite t={t} citations={citations.length} projets={projets.length} />
+              <section className="n-sec n-pano">
+                <CompteEndur>
+                  <ProjetsPanorama
+                    comptes={[
+                      { nom: "citations", nombre: citations.length, couleur: "#b9a07a" },
+                      { nom: "projets", nombre: projets.length, couleur: "#1ba1e2" },
+                    ]}
+                  />
+                </CompteEndur>
+              </section>
               <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} ouvrir={(r) => aller("projets", r)} />
             </>
           ) : null}
@@ -391,22 +396,6 @@ function Site() {
         </a>
       </footer>
 
-      <nav className="n-barre" aria-label="Menu">
-        {MENU.map((m) => (
-          <button key={m.id} type="button" className={vue === m.id ? "on" : ""} aria-label={m.nom} onClick={() => aller(m.id)}>
-            <Icone nom={m.icone} />
-            <small>{m.id === "qui" ? "QUI" : m.nom}</small>
-          </button>
-        ))}
-        <button type="button" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
-          <Icone nom="search" />
-          <small>CHERCHER</small>
-        </button>
-        <button type="button" aria-label="Réglages" onClick={() => document.querySelector<HTMLButtonElement>(".n-haut .param-ouvrir")?.click()}>
-          <Icone nom="settings" />
-          <small>RÉGLAGES</small>
-        </button>
-      </nav>
 
       <div className="n-police">
         <small>{"// POLICE"}</small>
@@ -707,122 +696,6 @@ function Titre({ sous, children }: { sous: string; children: string }) {
 }
 
 /* ---------- Projets : tuiles ---------- */
-
-function Actualite({ t, citations, projets }: { t: number | null; citations: number; projets: number }) {
-  const [onglet, setOnglet] = useState(0);
-  const c = decompte(t, OUVERTURE);
-  const pE = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
-  const pA = t ? Math.min(1, Math.max(0, (t - AUBE_DEBUT) / (AUBE_FIN - AUBE_DEBUT))) : 0;
-  const jA = t ? Math.max(0, Math.ceil((AUBE_DEBUT - t) / 86400000)) : 0;
-  const ETOILES: [number, number][] = [
-    [40, 50],
-    [120, 30],
-    [210, 60],
-    [190, 125],
-    [100, 115],
-    [50, 160],
-    [150, 175],
-  ];
-  const allumees = Math.max(1, Math.round(pE * ETOILES.length));
-  const total = Math.max(1, citations + projets + 2);
-  const parts = [
-    { nom: "CITATIONS", n: citations, c: "#e8d3a8" },
-    { nom: "PROJETS", n: projets, c: "#4f8fe0" },
-    { nom: "ÉVÉNEMENTS", n: 2, c: "#9fd69a" },
-  ];
-  return (
-    <Section n="ACTUALITÉ" titre="OPÉRATIONS">
-      <div className="n-onglets">
-        {["ENDURREISEN", "L’AUBE", "CADRAN"].map((o, k) => (
-          <button key={o} type="button" className={k === onglet ? "on" : ""} onClick={() => (sonSurvol(), setOnglet(k))}>
-            <b>{deux(k + 1)}</b>
-            {o}
-          </button>
-        ))}
-      </div>
-      <div className="p2-panneau n-actu" key={onglet}>
-        <Coins />
-        {onglet === 0 ? (
-          <>
-            <svg viewBox="0 0 260 200" className="n-ciel" aria-hidden="true">
-              {Array.from({ length: 50 }, (_, i) => (
-                <circle key={i} cx={(i * 53) % 260} cy={(i * 37) % 200} r="0.9" fill="#fff" opacity=".3" />
-              ))}
-              <path d={`M${ETOILES.slice(0, allumees).map(([x, y]) => `${x} ${y}`).join(" L")}`} pathLength={1} className="n-ciel-trait" fill="none" stroke="#ffb000" strokeWidth="1.4" />
-              {ETOILES.map(([x, y], i) => (
-                <circle key={i} cx={x} cy={y} r={i === ETOILES.length - 1 ? 6 : 4} fill={i < allumees ? "#ffb000" : "#333"} className="n-ciel-pt" style={{ animationDelay: `${i * 150 + 300}ms` }} />
-              ))}
-            </svg>
-            <small>{"// ENDURREISEN · OUVERTURE LE 01.12.2026"}</small>
-            <div className="n-cpt">
-              {deux(c.j)}
-              <i>J</i>
-              {deux(c.h)}
-              <i>H</i>
-              {deux(c.m)}
-              <i>M</i>
-              {deux(c.s)}
-              <i>S</i>
-            </div>
-            <Segments p={pE} n={30} />
-            <div className="n-pct">
-              {Math.round(pE * 100)} %<small>PARCOURU · {allumees} ÉTOILES SUR {ETOILES.length}</small>
-            </div>
-          </>
-        ) : onglet === 1 ? (
-          <>
-            <small>{"// L’AUBE · DU 03.12.2026 AU 03.06.2027 · 6 MOIS"}</small>
-            <p className="n-statut">{t != null && t < AUBE_DEBUT ? `COMMENCE DANS ${jA} JOURS` : pA >= 1 ? "TERMINÉE" : `${Math.round(pA * 100)} % · FIN LE 03.06.2027`}</p>
-            <div className="n-aube">
-              {[0, 0.25, 0.5, 0.75, 1].map((e) => (
-                <span key={e} className={pA >= e && t != null && t >= AUBE_DEBUT ? "on" : ""}>
-                  <i />
-                  <small>{new Date(AUBE_DEBUT + (AUBE_FIN - AUBE_DEBUT) * e).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}</small>
-                </span>
-              ))}
-            </div>
-            <Segments p={pA} n={30} />
-          </>
-        ) : (
-          <>
-            <small>{"// LE CADRAN · TOUTES LES RUBRIQUES = 100"}</small>
-            <div className="n-cadran">
-              <svg viewBox="0 0 200 200" aria-hidden="true">
-                {Array.from({ length: 100 }, (_, i) => {
-                  const a = (i / 100) * Math.PI * 2;
-                  let coul = "#222";
-                  let acc = 0;
-                  for (const x of parts) {
-                    acc += (x.n / total) * 100;
-                    if (i < acc) {
-                      coul = x.c;
-                      break;
-                    }
-                  }
-                  return (
-                    <line key={i} x1={100 + 80 * Math.sin(a)} y1={100 - 80 * Math.cos(a)} x2={100 + 92 * Math.sin(a)} y2={100 - 92 * Math.cos(a)} stroke={coul} strokeWidth="2.2" className="n-cad-trait" style={{ animationDelay: `${i * 8}ms` }} />
-                  );
-                })}
-                <text x="100" y="108" textAnchor="middle" fill="#fff" fontSize="34" fontFamily="var(--f-mono)">
-                  {total}
-                </text>
-              </svg>
-              <ul>
-                {parts.map((x) => (
-                  <li key={x.nom}>
-                    <i style={{ background: x.c }} />
-                    {x.nom}
-                    <em>{deux(x.n)}</em>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </>
-        )}
-      </div>
-    </Section>
-  );
-}
 
 function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; citations: Etoile[]; projets: Etoile[]; charge: boolean; ouvrir: (r: Rubrique) => void }) {
   const [face, setFace] = useState(0);

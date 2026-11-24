@@ -406,3 +406,50 @@ body { --f-titre: var(--p1), sans-serif; font-family: var(--f-titre); -webkit-fo
   .n-barre small { font-family: var(--f-mono); font-size: 9px; letter-spacing: 1px; }
   .n-suiv b { font-size: 24px; }
 }
+
+/* ============ barre du haut comme sur le site : flou + liens en couleur inversée ============ */
+.top-frost { position: fixed; z-index: 38; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 8.25rem); pointer-events: none; --header-fade: rgba(0, 0, 0, .55); }
+.top-frost-layer, .top-frost-tint { position: absolute; inset: 0; }
+.top-frost-layer { backdrop-filter: blur(var(--blur)) saturate(1.45); -webkit-backdrop-filter: blur(var(--blur)) saturate(1.45); mask-image: linear-gradient(to bottom, #000 0%, #000 10%, transparent var(--stop)); -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 10%, transparent var(--stop)); }
+.top-frost-tint { background: linear-gradient(to bottom, var(--header-fade), transparent 88%); }
+.n-tete { position: fixed; z-index: 40; top: 0; left: 0; right: 0; padding: calc(env(safe-area-inset-top) + 18px) 26px 0; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-items: center; mix-blend-mode: difference; color: #fff; }
+.n-logo { display: grid; width: 46px; height: 46px; }
+.n-logo .n-constel { width: 46px; height: 46px; }
+.n-logo .n-constel path { stroke-width: 3; }
+.n-logo .n-constel circle { r: 6; }
+.n-outils { justify-self: end; display: flex; align-items: center; gap: 6px; margin: 0 !important; }
+.n-heure { font-family: var(--f-mono); font-size: 12px; letter-spacing: 1.5px; margin-right: 8px; }
+.n-tete .n-ic, .n-tete .param-ouvrir { color: #fff; width: 44px; height: 44px; border: 0 !important; }
+.n-tete .n-ic svg, .n-tete .param-ouvrir svg { width: 28px; height: 28px; }
+.n-tete .n-ic:hover, .n-tete .param-ouvrir:hover { color: #fff; transform: scale(1.08); }
+.n-liens { grid-column: 1 / -1; display: flex; gap: 22px; margin-top: 14px; }
+.n-liens button { position: relative; font-family: var(--font-noto), sans-serif; font-weight: 300; font-size: 21px; letter-spacing: -.2px; color: #fff; opacity: .6; transition: opacity .2s; animation: ptac-tq .5s var(--metro) both; animation-delay: calc(var(--i) * 70ms + .15s); transform-origin: 0 50%; }
+.n-liens button:hover { opacity: .9; }
+.n-liens button[aria-current="page"] { opacity: 1; font-weight: 400; }
+.n-liens button[aria-current="page"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; background: #fff; transform-origin: 0 50%; animation: n-souligne .45s var(--metro) both; }
+@keyframes n-souligne { from { transform: scaleX(0); } }
+.n-haut, .n-nav, .n-barre { display: none !important; }
+.n-scene { padding-top: 150px; }
+.n-scene > .n-hero:first-child { margin-top: -150px; }
+.n-hero { height: min(86vh, 720px); }
+
+/* ============ une touche de Metro : titres de page fins et en minuscules ============ */
+.n-titre h2 { font-family: var(--font-noto), sans-serif !important; font-weight: 300 !important; text-transform: lowercase; letter-spacing: -1px !important; font-size: 52px !important; line-height: 1.05; }
+.n-titre small { text-transform: uppercase; }
+.n-nom { font-family: var(--f-titre); }
+
+/* ============ Actualité : les schémas du site ============ */
+.n-pano { overflow: hidden; }
+.n-pano .pano { margin: 0; }
+
+@media (max-width: 860px) {
+  .n-tete { padding: calc(env(safe-area-inset-top) + 14px) 16px 0; }
+  .n-heure { display: none; }
+  .n-liens { gap: 18px; margin-top: 10px; }
+  .n-liens button { font-size: 19px; }
+  .n-scene { padding-top: 130px; padding-bottom: 70px; }
+  .n-scene > .n-hero:first-child { margin-top: -130px; }
+  .n-hero { height: 560px; }
+  .n-titre h2 { font-size: 42px !important; }
+  .n-police { bottom: 14px; }
+}
