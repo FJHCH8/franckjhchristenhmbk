@@ -97,9 +97,9 @@ function Dialogue({ qui, texte, suite }: { qui: Qui; texte: string; suite: () =>
 type Vue = {
   fx: number; bx: number; fdir: 1 | -1; bdir: 1 | -1; t: number; marche: boolean; boum: boolean;
   colere: boolean; bRougit: number; fRougit: number; bSourire: boolean; fSourire: boolean; fOpacite: number; bOpacite: number;
-  debout: boolean; coup: boolean; vol: boolean; coeurs: boolean; secousse: boolean; zoom: number;
+  debout: boolean; coup: boolean; vol: boolean; coeurs: boolean; secousse: boolean; zoom: number; aTerre: boolean;
 };
-const VUE0: Vue = { fx: -15, bx: 115, fdir: 1, bdir: -1, t: 0, marche: false, boum: false, colere: false, bRougit: 0, fRougit: 0, bSourire: false, fSourire: false, fOpacite: 1, bOpacite: 1, debout: false, coup: false, vol: false, coeurs: false, secousse: false, zoom: 1 };
+const VUE0: Vue = { fx: -15, bx: 115, fdir: 1, bdir: -1, t: 0, marche: false, boum: false, colere: false, bRougit: 0, fRougit: 0, bSourire: false, fSourire: false, fOpacite: 1, bOpacite: 1, debout: false, coup: false, vol: false, coeurs: false, secousse: false, zoom: 1, aTerre: false };
 type Etape = { qui?: Qui; texte?: string; ms?: number; vue?: Partial<Vue>; son?: Bruitage; musique?: NomPiste };
 
 function useMarche(actif: boolean) {
@@ -134,10 +134,17 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
   }, [e, fin, suite]);
   const pas = useMarche(vue.marche);
   const assis = decor === "casino" && !vue.debout;
-  const style = (x: number, dir: 1 | -1, op: number): CSSProperties => ({ left: `${x}%`, transform: `translateX(-50%) scaleX(${dir})`, transition: `left ${vue.t}ms linear, opacity .5s, bottom .4s`, opacity: op });
+  const style = (x: number, dir: 1 | -1, op: number, tombe = false): CSSProperties => ({
+    left: `${x}%`,
+    transform: tombe ? `translateX(-50%) scaleX(${dir}) rotate(-82deg)` : `translateX(-50%) scaleX(${dir})`,
+    transformOrigin: tombe ? "55% 88%" : "50% 100%",
+    bottom: tombe ? "12%" : undefined,
+    transition: `left ${vue.t}ms linear, opacity .5s, bottom .45s ease, transform ${Math.max(280, vue.t)}ms ease`,
+    opacity: op,
+  });
   const persos = (
     <>
-      <div className={`op-perso op-perso-f${assis ? " assis" : ""}${vue.vol ? " op-vole" : ""}`} style={style(vue.fx, vue.fdir, vue.fOpacite)}>
+      <div className={`op-perso op-perso-f${assis ? " assis" : ""}${vue.vol ? " op-vole" : ""}${vue.aTerre ? " op-a-terre" : ""}`} style={style(vue.fx, vue.fdir, vue.fOpacite, vue.aTerre)}>
         <Femboy pas={pas} rougit={vue.fRougit} sourire={vue.fSourire} />
         {vue.fRougit >= 2 ? <Coeurs /> : null}
       </div>
@@ -197,9 +204,12 @@ function Tapis() {
 
 const INTRO: Etape[] = [
   { musique: "intro", vue: { fx: 10, bx: 90, t: 0, zoom: 1, marche: true }, ms: 400 },
-  { vue: { fx: 26, bx: 74, t: 1800, zoom: 1.12, marche: true }, ms: 1800 },
-  { vue: { fx: 40, bx: 60, t: 1400, zoom: 2.05, marche: true }, ms: 1400 },
-  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 42, bx: 58, zoom: 2.2, t: 150 }, son: "boum", ms: 900 },
+  { vue: { fx: 28, bx: 72, t: 1800, zoom: 1.12, marche: true }, ms: 1800 },
+  { vue: { fx: 45, bx: 55, t: 1400, zoom: 2.05, marche: true }, ms: 1400 },
+  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 47, bx: 53, zoom: 2.25, t: 120 }, son: "boum", ms: 400 },
+  { vue: { boum: false, secousse: false, aTerre: true, fx: 36, t: 480 }, ms: 800 },
+  { vue: { aTerre: true, t: 200 }, ms: 500 },
+  { vue: { aTerre: false, fx: 40, t: 580 }, ms: 720 },
   { vue: { boum: false, secousse: false }, qui: "blond", texte: "ragarde ou tu marches pd!" },
   { qui: "femboy", texte: "je m’excuse je n’ai pas vue ou j’allais je suis tellement désolé." },
   // le blond se calme et le regarde
@@ -734,9 +744,13 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
     bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
   }, []);
 
-  const finiTous = res.length === JEUX.length;
+  const restants = JEUX.length - res.length;
+  // Éliminé dès que le blond a trop de jeux d’avance : même en gagnant le reste, plus de majorité possible.
+  const elimine = gagnes + restants < perdus;
+  const finiTous = restants === 0;
   let verdict: "toi" | "blond" | null = null;
-  if (finiTous) {
+  if (elimine) verdict = "blond";
+  else if (finiTous) {
     if (gagnes > perdus) verdict = "toi";
     else if (perdus > gagnes) verdict = "blond";
     else if (mToi > mBlond) verdict = "toi";
@@ -904,21 +918,40 @@ const CREDITS = [
 ];
 
 function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
+  const [scriptPret, setScriptPret] = useState(false);
+  const [bouton, setBouton] = useState(!gagne);
   useEffect(() => {
     if (gagne) {
       musiqueFin();
+      const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduit) {
+        setScriptPret(true);
+        const id = window.setTimeout(() => setBouton(true), 400);
+        return () => window.clearTimeout(id);
+      }
       return;
     }
     musique("credits");
     const m = window.setTimeout(() => bruitage("miaou"), 1400);
-    const id = window.setTimeout(fin, 21000);
+    const id = window.setTimeout(fin, 26000);
     return () => (window.clearTimeout(m), window.clearTimeout(id));
   }, [fin, gagne]);
   return (
-    <div className="op-scene op-credits">
+    <div className={`op-scene op-credits${gagne ? " op-credits-victoire" : ""}${scriptPret ? " op-script-ecrit" : ""}`}>
+      <div className="op-etincelles" aria-hidden="true">
+        {Array.from({ length: 16 }, (_, i) => (
+          <i key={i} style={{ left: `${6 + (i * 19 + 7) % 88}%`, top: `${4 + (i * 29) % 86}%`, animationDelay: `${(i * 0.41) % 5}s` }} />
+        ))}
+      </div>
       <div className="op-defile">
-        <div className="op-defile-int">
-          <b className="op-titre op-titre-petit" translate="no">OPAKAALT</b>
+        <div
+          className="op-defile-int"
+          onAnimationEnd={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (gagne) setScriptPret(true);
+          }}
+        >
+          <b className="op-titre op-titre-petit op-titre-credits" translate="no">OPAKAALT</b>
           <p className="op-james">jeu fait par James-games</p>
           <ChatNeon taille={7} />
           <p className="op-neon" translate="no">JAMES-GAMES</p>
@@ -935,11 +968,22 @@ function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
               alt=""
               draggable={false}
               onContextMenu={(e) => e.preventDefault()}
+              onAnimationEnd={(e) => {
+                e.stopPropagation();
+                setBouton(true);
+              }}
             />
           ) : null}
         </div>
       </div>
-      <button type="button" className="op-bouton op-petit op-retour-menu" onClick={() => (bruitage("valider"), fin())}>
+      <button
+        type="button"
+        className={`op-bouton op-petit op-retour-menu${bouton ? " op-retour-visible" : ""}`}
+        tabIndex={bouton ? 0 : -1}
+        aria-hidden={!bouton}
+        disabled={!bouton}
+        onClick={() => bouton && (bruitage("valider"), fin())}
+      >
         Retour au menu
       </button>
     </div>
