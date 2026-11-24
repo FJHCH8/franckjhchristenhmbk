@@ -7,6 +7,8 @@
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { son, sonBillets, sonPieces, sonProut, sonWahWah } from "./sonsAndroid";
+import { etatMail } from "./Mail";
+import { eurosCentimes, releve } from "./banque";
 
 /** Chargement qui dure un peu, puis échoue ; relancé à chaque changement de `cle`. */
 function useEchec(cle: number, ms = 1900) {
@@ -60,11 +62,13 @@ export function AppSharkobank() {
   }, []);
   const [dlg, setDlg] = useState<string | null>(null);
   const charge = useEchec(essais);
+  const mail = etatMail.useValeur();
+  const releveCompte = releve(mail.arrives);
   return (
     <div className="hl sk">
       <div className="sk-haut">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/aakanos/sharkobank.png" alt="" />
+        <img draggable={false} src="/aakanos/sharkobank.png" alt="" />
         <div>
           <small>{"// BONJOUR CASTO"}</small>
           <b>SHARKOBANK</b>
@@ -82,13 +86,11 @@ export function AppSharkobank() {
           </>
         ) : (
           <>
-            <div className="sk-solde">
-              — — —,— — <em>€</em>
+            <div className={`sk-solde${releveCompte.solde < 0 ? " sk-negatif" : ""}`} translate="no">
+              {eurosCentimes(releveCompte.solde, false).replace(" €", "")} <em>€</em>
             </div>
-            <p className="sk-err">⚠ Solde indisponible : vous n’êtes pas connecté.</p>
-            <p className="sk-dernier">
-              Dernier solde enregistré (quand vous aviez internet) : <b>−9,18 €</b>
-            </p>
+            <p className="sk-err">⚠ Compte à découvert</p>
+            <p className="sk-dernier">Mis à jour par le réseau prioritaire Sharkobank (sans internet, facturé).</p>
           </>
         )}
       </div>
@@ -99,26 +101,34 @@ export function AppSharkobank() {
           <li className="frais">
             <span>
               <b>Frais de tentative de connexion{essais > 1 ? ` ×${essais}` : ""}</b>
-              <em>AUJOURD’HUI · SHARKOBANK</em>
+              <em>AUJOURD’HUI · SHARKOBANK · EN ATTENTE</em>
             </span>
             <strong>−{euros(FRAIS * essais)}</strong>
           </li>
-          {[0, 1, 2, 3].map((k) =>
-            charge ? (
-              <li key={k} className="vide">
-                <i className="sq sq-ligne" />
-                <i className="sq sq-court" />
-              </li>
-            ) : (
-              <li key={k} className="ko">
-                <span>
-                  <b>Opération non chargée</b>
-                  <em>CONNEXION REQUISE</em>
-                </span>
-                <strong>?</strong>
-              </li>
-            ),
-          )}
+          {charge
+            ? [0, 1, 2, 3].map((k) => (
+                <li key={k} className="vide">
+                  <i className="sq sq-ligne" />
+                  <i className="sq sq-court" />
+                </li>
+              ))
+            : releveCompte.operations.map((o) => (
+                <li key={o.id} className={o.statut === "rejete" ? "ko sk-rejete" : o.tiers === "SHARKOBANK" ? "frais" : ""} data-op={o.id}>
+                  <span>
+                    <b>{o.libelle}</b>
+                    <em>
+                      <span translate="no">{o.date || o.heure || ""}</span> · <span translate="no">{o.tiers}</span>
+                      {o.statut === "rejete" ? (
+                        <>
+                          {" · "}
+                          <span className="sk-statut">REJETÉ</span>
+                        </>
+                      ) : null}
+                    </em>
+                  </span>
+                  <strong translate="no">{eurosCentimes(o.montant)}</strong>
+                </li>
+              ))}
         </ul>
       </div>
 
@@ -212,7 +222,7 @@ export function AppPeeporn() {
     <div className="hl pp">
       <div className="pp-haut">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/aakanos/peeporn.png" alt="" />
+        <img draggable={false} src="/aakanos/peeporn.png" alt="" />
         <b>PEEPORN</b>
         <em className="pp-18">18+</em>
         <span className="pp-loupe" aria-hidden="true">
@@ -269,7 +279,7 @@ export function AppPeeporn() {
         <div className="pp-voile">
           <div className="pp-miroir pp-non">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/peeporn-non.png" alt="" />
+            <img draggable={false} src="/aakanos/peeporn-non.png" alt="" />
             <p>
               Malheureusement, tu ne vas pas pouvoir entrer sur l’application, ma puce.
               <b>Retourne t’auto-sucer, on veut pas de toi ici.</b>
@@ -286,7 +296,7 @@ export function AppPeeporn() {
           <div className="pp-miroir">
             <p className="pp-puce">Désolé ma puce…</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/peeporn-miroir.jpg" alt="" />
+            <img draggable={false} src="/aakanos/peeporn-miroir.jpg" alt="" />
             <p>
               Vous allez devoir utiliser un miroir…
               <b>pas de connexion bébé.</b>
