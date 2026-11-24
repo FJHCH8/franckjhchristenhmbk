@@ -378,3 +378,27 @@ export function sonAppli(id: string) {
 export function sonSonnerie(fois = 4) {
   for (let k = 0; k < fois; k++) setTimeout(() => notes([[1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"]], 0.05, 0.12), k * 900);
 }
+
+/*
+ * Sur iPhone, le son ne marche que si le lecteur audio est créé (et a joué) pendant un toucher.
+ * On le débloque donc au tout premier toucher, n'importe où : les sons suivants (comme les logos
+ * qui tombent dans l'actualité Hanck) se font entendre même s'ils ne suivent pas un geste.
+ */
+if (typeof window !== "undefined") {
+  const debloquer = () => {
+    const c = contexte();
+    if (c) {
+      try {
+        const b = c.createBuffer(1, 1, 22050);
+        const s = c.createBufferSource();
+        s.buffer = b;
+        s.connect(c.destination);
+        s.start(0);
+      } catch {}
+      if (c.state === "running") {
+        for (const ev of ["pointerdown", "touchend", "keydown", "click"]) window.removeEventListener(ev, debloquer, true);
+      }
+    }
+  };
+  for (const ev of ["pointerdown", "touchend", "keydown", "click"]) window.addEventListener(ev, debloquer, true);
+}
