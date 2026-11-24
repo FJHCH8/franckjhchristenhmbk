@@ -3,9 +3,8 @@
 /**
  * Opakaalt : un jeu 8 bits de James-games (pixel art et chiptune faits maison).
  * Menu sur la ville (le jour tombe, la nuit vient), la rencontre dans la rue, le casino,
- * trois jeux contre le blond (morpion, puissance 4, échecs), départage (Qui suis-je, Bataille navale, Baby-foot), deux fins, le générique.
- * Règle : on gagne en remportant au moins 2 des 3 jeux. Égalité de jeux : on compte les manches gagnées ;
- * encore égalité : les trois mini-jeux, premier à 2, puis jusqu'à ce qu'il y ait un gagnant.
+ * six jeux contre le blond, toujours dans cet ordre : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.
+ * Règle : on joue les six jeux à chaque partie ; on gagne à la majorité (plus de jeux gagnés, puis les manches).
  * Dialogues : ceux de Franck, mot pour mot. Rien d'explicite à l'écran.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -660,29 +659,25 @@ function manquantes(b: string[], camp: "w" | "b") {
 
 /* ---------------- La table du casino : les trois jeux ---------------- */
 
-const JEUX = ["Morpion", "Puissance 4", "Échecs"] as const;
-const JEUX_DEP = ["Qui suis-je", "Bataille navale", "Baby-foot"] as const;
-const PISTE_JEU: NomPiste[] = ["morpion", "puissance4", "echecs"];
-const PISTE_DEP: NomPiste[] = ["quisuisje", "navale", "babyfoot"];
-const PAROLE_JEU: JeuParole[] = ["morpion", "puissance4", "echecs"];
-const PAROLE_DEP: JeuParole[] = ["quisuisje", "navale", "babyfoot"];
+const JEUX = ["Morpion", "Puissance 4", "Qui suis-je", "Bataille navale", "Baby-foot", "Échecs"] as const;
+const PISTE_JEU: NomPiste[] = ["morpion", "puissance4", "quisuisje", "navale", "babyfoot", "echecs"];
+const PAROLE_JEU: JeuParole[] = ["morpion", "puissance4", "quisuisje", "navale", "babyfoot", "echecs"];
 
 function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const [jeu, setJeu] = useState(0);
   const [res, setRes] = useState<{ g: Gagnant; toi: number; blond: number }[]>([]);
-  const [dep, setDep] = useState<{ g: Gagnant; toi: number; blond: number }[]>([]);
-  const [vue, setVue] = useState<"jeu" | "bilan" | "departage" | "bilan-dep">("jeu");
-  const [iDep, setIDep] = useState(0);
+  const [vue, setVue] = useState<"jeu" | "bilan">("jeu");
   const [rougit, setRougit] = useState(0);
   const [bulle, setBulle] = useState<Bulle>(null);
   const [partie, setPartie] = useState(0);
   useEffect(() => {
     const h = (ev: Event) => {
-      const d = (ev as CustomEvent<{ vue?: "departage"; i?: number }>).detail;
-      if (d?.vue === "departage") {
-        setIDep(d.i ?? 0);
-        setVue("departage");
-      }
+      const d = (ev as CustomEvent<{ vue?: string; i?: number }>).detail;
+      if (typeof d?.i !== "number") return;
+      // ancien hook « départage » : 0, 1, 2 = qui / navale / baby-foot (désormais 2, 3, 4)
+      const i = d.vue === "departage" ? 2 + (d.i % 3) : Math.max(0, Math.min(JEUX.length - 1, d.i));
+      setJeu(i);
+      setVue("jeu");
     };
     window.addEventListener("aakanos-opakaalt-tournoi", h);
     return () => window.removeEventListener("aakanos-opakaalt-tournoi", h);
@@ -692,8 +687,6 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const perdus = res.filter((r) => r.g === "blond").length;
   const mToi = res.reduce((s, r) => s + r.toi, 0);
   const mBlond = res.reduce((s, r) => s + r.blond, 0);
-  const depToi = dep.filter((r) => r.g === "toi").length;
-  const depBlond = dep.filter((r) => r.g === "blond").length;
   const avanceRef = useRef(0);
   const paroleRef = useRef<JeuParole>("morpion");
   useEffect(() => {
@@ -701,10 +694,10 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   }, [gagnes, perdus]);
 
   useEffect(() => {
-    const nom = vue === "bilan" || vue === "bilan-dep" ? "casino" : vue === "departage" ? PISTE_DEP[iDep % 3]! : PISTE_JEU[jeu]!;
-    paroleRef.current = vue === "departage" ? PAROLE_DEP[iDep % 3]! : PAROLE_JEU[jeu]!;
+    const nom = vue === "bilan" ? "casino" : PISTE_JEU[jeu]!;
+    paroleRef.current = PAROLE_JEU[jeu]!;
     musique(nom);
-  }, [jeu, vue, iDep]);
+  }, [jeu, vue]);
   useEffect(() => {
     if (!bulle) return;
     const id = window.setTimeout(() => setBulle(null), 4200);
@@ -720,12 +713,13 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const reagir = useCallback((r: "gagne" | "perd" | "bien" | "nul") => {
     const jeuP = paroleRef.current;
     if (r === "gagne" || r === "bien") {
-      setRougit((x) => {
-        const n = Math.min(3, Math.max(x + 1, 1 + avanceRef.current));
+      setRougit((x) => Math.min(3, x + (r === "gagne" ? 2 : 1)));
+      const n = r === "gagne" ? 3 : 1;
+      if (avanceRef.current >= 0) {
         setBulle({ texte: uneReplique("blond", jeuP, r === "gagne" ? "perd" : "bien"), fort: n, qui: "blond", cle: Date.now() });
-        return n;
-      });
-      window.setTimeout(() => bruitage(r === "bien" ? "coeurs" : "rougit"), 250);
+      } else {
+        setBulle({ texte: uneReplique("femboy", jeuP, r === "gagne" ? "gagne" : "bien"), fort: 1, qui: "femboy", cle: Date.now() });
+      }
     } else if (r === "perd") {
       setRougit((x) => Math.max(0, x - 1));
       setBulle({ texte: uneReplique("blond", jeuP, "gagne"), fort: 0, qui: "blond", cle: Date.now() });
@@ -740,40 +734,35 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
     bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
   }, []);
 
-  const finDep = useCallback((g: Gagnant, toi: number, blond: number) => {
-    setDep((l) => [...l, { g, toi, blond }]);
-    setVue("bilan-dep");
-    bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
-  }, []);
-
-  const decide = gagnes >= 2 ? "toi" : perdus >= 2 ? "blond" : null;
-  let verdict: "toi" | "blond" | "departage" | null = decide;
-  if (!verdict && res.length === 3) verdict = gagnes > perdus ? "toi" : perdus > gagnes ? "blond" : mToi > mBlond ? "toi" : mBlond > mToi ? "blond" : "departage";
-
-  const vDep: "toi" | "blond" | null = depToi >= 2 && depToi > depBlond ? "toi" : depBlond >= 2 && depBlond > depToi ? "blond" : dep.length >= 3 && depToi !== depBlond ? (depToi > depBlond ? "toi" : "blond") : dep.length >= 3 && depToi === depBlond ? null : (depToi >= 2 || depBlond >= 2) && depToi !== depBlond ? (depToi > depBlond ? "toi" : "blond") : null;
+  const finiTous = res.length === JEUX.length;
+  let verdict: "toi" | "blond" | null = null;
+  if (finiTous) {
+    if (gagnes > perdus) verdict = "toi";
+    else if (perdus > gagnes) verdict = "blond";
+    else if (mToi > mBlond) verdict = "toi";
+    else if (mBlond > mToi) verdict = "blond";
+    else {
+      const dernier = [...res].reverse().find((r) => r.g === "toi" || r.g === "blond");
+      verdict = dernier?.g === "toi" ? "toi" : "blond";
+    }
+  }
 
   useEffect(() => {
     if (vue === "bilan" && verdict === "blond") {
       const id = window.setTimeout(() => termine(false), 900);
       return () => window.clearTimeout(id);
     }
-    if (vue === "bilan-dep" && vDep === "blond") {
-      const id = window.setTimeout(() => termine(false), 900);
-      return () => window.clearTimeout(id);
-    }
-  }, [vue, verdict, vDep, termine]);
+  }, [vue, verdict, termine]);
 
-  const noms = vue === "departage" || vue === "bilan-dep" ? JEUX_DEP : JEUX;
-  const idx = vue === "departage" ? iDep % 3 : jeu;
   const entete = (manche: string, score: string, reflechit: boolean) => (
     <>
       <div className="op-score">
-        {noms.map((n, k) => (
-          <span key={`${n}-${k}`} className={`op-pastille${k === idx && vue !== "bilan" && vue !== "bilan-dep" ? " op-encours" : ""}${(vue === "bilan-dep" || vue === "departage" ? dep : res)[k] ? ` op-p-${(vue === "bilan-dep" || vue === "departage" ? dep : res)[k]!.g}` : ""}`}>{n}</span>
+        {JEUX.map((n, k) => (
+          <span key={n} className={`op-pastille${k === jeu && vue !== "bilan" ? " op-encours" : ""}${res[k] ? ` op-p-${res[k]!.g}` : ""}`}>{n}</span>
         ))}
       </div>
       <div className="op-titre-jeu">
-        <b>{vue === "departage" ? JEUX_DEP[iDep % 3] : JEUX[jeu]}</b>
+        <b>{JEUX[jeu]}</b>
         <span>{manche}</span>
         <span className="op-score-manche">
           <span>Toi</span> <span translate="no">{score}</span> <span>Blond</span>
@@ -783,10 +772,22 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
     </>
   );
 
-  const mini = () => {
-    const k = iDep % 3;
-    const props = { reagir, fin: finDep, parler, entete };
-    return k === 0 ? <QuiSuisJe {...props} /> : k === 1 ? <BatailleNavale {...props} /> : <BabyFoot {...props} />;
+  const plateau = () => {
+    const props = { reagir, fin: finJeu, parler, entete };
+    switch (jeu) {
+      case 0:
+        return <Morpion {...props} />;
+      case 1:
+        return <Puissance4 {...props} />;
+      case 2:
+        return <QuiSuisJe {...props} />;
+      case 3:
+        return <BatailleNavale {...props} />;
+      case 4:
+        return <BabyFoot {...props} />;
+      default:
+        return <Echecs {...props} />;
+    }
   };
 
   return (
@@ -794,42 +795,8 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
       <Casino enseigne={false} />
       <div className="op-tournoi-corps">
         {vue === "jeu" ? (
-          <div key={`${jeu}-${partie}`} className="op-jeu">
-            {jeu === 0 ? <Morpion reagir={reagir} fin={finJeu} entete={entete} parler={parler} /> : jeu === 1 ? <Puissance4 reagir={reagir} fin={finJeu} entete={entete} parler={parler} /> : <Echecs reagir={reagir} fin={finJeu} entete={entete} parler={parler} />}
-          </div>
-        ) : vue === "departage" ? (
-          <div key={`dep-${iDep}-${partie}`} className="op-jeu">
-            {mini()}
-          </div>
-        ) : vue === "bilan-dep" ? (
-          <div className="op-bilan">
-            <Adversaire rougit={rougit} bulle={bulle} reflechit={false} />
-            <b className="op-bilan-titre">Départage</b>
-            <div className="op-tableau">
-              <div className="op-t-ligne op-t-tete">
-                <span>Jeu</span>
-                <b>Toi</b>
-                <b>Blond</b>
-              </div>
-              {dep.map((r, k) => (
-                <div key={k} className={`op-t-ligne op-t-${r.g}`}>
-                  <span>{JEUX_DEP[k % 3]}</span>
-                  <b>{r.toi}</b>
-                  <b>{r.blond}</b>
-                </div>
-              ))}
-            </div>
-            {vDep === "blond" ? (
-              <p className="op-regle">Le blond gagne le départage…</p>
-            ) : vDep === "toi" ? (
-              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(true))}>
-                Voir la fin
-              </button>
-            ) : (
-              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setIDep((n) => n + 1), setPartie((p) => p + 1), setVue("departage"))}>
-                <span>Jeu suivant :</span> <span>{JEUX_DEP[(iDep + 1) % 3]}</span>
-              </button>
-            )}
+          <div key={`${jeu}-${partie}`} className="op-jeu" data-jeu={JEUX[jeu]}>
+            {plateau()}
           </div>
         ) : (
           <div className="op-bilan">
@@ -852,27 +819,10 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
             <p className="op-dernier-jeu">
               <span>{res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[res.length - 1]}</b>
             </p>
-            {verdict === "departage" ? (
-              <>
-                <p className="op-regle">Égalité parfaite ! Départage : Qui suis-je, Bataille navale, Baby-foot. Premier à 2 jeux.</p>
-                <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setIDep(0), setVue("departage"))}>
-                  Départage
-                </button>
-              </>
-            ) : verdict === "blond" ? (
+            {verdict === "blond" ? (
               <p className="op-regle">Le blond a gagné…</p>
-            ) : verdict && res.length < 3 ? (
-              <>
-                <p className="op-regle">{verdict === "toi" ? "Tu as déjà gagné 2 jeux sur 3 !" : "Le blond a déjà gagné 2 jeux sur 3…"}</p>
-                <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(verdict === "toi"))}>
-                  Voir la fin
-                </button>
-                <button type="button" className="op-bouton op-petit op-honneur" onClick={() => (bruitage("valider"), setJeu(2), setPartie((p) => p + 1), setVue("jeu"))}>
-                  Jouer les échecs pour l’honneur
-                </button>
-              </>
-            ) : verdict ? (
-              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(verdict === "toi"))}>
+            ) : verdict === "toi" ? (
+              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(true))}>
                 Voir la fin
               </button>
             ) : (
@@ -932,7 +882,7 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
         <button type="button" className="op-bouton op-nouvelle" onClick={() => (bruitage("valider"), setChoix(true))}>
           Nouvelle partie
         </button>
-        <p className="op-regle">Gagne au moins 2 jeux sur 3 contre le blond : morpion, puissance 4, échecs.</p>
+        <p className="op-regle">Gagne la majorité des jeux contre le blond : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.</p>
         {s.parties ? (
           <p className="op-stats">
             <span>{`Parties : ${s.parties}`}</span> · <span>{`Victoires : ${s.victoires}`}</span> · <span>{`Défaites : ${s.defaites}`}</span>
@@ -977,6 +927,16 @@ function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
             <p key={c}>{c}</p>
           ))}
           <p className="op-neon" translate="no">© 1933 JAMES-GAMES</p>
+          {gagne ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="op-credits-script"
+              src="/aakanos/opakaalt-script.svg"
+              alt=""
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+            />
+          ) : null}
         </div>
       </div>
       <button type="button" className="op-bouton op-petit op-retour-menu" onClick={() => (bruitage("valider"), fin())}>
@@ -1032,6 +992,10 @@ export function AppOpakaalt() {
     const h = (ev: Event) => {
       const d = (ev as CustomEvent).detail;
       if (typeof d === "string") setPhase(d as Phase);
+      else if (d && typeof d === "object" && typeof d.phase === "string") {
+        if (typeof d.gagne === "boolean") setGagne(d.gagne);
+        setPhase(d.phase as Phase);
+      }
     };
     window.addEventListener("aakanos-opakaalt-phase", h);
     return () => window.removeEventListener("aakanos-opakaalt-phase", h);

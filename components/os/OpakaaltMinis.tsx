@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Les trois jeux d'égalité d'Opakaalt : Qui suis-je, Bataille navale, Baby-foot.
+ * Qui suis-je, Bataille navale et Baby-foot : joués à chaque partie, avant les échecs.
  */
 import { useEffect, useRef, useState, type PointerEvent as PE, type ReactNode } from "react";
 import {
@@ -127,7 +127,7 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
   }, [tour, fini]);
 
   return (
-    <div className="op-jeu op-qui">
+    <div className="op-qui">
       {entete("QUI SUIS-JE", fini ? (fini === "toi" ? "1 – 0" : "0 – 1") : "—", tour === "blond" && !fini)}
       <div className="op-qui-toi">
         <span>Ton visage</span>
@@ -215,7 +215,7 @@ export function BatailleNavale({ reagir, parler, fin, entete }: PropsMini) {
   }, [tour, fini, tirsBlond, d, parler, reagir, fin, flotteToi]);
 
   return (
-    <div className="op-jeu op-nav">
+    <div className="op-nav">
       {entete("BATAILLE NAVALE", fini ? (fini === "toi" ? "1 – 0" : "0 – 1") : "—", tour === "blond" && !fini)}
       <p className="op-qui-info">{msg || "Tire sur la flotte du blond."}</p>
       <div className="op-nav-deux">
@@ -319,7 +319,7 @@ export function BabyFoot({ reagir, parler, fin, entete }: PropsMini) {
   };
 
   return (
-    <div className="op-jeu op-baby">
+    <div className="op-baby">
       {entete("BABY-FOOT", `${aff.toi} – ${aff.blond}`, false)}
       <canvas
         ref={canvas}
