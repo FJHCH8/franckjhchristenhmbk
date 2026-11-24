@@ -1,0 +1,837 @@
+"use client";
+
+/**
+ * Page test : le nouveau site, avec le style et les animations des paramètres partout.
+ * Fond noir pur, barre du haut (constellation + cheval + ODYSSÉE), menu numéroté,
+ * Accueil, Qui suis-je, Projets (tuiles de mission + intérieur), recherche, vrais Paramètres.
+ * Un petit sélecteur permet d'essayer les 6 polices proposées en direct.
+ */
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Icone, type NomIcone } from "@/components/Icone";
+import { LocaleProvider } from "@/components/Locale";
+import { LogoOdyssee } from "@/components/LogoOdyssee";
+import { Parametres } from "@/components/Parametres";
+
+type Vue = "accueil" | "qui" | "projets";
+type Media = { id: string; kind: "photo" | "video" | "audio" | "fichier"; nom: string };
+type Etoile = { id: string; titre: string; texte: string; auteur: string; date: string; genre?: "citation" | "projet"; medias: Media[]; coeurs?: number };
+type Rubrique = "citations" | "projets" | "evenements";
+
+const OUVERTURE = new Date("2026-12-01T00:00:00+01:00").getTime();
+const DEBUT_ENDU = new Date("2026-07-23T00:00:00+02:00").getTime();
+const AUBE_DEBUT = new Date("2026-12-03T00:00:00+01:00").getTime();
+const AUBE_FIN = new Date("2027-06-03T00:00:00+02:00").getTime();
+const CARS = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#/%&";
+const deux = (n: number) => String(n).padStart(2, "0");
+const POLICES = ["Rajdhani", "Chakra Petch", "Oxanium", "Barlow Condensed", "Saira Semi Condensed", "Space Grotesk"];
+
+/* ---------- sons ---------- */
+let audio: AudioContext | null = null;
+function bip(f = 1400, d = 0.035, v = 0.03, type: OscillatorType = "square") {
+  try {
+    if (localStorage.getItem("tac-sons") === "off") return;
+    audio ??= new AudioContext();
+    const o = audio.createOscillator();
+    const g = audio.createGain();
+    o.type = type;
+    o.frequency.value = f;
+    g.gain.setValueAtTime(v, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + d);
+    o.connect(g).connect(audio.destination);
+    o.start();
+    o.stop(audio.currentTime + d);
+  } catch {}
+}
+const sonSurvol = () => bip(1800, 0.02, 0.018);
+const sonValide = () => {
+  bip(900, 0.05, 0.035);
+  setTimeout(() => bip(1500, 0.06, 0.03), 55);
+};
+const sonRetour = () => bip(700, 0.05, 0.03);
+
+/* ---------- outils ---------- */
+function useMaintenant() {
+  const [t, setT] = useState<number | null>(null);
+  useEffect(() => {
+    const maj = () => setT(Date.now());
+    maj();
+    const id = setInterval(maj, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return t;
+}
+function decompte(t: number | null, cible: number) {
+  const r = Math.max(0, cible - (t ?? cible));
+  const s = Math.floor(r / 1000);
+  return { j: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60, fini: t != null && r <= 0 };
+}
+
+function Decode({ texte, delai = 0, duree = 700 }: { texte: string; delai?: number; duree?: number }) {
+  const [aff, setAff] = useState(() => texte.replace(/[^\s]/g, " "));
+  useEffect(() => {
+    let raf = 0;
+    const debut = performance.now() + delai;
+    const pas = (n: number) => {
+      const p = Math.min(1, Math.max(0, (n - debut) / duree));
+      setAff([...texte].map((c, i) => (c === " " || c === "\n" || i / texte.length < p ? c : p > 0 && Math.random() < 0.9 ? CARS[Math.floor(Math.random() * CARS.length)] : " ")).join(""));
+      if (p < 1) raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [texte, delai, duree]);
+  return <>{aff}</>;
+}
+
+/** Nombre qui se décode puis compte jusqu'à sa valeur. */
+function Compteur({ valeur, delai = 0 }: { valeur: number; delai?: number }) {
+  const [v, setV] = useState<string>("··");
+  useEffect(() => {
+    let raf = 0;
+    const debut = performance.now() + delai;
+    const pas = (n: number) => {
+      const e = n - debut;
+      if (e < 0) setV("··");
+      else if (e < 220) setV(CARS[Math.floor(Math.random() * 26)]! + CARS[26 + Math.floor(Math.random() * 10)]!);
+      else {
+        const p = Math.min(1, (e - 220) / 600);
+        setV(deux(Math.round(valeur * (1 - Math.pow(1 - p, 3)))));
+        if (p >= 1) return;
+      }
+      raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [valeur, delai]);
+  return <>{v}</>;
+}
+
+function Coins() {
+  return (
+    <>
+      <i className="cn tl" />
+      <i className="cn tr" />
+      <i className="cn bl" />
+      <i className="cn br" />
+    </>
+  );
+}
+function Tq({ i, children, className = "" }: { i: number; children: ReactNode; className?: string }) {
+  return (
+    <div className={`tq ${className}`} style={{ "--i": i } as CSSProperties}>
+      {children}
+    </div>
+  );
+}
+function Segments({ p, n = 24, delai = 0 }: { p: number; n?: number; delai?: number }) {
+  return (
+    <div className="segs">
+      {Array.from({ length: n }, (_, k) => (
+        <i key={k} className={k < Math.round(p * n) ? "on" : ""} style={{ animationDelay: `${delai + k * 22}ms` }} />
+      ))}
+    </div>
+  );
+}
+
+const RONDS: [number, number][] = [
+  [148.7, 17.6],
+  [112.1, 80.8],
+  [128.0, 89.6],
+  [116.8, 91.6],
+  [27.2, 75.0],
+  [29.2, 90.4],
+  [70.6, 136.2],
+  [123.8, 171.7],
+  [168.1, 176.5],
+];
+function Constellation() {
+  return (
+    <svg className="n-constel" viewBox="0 0 200 200" aria-hidden="true">
+      <path d={`M${RONDS.map(([x, y]) => `${x} ${y}`).join(" L")}`} pathLength={1} fill="none" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" />
+      {RONDS.map(([x, y], k) => (
+        <circle key={k} cx={x} cy={y} r="11" fill="currentColor" style={{ "--k": k } as CSSProperties} />
+      ))}
+    </svg>
+  );
+}
+
+const GLYPHES: Record<string, string[]> = {
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  J: ["00111", "00010", "00010", "00010", "00010", "10010", "01100"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  ".": ["0", "0", "0", "0", "0", "0", "1"],
+  " ": ["00", "00", "00", "00", "00", "00", "00"],
+};
+function Matrice() {
+  let n = 0;
+  return (
+    <div className="matrice" aria-hidden="true">
+      {["FRANCK J.H", "CHRISTEN"].map((l) => (
+        <div key={l} className="matrice-ligne">
+          {[...l].map((c, k) => {
+            const g = GLYPHES[c] ?? GLYPHES[" "]!;
+            return (
+              <div key={k} className="matrice-lettre" style={{ gridTemplateColumns: `repeat(${g[0]!.length}, 1fr)` }}>
+                {g.flatMap((r, y) => [...r].map((b, x) => <i key={`${x}-${y}`} className={b === "1" ? "on" : ""} style={b === "1" ? ({ "--d": n++ } as CSSProperties) : undefined} />))}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Une ligne numérotée, comme dans les paramètres. */
+function Ligne({
+  n,
+  icone,
+  children,
+  valeur,
+  sel,
+  onClick,
+  onEnter,
+  fermer,
+  className = "",
+}: {
+  n: number;
+  icone?: NomIcone;
+  children: ReactNode;
+  valeur?: ReactNode;
+  sel?: boolean;
+  onClick?: () => void;
+  onEnter?: () => void;
+  fermer?: boolean;
+  className?: string;
+}) {
+  return (
+    <button type="button" className={`p2-ligne${sel ? " sel" : ""} ${className}`} onMouseEnter={onEnter} onFocus={onEnter} onClick={onClick}>
+      <b className="p2-num">{deux(n)}</b>
+      {icone ? (
+        <span className="p2-tuile">
+          <Icone nom={icone} />
+        </span>
+      ) : null}
+      <span className="p2-nom">{children}</span>
+      {valeur !== undefined ? <em>{valeur}</em> : null}
+      <span className="p2-chev">
+        <Icone nom={fermer ? "close" : "chevron_right"} />
+      </span>
+      <Coins />
+    </button>
+  );
+}
+
+/* ---------- page ---------- */
+
+export function Nouveau() {
+  return (
+    <LocaleProvider>
+      <Site />
+    </LocaleProvider>
+  );
+}
+
+function Site() {
+  const t = useMaintenant();
+  const [pret, setPret] = useState(false);
+  const [charge, setCharge] = useState(0);
+  const [vue, setVue] = useState<Vue>("accueil");
+  const [glitch, setGlitch] = useState(0);
+  const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
+  const [rubrique, setRubrique] = useState<Rubrique | null>(null);
+  const [recherche, setRecherche] = useState(false);
+  const [police, setPolice] = useState(0);
+  const [album, setAlbum] = useState<number | null>(null);
+
+  useEffect(() => {
+    try {
+      const p = Number(localStorage.getItem("nouveau-police"));
+      // Lu après l'affichage (la page est préparée à l'avance sans connaître ce choix).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (p >= 0 && p < POLICES.length) setPolice(p);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    document.body.style.setProperty("--f-titre", `var(--p${police + 1}), "${POLICES[police]}", sans-serif`);
+    try {
+      localStorage.setItem("nouveau-police", String(police));
+    } catch {}
+  }, [police]);
+
+  useEffect(() => {
+    const debut = performance.now();
+    let raf = 0;
+    const pas = (n: number) => {
+      const p = Math.min(1, (n - debut) / 1100);
+      setCharge(p);
+      if (p < 1) raf = requestAnimationFrame(pas);
+      else setTimeout(() => setPret(true), 200);
+    };
+    raf = requestAnimationFrame(pas);
+    let vivant = true;
+    fetch("/api/etoiles")
+      .then((r) => r.json())
+      .then((d: { etoiles?: Etoile[] }) => {
+        if (vivant) setEtoiles(d.etoiles ?? []);
+      })
+      .catch(() => {
+        if (vivant) setEtoiles([]);
+      });
+    return () => {
+      vivant = false;
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const aller = useCallback((v: Vue, r: Rubrique | null = null) => {
+    sonValide();
+    setGlitch((g) => g + 1);
+    setVue(v);
+    setRubrique(r);
+    window.scrollTo({ top: 0 });
+  }, []);
+  const retour = useCallback(() => {
+    sonRetour();
+    setGlitch((g) => g + 1);
+    if (rubrique) setRubrique(null);
+    else setVue("accueil");
+  }, [rubrique]);
+
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if (document.documentElement.classList.contains("param-ouvert") || recherche || album !== null) return;
+      if (e.key === "Escape" && vue !== "accueil") retour();
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [retour, vue, recherche, album]);
+
+  const citations = useMemo(() => (etoiles ?? []).filter((e) => e.genre !== "projet" && e.texte?.trim()), [etoiles]);
+  const projets = useMemo(() => (etoiles ?? []).filter((e) => e.genre === "projet"), [etoiles]);
+  const d = t ? new Date(t) : null;
+  const heure = d ? `${deux(d.getHours())}:${deux(d.getMinutes())}:${deux(d.getSeconds())}` : "--:--:--";
+  const MENU: { id: Vue; nom: string; icone: NomIcone }[] = [
+    { id: "accueil", nom: "ACCUEIL", icone: "home" },
+    { id: "qui", nom: "QUI SUIS-JE", icone: "person" },
+    { id: "projets", nom: "PROJETS", icone: "star" },
+  ];
+
+  return (
+    <div className={`n${pret ? " pret" : ""}`}>
+      <div className={`n-boot${pret ? " fini" : ""}`} aria-hidden={pret}>
+        <div className="n-boot-logo">
+          <LogoOdyssee />
+        </div>
+        <div className="n-boot-txt">{charge < 0.5 ? "INITIALISATION…" : charge < 1 ? "CONNEXION…" : "CONNEXION ÉTABLIE"}</div>
+        <Segments p={charge} n={24} />
+      </div>
+
+      <header className="n-haut">
+        <button type="button" className="n-marque" onClick={() => aller("accueil")} aria-label="Accueil">
+          <Constellation />
+          <i className="n-sep" />
+          <LogoOdyssee />
+          <b>ODYSSÉE</b>
+        </button>
+        <span className="cache-mobile">ODYSSÉE 0.1</span>
+        <span className="cache-mobile">CONNEXION ÉTABLIE</span>
+        <span className="ambre">{heure}</span>
+        <span className="droite cache-mobile">FJHC // H.M.B.K.</span>
+      </header>
+
+      <nav className="n-nav" aria-label="Menu">
+        {MENU.map((m, k) => (
+          <button key={m.id} type="button" className={vue === m.id ? "on" : ""} style={{ "--i": k } as CSSProperties} onMouseEnter={sonSurvol} onClick={() => aller(m.id)}>
+            <b>{deux(k + 1)}</b>
+            {m.nom}
+          </button>
+        ))}
+        <span className="n-nav-outils">
+          <button type="button" className="n-ic" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
+            <Icone nom="search" />
+          </button>
+          <Parametres />
+        </span>
+      </nav>
+
+      {pret ? (
+        <main className="n-scene" key={`${vue}-${rubrique ?? ""}`}>
+          {vue === "accueil" ? <Accueil t={t} citations={citations.length} projets={projets.length} aller={aller} /> : null}
+          {vue === "qui" ? <Qui ouvrirAlbum={(k) => (sonValide(), setAlbum(k))} /> : null}
+          {vue === "projets" && !rubrique ? <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} ouvrir={(r) => aller("projets", r)} /> : null}
+          {vue === "projets" && rubrique ? <Interieur t={t} rubrique={rubrique} citations={citations} projets={projets} retour={retour} /> : null}
+        </main>
+      ) : null}
+
+      <footer className="n-bas">
+        <span className="cache-mobile">[ÉCHAP] RETOUR</span>
+        <span className="cache-mobile">© FRANCK J.H. CHRISTEN</span>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- autre disposition racine */}
+        <a href="/" className="droite">
+          SITE ACTUEL ↗
+        </a>
+      </footer>
+
+      <nav className="n-barre" aria-label="Menu">
+        {MENU.map((m) => (
+          <button key={m.id} type="button" className={vue === m.id ? "on" : ""} aria-label={m.nom} onClick={() => aller(m.id)}>
+            <Icone nom={m.icone} />
+          </button>
+        ))}
+        <button type="button" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
+          <Icone nom="search" />
+        </button>
+      </nav>
+
+      <div className="n-police">
+        <small>{"// POLICE"}</small>
+        {POLICES.map((p, k) => (
+          <button key={p} type="button" className={k === police ? "on" : ""} title={p} onClick={() => (sonSurvol(), setPolice(k))}>
+            {deux(k + 1)}
+          </button>
+        ))}
+        <span>{POLICES[police]}</span>
+      </div>
+
+      {recherche ? <Recherche etoiles={etoiles ?? []} fermer={() => (sonRetour(), setRecherche(false))} aller={(r) => (setRecherche(false), aller("projets", r))} /> : null}
+      {album !== null ? <Visionneuse k={album} fermer={() => (sonRetour(), setAlbum(null))} /> : null}
+
+      <div className="n-glitch" key={glitch} />
+    </div>
+  );
+}
+
+/* ---------- Accueil ---------- */
+
+function Accueil({ t, citations, projets, aller }: { t: number | null; citations: number; projets: number; aller: (v: Vue, r?: Rubrique | null) => void }) {
+  const [sel, setSel] = useState(0);
+  const c = decompte(t, OUVERTURE);
+  const p = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
+  const lignes: { nom: string; icone: NomIcone; valeur?: string; faire: () => void }[] = [
+    { nom: "QUI SUIS-JE", icone: "person", faire: () => aller("qui") },
+    { nom: "PROJETS", icone: "star", valeur: deux(projets), faire: () => aller("projets", "projets") },
+    { nom: "CITATIONS", icone: "format_quote", valeur: deux(citations), faire: () => aller("projets", "citations") },
+    { nom: "INSTAGRAM", icone: "photo_camera", faire: () => window.open("https://instagram.com/fjhchristenhmbk", "_blank", "noopener") },
+  ];
+  return (
+    <div className="n-acc">
+      <div className="n-acc-g">
+        <small>
+          <Decode texte="// IDENTIFIÉ" duree={500} />
+        </small>
+        <h1 className="n-nom">
+          <Decode texte="FRANCK J.H." delai={120} />
+          <br />
+          <Decode texte="CHRISTEN" delai={260} />
+          <span>
+            <Decode texte="H.M.B.K." delai={420} />
+          </span>
+        </h1>
+        <p className="n-mono">
+          <Decode texte="POLYMATHE · NÉ EN 2007 · FRANCE" delai={600} />
+        </p>
+        <Matrice />
+      </div>
+      <div className="n-acc-d">
+        <div className="p2-liste">
+          {lignes.map((l, k) => (
+            <Tq key={l.nom} i={k}>
+              <Ligne
+                n={k + 1}
+                icone={l.icone}
+                valeur={l.valeur}
+                sel={sel === k}
+                onEnter={() => {
+                  if (sel !== k) sonSurvol();
+                  setSel(k);
+                }}
+                onClick={l.faire}
+              >
+                {l.nom}
+              </Ligne>
+            </Tq>
+          ))}
+        </div>
+        <Tq i={4}>
+          <button type="button" className="pt pt-eve large" onClick={() => aller("projets", "evenements")}>
+            <div className="pt-fond" />
+            <small>{"// OPÉRATION EN COURS"}</small>
+            <b>ENDURREISEN</b>
+            <em className="cpt">
+              {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
+            </em>
+            <Segments p={p} />
+            <Coins />
+          </button>
+        </Tq>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Qui suis-je ---------- */
+
+const ALBUM = [
+  { kind: "video" as const, src: "/media/franck.mp4", poster: "/media/franck-poster.jpg", nom: "VIDÉO" },
+  { kind: "photo" as const, src: "/media/franck.jpg", poster: "/media/franck.jpg", nom: "PHOTO" },
+];
+const FICHE: [string, string][] = [
+  ["NOM", "FRANCK J.H. CHRISTEN H.M.B.K."],
+  ["NAISSANCE", "2007 · FRANCE"],
+  ["STATUT", "POLYMATHE"],
+  ["PROFIL", "TTHPI · TDAH"],
+  ["LANGUES", "FRANÇAIS · TAVISSIV"],
+];
+
+function Qui({ ouvrirAlbum }: { ouvrirAlbum: (k: number) => void }) {
+  return (
+    <div className="n-page">
+      <Titre sous="// DOSSIER 01">QUI SUIS-JE</Titre>
+      <div className="n-qui">
+        <Tq i={0} className="n-photo">
+          <button type="button" onClick={() => ouvrirAlbum(1)} aria-label="Ouvrir la photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/media/franck.jpg" alt="" />
+            <div className="viseur" />
+            <span>CIBLE VERROUILLÉE</span>
+          </button>
+          <Coins />
+        </Tq>
+        <div className="p2-liste n-fiche">
+          {FICHE.map(([a, b], k) => (
+            <Tq key={a} i={k + 1}>
+              <div className="p2-ligne fixe">
+                <b className="p2-num">{deux(k + 1)}</b>
+                <span className="n-champ">{a}</span>
+                <span className="n-valeur">
+                  <Decode texte={b} delai={250 + k * 90} duree={500} />
+                </span>
+              </div>
+            </Tq>
+          ))}
+          <Tq i={7} className="n-album">
+            {ALBUM.map((m, k) => (
+              <button key={m.src} type="button" className="n-vign" onClick={() => ouvrirAlbum(k)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={m.poster} alt="" />
+                <span>
+                  {m.kind === "video" ? "▶ " : ""}
+                  {m.nom} · {deux(k + 1)}
+                </span>
+                <Coins />
+              </button>
+            ))}
+          </Tq>
+        </div>
+        <Tq i={6} className="p2-panneau n-rapport">
+          <Coins />
+          <small>{"// RAPPORT"}</small>
+          <p className="p2-texte">Bonjour, je m’appelle Franck J. H. Christen H. M. B. K. Je suis né en 2007 en France.</p>
+          <p className="p2-texte">Je suis né différent : TTHPI, profondément et exceptionnellement surdoué, et TDAH.</p>
+          <p className="p2-texte">Depuis toujours, je me suis intéressé à ce que personne ne voulait ou ne pouvait regarder.</p>
+          <p className="p2-decode">
+            <Decode texte="CE SITE SERT À PUBLIER CE QUE JE FAIS, POUR CEUX QUI VEULENT COMPRENDRE CE QUE FAIT UN POLYMATHE AU QUOTIDIEN." delai={900} duree={1800} />
+            <b>▌</b>
+          </p>
+        </Tq>
+      </div>
+    </div>
+  );
+}
+
+function Titre({ sous, children }: { sous: string; children: string }) {
+  return (
+    <div className="ptac-titre n-titre">
+      <small>
+        <Decode texte={sous} duree={450} />
+      </small>
+      <h2>
+        <Decode texte={children} delai={80} duree={550} />
+      </h2>
+    </div>
+  );
+}
+
+/* ---------- Projets : tuiles ---------- */
+
+function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; citations: Etoile[]; projets: Etoile[]; charge: boolean; ouvrir: (r: Rubrique) => void }) {
+  const [face, setFace] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setFace((f) => f + 1), 5000);
+    return () => clearInterval(id);
+  }, []);
+  const c = decompte(t, OUVERTURE);
+  const pE = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
+  const finis = t == null ? 0 : [OUVERTURE, AUBE_FIN].filter((f) => t >= f).length;
+  const derCit = citations[0];
+  const derPro = projets[0];
+  return (
+    <div className="n-page">
+      <Titre sous="// SÉLECTION DE MISSION">PROJETS</Titre>
+      {charge ? <p className="p2-decode">RÉCEPTION…</p> : null}
+      <div className="pts">
+        <Tq i={0}>
+          <button type="button" className={`pt pt-cit${face % 3 === 1 ? " retourne" : ""}`} onClick={() => ouvrir("citations")} onMouseEnter={sonSurvol}>
+            <div className="pt-fond" />
+            <div className="pt-int">
+              <div className="pt-face">
+                <small>{"// INTERCEPTIONS"}</small>
+                <div className="pt-n">
+                  <Compteur valeur={citations.length} delai={250} />
+                </div>
+                <b>CITATIONS</b>
+              </div>
+              <div className="pt-face dos">
+                <small>{"// DERNIÈRE"}</small>
+                <q>{derCit ? derCit.texte : "—"}</q>
+              </div>
+            </div>
+            <Segments p={citations.length ? 1 : 0} delai={500} />
+            <Coins />
+          </button>
+        </Tq>
+        <Tq i={1}>
+          <button type="button" className={`pt pt-pro${face % 3 === 2 ? " retourne" : ""}`} onClick={() => ouvrir("projets")} onMouseEnter={sonSurvol}>
+            <div className="pt-fond" />
+            <div className="pt-int">
+              <div className="pt-face">
+                <small>{"// MISSIONS"}</small>
+                <div className="pt-n">
+                  <Compteur valeur={projets.length} delai={350} />
+                </div>
+                <b>PROJETS</b>
+              </div>
+              <div className="pt-face dos">
+                <small>{"// DERNIER"}</small>
+                <q>{derPro ? derPro.titre : "—"}</q>
+              </div>
+            </div>
+            <Segments p={Math.min(1, projets.length / 24)} delai={600} />
+            <Coins />
+          </button>
+        </Tq>
+        <Tq i={2} className="large">
+          <button type="button" className="pt pt-eve large" onClick={() => ouvrir("evenements")} onMouseEnter={sonSurvol}>
+            <div className="pt-fond" />
+            <small>{"// OPÉRATIONS"}</small>
+            <div className="pt-ligne">
+              <div className="pt-n">
+                <Compteur valeur={finis} delai={450} />
+              </div>
+              <b>ÉVÉNEMENTS</b>
+            </div>
+            <em className="cpt">
+              ENDURREISEN · {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
+            </em>
+            <Segments p={pE} delai={700} />
+            <Coins />
+          </button>
+        </Tq>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Projets : intérieur ---------- */
+
+type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string } };
+
+function Interieur({ t, rubrique, citations, projets, retour }: { t: number | null; rubrique: Rubrique; citations: Etoile[]; projets: Etoile[]; retour: () => void }) {
+  const [sel, setSel] = useState(0);
+  const [ouvert, setOuvert] = useState<number | null>(null);
+  const elements: Element[] =
+    rubrique === "citations"
+      ? citations.map((c) => ({ id: c.id, titre: c.texte, texte: c.texte, date: c.date, auteur: c.auteur, medias: c.medias, coeurs: c.coeurs }))
+      : rubrique === "projets"
+        ? projets.map((p) => ({ id: p.id, titre: p.titre || p.texte, texte: p.texte, date: p.date, medias: p.medias, coeurs: p.coeurs }))
+        : [
+            { id: "endu", titre: "ENDURREISEN", texte: "Le compte à rebours de l’ouverture des projets.", date: "01.12.2026", compte: { cible: OUVERTURE, avant: "OUVERTURE DANS" } },
+            {
+              id: "aube",
+              titre: "L’AUBE",
+              texte: "Six mois, du 3 décembre 2026 au 3 juin 2027.",
+              date: "03.12.2026 → 03.06.2027",
+              compte: t != null && t >= AUBE_DEBUT ? { cible: AUBE_FIN, avant: "FIN DANS" } : { cible: AUBE_DEBUT, avant: "DÉBUT DANS" },
+            },
+          ];
+  const titre = rubrique === "citations" ? "CITATIONS" : rubrique === "projets" ? "PROJETS" : "ÉVÉNEMENTS";
+  const icone: NomIcone = rubrique === "citations" ? "format_quote" : rubrique === "projets" ? "star" : "schedule";
+  const actif = ouvert ?? sel;
+  const e = elements[actif];
+
+  return (
+    <div className="n-page">
+      <button type="button" className="n-retour" onClick={retour}>
+        <Icone nom="arrow_back" /> PROJETS
+      </button>
+      <Titre sous={`// ${deux(elements.length)} ${rubrique === "citations" ? "INTERCEPTIONS" : rubrique === "projets" ? "MISSIONS" : "OPÉRATIONS"}`}>{titre}</Titre>
+      <div className={`n-int${ouvert !== null ? " ouvert" : ""}`}>
+        <div className="p2-liste">
+          {elements.length === 0 ? <p className="p2-decode">AUCUN ÉLÉMENT POUR L’INSTANT.</p> : null}
+          {elements.map((x, k) => (
+            <Tq key={x.id} i={k}>
+              <Ligne
+                n={k + 1}
+                icone={icone}
+                sel={actif === k}
+                valeur={x.date ? x.date.slice(0, 10) : undefined}
+                onEnter={() => {
+                  if (ouvert === null && sel !== k) sonSurvol();
+                  if (ouvert === null) setSel(k);
+                }}
+                onClick={() => {
+                  sonValide();
+                  setSel(k);
+                  setOuvert(ouvert === k ? null : k);
+                }}
+                className={`n-l${ouvert !== null && ouvert !== k ? " estompe" : ""}`}
+              >
+                {x.titre.length > 60 ? `${x.titre.slice(0, 58)}…` : x.titre}
+              </Ligne>
+            </Tq>
+          ))}
+        </div>
+        {e ? (
+          <div className="p2-panneau n-detail" key={`${e.id}-${ouvert === null ? "a" : "o"}`}>
+            <Coins />
+            <small>{`// ${deux(actif + 1)} · ${titre}`}</small>
+            {rubrique === "citations" ? (
+              <blockquote className="n-cit">« {e.texte} »</blockquote>
+            ) : (
+              <h3>
+                <Decode texte={e.titre} duree={500} />
+              </h3>
+            )}
+            {e.medias?.length ? (
+              <div className="n-medias">
+                {e.medias.slice(0, 4).map((m) =>
+                  m.kind === "photo" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={m.id} src={`/api/media/${m.id}`} alt="" />
+                  ) : m.kind === "video" ? (
+                    <video key={m.id} src={`/api/media/${m.id}`} controls playsInline />
+                  ) : m.kind === "audio" ? (
+                    <audio key={m.id} src={`/api/media/${m.id}`} controls />
+                  ) : (
+                    <a key={m.id} href={`/api/media/${m.id}`} className="n-fichier">
+                      <Icone nom="edit" /> {m.nom}
+                    </a>
+                  ),
+                )}
+              </div>
+            ) : null}
+            {rubrique !== "citations" && e.texte && e.texte !== e.titre ? <p className="p2-texte">{e.texte}</p> : null}
+            {e.compte ? (
+              <p className="n-compte">
+                {e.compte.avant}{" "}
+                {(() => {
+                  const c = decompte(t, e.compte.cible);
+                  return c.fini ? "TERMINÉ" : `${deux(c.j)}J ${deux(c.h)}H ${deux(c.m)}M ${deux(c.s)}S`;
+                })()}
+              </p>
+            ) : null}
+            <div className="n-meta">
+              {e.auteur ? (
+                <span>
+                  <small>AUTEUR</small>
+                  {e.auteur}
+                </span>
+              ) : null}
+              {e.date ? (
+                <span>
+                  <small>DATE</small>
+                  {e.date}
+                </span>
+              ) : null}
+              {e.medias?.length ? (
+                <span>
+                  <small>MÉDIAS</small>
+                  {e.medias.length}
+                </span>
+              ) : null}
+              {typeof e.coeurs === "number" ? (
+                <span>
+                  <small>♥</small>
+                  {e.coeurs}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Recherche ---------- */
+
+function Recherche({ etoiles, fermer, aller }: { etoiles: Etoile[]; fermer: () => void; aller: (r: Rubrique) => void }) {
+  const [q, setQ] = useState("");
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const res = q.trim() ? etoiles.filter((e) => norm(`${e.titre} ${e.texte} ${e.auteur}`).includes(norm(q))).slice(0, 12) : [];
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if (e.key === "Escape") fermer();
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [fermer]);
+  return (
+    <div className="n-rech" role="dialog" aria-label="Recherche">
+      <div className="n-rech-in">
+        <div className="ptac-titre n-titre">
+          <small>{"// RECHERCHE"}</small>
+          <h2>RECHERCHER</h2>
+        </div>
+        <div className="n-champ-r">
+          <Icone nom="search" />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="UN MOT, UN PROJET, UNE CITATION…" />
+          <button type="button" onClick={fermer} aria-label="Fermer">
+            <Icone nom="close" />
+          </button>
+        </div>
+        <div className="p2-liste">
+          {res.map((e, k) => (
+            <Tq key={e.id} i={k}>
+              <Ligne n={k + 1} icone={e.genre === "projet" ? "star" : "format_quote"} valeur={e.genre === "projet" ? "PROJET" : "CITATION"} onClick={() => aller(e.genre === "projet" ? "projets" : "citations")}>
+                {(e.titre || e.texte).slice(0, 60)}
+              </Ligne>
+            </Tq>
+          ))}
+          {q.trim() && res.length === 0 ? <p className="p2-decode">AUCUN RÉSULTAT.</p> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Visionneuse({ k, fermer }: { k: number; fermer: () => void }) {
+  const m = ALBUM[k]!;
+  useEffect(() => {
+    const f = (e: KeyboardEvent) => {
+      if (e.key === "Escape") fermer();
+    };
+    window.addEventListener("keydown", f);
+    return () => window.removeEventListener("keydown", f);
+  }, [fermer]);
+  return (
+    <div className="n-vision" onClick={fermer}>
+      {m.kind === "video" ? (
+        <video src={m.src} poster={m.poster} autoPlay loop playsInline muted />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={m.src} alt="" />
+      )}
+      <span>[TOUCHER] FERMER</span>
+    </div>
+  );
+}
