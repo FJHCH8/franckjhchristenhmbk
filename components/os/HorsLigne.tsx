@@ -61,7 +61,7 @@ export function AppSharkobank() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/aakanos/sharkobank.png" alt="" />
         <div>
-          <small>{"// BONJOUR FRANCK"}</small>
+          <small>{"// BONJOUR CASTO"}</small>
           <b>SHARKOBANK</b>
           <span>COMPTE COURANT · N° FR76 •••• 2007</span>
         </div>
@@ -138,6 +138,41 @@ export function AppSharkobank() {
           <p className="rouge">Votre forfait Connard ne comprend pas la connexion à internet.</p>
         </Dialogue>
       ) : null}
+    </div>
+  );
+}
+
+/** Demande au téléphone de fermer l'appli en cours. */
+const fermerAppli = () => window.dispatchEvent(new Event("aakanos-fermer-appli"));
+
+/* ---------------- Appareil photo (cassé) ---------------- */
+
+export function AppAppareilPhoto() {
+  return (
+    <div className="hl photo">
+      <div className="photo-viseur" aria-hidden="true">
+        <i className="photo-bruit" />
+        <span className="photo-rec">● 00:00</span>
+      </div>
+      <div className="photo-barre" aria-hidden="true">
+        <i className="photo-vignette" />
+        <i className="photo-declencheur" />
+        <i className="photo-mode" />
+      </div>
+      <div className="dlg-fond hl-dlg">
+        <div className="dlg" role="dialog" aria-modal="true">
+          <div className="dlg-titre">Appareil photo</div>
+          <div className="st-dlg-texte">
+            <p>Impossible de se connecter à l’appareil photo.</p>
+            <p className="rouge">L’appareil photo est cassé. Aucune image ne sort du capteur : faites réparer votre téléphone dans un centre agréé.</p>
+          </div>
+          <div className="jb-boutons-dlg">
+            <button type="button" onClick={fermerAppli}>
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -219,12 +254,15 @@ export function AppPeeporn() {
       {age === "non" ? (
         <div className="pp-voile">
           <div className="pp-miroir pp-non">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/aakanos/peeporn-non.png" alt="" />
             <p>
-              Retourne aider Gypsy le dauphin à nager.
-              <b>Allez, ouste.</b>
+              Malheureusement, tu ne vas pas pouvoir entrer sur l’application, ma puce.
+              <b>Retourne téter ton biberon et laisse les grandes grenouilles tranquilles.</b>
             </p>
-            <button type="button" className="jb-bouton" onClick={() => setAge(null)}>
-              Retour
+            {/* pas le choix : OK, et l'appli se ferme */}
+            <button type="button" className="jb-bouton" onClick={fermerAppli}>
+              OK
             </button>
           </div>
         </div>

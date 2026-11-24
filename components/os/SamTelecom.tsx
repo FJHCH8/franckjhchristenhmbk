@@ -32,7 +32,7 @@ const DIALOGUES: Record<Exclude<Dialogue, null>, { titre: string; texte: string;
 
 function salut() {
   const h = new Date().getHours();
-  return h >= 22 || h < 6 ? "BONNE NUIT FRANCK" : h >= 18 ? "BONSOIR FRANCK" : "BONJOUR FRANCK";
+  return h >= 22 || h < 6 ? "BONNE NUIT CASTO" : h >= 18 ? "BONSOIR CASTO" : "BONJOUR CASTO";
 }
 
 function Anneau() {
@@ -73,7 +73,7 @@ const Coins = () => (
 export function AppSamTelecom() {
   const [dialogue, setDialogue] = useState<Dialogue>(null);
   const [essai, setEssai] = useState(false);
-  const [bonjour, setBonjour] = useState("BONSOIR FRANCK");
+  const [bonjour, setBonjour] = useState("BONSOIR CASTO");
   useEffect(() => {
     const id = window.setTimeout(() => setBonjour(salut()), 0);
     return () => window.clearTimeout(id);
@@ -93,7 +93,7 @@ export function AppSamTelecom() {
         <div className="st-titre">
           <small>{`// ${bonjour}`}</small>
           <b>SAM-TELECOM</b>
-          <span>FRANCK · +0-2007 06 45</span>
+          <span>CASTO · +0-2007 06 45</span>
         </div>
       </div>
 

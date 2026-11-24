@@ -25,11 +25,11 @@ import { AppPulpus, LogoPulpus } from "./Pulpus";
 import { AppSamTelecom } from "./SamTelecom";
 import { useLocale, type LocaleName } from "@/components/Locale";
 import { dtmf, prechargerSons, son, tonaliteRetour } from "./sonsAndroid";
-import { AppPeeporn, AppSharkobank } from "./HorsLigne";
+import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -44,14 +44,15 @@ const APPLIS: Appli[] = [
   { id: "citations", nom: "Notes" },
   { id: "messages", nom: "Messages" },
   { id: "nounou", nom: "Nounou" },
-  { id: "instagram", nom: "Instagram", externe: "https://instagram.com/fjhchristenhmbk" },
+  { id: "appareil", nom: "Appareil photo" },
   { id: "endurreisen", nom: "Endurreisen" },
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
-const PAGE1: IdAppli[] = ["projets", "album", "citations", "contacts", "endurreisen", "instagram", "pulpus", "reglages", "samtelecom"];
-const PAGE2: IdAppli[] = ["sharkobank", "peeporn"];
-const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "contacts"];
+// L'accueil ne garde que la barre du bas : toutes les applis sont dans le tiroir.
+const PAGE1: IdAppli[] = [];
+const PAGE2: IdAppli[] = [];
+const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "appareil"];
 
 const CODE = "6458";
 const MAIL = "franckjhchristen@gmail.com";
@@ -161,7 +162,7 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return png("calendar");
     case "messages":
       return png("mms");
-    case "instagram":
+    case "appareil":
       return png("camera");
     case "reglages":
       return png("settings");
@@ -372,6 +373,12 @@ export function OdysseeOS() {
       setFermeture(false);
     }, 375);
   }, []);
+  // Une appli peut se fermer toute seule (Peeporn qui te jette, l'appareil photo cassé…)
+  useEffect(() => {
+    const f = () => fermerFenetre();
+    window.addEventListener("aakanos-fermer-appli", f);
+    return () => window.removeEventListener("aakanos-fermer-appli", f);
+  }, [fermerFenetre]);
 
   const retour = () => {
     if (rideau) return setRideau(false);
@@ -1006,6 +1013,8 @@ function ContenuAppli({
       return <AppSamTelecom />;
     case "sharkobank":
       return <AppSharkobank />;
+    case "appareil":
+      return <AppAppareilPhoto />;
     case "peeporn":
       return <AppPeeporn />;
     case "qui":
@@ -1706,7 +1715,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           ["Système", "AakanOS"],
           ["Version d’Odyssée", "0.2 · 24 novembre 2026"],
           ["Version précédente", "0.1 · 23 novembre 2026"],
-          ["Propriétaire", "Franck J.H. Christen H.M.B.K."],
+          ["Propriétaire", "Casto"],
           ["Navigateur", "Nounou Browser"],
           ["Interface", "inspirée d’Android 4.1 Jelly Bean"],
         ].map(([a, b]) => (
