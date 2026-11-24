@@ -479,12 +479,7 @@ a.app-ligne:active { background: var(--presse); }
 .pulpus-charge i { width: 46px; height: 46px; border-radius: 50%; border: 4px solid rgba(51, 181, 229, .2); border-top-color: #33b5e5; animation: os-tourne .9s linear infinite; }
 .pulpus-hs { flex: 1; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 0 24px; text-align: center; animation: os-fondu .4s both; }
 .pulpus-hs p { margin: 0; font-size: 17px; color: #444; line-height: 1.4; }
-.pulpus-bulle { transform-origin: 66px 62px; animation: pp-bulle 2.4s ease-in-out infinite; }
-@keyframes pp-bulle { 0%, 100% { transform: scale(.4); opacity: .6; } 60% { transform: scale(1.3); opacity: 1; } }
-.pulpus-z { animation: pp-z 2.4s ease-in-out infinite; } .pulpus-z.b { animation-delay: .6s; }
-@keyframes pp-z { 0% { opacity: 0; transform: translateY(6px); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
 .pulpus-reessayer { margin-top: 8px; padding: 10px 22px; border: 1px solid #ccc; background: #fff; color: #33b5e5; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
-/* images fixes : Gypsy qui pleure et le poulpe qui dort ne bougent pas */
-.nounou-plage .larme, .pulpus-bulle, .pulpus-z { animation: none !important; }
-.pulpus-bulle { transform: none; opacity: 1; }
-.pulpus-z { opacity: 1; }
+/* images fixes : Gypsy qui pleure et Pulpüs qui dort ne bougent pas */
+.nounou-plage .larme { animation: none !important; }
+.pulpus-dort { display: block; max-width: 100%; height: auto; }
