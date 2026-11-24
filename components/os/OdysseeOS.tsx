@@ -21,6 +21,9 @@ import {
 import { createPortal } from "react-dom";
 import { AppMail, GardienMail, IconeMail } from "./Mail";
 import { AppMeteo, IconeMeteo } from "./Meteo";
+import { AppFichiers, IconeFichiers } from "./Fichiers";
+import { AppMusique, IconeMusique, NotifMusique, StatutMusique } from "./Musique";
+import { AppDictaphone, IconeDictaphone } from "./Dictaphone";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
@@ -35,11 +38,12 @@ import { AppCalculatrice, AppHorloge } from "./Outils";
 import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
 import { estMuet, sonSynth } from "./sonsSynth";
 import { Demarrage, Dlg, Interrupteur, SousReglage, SystemeCtx, Toasts, Touches, toast, useEtatSysteme, useSysteme, type EcranReglage } from "./Systeme";
+import { creerStore } from "./session";
 import { Bandeau, GardienAlarmes, bloques, contactsPerso, convsPerso, ecrireSession, lireSession, notesPerso, notifier, notifsSup, ouvrirAppli, prendreCible, reinitialiserTelephone, type ContactPerso, type NotePerso } from "./Memoire";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo" | "fichiers" | "musique" | "dictaphone";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -56,6 +60,9 @@ const APPLIS: Appli[] = [
   { id: "nounou", nom: "Nounou" },
   { id: "mail", nom: "E-mail" },
   { id: "meteo", nom: "Météo" },
+  { id: "fichiers", nom: "Fichiers" },
+  { id: "musique", nom: "Musique" },
+  { id: "dictaphone", nom: "Dictaphone" },
   { id: "appareil", nom: "Appareil photo" },
   { id: "endurreisen", nom: "Alarme" },
   { id: "calculatrice", nom: "Calculatrice" },
@@ -101,6 +108,11 @@ const SMS_SAM_TELECOM = [
   "Rappel : votre ligne bénéficie d’un forfait Connard. Il ne comprend ni la connexion à internet ni les appels : seul l’envoi de SMS est inclus. Les appels d’urgence ne sont pas disponibles sur cette ligne, car la fonction a été désactivée ou n’a pas encore été activée. Pour l’activer ou faire évoluer votre forfait, rendez-vous dans votre Espace Client. Sam-Telecom vous souhaite une excellente journée. Ceci est un message automatique, merci de ne pas y répondre.",
 ];
 const REPONSE_CELJO = "Salut mon pote, écoute, je suis grave occupé à refaire ma moto, alors je te répondrai quand je pourrai.";
+// Au 5e message envoyé à Celjo (compté dans la session, même si la conversation est effacée), il craque ; au 6e, il répond une dernière fois et bloque.
+const REPONSE_CELJO_5 = "T’es un grand malade toi à harceler les gens comme ça connard, la prochaine fois que tu m’envoies un message je te jure je te bloque et je baise ta sœur!!!";
+const REPONSE_CELJO_6 = "Ok, tu seras bientôt oncle! Et après peut être même que je viendrais mettre ma carotte dans ta bouche sale connard! En attendant ce joyeux événement je te bloque, je dois repérer ma bécane et préparer mon coup avec ta jolie sœurette.";
+const celjoEnvoyes = creerStore<number>("celjo-envoyes", 0);
+const celjoBloque = creerStore<boolean>("celjo-bloque", false);
 const REPONSE_PACIFICK = "Tu me parles encore après m’avoir dit que j’avais faux ?! Va te faire voir !";
 /** Après combien de réponses la personne bloque la conversation (0 = jamais). */
 const BLOQUE_APRES: Record<Correspondant, number> = { gael: 3, celjo: 0, pacifick: 1, samtelecom: 0 };
@@ -161,6 +173,12 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return <IconeMail taille={taille} />;
     case "meteo":
       return <IconeMeteo taille={taille} />;
+    case "fichiers":
+      return <IconeFichiers taille={taille} />;
+    case "musique":
+      return <IconeMusique taille={taille} />;
+    case "dictaphone":
+      return <IconeDictaphone taille={taille} />;
     case "sharkobank":
       return png("sharkobank");
     case "peeporn":
@@ -336,9 +354,12 @@ export function OdysseeOS() {
     });
     sonSynth("envoye");
     const plus = (f: () => void, ms: number) => minuteurs.current.push(window.setTimeout(f, ms));
-    const reponse = qui === "gael" ? REPONSES_GAEL[rang] : rang === 0 ? (qui === "celjo" ? REPONSE_CELJO : REPONSE_PACIFICK) : undefined;
-    // Celjo ne lit plus rien après sa première réponse.
-    if (qui === "celjo" && rang > 0) return;
+    const nCeljo = qui === "celjo" ? celjoEnvoyes.lire() + 1 : 0;
+    if (qui === "celjo") celjoEnvoyes.ecrire(nCeljo);
+    const reponse =
+      qui === "celjo" ? (nCeljo === 1 ? REPONSE_CELJO : nCeljo === 5 ? REPONSE_CELJO_5 : nCeljo === 6 ? REPONSE_CELJO_6 : undefined) : qui === "gael" ? REPONSES_GAEL[rang] : rang === 0 ? REPONSE_PACIFICK : undefined;
+    // Celjo ne lit que le 1er, le 5e et le 6e message ; après sa réponse au 6e, il vous bloque.
+    if (qui === "celjo" && !reponse) return;
     const vu = (qui === "gael" ? 5000 : 3000) + Math.random() * (qui === "gael" ? 5000 : 3000);
     plus(() => setConvs((c) => ({ ...c, [qui]: c[qui].map((x) => (x.id === id ? { ...x, lu: true } : x)) })), vu);
     if (!reponse) return;
@@ -346,6 +367,7 @@ export function OdysseeOS() {
       setEcrit(qui);
       plus(() => {
         setEcrit(null);
+        if (reponse === REPONSE_CELJO_6) celjoBloque.ecrire(true);
         // Un contact bloqué n'arrive plus jusqu'au téléphone.
         if (bloques.lire().includes(qui)) return;
         setConvs((c) => ({ ...c, [qui]: [...c[qui], { id: Date.now(), de: "lui", texte: reponse, h: heureCourte() }] }));
@@ -627,6 +649,7 @@ export function OdysseeOS() {
             </span>
           ) : null}
           <span className="os-statut-g">
+            {!verrou ? <StatutMusique /> : null}
             {!verrou
               ? notifs.map((n) => (
                   <i key={n.id} className="os-mini">
@@ -874,6 +897,7 @@ export function OdysseeOS() {
                 />
               ) : (
               <div className="os-rideau-liste">
+                <NotifMusique ouvrir={(el) => ouvrir(par("musique"), el)} />
                 {notifsTriees.map((n, i) => (
                   <div key={n.id} className="os-notif-bloc" style={{ animationDelay: `${i * 40}ms` }}>
                     <button className={`os-notif${i === 0 ? " grande" : ""}`} onClick={(e) => ouvrir(n.appli, e.currentTarget)}>
@@ -1252,6 +1276,12 @@ function ContenuAppli({
       return <AppMail />;
     case "meteo":
       return <AppMeteo />;
+    case "fichiers":
+      return <AppFichiers />;
+    case "musique":
+      return <AppMusique />;
+    case "dictaphone":
+      return <AppDictaphone />;
     case "messages":
       return <AppMessages {...gael} />;
     case "nounou":
@@ -1620,6 +1650,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
   const perso = contactsPerso.useValeur();
   const mesConvs = convsPerso.useValeur();
   const bloc = bloques.useValeur();
+  const celjoABloque = celjoBloque.useValeur();
   const [conv, setConv] = useState<string | null>(() => prendreCible("messages") ?? null);
   const [ecrire, setEcrire] = useState(false);
   const [menu, setMenu] = useState<Interlocuteur | null>(null);
@@ -1770,7 +1801,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
   // eslint-disable-next-line @next/next/no-img-element
   const avatar = <img className="msg-avatar" src={x.photo} alt="" />;
   const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
-  const bloque = estCorr(conv) && BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv];
+  const bloque = (estCorr(conv) && BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv]) || (conv === "celjo" && celjoABloque);
   const jaiBloque = bloc.includes(conv);
   const choixBulle = msgs.find((m) => String(m.id) === bulle);
   return (
