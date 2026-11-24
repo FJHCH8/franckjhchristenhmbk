@@ -568,3 +568,50 @@ a.app-ligne:active { background: var(--presse); }
 .hl-ecran p { margin: 0; font-size: 15px; line-height: 1.45; color: #bbb; }
 .hl-ecran p.rouge { color: #ff6b6b; }
 .hl-ecran .jb-bouton { margin-top: 10px; width: auto; min-width: 200px; }
+
+/* ---------- Sharkobank / Peeporn : de vraies interfaces où rien ne charge ---------- */
+.hl { overflow-y: auto; font-family: var(--p2), "Chakra Petch", sans-serif; }
+.sq { display: block; height: 12px; margin: 8px 0; border-radius: 2px; background: linear-gradient(90deg, #1b2229 0%, #2c3843 50%, #1b2229 100%); background-size: 200% 100%; animation: sq-brille 1.1s linear infinite; }
+.sq-grand { height: 34px; width: 70%; } .sq-moyen { width: 45%; } .sq-ligne { width: 80%; } .sq-court { width: 40%; height: 9px; }
+@keyframes sq-brille { to { background-position: -200% 0; } }
+/* Sharkobank */
+.sk { background: linear-gradient(#0b1730 0, #050a14 260px, #000 100%); padding-bottom: 20px; }
+.sk-haut { display: flex; align-items: center; gap: 12px; padding: 16px 14px 18px; background: linear-gradient(120deg, #0d1b33, #123a6a 60%, #0d1b33); border-bottom: 2px solid #d9b44a; }
+.sk-haut img { width: 66px; height: 66px; image-rendering: pixelated; }
+.sk-haut small { display: block; font: 11px var(--f-mono), monospace; letter-spacing: 2px; color: #e8d38a; }
+.sk-haut b { display: block; font-size: 26px; letter-spacing: 2px; background: linear-gradient(100deg, #c9941a, #fff1a8 30%, #c9941a 60%, #fff1a8); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: st-reflet 4s linear infinite; }
+.sk-haut span { font: 10px var(--f-mono), monospace; letter-spacing: 1.2px; color: #9fb3c8; }
+.sk-carte { position: relative; margin: 14px 12px 0; padding: 12px 14px; background: rgba(8, 12, 16, .85); border: 1px solid #1d2a35; }
+.sk-solde { margin: 6px 0 2px; font-size: 34px; font-weight: 700; letter-spacing: 2px; color: #3a4654; } .sk-solde em { font-style: normal; font-size: 22px; }
+.sk-err { margin: 0; font: 12px var(--font-roboto), Roboto, sans-serif; color: #ff6b6b; }
+.sk-bloc { margin: 16px 14px 0; }
+.sk-ops { list-style: none; margin: 6px 0 0; padding: 0; border-top: 1px solid #1d1d1d; }
+.sk-ops li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 6px 2px; border-bottom: 1px solid #1d1d1d; }
+.sk-ops li.vide { display: block; padding-top: 8px; }
+.sk-ops b { display: block; font-size: 14px; font-weight: 600; letter-spacing: .5px; } .sk-ops em { font: 10px var(--f-mono), monospace; font-style: normal; color: #6d7a86; letter-spacing: 1px; }
+.sk-ops strong { font-size: 15px; white-space: nowrap; } .sk-ops .frais strong { color: #ff6b6b; } .sk-ops .ko b, .sk-ops .ko strong { color: #4a5562; }
+.sk-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 16px 12px 0; }
+.sk-actions .jb-bouton { padding: 0 6px; font-size: 14px; }
+.sk-actions .sk-reessai { grid-column: 1 / -1; } .sk-actions .sk-reessai:disabled { color: #8a8a8a; }
+/* Peeporn */
+.pp { background: #0b0716; }
+.pp-haut { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 12px; background: #140c24; border-bottom: 2px solid #ff5a26; }
+.pp-haut img { width: 40px; height: 40px; image-rendering: pixelated; }
+.pp-haut b { flex: 1; font-size: 22px; letter-spacing: 3px; color: #fff; text-shadow: 2px 2px 0 #c4381a; }
+.pp-rub { display: flex; gap: 6px; padding: 10px 10px 6px; overflow-x: auto; scrollbar-width: none; }
+.pp-rub button { flex: none; padding: 6px 12px; border: 1px solid #3a2a55; border-radius: 2px; font: 600 13px var(--p2), sans-serif; letter-spacing: 1px; color: #bbb; background: #160e28; }
+.pp-rub button.on { color: #fff; border-color: #ff5a26; background: #2a1230; }
+.pp-grille { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 10px 20px; }
+.pp-img { aspect-ratio: 16 / 10; display: grid; place-items: center; background: #1a1328; border: 1px solid #261a3a; }
+.pp-img.charge { background: linear-gradient(90deg, #1a1328 0%, #2a1f40 50%, #1a1328 100%); background-size: 200% 100%; animation: sq-brille 1.1s linear infinite; }
+.pp-img.ko span { color: #4a3a60; font-size: 22px; }
+.pp-spin { width: 24px; height: 24px; border-radius: 50%; border: 3px solid rgba(255, 90, 38, .2); border-top-color: #ff5a26; animation: os-tourne .8s linear infinite; }
+.pp-vignette .sq { background: linear-gradient(90deg, #1a1328, #2a1f40, #1a1328); background-size: 200% 100%; }
+.pp-voile { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 18px; background: rgba(5, 3, 10, .72); animation: os-fondu .35s both; }
+.pp-miroir { width: 100%; max-width: 330px; background: #1a1128; border-top: 3px solid #ff5a26; padding: 12px 12px 14px; text-align: center; box-shadow: 0 10px 40px #000; animation: os-pop .25s cubic-bezier(.2, .9, .3, 1.2) both; }
+.pp-miroir img { width: 100%; height: auto; display: block; }
+.pp-miroir p { margin: 12px 4px 4px; font: 400 16px var(--font-roboto), Roboto, sans-serif; color: #ddd; line-height: 1.4; }
+.pp-miroir p b { display: block; margin-top: 2px; font: 700 19px var(--p2), sans-serif; letter-spacing: 1px; color: #ff8a5c; }
+.pp-miroir .jb-bouton { margin-top: 10px; }
+.hl-dlg { position: fixed; }
+.hl.sk > *, .hl.pp > * { flex: none; }
