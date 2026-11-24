@@ -576,13 +576,14 @@ export function Parametres() {
   const editionOk = () => {
     setOuvertFenetre(false);
     setChoix(null);
-    if (pathname !== "/projets") {
+    // L'outil d'édition (citations, projets) est sur sa propre page.
+    if (pathname !== "/edition") {
       try {
         sessionStorage.setItem("fjch-edition-ouvrir", "1");
       } catch {
         /* navigation privée */
       }
-      router.push("/projets");
+      window.location.assign("/edition");
     }
   };
 

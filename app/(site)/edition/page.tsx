@@ -10,7 +10,7 @@ import { pageMetadata } from "@/lib/site";
 // récents sont rechargés par la page elle-même une fois affichée.
 export const revalidate = 60;
 
-export const metadata = pageMetadata("Projets", "Citations et projets.", "/projets");
+export const metadata = { ...pageMetadata("Édition", "Édition des citations et projets.", "/edition"), robots: { index: false, follow: false } };
 
 export default async function ProjectsPage() {
   const etoiles = vuePublique(await readEtat());

@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
       { source: "/a-propos", destination: "/?parametres=apropos", permanent: false },
       { source: "/contact", destination: "/?parametres=contact", permanent: false },
       { source: "/odyssee-test", destination: "/aakanos", permanent: false },
+      { source: "/nouveau", destination: "/", permanent: false },
       {
         source: "/:path*",
         has: [{ type: "host", value: "franckjhchristenhmbk.vercel.app" }],

@@ -8,7 +8,6 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider } from "@/components/Locale";
-import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { Parametres } from "@/components/Parametres";
 import { CompteEndur } from "@/components/Countdown";
 import { ProjetsPanorama } from "@/components/ProjetsPanorama";
@@ -233,33 +232,38 @@ function Ligne({
 
 /* ---------- page ---------- */
 
-export function Nouveau() {
+export function Nouveau({ vue = "accueil" }: { vue?: Vue }) {
   return (
     <LocaleProvider>
-      <Site />
+      <Site depart={vue} />
     </LocaleProvider>
   );
 }
 
-function Site() {
+const CHEMIN: Record<Vue, string> = { accueil: "/", qui: "/qui-suis-je", projets: "/projets" };
+
+function Site({ depart }: { depart: Vue }) {
   const t = useMaintenant();
   const [pret, setPret] = useState(false);
-  const [charge, setCharge] = useState(0);
-  const [vue, setVue] = useState<Vue>("accueil");
+  const [vue, setVue] = useState<Vue>(depart);
   const [glitch, setGlitch] = useState(0);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
   useEffect(() => {
-    const debut = performance.now();
+    // Le contenu est déjà là (pour les moteurs de recherche) ; ses animations repartent
+    // quand le chargement PS2 s'efface.
+    const racine = document.documentElement;
+    const fini = () => !racine.classList.contains("intro-joue");
     let raf = 0;
-    const pas = (n: number) => {
-      const p = Math.min(1, (n - debut) / 1100);
-      setCharge(p);
-      if (p < 1) raf = requestAnimationFrame(pas);
-      else setTimeout(() => setPret(true), 200);
-    };
-    raf = requestAnimationFrame(pas);
+    const obs = new MutationObserver(() => {
+      if (fini()) {
+        obs.disconnect();
+        raf = requestAnimationFrame(() => setPret(true));
+      }
+    });
+    if (fini()) raf = requestAnimationFrame(() => setPret(true));
+    else obs.observe(racine, { attributes: true, attributeFilter: ["class"] });
     let vivant = true;
     fetch("/api/etoiles")
       .then((r) => r.json())
@@ -271,12 +275,27 @@ function Site() {
       });
     return () => {
       vivant = false;
+      obs.disconnect();
       cancelAnimationFrame(raf);
     };
   }, []);
 
+  // Les changements de page mettent l'adresse à jour ; « précédent » du navigateur fonctionne.
+  useEffect(() => {
+    const p = () => {
+      const v = (Object.keys(CHEMIN) as Vue[]).find((k) => CHEMIN[k] === window.location.pathname);
+      if (v) {
+        setVue(v);
+        setRubrique(null);
+      }
+    };
+    window.addEventListener("popstate", p);
+    return () => window.removeEventListener("popstate", p);
+  }, []);
+
   const aller = useCallback((v: Vue, r: Rubrique | null = null) => {
     sonValide();
+    if (window.location.pathname !== CHEMIN[v]) window.history.pushState(null, "", CHEMIN[v]);
     setGlitch((g) => g + 1);
     setVue(v);
     setRubrique(r);
@@ -286,7 +305,10 @@ function Site() {
     sonRetour();
     setGlitch((g) => g + 1);
     if (rubrique) setRubrique(null);
-    else setVue("accueil");
+    else {
+      setVue("accueil");
+      window.history.pushState(null, "", "/");
+    }
   }, [rubrique]);
 
   useEffect(() => {
@@ -310,14 +332,6 @@ function Site() {
 
   return (
     <div className={`n${pret ? " pret" : ""}`}>
-      <div className={`n-boot${pret ? " fini" : ""}`} aria-hidden={pret}>
-        <div className="n-boot-logo">
-          <LogoOdyssee />
-        </div>
-        <div className="n-boot-txt">{charge < 0.5 ? "INITIALISATION…" : charge < 1 ? "CONNEXION…" : "CONNEXION ÉTABLIE"}</div>
-        <Segments p={charge} n={24} />
-      </div>
-
       <TopBlur />
       <header className="n-tete">
         <button type="button" className="n-logo" onClick={() => aller("accueil")} aria-label="Accueil">
@@ -339,8 +353,8 @@ function Site() {
         </nav>
       </header>
 
-      {pret ? (
-        <main className="n-scene" key={vue}>
+      {(
+        <main className="n-scene" key={`${vue}-${pret ? 1 : 0}`}>
           {vue === "accueil" ? <Accueil aller={aller} /> : null}
           {vue === "qui" ? <Qui /> : null}
           {vue === "projets" ? (
@@ -361,15 +375,12 @@ function Site() {
             <Suivant nom={vue === "accueil" ? "QUI SUIS-JE" : vue === "qui" ? "PROJETS" : "ACCUEIL"} aller={() => aller(vue === "accueil" ? "qui" : vue === "qui" ? "projets" : "accueil")} />
             <Pied />
         </main>
-      ) : null}
+      )}
 
       <footer className="n-bas">
         <span className="cache-mobile">[ÉCHAP] RETOUR</span>
         <span className="cache-mobile">© FRANCK J.H. CHRISTEN</span>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- autre disposition racine */}
-        <a href="/" className="droite">
-          SITE ACTUEL ↗
-        </a>
+        <span className="droite">ODYSSÉE 0.1</span>
       </footer>
 
 
