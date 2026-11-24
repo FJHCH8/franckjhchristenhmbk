@@ -4,9 +4,10 @@
  * Nounou Browser : le navigateur d'AakanOS (logo globe-ourson au N bleu, couleurs du tee-shirt de Nounou).
  * Quoi qu'on cherche, Internet ne répond pas : le dauphin est échoué sur le sable… et on peut jouer.
  */
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { son } from "./sonsAndroid";
+import { prendreCible } from "./Memoire";
 
 const MENTHE = "#e2ecdd";
 const RAYURE = "#7aa7c4";
@@ -39,12 +40,21 @@ export function LogoNounou({ taille = 56 }: { taille?: number }) {
   );
 }
 
-type Vue = "accueil" | "chargement" | "horsligne" | "jeu";
+type Vue = "accueil" | "chargement" | "horsligne" | "jeu" | "captif";
 
 export function NavigateurNounou() {
   const [saisie, setSaisie] = useState("");
   const [adresse, setAdresse] = useState("");
   const [vue, setVue] = useState<Vue>("accueil");
+
+  useEffect(() => {
+    if (prendreCible("nounou") === "captif-sam") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- ouverture depuis les Réglages Wi-Fi
+      setAdresse("http://wifi.sam-telecom.tav");
+      setSaisie("http://wifi.sam-telecom.tav");
+      setVue("captif");
+    }
+  }, []);
 
   const aller = (e: FormEvent) => {
     e.preventDefault();
@@ -105,6 +115,15 @@ export function NavigateurNounou() {
               AIDER GYPSY À NAGER
             </button>
             <small>Impossible d’ouvrir « {adresse} »</small>
+          </div>
+        ) : null}
+
+        {vue === "captif" ? (
+          <div className="nounou-captif">
+            <p className="nounou-captif-marque" translate="no">SAM-TELECOM</p>
+            <h2>Portail du wifi de la ville</h2>
+            <p>Malheureusement votre forfait vous empêche d’accéder au réseau wifi de la ville sponsorisé par Sam telecom. Merci de changer de forfait avec un forfait adapté depuis notre site ou notre application. Cordialement Sam telecom.</p>
+            <small>Page disponible hors ligne · Aucune connexion internet</small>
           </div>
         ) : null}
 

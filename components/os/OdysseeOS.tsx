@@ -26,7 +26,9 @@ import { AppMusique, IconeMusique, NotifMusique, StatutMusique, memoireMusique, 
 import { useProtectionTelechargement } from "./protection";
 import { AppDictaphone, IconeDictaphone } from "./Dictaphone";
 import { AppOpakaalt, IconeOpakaalt } from "./Opakaalt";
+import { AppNounoumappa, IconeNounoumappa } from "./Nounoumappa";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
+import { LogoAakanos } from "./LogoAakanos";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
@@ -45,7 +47,7 @@ import { Bandeau, GardienAlarmes, bloques, contactsPerso, convsPerso, ecrireSess
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo" | "fichiers" | "musique" | "dictaphone" | "opakaalt";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo" | "fichiers" | "musique" | "dictaphone" | "opakaalt" | "nounoumappa";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -66,6 +68,7 @@ const APPLIS: Appli[] = [
   { id: "musique", nom: "Musique" },
   { id: "dictaphone", nom: "Dictaphone" },
   { id: "opakaalt", nom: "Opakaalt" },
+  { id: "nounoumappa", nom: "Nounoumappa" },
   { id: "appareil", nom: "Appareil photo" },
   { id: "endurreisen", nom: "Alarme" },
   { id: "calculatrice", nom: "Calculatrice" },
@@ -196,6 +199,8 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return <IconeDictaphone taille={taille} />;
     case "opakaalt":
       return <IconeOpakaalt taille={taille} />;
+    case "nounoumappa":
+      return <IconeNounoumappa taille={taille} />;
     case "sharkobank":
       return png("sharkobank");
     case "peeporn":
@@ -313,12 +318,14 @@ export function OdysseeOS() {
     let deja = false;
     try {
       deja = sessionStorage.getItem("aakanos-boot") === "1";
-      sessionStorage.setItem("aakanos-boot", "1");
     } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect -- le démarrage ne se joue qu’une fois par session
     setBoot(!deja);
   }, []);
-  const finBoot = useCallback(() => setBoot(false), []);
+  const finBoot = useCallback(() => {
+    try { sessionStorage.setItem("aakanos-boot", "1"); } catch {}
+    setBoot(false);
+  }, []);
   const [qs, setQs] = useState(false);
   const [verrou, setVerrou] = useState(true);
   const [tiroir, setTiroir] = useState(false);
@@ -624,7 +631,19 @@ export function OdysseeOS() {
     <RetourCtx.Provider value={{ poser }}>
       <div
         className={`os${sys.limites ? " os-limites" : ""}`}
-        onPointerDownCapture={() => void prechargerSons()}
+        onPointerDownCapture={(e) => {
+          void prechargerSons();
+          const t = (e.target as HTMLElement).closest("button, .app-ligne, .ml-ligne, .mu-ligne, .fi-ligne, .os-notif, .reg2-reseau");
+          if (!(t instanceof HTMLElement) || t.closest("[data-son='aucun']") || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          const r = t.getBoundingClientRect();
+          const o = document.createElement("i");
+          o.className = "os-ondulation";
+          o.style.left = `${e.clientX - r.left}px`;
+          o.style.top = `${e.clientY - r.top}px`;
+          t.classList.add("os-ondulable");
+          t.appendChild(o);
+          window.setTimeout(() => o.remove(), 480);
+        }}
         onClickCapture={(e) => {
           // le « tick » d'Android à chaque toucher (le pavé du téléphone joue ses propres tonalités)
           const el = (e.target as Element).closest("button, a, [role=button]");
@@ -681,7 +700,7 @@ export function OdysseeOS() {
             </span>
           ) : null}
           <span className="os-statut-g">
-            {!verrou ? <StatutMusique /> : null}
+            <StatutMusique />
             {!verrou
               ? notifs.map((n) => (
                   <i key={n.id} className="os-mini">
@@ -1195,6 +1214,8 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
         {heure.slice(3)}
       </div>
       <div className="os-verrou-date">{date}</div>
+      <LogoAakanos icone taille={48} className="os-verrou-logo" />
+      <NotifMusique compact />
       {etape === "anneau" ? (
         <>
           <AnneauVerrou onFini={() => setEtape("code")} />
@@ -1319,6 +1340,8 @@ function ContenuAppli({
       return <AppDictaphone />;
     case "opakaalt":
       return <AppOpakaalt />;
+    case "nounoumappa":
+      return <AppNounoumappa />;
     case "messages":
       return <AppMessages {...gael} />;
     case "nounou":
@@ -2531,7 +2554,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       <Activite act={act}>
       <div className="app-defile">
         <div className="apropos-logo">
-          <DauphinPixel largeur={170} />
+          <LogoAakanos icone taille={120} className="apropos-etoiles" />
           <b>AakanOS</b>
         </div>
         <Titre>À PROPOS DU TÉLÉPHONE</Titre>
@@ -2605,7 +2628,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       <Titre>APPAREIL</Titre>
       <LigneReglage icone={ic("M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z")} titre="Son" sous={sys.muet ? "Mode silencieux" : "Sons activés"} onClick={() => act.aller("son")} />
       <LigneReglage icone={ic("M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z")} titre="Affichage" sous={`Luminosité ${Math.round(sys.lum * 100)} % · fond d’écran`} onClick={() => act.aller("affichage")} />
-      <LigneReglage icone={ic("M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z")} titre="Stockage" sous="Le vrai stockage Vercel du site" onClick={() => act.aller("stockage")} />
+      <LigneReglage icone={ic("M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z")} titre="Stockage" sous="Le stockage du téléphone" onClick={() => act.aller("stockage")} />
       <LigneReglage icone={ic("M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z")} titre="Batterie" sous="Sur batterie · 75 %" onClick={() => act.aller("batterie")} />
       <LigneReglage
         icone={ic("M19 9c-2-2-3.01-7-9.03-7C4.95 2 1.94 6 2 11.52 2.06 17.04 6.96 19 9.73 19c2.6 0 4.3-1.38 5.65-2.88C17 14.3 21 13.24 21 11.5c0-1.06-1.13-1.6-2-2.5z")}

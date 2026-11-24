@@ -9,6 +9,10 @@ import { estMuet, regleMuet, sonSynth } from "./sonsSynth";
 import { SONNERIES, choixSons, jouerSonnerie, nomSonnerie, type Categorie } from "./sonneries";
 import { son } from "./sonsAndroid";
 import { volumes, type Canal } from "./volume";
+import { ouvrirAppli } from "./Memoire";
+import { LogoAakanos } from "./LogoAakanos";
+import { CAPACITE_TELEPHONE, SYSTEME_TELEPHONE, occupeTelephone, tailleOctets } from "./stockageTelephone";
+import { creerStore } from "./session";
 
 /** Le « tic » d'Android quand on règle un volume (VolumeIncremental, AOSP), pas plus d'un toutes les 150 ms. */
 let dernierBip = 0;
@@ -98,21 +102,18 @@ export function Toasts() {
   ) : null;
 }
 
-/** Démarrage : écran noir, le nom qui s'allume et un reflet qui le traverse (≈ 2,8 s). */
+/** Démarrage : écran noir, les quatre étoiles apparaissent une à une, puis le nom (≈ 3 s). */
 export function Demarrage({ fini }: { fini: () => void }) {
   const [sort, setSort] = useState(false);
   useEffect(() => {
     sonSynth("boot");
-    const a = window.setTimeout(() => setSort(true), 2600);
-    const b = window.setTimeout(fini, 3000);
+    const a = window.setTimeout(() => setSort(true), 2800);
+    const b = window.setTimeout(fini, 3200);
     return () => (window.clearTimeout(a), window.clearTimeout(b));
   }, [fini]);
   return (
     <div className={`os-boot${sort ? " sort" : ""}`} onClick={() => (setSort(true), window.setTimeout(fini, 300))}>
-      <div className="os-boot-anneau">
-        <i />
-        <i />
-      </div>
+      <LogoAakanos taille={220} anime className="os-boot-logo" />
       <b className="os-boot-nom" data-nom="AakanOS">
         AakanOS
       </b>
@@ -246,12 +247,22 @@ export function ChoixSonnerie({ categorie, valeur, choisir, fermer }: { categori
 
 export type EcranReglage = "wifi" | "bluetooth" | "affichage" | "son" | "stockage" | "batterie" | "dateheure" | "dev";
 
-const RESEAUX = [
-  { nom: "SAM-TELECOM", force: 4, verrou: true },
-  { nom: "Le terrier de Celjo", force: 3, verrou: true },
-  { nom: "Nounou-Box", force: 2, verrou: true },
-  { nom: "Sharkobank_Invités", force: 1, verrou: false },
+type ReseauWifi = { nom: string; force: number; verrou: boolean; sorte: "sam" | "faux" | "loin" };
+const RESEAUX: ReseauWifi[] = [
+  { nom: "Sam telecom", force: 4, verrou: false, sorte: "sam" },
+  { nom: "Le cul de Celjo", force: 3, verrou: true, sorte: "faux" },
+  { nom: "Tu n’a pas de wifi pauvre con?", force: 2, verrou: true, sorte: "faux" },
+  { nom: "Cabinet_Invités", force: 1, verrou: false, sorte: "loin" },
 ];
+const memoireWifi = creerStore<{ reseau: string | null }>("wifi-reseau", { reseau: null });
+
+function Cadenas() {
+  return (
+    <svg className="reg2-cadenas" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4z" fill="#9aa" />
+    </svg>
+  );
+}
 
 function Signal({ n }: { n: number }) {
   return (
@@ -280,36 +291,7 @@ export function SousReglage({ ecran }: { ecran: EcranReglage }) {
   const corps = (() => {
     switch (ecran) {
       case "wifi":
-        return (
-          <>
-            <Ligne titre="Wi-Fi" droite={<Interrupteur on={s.wifi && !s.avion} onChange={(v) => (s.avion ? toast("Désactivez d’abord le mode Avion") : s.regler({ wifi: v }))} />} />
-            {s.wifi && !s.avion ? (
-              <>
-                <Titre>RÉSEAUX WI-FI</Titre>
-                {RESEAUX.map((r, i) => (
-                  <div key={r.nom} className="reg2-reseau" style={{ animationDelay: `${i * 60}ms` }}>
-                    <Ligne
-                      titre={r.nom}
-                      sous={r.verrou ? "Sécurisé par WPA2" : "Ouvert · Connexion impossible : le forfait Connard ne comprend pas internet"}
-                      droite={<Signal n={r.force} />}
-                      onClick={() =>
-                        r.verrou
-                          ? (setMdp(""),
-                            setDlg({
-                              t: r.nom,
-                              corps: null,
-                            }))
-                          : toast("Connexion impossible : le forfait Connard ne comprend pas internet")
-                      }
-                    />
-                  </div>
-                ))}
-              </>
-            ) : (
-              <p className="os-vide">{s.avion ? "Mode Avion activé" : "Pour afficher les réseaux disponibles, activez le Wi-Fi."}</p>
-            )}
-          </>
-        );
+        return <EcranWifi s={s} setMdp={setMdp} setDlg={setDlg} />;
       case "bluetooth":
         return (
           <>
@@ -467,7 +449,7 @@ export function SousReglage({ ecran }: { ecran: EcranReglage }) {
               disabled={mdp.length < 8}
               onClick={() => {
                 setDlg(null);
-                toast("Problème d’authentification. Et de toute façon, pas d’internet avec le forfait Connard.");
+                toast("Problème d’authentification");
               }}
             >
               Se connecter
@@ -479,56 +461,105 @@ export function SousReglage({ ecran }: { ecran: EcranReglage }) {
   );
 }
 
-/* ---------------- Stockage : le vrai stockage Vercel Blob du site ---------------- */
-
-type MesureStockage = { mesure: boolean; octets?: number; fichiers?: number; capacite: number; le?: string };
-
-function taille(o: number) {
-  const [v, u] = o >= 1e9 ? [o / 1e9, "Go"] : o >= 1e6 ? [o / 1e6, "Mo"] : o >= 1e3 ? [o / 1e3, "Ko"] : [o, "o"];
-  const n = v >= 100 || u === "o" ? String(Math.round(v)) : v.toFixed(1).replace(".", ",");
-  return `${n} ${u}`;
-}
+/* ---------------- Stockage : celui du téléphone (les mêmes chiffres que Fichiers) ---------------- */
 
 function Stockage() {
-  const [m, setM] = useState<MesureStockage | null>(null);
-  const [echec, setEchec] = useState(false);
-  useEffect(() => {
-    let vivant = true;
-    fetch("/aakanos/stockage")
-      .then((r) => (r.ok ? (r.json() as Promise<MesureStockage>) : Promise.reject(new Error(String(r.status)))))
-      .then((d) => vivant && setM(d))
-      .catch(() => vivant && setEchec(true));
-    return () => {
-      vivant = false;
-    };
-  }, []);
-  const capacite = m?.capacite ?? 1e9;
-  const utilise = m?.mesure ? (m.octets ?? 0) : null;
-  const part = utilise === null ? 0 : Math.max(utilise / capacite, utilise > 0 ? 0.004 : 0);
-  const le = m?.le ? new Date(m.le) : null;
+  const capacite = CAPACITE_TELEPHONE;
+  const utilise = occupeTelephone();
+  const systeme = SYSTEME_TELEPHONE;
+  const fichiers = Math.max(0, utilise - systeme);
+  const part = utilise / capacite;
   return (
     <>
-      <Titre>STOCKAGE VERCEL BLOB</Titre>
+      <Titre>LE STOCKAGE DU TÉLÉPHONE</Titre>
       <div className="reg2-stock">
-        <i style={{ width: `${part * 100}%`, background: "#33b5e5" }} />
+        <i style={{ width: `${Math.max(part * 100, 2)}%`, background: "#33b5e5" }} />
       </div>
-      <Ligne titre="Espace total" sous={`${taille(capacite)}`} />
-      {utilise !== null ? (
+      <Ligne titre="Espace total" sous={tailleOctets(capacite)} />
+      <Ligne titre="Utilisé" sous={tailleOctets(utilise)} droite={<i className="reg2-pastille" style={{ background: "#33b5e5" }} />} />
+      <Ligne titre="Système" sous={tailleOctets(systeme)} />
+      <Ligne titre="Fichiers" sous={tailleOctets(fichiers)} />
+      <Ligne titre="Disponible" sous={tailleOctets(Math.max(0, capacite - utilise))} />
+      <p className="reg2-note">Le stockage du téléphone : la mémoire interne de ce Hanck 7 Pro Max, la même que celle de Fichiers.</p>
+    </>
+  );
+}
+
+function EcranWifi({
+  s,
+  setMdp,
+  setDlg,
+}: {
+  s: ReturnType<typeof useSysteme>;
+  setMdp: (v: string) => void;
+  setDlg: (v: { t: string; corps: ReactNode } | null) => void;
+}) {
+  const { reseau } = memoireWifi.useValeur();
+  const [etape, setEtape] = useState<null | { nom: string; phase: "connexion" | "ip" | "loin" }>(null);
+  const tenter = (r: ReseauWifi) => {
+    if (r.verrou) {
+      setMdp("");
+      setDlg({ t: r.nom, corps: null });
+      return;
+    }
+    setEtape({ nom: r.nom, phase: "connexion" });
+    const t1 = r.sorte === "loin" ? 2200 : 800;
+    const t2 = r.sorte === "loin" ? 4000 : 1100;
+    window.setTimeout(() => setEtape({ nom: r.nom, phase: "ip" }), t1);
+    window.setTimeout(() => {
+      if (r.sorte === "loin") {
+        setEtape({ nom: r.nom, phase: "loin" });
+        return;
+      }
+      setEtape(null);
+      memoireWifi.ecrire({ reseau: r.nom });
+      toast("Connecté à Sam telecom. Pas d’internet.");
+      ouvrirAppli("nounou", "captif-sam");
+    }, t1 + t2);
+  };
+  return (
+    <>
+      <Ligne titre="Wi-Fi" droite={<Interrupteur on={s.wifi && !s.avion} onChange={(v) => (s.avion ? toast("Désactivez d’abord le mode Avion") : s.regler({ wifi: v }))} />} />
+      {s.wifi && !s.avion ? (
         <>
-          <Ligne titre="Utilisé" sous={taille(utilise)} droite={<i className="reg2-pastille" style={{ background: "#33b5e5" }} />} />
-          <Ligne titre="Fichiers" sous={String(m?.fichiers ?? 0)} />
-          <Ligne titre="Disponible" sous={taille(Math.max(0, capacite - utilise))} />
-          {le ? (
-            <Ligne
-              titre="Mesuré le"
-              sous={`${le.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })} ${le.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
-            />
+          <Titre>RÉSEAUX WI-FI</Titre>
+          {RESEAUX.map((r, i) => (
+            <div key={r.nom} className="reg2-reseau" style={{ animationDelay: `${i * 60}ms` }}>
+              <Ligne
+                titre={r.nom}
+                sous={
+                  etape?.nom === r.nom && etape.phase === "connexion"
+                    ? "Connexion…"
+                    : etape?.nom === r.nom && etape.phase === "ip"
+                      ? "Obtention d’une adresse IP…"
+                      : reseau === r.nom
+                        ? "Connecté · Pas d’internet"
+                        : r.verrou
+                          ? "Sécurisé par WPA2"
+                          : "Ouvert"
+                }
+                droite={
+                  <span className="reg2-wifi-ic">
+                    {r.verrou ? <Cadenas /> : null}
+                    <Signal n={r.force} />
+                  </span>
+                }
+                onClick={() => !etape && tenter(r)}
+              />
+            </div>
+          ))}
+          {etape?.phase === "loin" ? (
+            <Dlg titre={etape.nom} fermer={() => setEtape(null)}>
+              <p className="dlg-corps">Distance du wifi trop loin, impossible de se connecter</p>
+              <div className="dlg-boutons">
+                <button onClick={() => setEtape(null)}>OK</button>
+              </div>
+            </Dlg>
           ) : null}
         </>
       ) : (
-        <Ligne titre={echec || m ? "Mesure indisponible" : "Calcul en cours…"} sous={echec || m ? "Le stockage Vercel ne répond pas pour le moment" : "Lecture du stockage Vercel"} />
+        <p className="os-vide">{s.avion ? "Mode Avion activé" : "Pour afficher les réseaux disponibles, activez le Wi-Fi."}</p>
       )}
-      <p className="reg2-note">La mémoire de ce téléphone, c’est le vrai stockage Vercel Blob du site : la taille de tous ses fichiers, mesurée une fois par jour. L’espace total est celui inclus dans l’offre gratuite de Vercel.</p>
     </>
   );
 }
