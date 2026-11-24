@@ -250,6 +250,8 @@ function Site({ depart }: { depart: Vue }) {
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
+  const [jingle, setJingle] = useState(0);
+  const finJingle = useCallback(() => setJingle(0), []);
   const [traceOdy, setTraceOdy] = useState(0);
   useEffect(() => {
     // Le contenu est déjà là (pour les moteurs de recherche) ; ses animations repartent
@@ -345,6 +347,7 @@ function Site({ depart }: { depart: Vue }) {
                 void svg.getBoundingClientRect();
                 svg.classList.add("logo-rejoue");
               }
+              setJingle((k) => k + 1);
               aller("accueil");
             }}
           >
@@ -373,7 +376,7 @@ function Site({ depart }: { depart: Vue }) {
 
       {(
         <main className="n-scene" key={`${vue}-${pret ? 1 : 0}`}>
-          {vue === "accueil" ? <Accueil aller={aller} /> : null}
+          {vue === "accueil" ? <Accueil /> : null}
           {vue === "qui" ? <Qui /> : null}
           {vue === "projets" ? (
             <>
@@ -403,6 +406,8 @@ function Site({ depart }: { depart: Vue }) {
 
 
 
+      {jingle ? <Jingle key={jingle} fin={finJingle} /> : null}
+
       {recherche ? <Recherche etoiles={etoiles ?? []} fermer={() => (sonRetour(), setRecherche(false))} aller={(r) => (setRecherche(false), aller("projets", r))} /> : null}
 
     </div>
@@ -411,15 +416,8 @@ function Site({ depart }: { depart: Vue }) {
 
 /* ---------- Accueil ---------- */
 
-function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
-  const [ouvert, setOuvert] = useState(0);
-  const rubriques = [
-    { titre: "QUI SUIS-JE", texte: "Né différent. Il regarde ce que personne ne voulait voir.", photo: "/media/franck.jpg", cadre: "50% 30%", vers: () => aller("qui") },
-    { titre: "À PROPOS", texte: "Les coulisses du site, et ce qui s’y prépare.", photo: "/fond/judo-960.webp", cadre: "50% 20%", vers: () => ouvrirReglage("apropos") },
-    { titre: "CONTACT", texte: "Une idée, une question ? Deux chemins mènent jusqu’à Franck.", photo: "/fond/avion-960.webp", cadre: "68% 42%", vers: () => ouvrirReglage("contact") },
-    { titre: "PROJETS", texte: "Des citations, des projets, et Endurreisen qui approche.", photo: "/fond/rose-960.webp", cadre: "46% 30%", vers: () => aller("projets") },
-    { titre: "INSTAGRAM", texte: "@fjhchristenhmbk — les nouveautés, au fil des jours.", photo: "/media/franck-enfant-900.webp", cadre: "50% 25%", vers: () => window.open("https://instagram.com/fjhchristenhmbk", "_blank", "noopener") },
-  ];
+function Accueil() {
+  const [ouvert, setOuvert] = useState(-1);
   return (
     <>
       <section className="n-hero">
@@ -460,12 +458,12 @@ function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
 
       <Section n="02 · EXPLORER" titre="FRANCK J.H. CHRISTEN">
         <div className="p2-liste n-accordeon">
-          {rubriques.map((r, k) => (
+          {ECOUTES.map((r, k) => (
             <Tq key={r.titre} i={k}>
-              <div className={`n-ac${ouvert === k ? " ouvert" : ""}`}>
+              <div className={`n-ac n-ecoute${ouvert === k ? " ouvert" : ""}`}>
                 <div className="n-ac-img" aria-hidden="true">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.photo} alt="" style={{ objectPosition: r.cadre }} />
+                  <img src={r.image} alt="" style={{ objectPosition: r.cadre }} />
                 </div>
                 <div className="n-ac-espace" />
                 <Ligne
@@ -484,9 +482,8 @@ function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
                 </Ligne>
                 <div className="n-ac-corps">
                   <p>{r.texte}</p>
-                  <button type="button" className="n-retour" onClick={r.vers}>
-                    OUVRIR <Icone nom="chevron_right" />
-                  </button>
+                  <Lecteur src={r.audio} actif={ouvert === k} />
+                  <small className="n-ecoute-legende">{r.legende}</small>
                 </div>
               </div>
             </Tq>
@@ -497,11 +494,129 @@ function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
   );
 }
 
-function ouvrirReglage(id: string) {
-  sonValide();
-  const url = new URL(window.location.href);
-  url.searchParams.set("parametres", id);
-  window.history.pushState(null, "", url);
+/** Les enregistrements de l'accueil : on ouvre, on regarde la peinture, on écoute. */
+const ECOUTES = [
+  {
+    titre: "LA POLYMATHIE",
+    texte: "Chercher partout, relier ce qui semble séparé.",
+    image: "/explorer/polymathie.webp",
+    cadre: "50% 28%",
+    audio: "/explorer/polymathie.mp3",
+    legende: "Benjamin Franklin, par David Martin (1767)",
+  },
+  {
+    titre: "L’AUTOROMANTISME",
+    texte: "Die Autoromantik nach Franck Christen. Avec Freya.",
+    image: "/explorer/autoromantisme.webp",
+    cadre: "50% 50%",
+    audio: "/explorer/autoromantisme.mp3",
+    legende: "Les mains qui se croisent et se serrent",
+  },
+];
+
+function minutes(s: number) {
+  if (!Number.isFinite(s) || s < 0) s = 0;
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+}
+
+/** Lecteur audio du site : lecture / pause, barre que l'on touche pour avancer, temps. Se met en pause si on referme. */
+function Lecteur({ src, actif }: { src: string; actif: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const [lit, setLit] = useState(false);
+  const [t, setT] = useState(0);
+  const [duree, setDuree] = useState(0);
+
+  useEffect(() => {
+    if (!actif) ref.current?.pause();
+  }, [actif]);
+
+  const basculer = () => {
+    const a = ref.current;
+    if (!a) return;
+    if (a.paused) {
+      // une seule écoute à la fois
+      document.querySelectorAll<HTMLAudioElement>("audio.n-lecteur-son").forEach((x) => x !== a && x.pause());
+      void a.play().catch(() => {});
+    } else a.pause();
+  };
+
+  return (
+    <div className={`n-lecteur${lit ? " lit" : ""}`}>
+      <audio
+        ref={ref}
+        className="n-lecteur-son"
+        src={src}
+        preload="metadata"
+        onPlay={() => setLit(true)}
+        onPause={() => setLit(false)}
+        onEnded={() => setLit(false)}
+        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => setDuree(e.currentTarget.duration)}
+      />
+      <button type="button" className="n-lecteur-btn" onClick={basculer} aria-label={lit ? "Pause" : "Écouter"}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          {lit ? <path d="M6 5h4v14H6zM14 5h4v14h-4z" /> : <path d="M7 4.5v15l12.5-7.5z" />}
+        </svg>
+      </button>
+      <span className="n-lecteur-t">{minutes(t)}</span>
+      <input
+        type="range"
+        className="n-lecteur-barre"
+        min={0}
+        max={duree || 1}
+        step={0.1}
+        value={t}
+        aria-label="Avancer dans l’enregistrement"
+        style={{ ["--p" as string]: `${duree ? (t / duree) * 100 : 0}%` } as CSSProperties}
+        onChange={(e) => {
+          const a = ref.current;
+          const v = Number(e.target.value);
+          if (a) a.currentTime = v;
+          setT(v);
+        }}
+      />
+      <span className="n-lecteur-t">{minutes(duree)}</span>
+    </div>
+  );
+}
+
+/**
+ * Le jingle du logo, comme dans la vidéo de Franck : sur le noir, la constellation se trace (1,5 s),
+ * reste un instant, puis se floute et s'efface (2,1 → 2,7 s) pendant que la musique finit.
+ */
+function Jingle({ fin }: { fin: () => void }) {
+  useEffect(() => {
+    let son: HTMLAudioElement | null = null;
+    let muet = false;
+    try {
+      muet = localStorage.getItem("tac-sons") === "off";
+    } catch {}
+    if (!muet) {
+      son = new Audio("/audio/jingle.mp3");
+      son.volume = 0.8;
+      void son.play().catch(() => {});
+    }
+    const id = window.setTimeout(fin, 3300);
+    return () => {
+      window.clearTimeout(id);
+      if (son) {
+        const s = son;
+        // on laisse la fin du jingle se faire entendre en douceur
+        const f = window.setInterval(() => {
+          s.volume = Math.max(0, s.volume - 0.08);
+          if (s.volume <= 0) {
+            s.pause();
+            window.clearInterval(f);
+          }
+        }, 120);
+      }
+    };
+  }, [fin]);
+  return (
+    <div className="n-jingle" onClick={fin} aria-hidden="true">
+      <Logo className="n-jingle-logo" anime />
+    </div>
+  );
 }
 
 function Section({ n, titre, children }: { n: string; titre: string; children: ReactNode }) {

@@ -663,3 +663,31 @@ html, body { background: #000; }
 @media (max-width: 860px) { .coeurs svg { width: 15px; height: 13px; } }
 
 .coeurs { gap: 3px; } .coeurs svg { flex: 1 1 0; min-width: 0; max-width: 18px; height: auto; aspect-ratio: 7 / 6; }
+
+/* ---------- 0.2 · Explorer : les enregistrements ---------- */
+.n-ecoute.ouvert .n-ac-img img { filter: none; }
+.n-ecoute .n-ac-img::after { background: linear-gradient(transparent 30%, rgba(0, 0, 0, .9)); }
+.n-ecoute.ouvert .n-ac-espace { height: 300px; }
+.n-ecoute.ouvert .n-ac-corps { max-height: 260px; }
+.n-ecoute-legende { display: block; margin: 0 4px 16px; font-family: var(--f-mono); font-size: 11px; letter-spacing: 1px; color: rgba(255, 255, 255, .55); text-shadow: 0 1px 4px #000; }
+.n-lecteur { display: flex; align-items: center; gap: 12px; margin: 4px 4px 12px; padding: 10px 12px; background: rgba(0, 0, 0, .55); border: 1px solid rgba(143, 208, 255, .35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.n-lecteur-btn { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #000; background: linear-gradient(135deg, #f4fbff, #6fbdf5); box-shadow: 0 0 0 0 rgba(111, 189, 245, .5); transition: transform .15s, box-shadow .3s; }
+.n-lecteur.lit .n-lecteur-btn { box-shadow: 0 0 0 6px rgba(111, 189, 245, .18); }
+.n-lecteur-btn:active { transform: scale(.92); }
+.n-lecteur-t { flex: none; min-width: 34px; font-family: var(--f-mono); font-size: 12px; color: #cfe9ff; text-align: center; }
+.n-lecteur-barre { flex: 1; min-width: 0; height: 22px; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.n-lecteur-barre::-webkit-slider-runnable-track { height: 4px; background: linear-gradient(90deg, #8fd0ff var(--p), rgba(255, 255, 255, .18) var(--p)); }
+.n-lecteur-barre::-moz-range-track { height: 4px; background: linear-gradient(90deg, #8fd0ff var(--p), rgba(255, 255, 255, .18) var(--p)); }
+.n-lecteur-barre::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4px; background: #f4fbff; border: 0; box-shadow: 0 0 8px #6fbdf5; }
+.n-lecteur-barre::-moz-range-thumb { width: 12px; height: 12px; background: #f4fbff; border: 0; border-radius: 0; box-shadow: 0 0 8px #6fbdf5; }
+@media (max-width: 860px) { .n-ecoute.ouvert .n-ac-espace { height: 260px; } }
+
+/* ---------- 0.2 · Jingle du logo (comme la vidéo) ---------- */
+.n-jingle { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #000; animation: n-jingle-noir 3.3s linear forwards; }
+.n-jingle-logo { width: min(46vw, 240px); height: auto; color: #fff; animation: n-jingle-flou 3.3s linear forwards; }
+.n-jingle-logo.logo-anime .logo-ligne { animation: logo-trace 1.4s cubic-bezier(.45, 0, .25, 1) .1s forwards; }
+.n-jingle-logo.logo-anime .logo-ronds circle { animation-delay: calc(.1s + var(--t) * 1.4s); }
+@keyframes n-jingle-flou { 0%, 63% { filter: blur(0); opacity: 1; } 72% { filter: blur(6px); opacity: .55; } 82% { filter: blur(14px); opacity: 0; } 100% { filter: blur(14px); opacity: 0; } }
+@keyframes n-jingle-noir { 0%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .n-jingle { animation-duration: .01s; } }
+.n .n-lecteur-btn { color: #000 !important; background: linear-gradient(135deg, #f4fbff, #6fbdf5) !important; border: 0 !important; padding: 0 !important; }

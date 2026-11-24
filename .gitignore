@@ -15,5 +15,3 @@ coverage
 playwright-report
 test-results
 
-# généré automatiquement par next dev
-AGENTS.md
