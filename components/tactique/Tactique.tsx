@@ -6,6 +6,8 @@
  * en tourniquet, textes qui se décodent, tuiles vivantes qui se retournent, radar, petits sons.
  */
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { Icone } from "@/components/Icone";
+import { LogoOdyssee } from "@/components/LogoOdyssee";
 
 type Vue = "accueil" | "qui" | "projets" | "citations" | "album" | "parametres";
 type Etoile = { id: string; titre: string; texte: string; auteur: string; date: string; genre?: "citation" | "projet" };
@@ -179,9 +181,12 @@ export function Tactique() {
         e.preventDefault();
         sonSurvol();
         setSel((s) => (s - 1 + MENU.length) % MENU.length);
-      } else if (e.key === "Enter") aller(MENU[sel]!.id);
-      else if (e.key === "Escape" || e.key === "Backspace") {
-        if ((e.target as HTMLElement).tagName === "INPUT") return;
+      } else if (e.key === "Enter") {
+        if (["INPUT", "TEXTAREA", "BUTTON", "A"].includes((e.target as HTMLElement).tagName)) return;
+        aller(MENU[sel]!.id);
+      }
+      else if (e.key === "Escape") {
+        if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) return;
         setGlitch((g) => g + 1);
         bip(700, 0.05, 0.035);
         setVue("accueil");
@@ -197,7 +202,7 @@ export function Tactique() {
   const citations = (etoiles ?? []).filter((e) => e.genre !== "projet" && e.texte?.trim());
 
   return (
-    <div className={`tac${pret ? " pret" : ""}`}>
+    <div className={`tac${pret ? " pret" : ""}${vue === "parametres" ? " flou" : ""}`}>
       <div className="tac-fond" />
       <div className="tac-grille" />
       <div className="tac-vignette" />
@@ -553,6 +558,60 @@ function Album() {
   );
 }
 
+/* ---------- Paramètres : Odyssée × tactique ---------- */
+
+const GLYPHES: Record<string, string[]> = {
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  J: ["00111", "00010", "00010", "00010", "00010", "10010", "01100"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  ".": ["00000", "00000", "00000", "00000", "00000", "00000", "00100"],
+  " ": ["000", "000", "000", "000", "000", "000", "000"],
+};
+
+/** Ton nom en points : il s'allume point par point, de gauche à droite. */
+function Matrice() {
+  const lignes = ["FRANCK J.H", "CHRISTEN"];
+  let n = 0;
+  return (
+    <div className="matrice" aria-label="Franck J.H Christen">
+      {lignes.map((l) => (
+        <div key={l} className="matrice-ligne">
+          {[...l].map((c, k) => {
+            const g = GLYPHES[c] ?? GLYPHES[" "]!;
+            return (
+              <div key={k} className="matrice-lettre" style={{ gridTemplateColumns: `repeat(${g[0]!.length}, 1fr)` }}>
+                {g.flatMap((r, y) =>
+                  [...r].map((b, x) => <i key={`${x}-${y}`} className={b === "1" ? "on" : ""} style={b === "1" ? ({ "--d": n++ } as CSSProperties) : undefined} />),
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const TRAITS_CHEVAL = 19;
+const RUBRIQUES = [
+  { id: "langue", nom: "LANGUE", icone: "language" },
+  { id: "contact", nom: "CONTACT", icone: "mail" },
+  { id: "apropos", nom: "À PROPOS", icone: "info" },
+  { id: "systeme", nom: "SYSTÈME", icone: "phone_iphone" },
+  { id: "edition", nom: "ÉDITION", icone: "edit" },
+  { id: "oeuf", nom: "EASTER EGG", icone: "egg_alt" },
+] as const;
+type Rubrique = (typeof RUBRIQUES)[number]["id"];
+
 function Parametres() {
   const lire = (k: string, d: string) => {
     try {
@@ -561,102 +620,377 @@ function Parametres() {
       return d;
     }
   };
-  const [langue, setLangue] = useState(() => lire("fjch-lang", "fr"));
-  const [sons, setSons] = useState(() => lire("tac-sons", "on"));
-  const [onglet, setOnglet] = useState(0);
-  const [ligne, setLigne] = useState(0);
   const ecrire = (k: string, v: string) => {
     try {
       localStorage.setItem(k, v);
     } catch {}
   };
-  const opts: { nom: string; valeur: string; aide: string; changer?: () => void; lien?: string }[] =
-    onglet === 0
-      ? [
-          {
-            nom: "LANGUE",
-            valeur: langue === "tavissiv" ? "TAVISSIV (AAKA)" : "FRANÇAIS (BRETAGNE)",
-            aide: "Choisis la langue du site. Le Tavissiv s’écrit en Aaka, l’alphabet de Franck.",
-            changer: () => {
-              const v = langue === "tavissiv" ? "fr" : "tavissiv";
-              setLangue(v);
-              ecrire("fjch-lang", v);
-            },
-          },
-          {
-            nom: "SONS",
-            valeur: sons === "off" ? "COUPÉS" : "ACTIVÉS",
-            aide: "Les petits bips du menu, quand on survole et quand on valide.",
-            changer: () => {
-              const v = sons === "off" ? "on" : "off";
-              setSons(v);
-              ecrire("tac-sons", v);
-            },
-          },
-          { nom: "APPARENCE", valeur: "TEST TACTIQUE", aide: "Tu regardes la version test. Le site classique reste en ligne.", lien: "/" },
-        ]
-      : onglet === 1
-        ? [
-            { nom: "E-MAIL", valeur: "FRANCKJHCHRISTEN@GMAIL.COM", aide: "Une idée, une question, un projet à partager ?", lien: "mailto:franckjhchristen@gmail.com" },
-            { nom: "INSTAGRAM", valeur: "@FJHCHRISTENHMBK", aide: "Deux chemins mènent jusqu’à Franck.", lien: "https://instagram.com/fjhchristenhmbk" },
-          ]
-        : [
-            { nom: "SYSTÈME", valeur: "ODYSSÉE 0.1", aide: "Mise à jour du 23 novembre 2026. Version précédente : 0.0 (9 novembre 2026)." },
-            { nom: "INTERFACE", valeur: "TACTIQUE × METRO", aide: "Version test de la nouvelle interface du site." },
-          ];
-  const o = opts[Math.min(ligne, opts.length - 1)]!;
+  const [langue, setLangue] = useState(() => lire("fjch-lang", "fr"));
+  const [sons, setSons] = useState(() => lire("tac-sons", "on"));
+  const [survol, setSurvol] = useState(0);
+  const [ouvert, setOuvert] = useState<Rubrique | null>(null);
+  const [partant, setPartant] = useState<Rubrique | null>(null);
+
+  const valeurs: Record<Rubrique, string> = {
+    langue: langue === "tavissiv" ? "TAVISSIV" : "FRANÇAIS",
+    contact: "2 CANAUX",
+    apropos: "",
+    systeme: "ODYSSÉE 0.1",
+    edition: "VERROUILLÉ",
+    oeuf: "AAKA",
+  };
+
+  const choisir = (id: Rubrique) => {
+    sonValide();
+    setPartant(id);
+    window.setTimeout(() => {
+      setPartant(null);
+      setOuvert(id);
+    }, 300);
+  };
+  const fermer = () => {
+    bip(700, 0.05, 0.035);
+    setOuvert(null);
+  };
+
+  useEffect(() => {
+    if (!ouvert) return;
+    const k = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        fermer();
+      }
+    };
+    window.addEventListener("keydown", k, true);
+    return () => window.removeEventListener("keydown", k, true);
+  });
+
+  const lignes = ouvert ? RUBRIQUES.filter((r) => r.id === ouvert) : RUBRIQUES;
+
   return (
-    <div className="v-param">
+    <div className={`v-param2${ouvert ? " ouvert" : ""}`}>
       <Titre sous="// OPTIONS">PARAMÈTRES</Titre>
-      <div className="onglets">
-        {["GÉNÉRAL", "CONTACT", "SYSTÈME"].map((n, k) => (
-          <button
-            key={n}
-            className={k === onglet ? "on" : ""}
-            onClick={() => {
-              sonSurvol();
-              setOnglet(k);
-              setLigne(0);
-            }}
-          >
-            {n}
-          </button>
-        ))}
+      <div className="p2-gauche">
+        <div className="p2-liste" key={ouvert ?? "liste"}>
+          {lignes.map((r) => {
+            const k = RUBRIQUES.findIndex((x) => x.id === r.id);
+            const sel = ouvert ? true : survol === k;
+            return (
+              <T key={r.id} i={ouvert ? 0 : k}>
+                <button
+                  className={`p2-ligne${sel ? " sel" : ""}${partant && partant !== r.id ? " part" : ""}${partant === r.id ? " choisie" : ""}`}
+                  onMouseEnter={() => {
+                    if (!ouvert && survol !== k) sonSurvol();
+                    if (!ouvert) setSurvol(k);
+                  }}
+                  onClick={() => (ouvert ? fermer() : choisir(r.id))}
+                >
+                  <b className="p2-num">{deux(k + 1)}</b>
+                  <span className="p2-tuile">
+                    <Icone nom={r.icone} />
+                  </span>
+                  <span className="p2-nom">{r.nom}</span>
+                  <em>{valeurs[r.id]}</em>
+                  <span className="p2-chev">
+                    <Icone nom={ouvert ? "close" : "chevron_right"} />
+                  </span>
+                  <Coins />
+                </button>
+              </T>
+            );
+          })}
+        </div>
+        {!ouvert ? <Matrice /> : null}
       </div>
-      <div className="opts" key={onglet}>
-        {opts.map((x, k) => (
-          <T key={x.nom} i={k}>
-            <button
-              className={`opt${k === ligne ? " sel" : ""}`}
-              onMouseEnter={() => {
-                if (k !== ligne) sonSurvol();
-                setLigne(k);
-              }}
-              onClick={() => {
-                setLigne(k);
-                if (x.changer) {
+
+      <div className="p2-droite">
+        {ouvert ? (
+          <div className="p2-panneau" key={ouvert}>
+            <Coins />
+            <small>{`// ${deux(RUBRIQUES.findIndex((x) => x.id === ouvert) + 1)} · ${RUBRIQUES.find((x) => x.id === ouvert)!.nom}`}</small>
+            {ouvert === "langue" ? (
+              <PanneauLangue
+                langue={langue}
+                choisir={(l) => {
                   sonValide();
-                  x.changer();
-                } else if (x.lien) {
-                  sonValide();
-                  window.open(x.lien, x.lien.startsWith("http") ? "_blank" : "_self");
-                }
-              }}
-            >
-              <span>{x.nom}</span>
-              <b>{x.changer ? `◄ ${x.valeur} ►` : x.valeur}</b>
+                  setLangue(l);
+                  ecrire("fjch-lang", l);
+                }}
+              />
+            ) : null}
+            {ouvert === "contact" ? <PanneauContact /> : null}
+            {ouvert === "apropos" ? <PanneauAPropos /> : null}
+            {ouvert === "systeme" ? (
+              <PanneauSysteme
+                sons={sons}
+                basculer={() => {
+                  const v = sons === "off" ? "on" : "off";
+                  setSons(v);
+                  ecrire("tac-sons", v);
+                  if (v === "on") sonValide();
+                }}
+              />
+            ) : null}
+            {ouvert === "edition" ? <PanneauEdition /> : null}
+            {ouvert === "oeuf" ? <PanneauAaka /> : null}
+            <button className="p2-fermer" onClick={fermer}>
+              <Icone nom="arrow_back" /> RETOUR
             </button>
-          </T>
+          </div>
+        ) : (
+          <div className="p2-panneau p2-apercu" key={survol}>
+            <Coins />
+            <small>{`// ${deux(survol + 1)} · ${RUBRIQUES[survol]!.nom}`}</small>
+            <p className="p2-decode">
+              <Decode
+                texte={
+                  [
+                    "CHOISIS LA LANGUE DU SITE : FRANÇAIS OU TAVISSIV.",
+                    "DEUX CHEMINS MÈNENT JUSQU’À FRANCK.",
+                    "CE QU’EST CE SITE, ET POURQUOI.",
+                    "ODYSSÉE 0.1 · LE SYSTÈME DU SITE ET SES MISES À JOUR.",
+                    "RÉSERVÉ À FRANCK · CODE À 6 CHIFFRES.",
+                    "ÉCRIS EN TAVISSIV, LIS EN AAKA.",
+                  ][survol]!
+                }
+                duree={450}
+              />
+              <b>▌</b>
+            </p>
+            <span className="p2-touche">[ENTRÉE] OU TOUCHER POUR OUVRIR</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PanneauLangue({ langue, choisir }: { langue: string; choisir: (l: string) => void }) {
+  return (
+    <>
+      <h3>
+        <Decode texte="Choisis la langue du site" duree={500} />
+      </h3>
+      {[
+        { id: "fr", nom: <span>FRANÇAIS</span>, sous: "BRETAGNE" },
+        { id: "tavissiv", nom: <span className="tav">tavissiv</span>, sous: "ÉCRITURE AAKA" },
+      ].map((o, k) => (
+        <T key={o.id} i={k + 1}>
+          <button className={`p2-radio${langue === o.id ? " sel" : ""}`} onClick={() => choisir(o.id)}>
+            <i />
+            {o.nom}
+            <em>{o.sous}</em>
+          </button>
+        </T>
+      ))}
+      <p className="p2-decode">
+        <Decode texte="LE TAVISSIV S’ÉCRIT EN AAKA, L’ALPHABET DE FRANCK." delai={300} duree={900} />
+        <b>▌</b>
+      </p>
+    </>
+  );
+}
+
+function PanneauContact() {
+  const canaux = [
+    { icone: "mail" as const, nom: "E-MAIL", valeur: "franckjhchristen@gmail.com", lien: "mailto:franckjhchristen@gmail.com" },
+    { icone: "photo_camera" as const, nom: "INSTAGRAM", valeur: "@fjhchristenhmbk", lien: "https://instagram.com/fjhchristenhmbk" },
+  ];
+  return (
+    <>
+      <h3>
+        <Decode texte="Deux chemins mènent jusqu’à Franck" duree={600} />
+      </h3>
+      {canaux.map((c, k) => (
+        <T key={c.nom} i={k + 1}>
+          <a className="p2-canal" href={c.lien} target={c.lien.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" onClick={() => sonValide()}>
+            <span className="p2-tuile">
+              <Icone nom={c.icone} />
+            </span>
+            <span>
+              <small>{c.nom}</small>
+              <b>{c.valeur}</b>
+            </span>
+            <Icone nom="chevron_right" />
+          </a>
+        </T>
+      ))}
+      <p className="p2-texte">Une idée, une question, un projet à partager ?</p>
+    </>
+  );
+}
+
+function PanneauAPropos() {
+  return (
+    <>
+      <h3>
+        <Decode texte="Ce site" duree={400} />
+      </h3>
+      <T i={1}>
+        <p className="p2-texte">
+          Le site de Franck J.H. Christen H.M.B.K. : publier ce qu’il fait, au quotidien, pour ceux qui veulent comprendre ce que fait un polymathe.
+        </p>
+      </T>
+      <T i={2}>
+        <p className="p2-texte">Les projets s’ouvrent avec Endurreisen, le 1ᵉʳ décembre 2026. L’aube suit, du 3 décembre au 3 juin.</p>
+      </T>
+    </>
+  );
+}
+
+function PanneauSysteme({ sons, basculer }: { sons: string; basculer: () => void }) {
+  const [trace, setTrace] = useState(0);
+  useEffect(() => {
+    const debut = performance.now();
+    let raf = 0;
+    const pas = (n: number) => {
+      const v = Math.min(TRAITS_CHEVAL, Math.ceil(((n - debut) / 3300) * TRAITS_CHEVAL));
+      setTrace(v);
+      if (v < TRAITS_CHEVAL) raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return (
+    <div className="p2-sys">
+      <div className="p2-sys-logo">
+        <LogoOdyssee />
+        <span className="p2-trace">
+          TRACÉ {deux(trace)}/{TRAITS_CHEVAL}
+        </span>
+      </div>
+      <div className="p2-sys-nom">
+        <Decode texte="ODYSSÉE" delai={200} duree={700} />
+      </div>
+      <div className="p2-sys-v">VERSION 0.1 · FJHC</div>
+      <Segments p={trace / TRAITS_CHEVAL} n={30} />
+      <small className="p2-h">{"// HISTORIQUE"}</small>
+      {[
+        ["0.1", "23 NOVEMBRE 2026", "ACTUELLE"],
+        ["0.0", "9 NOVEMBRE 2026", ""],
+      ].map(([v, d, e], k) => (
+        <T key={v} i={k + 2}>
+          <div className={`p2-ver${k === 0 ? " act" : ""}`}>
+            <b>{v}</b>
+            <span>{d}</span>
+            <em>{e}</em>
+          </div>
+        </T>
+      ))}
+      <button className="p2-ver p2-sons" onClick={basculer}>
+        <b>
+          <Icone nom={sons === "off" ? "volume_off" : "volume_up"} />
+        </b>
+        <span>SONS DE L’INTERFACE</span>
+        <em>{sons === "off" ? "◄ COUPÉS ►" : "◄ ACTIVÉS ►"}</em>
+      </button>
+    </div>
+  );
+}
+
+function PanneauEdition() {
+  const [code, setCode] = useState("");
+  const [etat, setEtat] = useState<"" | "verif" | "erreur" | "ok">("");
+  const [msg, setMsg] = useState("AUTHENTIFICATION REQUISE");
+  const verifier = async (c: string) => {
+    setEtat("verif");
+    setMsg("VÉRIFICATION…");
+    try {
+      const r = await fetch("/api/edition/session", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code: c }),
+      });
+      const d = (await r.json()) as { ok?: boolean; jeton?: string; erreur?: string };
+      if (!r.ok || !d.ok) throw new Error(d.erreur || "CODE REFUSÉ");
+      setEtat("ok");
+      setMsg("ACCÈS AUTORISÉ");
+      sonValide();
+      try {
+        sessionStorage.setItem("fjch-edition-ouvrir", "1");
+      } catch {}
+      window.setTimeout(() => window.location.assign("/projets"), 900);
+    } catch (e) {
+      setEtat("erreur");
+      setMsg((e as Error).message?.toUpperCase() || "CODE REFUSÉ");
+      bip(220, 0.18, 0.05, "sawtooth");
+      window.setTimeout(() => {
+        setCode("");
+        setEtat("");
+      }, 700);
+    }
+  };
+  const appui = (k: string) => {
+    if (etat === "verif" || etat === "ok") return;
+    if (k === "⌫") {
+      bip(900, 0.03, 0.025);
+      return setCode((c) => c.slice(0, -1));
+    }
+    if (code.length >= 6) return;
+    sonSurvol();
+    const c = code + k;
+    setCode(c);
+    if (c.length === 6) void verifier(c);
+  };
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if (/^[0-9]$/.test(e.key)) appui(e.key);
+      else if (e.key === "Backspace") {
+        e.preventDefault();
+        appui("⌫");
+      }
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  });
+  return (
+    <>
+      <h3>
+        <Decode texte="Code d’accès · 6 chiffres" duree={500} />
+      </h3>
+      <div className={`p2-code ${etat}`}>
+        {Array.from({ length: 6 }, (_, k) => (
+          <i key={k} className={k < code.length ? "plein" : ""}>
+            {k < code.length ? "•" : ""}
+          </i>
         ))}
       </div>
-      <T i={4} className="aide">
-        <small>{`// ${o.nom}`}</small>
-        <p key={o.nom}>
-          <Decode texte={o.aide} duree={500} />
-        </p>
-        <b className="tav">franck</b>
-        <Coins />
+      <div className="p2-pave">
+        {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"].map((k, i) =>
+          k ? (
+            <button key={i} onClick={() => appui(k)} aria-label={k === "⌫" ? "Effacer" : k}>
+              {k === "⌫" ? <Icone nom="backspace" /> : k}
+            </button>
+          ) : (
+            <span key={i} />
+          ),
+        )}
+      </div>
+      <p className={`p2-decode centre ${etat}`} key={msg}>
+        <Decode texte={msg} duree={400} />
+        <b>▌</b>
+      </p>
+    </>
+  );
+}
+
+function PanneauAaka() {
+  const [texte, setTexte] = useState("franck j.h christen h.m.b.k");
+  return (
+    <>
+      <h3>
+        <Decode texte="Écris en Tavissiv, lis en Aaka" duree={600} />
+      </h3>
+      <T i={1}>
+        <textarea className="p2-saisie" value={texte} onChange={(e) => setTexte(e.target.value)} rows={2} spellCheck={false} aria-label="Texte à transcrire" />
       </T>
-    </div>
+      <T i={2} className="p2-aaka">
+        <small>{"// AAKA"}</small>
+        <p className="tav" lang="x-tavissiv">
+          {texte || " "}
+        </p>
+      </T>
+    </>
   );
 }
