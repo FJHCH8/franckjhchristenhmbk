@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 import { useTraduire } from "@/components/Locale";
 import { useRetour } from "./OdysseeOS";
 import { creerStore } from "./session";
-import { ambianceVille, bruitage, musique, silence, type Bruitage, type NomPiste } from "./opakaaltSon";
+import { ambianceVille, arreterMusiqueFin, bruitage, musique, musiqueFin, silence, type Bruitage, type NomPiste } from "./opakaaltSon";
 import { Blond, Casino, ChatNeon, CoeurPx, Femboy, PieceEchecs, Pixels, RueHotel, Terre, Ville, type Px } from "./opakaaltPixels";
 import { BabyFoot, BatailleNavale, QuiSuisJe } from "./OpakaaltMinis";
 import { memoireDiff, NIVEAUX, type Difficulte } from "./opakaaltDiff";
@@ -217,7 +217,7 @@ const CASINO: Etape[] = [
   { qui: "blond", texte: "Oui", vue: { bSourire: true } },
 ];
 const VICTOIRE: Etape[] = [
-  { musique: "jazz", vue: { fx: -10, bx: -22, fdir: 1, bdir: 1, t: 0, bRougit: 2, fRougit: 1 }, ms: 300 },
+  { vue: { fx: -10, bx: -22, fdir: 1, bdir: 1, t: 0, bRougit: 2, fRougit: 1 }, ms: 300 },
   { vue: { fx: 40, bx: 28, t: 3000, marche: true }, ms: 3000 },
   { vue: { marche: false, bdir: 1, fdir: -1 }, qui: "femboy", texte: "Tu ma insulté de pd tout à l’heure mais finalement tu n’es pas si homophobe mon prince" },
   { qui: "blond", texte: "face à toi je peux plus résister j’ai le barreau tout dur mmmmmmmmmmh", vue: { bRougit: 3, fRougit: 2 } },
@@ -953,13 +953,17 @@ const CREDITS = [
   "À bientôt.",
 ];
 
-function Credits({ fin }: { fin: () => void }) {
+function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
   useEffect(() => {
+    if (gagne) {
+      musiqueFin();
+      return;
+    }
     musique("credits");
     const m = window.setTimeout(() => bruitage("miaou"), 1400);
     const id = window.setTimeout(fin, 21000);
     return () => (window.clearTimeout(m), window.clearTimeout(id));
-  }, [fin]);
+  }, [fin, gagne]);
   return (
     <div className="op-scene op-credits">
       <div className="op-defile">
@@ -1022,6 +1026,7 @@ type Phase = "menu" | "intro" | "chargement" | "casino" | "tournoi" | "victoire"
 export function AppOpakaalt() {
   const [phase, setPhase] = useState<Phase>("menu");
   const [tour, setTour] = useState(0);
+  const [gagne, setGagne] = useState(false);
   useRetour(phase !== "menu", () => setPhase("menu"));
   useEffect(() => {
     const h = (ev: Event) => {
@@ -1052,8 +1057,13 @@ export function AppOpakaalt() {
   );
   const termine = useCallback((v: boolean) => {
     memoire.ecrire((m) => ({ parties: m.parties + 1, victoires: m.victoires + (v ? 1 : 0), defaites: m.defaites + (v ? 0 : 1) }));
+    setGagne(v);
+    if (v) musiqueFin();
     setPhase(v ? "victoire" : "defaite");
   }, []);
+  useEffect(() => {
+    if (phase === "menu") arreterMusiqueFin();
+  }, [phase]);
   const passer = phase === "intro" || phase === "casino" ? fins[phase] : null;
   return (
     <div className="op" data-son="aucun" data-phase={phase}>
@@ -1074,7 +1084,7 @@ export function AppOpakaalt() {
           {phase === "coeur-perdu" ? <CoeurFerme apres="aie" fin={fins.coeur} /> : null}
         </>
       ) : null}
-      {phase === "credits" ? <Credits fin={fins.credits} /> : null}
+      {phase === "credits" ? <Credits fin={fins.credits} gagne={gagne} /> : null}
       {passer ? (
         <button type="button" className="op-passer" onClick={() => (bruitage("menu"), passer())}>
           Passer ▸▸
