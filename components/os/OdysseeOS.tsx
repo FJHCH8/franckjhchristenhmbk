@@ -1292,8 +1292,8 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         <Titre>À PROPOS DU TÉLÉPHONE</Titre>
         {[
           ["Système", "AakanOS"],
-          ["Version d’Odyssée", "0.1 · 23 novembre 2026"],
-          ["Version précédente", "0.0 · 9 novembre 2026"],
+          ["Version d’Odyssée", "0.2 · 24 novembre 2026"],
+          ["Version précédente", "0.1 · 23 novembre 2026"],
           ["Propriétaire", "Franck J.H. Christen H.M.B.K."],
           ["Navigateur", "Nounou Browser"],
           ["Interface", "inspirée d’Android 4.1 Jelly Bean"],
@@ -1345,7 +1345,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       <LigneReglage
         icone={ic("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z")}
         titre="À propos du téléphone"
-        sous="AakanOS · Odyssée 0.1"
+        sous="AakanOS · Odyssée 0.2"
         onClick={() => act.aller("apropos")}
       />
       <LigneReglage icone={ic("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z")} titre="Revenir au site classique" sous="Quitter AakanOS" onClick={quitter} />

@@ -32,6 +32,7 @@ const CHOIX = RUBRIQUES.map((r) => r.id);
 const SYSTEME = {
   nom: "Odyssée",
   versions: [
+    { numero: "0.2", date: "24 novembre 2026" },
     { numero: "0.1", date: "23 novembre 2026" },
     { numero: "0.0", date: "9 novembre 2026" },
   ],

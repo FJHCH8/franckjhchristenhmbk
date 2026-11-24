@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties, type Rea
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider } from "@/components/Locale";
 import { Parametres } from "@/components/Parametres";
+import { Logo } from "@/components/Logo";
+import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { CompteEndur } from "@/components/Countdown";
 import { ProjetsPanorama } from "@/components/ProjetsPanorama";
 import { TopBlur } from "@/components/TopBlur";
@@ -132,27 +134,6 @@ function Segments({ p, n = 24, delai = 0 }: { p: number; n?: number; delai?: num
   );
 }
 
-const RONDS: [number, number][] = [
-  [148.7, 17.6],
-  [112.1, 80.8],
-  [128.0, 89.6],
-  [116.8, 91.6],
-  [27.2, 75.0],
-  [29.2, 90.4],
-  [70.6, 136.2],
-  [123.8, 171.7],
-  [168.1, 176.5],
-];
-function Constellation() {
-  return (
-    <svg className="n-constel" viewBox="0 0 200 200" aria-hidden="true">
-      <path d={`M${RONDS.map(([x, y]) => `${x} ${y}`).join(" L")}`} pathLength={1} fill="none" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" />
-      {RONDS.map(([x, y], k) => (
-        <circle key={k} cx={x} cy={y} r="11" fill="currentColor" style={{ "--k": k } as CSSProperties} />
-      ))}
-    </svg>
-  );
-}
 
 const GLYPHES: Record<string, string[]> = {
   F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
@@ -250,6 +231,7 @@ function Site({ depart }: { depart: Vue }) {
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
+  const [traceOdy, setTraceOdy] = useState(0);
   useEffect(() => {
     // Le contenu est déjà là (pour les moteurs de recherche) ; ses animations repartent
     // quand le chargement PS2 s'efface.
@@ -334,9 +316,28 @@ function Site({ depart }: { depart: Vue }) {
     <div className={`n${pret ? " pret" : ""}`}>
       <TopBlur />
       <header className="n-tete">
-        <button type="button" className="n-logo" onClick={() => aller("accueil")} aria-label="Accueil">
-          <Constellation />
-        </button>
+<span className="n-logos">
+          <button
+            type="button"
+            className="n-logo"
+            aria-label="Accueil"
+            onClick={(e) => {
+              const svg = e.currentTarget.querySelector("svg");
+              if (svg) {
+                svg.classList.remove("logo-rejoue");
+                void svg.getBoundingClientRect();
+                svg.classList.add("logo-rejoue");
+              }
+              aller("accueil");
+            }}
+          >
+            <Logo anime />
+          </button>
+          <i className="n-logos-sep" />
+          <button type="button" className="n-logo-ody" aria-label="Odyssée" onClick={() => (sonValide(), setTraceOdy((k) => k + 1))}>
+            <LogoOdyssee key={traceOdy} />
+          </button>
+        </span>
         <span className="n-outils">
           <span className="n-heure">{heure}</span>
           <button type="button" className="n-ic" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
@@ -380,7 +381,7 @@ function Site({ depart }: { depart: Vue }) {
       <footer className="n-bas">
         <span className="cache-mobile">[ÉCHAP] RETOUR</span>
         <span className="cache-mobile">© FRANCK J.H. CHRISTEN</span>
-        <span className="droite">ODYSSÉE 0.1</span>
+        <span className="droite">ODYSSÉE 0.2</span>
       </footer>
 
 
@@ -519,7 +520,7 @@ function Pied() {
       <Matrice />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/blason-christen.jpg" alt="" className="n-blason" />
-      <p>© FRANCK J.H. CHRISTEN H.M.B.K. · ODYSSÉE 0.1</p>
+      <p>© FRANCK J.H. CHRISTEN H.M.B.K. · ODYSSÉE 0.2</p>
     </footer>
   );
 }

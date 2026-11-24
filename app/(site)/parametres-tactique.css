@@ -170,3 +170,8 @@
 /* reflet blanc bleuté qui se déplace dans les sélections */
 @keyframes reflet-bleu { from { background-position: 0 0; } to { background-position: -240% 0; } }
 .ptac .p2-ligne::before, .ptac .p2-action { animation: reflet-bleu 3.4s linear infinite; }
+/* 0.2 : reflet en boucle continue, et lignes du nom séparées */
+@keyframes reflet-bleu { from { background-position: 0% 0; } to { background-position: -200% 0; } }
+.ptac .p2-ligne::before, .ptac .p2-action { background: linear-gradient(100deg, #6fbdf5 0%, #b9e3ff 25%, #f4fbff 50%, #b9e3ff 75%, #6fbdf5 100%) !important; background-size: 200% 100% !important; background-repeat: repeat-x !important; animation: reflet-bleu 3.2s linear infinite !important; }
+.ptac .matrice { gap: 12px; }
+.ptac .p2-panneau { padding: 22px 24px; }
