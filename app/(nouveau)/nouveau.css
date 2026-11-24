@@ -744,3 +744,26 @@ html, body { background: #000; }
 .n-moniteur-constel circle.on { fill: #8fd0ff; filter: drop-shadow(0 0 5px #6fbdf5); }
 .n-moniteur-etoile { margin-left: auto; font-family: var(--f-mono); font-size: 12px; letter-spacing: 1.5px; color: #cfe9ff; text-shadow: 0 1px 4px #000; }
 .n-feuille-bas .n-moniteur { margin: 0; }
+
+/* ---------- 0.2 · retouches ---------- */
+.n .n-mono { white-space: normal; letter-spacing: 2px; line-height: 1.6; max-width: 34em; }
+/* cœurs du système, plus écrasés */
+.ptac .coeurs svg { aspect-ratio: 7 / 3.6 !important; }
+/* lecteur écrasé */
+.n-moniteur-ecran { height: 58px; }
+.n-moniteur-hud { top: 3px; }
+.n-moniteur-hud small { font-size: 9px; }
+.n-moniteur-regle { height: 30px; margin-top: 2px; }
+.n-moniteur-piste { top: 7px; }
+.n-moniteur-piste i.dix { height: 9px; }
+.n-moniteur-piste i.cinq { height: 6px; }
+.n-moniteur-piste i b { top: 10px; font-size: 8px; }
+.n-moniteur-piste em { top: -5px; width: 7px; height: 7px; margin-left: -3.5px; }
+.n-moniteur-bas { margin-top: 6px; gap: 10px; }
+.n-moniteur-bas .n-lecteur-btn { width: 34px !important; height: 34px !important; }
+.n-moniteur-bas .n-lecteur-btn svg { width: 16px; height: 16px; }
+.n-moniteur-constel { width: 32px; height: 32px; }
+.n-moniteur-etoile { font-size: 11px; }
+/* avertissement AakanOS : le rouge et le blanc rougeâtre défilent */
+.ptac .p2-action.rouge { background: linear-gradient(100deg, #e0303a 0%, #ff8a92 20%, #fff3f4 35%, #ff8a92 50%, #e0303a 65%, #ff8a92 80%, #e0303a 100%) !important; background-size: 300% 100% !important; animation: n-rouge-bouge 2.4s linear infinite !important; }
+@keyframes n-rouge-bouge { from { background-position: 0% 0; } to { background-position: 150% 0; } }

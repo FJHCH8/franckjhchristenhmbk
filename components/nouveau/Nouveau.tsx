@@ -6,12 +6,12 @@
  * Accueil, Qui suis-je, Projets (tuiles de mission + intérieur), recherche, vrais Paramètres.
  */
 import { createPortal } from "react-dom";
-import { TRANSCRIPTIONS } from "@/lib/transcriptions";
+import { TRANSCRIPTIONS, type LangueTranscription } from "@/lib/transcriptions";
 import { ONDES, lireOnde } from "@/lib/ondes";
 import { Moniteur } from "@/components/nouveau/Moniteur";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
-import { LocaleProvider, useTraduire } from "@/components/Locale";
+import { LocaleProvider, useLocale, useTraduire } from "@/components/Locale";
 import { Parametres } from "@/components/Parametres";
 import { Logo } from "@/components/Logo";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
@@ -25,7 +25,6 @@ type Etoile = { id: string; titre: string; texte: string; auteur: string; date: 
 type Rubrique = "citations" | "projets" | "evenements";
 
 const OUVERTURE = new Date("2026-12-01T00:00:00+01:00").getTime();
-const DEBUT_ENDU = new Date("2026-07-23T00:00:00+02:00").getTime();
 const AUBE_DEBUT = new Date("2026-12-03T00:00:00+01:00").getTime();
 const AUBE_FIN = new Date("2027-06-03T00:00:00+02:00").getTime();
 const CARS = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#/%&";
@@ -129,37 +128,6 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
     </div>
   );
 }
-function Segments({ p }: { p: number; n?: number; delai?: number }) {
-  // Barre de chargement : un mélange du jeu 8 bits et des cœurs de jeu d'aventure.
-  // Des cœurs en pixels, en relief comme des blocs, qui se remplissent un par un (le dernier à moitié).
-  const id = useId().replace(/:/g, "");
-  const n = 10;
-  const v = Math.max(0, Math.min(1, p)) * n;
-  return (
-    <div className="coeurs" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
-      {Array.from({ length: n }, (_, k) => {
-        const f = Math.max(0, Math.min(1, Math.round((v - k) * 2) / 2));
-        return (
-          <svg key={k} viewBox="0 0 7 6" shapeRendering="crispEdges" style={{ animationDelay: `${k * 70}ms` }} className={f === 1 ? "plein" : f > 0 ? "moitie" : ""}>
-            <defs>
-              <clipPath id={`${id}-${k}`}>
-                <rect x="0" y="0" width={7 * f} height="6" />
-              </clipPath>
-            </defs>
-            <path d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z" fill="#2a2d31" />
-            <g clipPath={`url(#${id}-${k})`}>
-              <path d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z" fill="#8fd0ff" />
-              <path d="M1 1h1v1H1zM2 0h1v1H2z" fill="#eef8ff" />
-              <path d="M5 2h1v1H5zM4 3h1v1H4zM3 4h1v1H3z" fill="#4f9fdc" />
-            </g>
-          </svg>
-        );
-      })}
-    </div>
-  );
-}
-
-
 const GLYPHES: Record<string, string[]> = {
   F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
   R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
@@ -443,7 +411,7 @@ function Accueil() {
             </span>
           </h1>
           <p className="n-mono">
-            <Decode texte="POLYMATHE" delai={650} />
+            <Decode texte="POLYMATHE · AUTOROMANTIQUE · TTHPI · TDAH" delai={650} duree={900} />
           </p>
         </div>
       </section>
@@ -524,7 +492,9 @@ const ECOUTES = [
 ];
 
 /** Lecteur audio du site : lecture / pause, barre que l'on touche pour avancer, temps. Se met en pause si on referme. */
-function Lecteur({ id, src, actif, titre, transcription }: { id: keyof typeof ONDES; src: string; actif: boolean; titre: string; transcription: string[] }) {
+function Lecteur({ id, src, actif, titre, transcription }: { id: keyof typeof ONDES; src: string; actif: boolean; titre: string; transcription: Record<LangueTranscription, string[]> }) {
+  const { locale } = useLocale();
+  const langueTx: LangueTranscription = locale === "de" || locale === "sv" || locale === "br" ? locale : "fr";
   const onde = useMemo(() => lireOnde(ONDES[id]), [id]);
   const ref = useRef<HTMLAudioElement>(null);
   const [lit, setLit] = useState(false);
@@ -604,8 +574,8 @@ function Lecteur({ id, src, actif, titre, transcription }: { id: keyof typeof ON
                   <Icone nom="close" />
                 </button>
               </div>
-              <div className="n-feuille-texte" lang="de" translate="no">
-                {transcription.map((p, i) => (
+              <div className="n-feuille-texte" lang={langueTx} translate="no">
+                {transcription[langueTx].map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
               </div>
@@ -901,7 +871,6 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
     return () => clearInterval(id);
   }, []);
   const c = decompte(t, OUVERTURE);
-  const pE = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
   const finis = t == null ? 0 : [OUVERTURE, AUBE_FIN].filter((f) => t >= f).length;
   const derCit = citations[0];
   const derPro = projets[0];
@@ -942,7 +911,6 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
                   <q>{derCit ? derCit.texte : "—"}</q>
                 </div>
               </div>
-              <Segments p={citations.length ? 1 : 0} delai={500} />
             </button>
           )}
           <Coins />
@@ -966,7 +934,6 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
                   <q>{derPro ? derPro.titre : "—"}</q>
                 </div>
               </div>
-              <Segments p={Math.min(1, projets.length / 24)} delai={600} />
             </button>
           )}
           <Coins />
@@ -987,7 +954,6 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
               <em className="cpt">
                 ENDURREISEN · {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
               </em>
-              <Segments p={pE} delai={700} />
             </button>
           )}
           <Coins />

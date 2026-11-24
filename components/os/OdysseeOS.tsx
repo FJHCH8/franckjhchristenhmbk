@@ -467,7 +467,7 @@ export function OdysseeOS() {
         </div>
 
         {verrou ? (
-          <Verrouillage heure={heure} date={date} onOuvrir={() => setVerrou(false)} />
+          <Verrouillage heure={heure} date={date} onOuvrir={() => setVerrou(false)} onQuitter={quitter} />
         ) : (
           <>
             <div className={`os-bureau${tiroir ? " os-cache" : ""}`}>
@@ -799,7 +799,7 @@ const TOUCHES: [string, string][] = [
   ["OK", ""],
 ];
 
-function Verrouillage({ heure, date, onOuvrir }: { heure: string; date: string; onOuvrir: () => void }) {
+function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; date: string; onOuvrir: () => void; onQuitter: () => void }) {
   const [saisi, setSaisi] = useState("");
   const [erreur, setErreur] = useState(false);
   const [part, setPart] = useState(false);
@@ -858,6 +858,13 @@ function Verrouillage({ heure, date, onOuvrir }: { heure: string; date: string; 
           <i key={i} className={i < saisi.length ? "plein" : ""} />
         ))}
       </div>
+      {/* Tant que le code n'est pas entré, on peut repartir vers le site classique. */}
+      <button type="button" className="os-verrou-quitter" onClick={onQuitter}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M10 17l1.4-1.4L8.8 13H20v-2H8.8l2.6-2.6L10 7l-5 5zM4 5h7V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7v-2H4z" />
+        </svg>
+        Quitter AakanOS
+      </button>
       <div className="os-clavier">
         {TOUCHES.map(([a, b]) => (
           <button key={a} className={a === "OK" ? "ok" : a === "⌫" ? "eff" : ""} onClick={() => appui(a)} aria-label={a === "⌫" ? "Effacer" : a}>

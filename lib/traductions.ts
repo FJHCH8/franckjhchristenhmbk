@@ -44,6 +44,7 @@ const LIGNES: [string, string, string, string][] = [
   // accueil
   ["identifié", "Identifiziert", "Identifierad", "Anavezet"],
   ["polymathe", "Polymath", "Polymat", "Polimat"],
+  ["polymathe · autoromantique · tthpi · tdah", "Polymath · Autoromantiker · TTHPI · ADHS", "Polymat · Autoromantiker · TTHPI · ADHD", "Polimat · Autoromantour · TTHPI · TDAH"],
   ["bienvenue", "Willkommen", "Välkommen", "Degemer mat"],
   ["explorer", "Entdecken", "Utforska", "Ergerzhout"],
   ["le blason des christen · la constellation de franck", "Das Wappen der Christen · Das Sternbild von Franck", "Christens vapen · Francks stjärnbild", "Ardamez ar Christen · Steredeg Franck"],
@@ -145,6 +146,7 @@ const LIGNES: [string, string, string, string][] = [
   ["le site comme un téléphone", "Die Seite als Telefon", "Webbplatsen som en telefon", "Al lec’hienn evel ur pellgomz"],
   ["lancer aakanos", "AakanOS starten", "Starta AakanOS", "Lañsañ AakanOS"],
   ["le site, ou aakanos", "Die Seite oder AakanOS", "Webbplatsen, eller AakanOS", "Al lec’hienn, pe AakanOS"],
+  ["pour rentrer sur aakanos, il vous faut un mot de passe caché sur le site. appuyez une nouvelle fois pour entrer.", "Um AakanOS zu betreten, brauchen Sie ein Passwort, das auf der Seite versteckt ist. Tippen Sie noch einmal, um hineinzugehen.", "För att komma in i AakanOS behöver du ett lösenord som är gömt på webbplatsen. Tryck en gång till för att gå in.", "Evit mont en AakanOS ho po ezhomm eus ur ger-tremen kuzhet war al lec’hienn. Stokit adarre evit mont e-barzh."],
   ["pour rentrer sur aakanos, il vous faut un mot de passe caché sur le site.", "Um AakanOS zu betreten, brauchen Sie ein Passwort, das auf der Seite versteckt ist.", "För att komma in i AakanOS behöver du ett lösenord som är gömt på webbplatsen.", "Evit mont en AakanOS ho po ezhomm eus ur ger-tremen kuzhet war al lec’hienn."],
   ["le site classique, ou aakanos : le site comme un téléphone.", "Die klassische Seite oder AakanOS: die Seite als Telefon.", "Den klassiska webbplatsen, eller AakanOS: webbplatsen som en telefon.", "Al lec’hienn klasel, pe AakanOS: al lec’hienn evel ur pellgomz."],
   ["choisis la langue du site", "Wähle die Sprache der Seite", "Välj webbplatsens språk", "Dibab yezh al lec’hienn"],

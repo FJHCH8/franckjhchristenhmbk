@@ -100,7 +100,7 @@ function Segments({ p }: { p: number; n?: number; delai?: number }) {
       {Array.from({ length: n }, (_, k) => {
         const f = Math.max(0, Math.min(1, Math.round((v - k) * 2) / 2));
         return (
-          <svg key={k} viewBox="0 0 7 6" shapeRendering="crispEdges" style={{ animationDelay: `${k * 70}ms` }} className={f === 1 ? "plein" : f > 0 ? "moitie" : ""}>
+          <svg key={k} viewBox="0 0 7 6" preserveAspectRatio="none" shapeRendering="crispEdges" style={{ animationDelay: `${k * 70}ms` }} className={f === 1 ? "plein" : f > 0 ? "moitie" : ""}>
             <defs>
               <clipPath id={`${id}-${k}`}>
                 <rect x="0" y="0" width={7 * f} height="6" />
@@ -215,7 +215,7 @@ function PanneauApparence() {
             }}
           >
             <Icone nom={verrou ? "info" : "phone_iphone"} />
-            {verrou ? <span className="p2-action-txt">Pour rentrer sur AakanOS, il vous faut un mot de passe caché sur le site.</span> : <T>lancer AakanOS</T>}
+            {verrou ? <span className="p2-action-txt">Pour rentrer sur AakanOS, il vous faut un mot de passe caché sur le site. Appuyez une nouvelle fois pour entrer.</span> : <T>lancer AakanOS</T>}
           </button>
         </Tq>
       ) : null}

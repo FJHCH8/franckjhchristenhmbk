@@ -67,9 +67,9 @@ export function Moniteur({
   useEffect(() => {
     const c = ecran.current;
     if (!c || !largeur) return;
-    const H = 96;
+    const H = c.clientHeight || 58;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (c.width !== largeur * dpr) {
+    if (c.width !== largeur * dpr || c.height !== H * dpr) {
       c.width = largeur * dpr;
       c.height = H * dpr;
     }
@@ -79,7 +79,7 @@ export function Moniteur({
     ctx.clearRect(0, 0, largeur, H);
     const pps = largeur / FENETRE;
     const mid = largeur / 2;
-    const y0 = H / 2 + 8;
+    const y0 = H / 2 + H * 0.09;
     const pts: number[] = [];
     for (let x = 0; x <= largeur; x += 1) {
       const tau = t + (x - mid) / pps;

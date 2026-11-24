@@ -483,3 +483,6 @@ a.app-ligne:active { background: var(--presse); }
 /* images fixes : Gypsy qui pleure et Pulpüs qui dort ne bougent pas */
 .nounou-plage .larme { animation: none !important; }
 .pulpus-dort { display: block; max-width: 100%; height: auto; }
+/* quitter AakanOS depuis l'écran de verrouillage (disparaît une fois le code entré) */
+.os-verrou-quitter { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, .18); border-radius: 2px; background: rgba(0, 0, 0, .35); color: #ccc; font-size: 13px; letter-spacing: .5px; }
+.os-verrou-quitter:active { background: var(--presse); color: #fff; }
