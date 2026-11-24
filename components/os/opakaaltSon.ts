@@ -231,6 +231,7 @@ type CoucheMus = { nom: NomPiste; minuterie: number; gain: GainNode };
 let couches: CoucheMus[] = [];
 
 export function musique(nom: NomPiste | null) {
+  if (nom !== null) arreterMusiqueFin();
   if (couches.at(-1)?.nom === nom) return;
   const a = c();
   if (!a || !maitre) {
@@ -498,8 +499,76 @@ export function bruitage(n: Bruitage) {
   }
 }
 
+/** La musique de fin (victoire + générique) : le morceau de Franck, en morceaux base64. */
+const FIN_MORCEAUX = ["/aakanos/musique/fin-opakaalt.mp3.b64.1"];
+let finAudio: HTMLAudioElement | null = null;
+let finUrl: string | null = null;
+let finCharge: Promise<HTMLAudioElement | null> | null = null;
+let finQuandFini: (() => void) | null = null;
+
+async function chargerFin(): Promise<HTMLAudioElement | null> {
+  if (finAudio) return finAudio;
+  try {
+    const parties: string[] = [];
+    for (const url of FIN_MORCEAUX) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(String(r.status));
+      parties.push((await r.text()).trim());
+    }
+    const bin = atob(parties.join(""));
+    const o = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+    const blob = new Blob([o], { type: "audio/mpeg" });
+    finUrl = URL.createObjectURL(blob);
+    const a = new Audio(finUrl);
+    a.preload = "auto";
+    a.controls = false;
+    a.setAttribute("controlsList", "nodownload nofullscreen noremoteplayback");
+    a.disableRemotePlayback = true;
+    a.loop = true;
+    a.addEventListener("contextmenu", (e) => e.preventDefault());
+    a.addEventListener("ended", () => finQuandFini?.());
+    const aCtx = c();
+    if (aCtx && maitre) {
+      try { aCtx.createMediaElementSource(a).connect(maitre); } catch { /* déjà branché */ }
+    }
+    finAudio = a;
+    return a;
+  } catch {
+    finCharge = null;
+    return null;
+  }
+}
+
+/** Joue la musique de fin (boucle tant qu’on reste sur l’écran). Coupe le chiptune. */
+export function musiqueFin() {
+  musique(null);
+  finCharge ??= chargerFin();
+  void finCharge.then((a) => {
+    if (!a || finAudio !== a) return;
+    a.currentTime = a.currentTime || 0;
+    void a.play().catch(() => {});
+  });
+}
+
+export function arreterMusiqueFin() {
+  finQuandFini = null;
+  if (finAudio) {
+    finAudio.pause();
+    finAudio.removeAttribute("src");
+    finAudio.load();
+    finAudio = null;
+  }
+  if (finUrl) {
+    URL.revokeObjectURL(finUrl);
+    finUrl = null;
+  }
+  finCharge = null;
+}
+
 /** Coupe tout (sortie du jeu). */
 export function silence() {
   musique(null);
+  arreterMusiqueFin();
   ambianceVille(false);
 }
