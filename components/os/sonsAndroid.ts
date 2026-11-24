@@ -386,6 +386,8 @@ export function sonAppli(id: string) {
     case "appareil": return son("tick");
     // Fichiers, Musique, Dictaphone : seulement le « tick » AOSP du toucher, aucun son synthétisé
     case "fichiers": case "musique": case "dictaphone": return;
+    // Opakaalt joue sa propre musique (chiptune) dès l'ouverture
+    case "opakaalt": return;
     case "contacts": return notes([[660, 0.08], [990, 0.12]], 0.06, 0.05);
     case "album": return notes([[1046, 0.1], [784, 0.1], [1318, 0.2]], 0.05, 0.06);
     case "projets": return notes([[523, 0.1], [784, 0.18]], 0.06, 0.08);
