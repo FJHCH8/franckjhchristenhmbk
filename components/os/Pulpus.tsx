@@ -5,6 +5,7 @@
  * À l'ouverture, un chargement… puis elle dort sur ses livres ouverts : pas d'internet.
  */
 import { useEffect, useState } from "react";
+import { son } from "./sonsAndroid";
 
 /** Dessine une grille de pixels (une lettre = une couleur, « . » = vide), en regroupant les pixels voisins. */
 function Pixels({ lignes, pal }: { lignes: string[]; pal: Record<string, string> }) {
@@ -91,7 +92,8 @@ const DORT = [
 export function AppPulpus() {
   const [charge, setCharge] = useState(true);
   useEffect(() => {
-    const id = window.setTimeout(() => setCharge(false), 1800);
+    // la page ne charge pas : l'alerte « batterie faible » d'Android (LowBattery, AOSP)
+    const id = window.setTimeout(() => (setCharge(false), son("batterie", 0.5)), 1800);
     return () => window.clearTimeout(id);
   }, []);
   return (

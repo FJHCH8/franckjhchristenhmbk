@@ -7,6 +7,7 @@
  * On voit sa conso et son forfait (le forfait Connard), mais on ne peut rien changer : pas connecté.
  */
 import { useEffect, useId, useState } from "react";
+import { son } from "./sonsAndroid";
 
 const COEUR = "M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z";
 
@@ -80,7 +81,7 @@ export function AppSamTelecom() {
   }, []);
   useEffect(() => {
     if (!essai) return;
-    const id = window.setTimeout(() => setEssai(false), 1600);
+    const id = window.setTimeout(() => (setEssai(false), son("batterie", 0.5)), 1600);
     return () => window.clearTimeout(id);
   }, [essai]);
   const d = dialogue ? DIALOGUES[dialogue] : null;
