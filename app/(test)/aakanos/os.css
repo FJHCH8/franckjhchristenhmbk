@@ -555,3 +555,16 @@ a.app-ligne:active { background: var(--presse); }
 .st .dlg { font-family: var(--font-roboto), Roboto, sans-serif; } .st .dlg-titre { font-family: var(--font-roboto), Roboto, sans-serif; }
 .jb-boutons-dlg button { text-align: center; }
 .st .dlg-fond { position: fixed; }
+
+/* Sharkobank et Peeporn : toujours hors connexion */
+.hl { position: absolute; inset: 0; display: flex; flex-direction: column; color: #eee; }
+.hl-banque { background: linear-gradient(#0d1b33, #050a14); }
+.hl-peeporn { background: linear-gradient(#1a0f2e, #07040d); }
+.hl-charge { flex: 1; display: grid; place-content: center; justify-items: center; gap: 14px; color: #999; font-size: 14px; }
+.hl-charge i { width: 46px; height: 46px; border-radius: 50%; border: 4px solid rgba(51, 181, 229, .2); border-top-color: #33b5e5; animation: os-tourne .9s linear infinite; }
+.hl-ecran { flex: 1; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 0 26px; text-align: center; animation: os-fondu .4s both; }
+.hl-ecran img { width: 150px; height: 150px; image-rendering: pixelated; margin-bottom: 6px; }
+.hl-ecran h2 { margin: 0; font-weight: 300; font-size: 24px; }
+.hl-ecran p { margin: 0; font-size: 15px; line-height: 1.45; color: #bbb; }
+.hl-ecran p.rouge { color: #ff6b6b; }
+.hl-ecran .jb-bouton { margin-top: 10px; width: auto; min-width: 200px; }

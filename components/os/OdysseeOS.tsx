@@ -23,16 +23,19 @@ import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
 import { AppSamTelecom } from "./SamTelecom";
+import { AppPeeporn, AppSharkobank } from "./HorsLigne";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
   { id: "telephone", nom: "Téléphone" },
   { id: "pulpus", nom: "Pulpüs market" },
   { id: "samtelecom", nom: "Sam-Telecom" },
+  { id: "sharkobank", nom: "Sharkobank" },
+  { id: "peeporn", nom: "Peeporn" },
   { id: "contacts", nom: "Contacts" },
   { id: "projets", nom: "Calendrier" },
   { id: "album", nom: "Album" },
@@ -45,7 +48,7 @@ const APPLIS: Appli[] = [
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
 const PAGE1: IdAppli[] = ["projets", "album", "citations", "contacts", "endurreisen", "instagram", "pulpus", "reglages", "samtelecom"];
-const PAGE2: IdAppli[] = [];
+const PAGE2: IdAppli[] = ["sharkobank", "peeporn"];
 const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "contacts"];
 
 const CODE = "6458";
@@ -139,6 +142,10 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return png("phone");
     case "pulpus":
       return <LogoPulpus taille={taille} />;
+    case "sharkobank":
+      return png("sharkobank");
+    case "peeporn":
+      return png("peeporn");
     case "samtelecom":
       return (
         // eslint-disable-next-line @next/next/no-img-element
@@ -983,6 +990,10 @@ function ContenuAppli({
       return <AppPulpus />;
     case "samtelecom":
       return <AppSamTelecom />;
+    case "sharkobank":
+      return <AppSharkobank />;
+    case "peeporn":
+      return <AppPeeporn />;
     case "qui":
       return <AppQui ouvrir={ouvrir} />;
     case "album":
