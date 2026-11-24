@@ -250,7 +250,6 @@ function Site() {
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
   const [police, setPolice] = useState(0);
-  const [album, setAlbum] = useState<number | null>(null);
 
   useEffect(() => {
     try {
@@ -308,12 +307,12 @@ function Site() {
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
-      if (document.documentElement.classList.contains("param-ouvert") || recherche || album !== null) return;
+      if (document.documentElement.classList.contains("param-ouvert") || recherche) return;
       if (e.key === "Escape" && vue !== "accueil") retour();
     };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
-  }, [retour, vue, recherche, album]);
+  }, [retour, vue, recherche]);
 
   const citations = useMemo(() => (etoiles ?? []).filter((e) => e.genre !== "projet" && e.texte?.trim()), [etoiles]);
   const projets = useMemo(() => (etoiles ?? []).filter((e) => e.genre === "projet"), [etoiles]);
@@ -346,6 +345,12 @@ function Site() {
         <span className="cache-mobile">CONNEXION ÉTABLIE</span>
         <span className="ambre">{heure}</span>
         <span className="droite cache-mobile">FJHC // H.M.B.K.</span>
+        <span className="n-outils">
+          <button type="button" className="n-ic" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
+            <Icone nom="search" />
+          </button>
+          <Parametres />
+        </span>
       </header>
 
       <nav className="n-nav" aria-label="Menu">
@@ -355,19 +360,24 @@ function Site() {
             {m.nom}
           </button>
         ))}
-        <span className="n-nav-outils">
-          <button type="button" className="n-ic" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
-            <Icone nom="search" />
-          </button>
-          <Parametres />
-        </span>
       </nav>
 
       {pret ? (
         <main className="n-scene" key={`${vue}-${rubrique ?? ""}`}>
-          {vue === "accueil" ? <Accueil t={t} citations={citations.length} projets={projets.length} aller={aller} /> : null}
-          {vue === "qui" ? <Qui ouvrirAlbum={(k) => (sonValide(), setAlbum(k))} /> : null}
-          {vue === "projets" && !rubrique ? <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} ouvrir={(r) => aller("projets", r)} /> : null}
+          {vue === "accueil" ? <Accueil aller={aller} /> : null}
+          {vue === "qui" ? <Qui /> : null}
+          {vue === "projets" && !rubrique ? (
+            <>
+              <Actualite t={t} citations={citations.length} projets={projets.length} />
+              <Tuiles t={t} citations={citations} projets={projets} charge={etoiles === null} ouvrir={(r) => aller("projets", r)} />
+            </>
+          ) : null}
+          {!rubrique ? (
+            <>
+              <Suivant nom={vue === "accueil" ? "QUI SUIS-JE" : vue === "qui" ? "PROJETS" : "ACCUEIL"} aller={() => aller(vue === "accueil" ? "qui" : vue === "qui" ? "projets" : "accueil")} />
+              <Pied />
+            </>
+          ) : null}
           {vue === "projets" && rubrique ? <Interieur t={t} rubrique={rubrique} citations={citations} projets={projets} retour={retour} /> : null}
         </main>
       ) : null}
@@ -385,10 +395,16 @@ function Site() {
         {MENU.map((m) => (
           <button key={m.id} type="button" className={vue === m.id ? "on" : ""} aria-label={m.nom} onClick={() => aller(m.id)}>
             <Icone nom={m.icone} />
+            <small>{m.id === "qui" ? "QUI" : m.nom}</small>
           </button>
         ))}
         <button type="button" aria-label="Rechercher" onClick={() => (sonValide(), setRecherche(true))}>
           <Icone nom="search" />
+          <small>CHERCHER</small>
+        </button>
+        <button type="button" aria-label="Réglages" onClick={() => document.querySelector<HTMLButtonElement>(".n-haut .param-ouvrir")?.click()}>
+          <Icone nom="settings" />
+          <small>RÉGLAGES</small>
         </button>
       </nav>
 
@@ -403,7 +419,6 @@ function Site() {
       </div>
 
       {recherche ? <Recherche etoiles={etoiles ?? []} fermer={() => (sonRetour(), setRecherche(false))} aller={(r) => (setRecherche(false), aller("projets", r))} /> : null}
-      {album !== null ? <Visionneuse k={album} fermer={() => (sonRetour(), setAlbum(null))} /> : null}
 
       <div className="n-glitch" key={glitch} />
     </div>
@@ -412,69 +427,133 @@ function Site() {
 
 /* ---------- Accueil ---------- */
 
-function Accueil({ t, citations, projets, aller }: { t: number | null; citations: number; projets: number; aller: (v: Vue, r?: Rubrique | null) => void }) {
-  const [sel, setSel] = useState(0);
-  const c = decompte(t, OUVERTURE);
-  const p = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
-  const lignes: { nom: string; icone: NomIcone; valeur?: string; faire: () => void }[] = [
-    { nom: "QUI SUIS-JE", icone: "person", faire: () => aller("qui") },
-    { nom: "PROJETS", icone: "star", valeur: deux(projets), faire: () => aller("projets", "projets") },
-    { nom: "CITATIONS", icone: "format_quote", valeur: deux(citations), faire: () => aller("projets", "citations") },
-    { nom: "INSTAGRAM", icone: "photo_camera", faire: () => window.open("https://instagram.com/fjhchristenhmbk", "_blank", "noopener") },
+function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
+  const [ouvert, setOuvert] = useState(0);
+  const rubriques = [
+    { titre: "QUI SUIS-JE", texte: "Né différent. Il regarde ce que personne ne voulait voir.", photo: "/media/franck.jpg", cadre: "50% 30%", vers: () => aller("qui") },
+    { titre: "À PROPOS", texte: "Les coulisses du site, et ce qui s’y prépare.", photo: "/fond/judo-960.webp", cadre: "50% 20%", vers: () => ouvrirReglage("apropos") },
+    { titre: "CONTACT", texte: "Une idée, une question ? Deux chemins mènent jusqu’à Franck.", photo: "/fond/avion-960.webp", cadre: "68% 42%", vers: () => ouvrirReglage("contact") },
+    { titre: "PROJETS", texte: "Des citations, des projets, et Endurreisen qui approche.", photo: "/fond/rose-960.webp", cadre: "46% 30%", vers: () => aller("projets") },
+    { titre: "INSTAGRAM", texte: "@fjhchristenhmbk — les nouveautés, au fil des jours.", photo: "/media/franck-enfant-900.webp", cadre: "50% 25%", vers: () => window.open("https://instagram.com/fjhchristenhmbk", "_blank", "noopener") },
   ];
   return (
-    <div className="n-acc">
-      <div className="n-acc-g">
-        <small>
-          <Decode texte="// IDENTIFIÉ" duree={500} />
-        </small>
-        <h1 className="n-nom">
-          <Decode texte="FRANCK J.H." delai={120} />
-          <br />
-          <Decode texte="CHRISTEN" delai={260} />
-          <span>
-            <Decode texte="H.M.B.K." delai={420} />
-          </span>
-        </h1>
-        <p className="n-mono">
-          <Decode texte="POLYMATHE · NÉ EN 2007 · FRANCE" delai={600} />
-        </p>
-        <Matrice />
-      </div>
-      <div className="n-acc-d">
-        <div className="p2-liste">
-          {lignes.map((l, k) => (
-            <Tq key={l.nom} i={k}>
-              <Ligne
-                n={k + 1}
-                icone={l.icone}
-                valeur={l.valeur}
-                sel={sel === k}
-                onEnter={() => {
-                  if (sel !== k) sonSurvol();
-                  setSel(k);
-                }}
-                onClick={l.faire}
-              >
-                {l.nom}
-              </Ligne>
+    <>
+      <section className="n-hero">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/media/franck-enfant-900.webp" alt="" />
+        <div className="n-hero-voile" />
+        <Coins />
+        <div className="n-hero-txt">
+          <small>
+            <Decode texte="// IDENTIFIÉ" duree={500} />
+          </small>
+          <h1 className="n-nom">
+            <Decode texte="FRANCK J.H." delai={150} />
+            <br />
+            <Decode texte="CHRISTEN" delai={300} />
+            <span>
+              <Decode texte="H.M.B.K." delai={450} />
+            </span>
+          </h1>
+          <p className="n-mono">
+            <Decode texte="POLYMATHE" delai={650} />
+          </p>
+        </div>
+      </section>
+
+      <Section n="01" titre="BIENVENUE">
+        <Tq i={0} className="p2-panneau n-bienvenue">
+          <Coins />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/blason-christen.jpg" alt="Blason des Christen" />
+          <i className="n-sep2" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-gouttes.png" alt="Les gouttes de Franck" className="n-gouttes" />
+        </Tq>
+        <p className="n-etiquette">LE BLASON DES CHRISTEN · LES GOUTTES DE FRANCK</p>
+      </Section>
+
+      <Section n="02 · EXPLORER" titre="FRANCK J.H. CHRISTEN">
+        <div className="p2-liste n-accordeon">
+          {rubriques.map((r, k) => (
+            <Tq key={r.titre} i={k}>
+              <div className={`n-ac${ouvert === k ? " ouvert" : ""}`}>
+                <div className="n-ac-img">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={r.photo} alt="" style={{ objectPosition: r.cadre }} />
+                  <div className="viseur petit" />
+                </div>
+                <Ligne
+                  n={k + 1}
+                  sel={ouvert === k}
+                  onClick={() => {
+                    sonValide();
+                    setOuvert(ouvert === k ? -1 : k);
+                  }}
+                  onEnter={() => {
+                    if (ouvert !== k) sonSurvol();
+                  }}
+                  className="n-ac-tete"
+                >
+                  {r.titre}
+                </Ligne>
+                <div className="n-ac-corps">
+                  <p>{r.texte}</p>
+                  <button type="button" className="n-retour" onClick={r.vers}>
+                    OUVRIR <Icone nom="chevron_right" />
+                  </button>
+                </div>
+              </div>
             </Tq>
           ))}
         </div>
-        <Tq i={4}>
-          <button type="button" className="pt pt-eve large" onClick={() => aller("projets", "evenements")}>
-            <div className="pt-fond" />
-            <small>{"// OPÉRATION EN COURS"}</small>
-            <b>ENDURREISEN</b>
-            <em className="cpt">
-              {deux(c.j)}J {deux(c.h)}H {deux(c.m)}M {deux(c.s)}S
-            </em>
-            <Segments p={p} />
-            <Coins />
-          </button>
-        </Tq>
+      </Section>
+    </>
+  );
+}
+
+function ouvrirReglage(id: string) {
+  sonValide();
+  const url = new URL(window.location.href);
+  url.searchParams.set("parametres", id);
+  window.history.pushState(null, "", url);
+}
+
+function Section({ n, titre, children }: { n: string; titre: string; children: ReactNode }) {
+  return (
+    <section className="n-sec">
+      <div className="ptac-titre n-titre">
+        <small>{`// ${n}`}</small>
+        <h2>
+          <Decode texte={titre} duree={550} />
+        </h2>
       </div>
-    </div>
+      {children}
+    </section>
+  );
+}
+
+function Suivant({ nom, aller }: { nom: string; aller: () => void }) {
+  return (
+    <section className="n-sec">
+      <button type="button" className="n-suiv" onClick={aller} onMouseEnter={sonSurvol}>
+        <small>{"// SUIVANT"}</small>
+        <b>{nom}</b>
+        <Icone nom="chevron_right" />
+        <Coins />
+      </button>
+    </section>
+  );
+}
+
+function Pied() {
+  return (
+    <footer className="n-pied">
+      <Matrice />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/blason-christen.jpg" alt="" className="n-blason" />
+      <p>© FRANCK J.H. CHRISTEN H.M.B.K. · ODYSSÉE 0.1</p>
+    </footer>
   );
 }
 
@@ -484,67 +563,133 @@ const ALBUM = [
   { kind: "video" as const, src: "/media/franck.mp4", poster: "/media/franck-poster.jpg", nom: "VIDÉO" },
   { kind: "photo" as const, src: "/media/franck.jpg", poster: "/media/franck.jpg", nom: "PHOTO" },
 ];
-const FICHE: [string, string][] = [
-  ["NOM", "FRANCK J.H. CHRISTEN H.M.B.K."],
-  ["NAISSANCE", "2007 · FRANCE"],
-  ["STATUT", "POLYMATHE"],
-  ["PROFIL", "TTHPI · TDAH"],
-  ["LANGUES", "FRANÇAIS · TAVISSIV"],
+const RAPPORT = [
+  "Bonjour, je m’appelle Franck J. H. Christen H. M. B. K.",
+  "Je suis né en 2007 en France.",
+  "Je suis né différent : TTHPI, profondément et exceptionnellement surdoué, et TDAH.",
+  "Depuis toujours, je me suis intéressé à ce que personne ne voulait ou ne pouvait regarder.",
+  "Depuis toujours, je vis, je vois, je mange, je fais, je parle, je pense et je rêve différemment — je fais tout différemment.",
+  "Ce site, il sert à quoi ?",
+  "À publier ce que je fais, à montrer à des gens qui veulent comprendre ce que je fais en tant que polymath au quotidien.",
 ];
 
-function Qui({ ouvrirAlbum }: { ouvrirAlbum: (k: number) => void }) {
+function Qui() {
+  const [info, setInfo] = useState(false);
   return (
-    <div className="n-page">
-      <Titre sous="// DOSSIER 01">QUI SUIS-JE</Titre>
-      <div className="n-qui">
-        <Tq i={0} className="n-photo">
-          <button type="button" onClick={() => ouvrirAlbum(1)} aria-label="Ouvrir la photo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/media/franck.jpg" alt="" />
-            <div className="viseur" />
-            <span>CIBLE VERROUILLÉE</span>
-          </button>
-          <Coins />
-        </Tq>
-        <div className="p2-liste n-fiche">
-          {FICHE.map(([a, b], k) => (
-            <Tq key={a} i={k + 1}>
-              <div className="p2-ligne fixe">
-                <b className="p2-num">{deux(k + 1)}</b>
-                <span className="n-champ">{a}</span>
-                <span className="n-valeur">
-                  <Decode texte={b} delai={250 + k * 90} duree={500} />
-                </span>
-              </div>
-            </Tq>
-          ))}
-          <Tq i={7} className="n-album">
-            {ALBUM.map((m, k) => (
-              <button key={m.src} type="button" className="n-vign" onClick={() => ouvrirAlbum(k)}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={m.poster} alt="" />
-                <span>
-                  {m.kind === "video" ? "▶ " : ""}
-                  {m.nom} · {deux(k + 1)}
-                </span>
-                <Coins />
-              </button>
-            ))}
-          </Tq>
-        </div>
-        <Tq i={6} className="p2-panneau n-rapport">
+    <>
+      <Section n="DOSSIER 01" titre="QUI SUIS-JE">
+        <Album />
+      </Section>
+      <section className="n-sec">
+        <Tq i={1} className="p2-panneau n-rapport">
           <Coins />
           <small>{"// RAPPORT"}</small>
-          <p className="p2-texte">Bonjour, je m’appelle Franck J. H. Christen H. M. B. K. Je suis né en 2007 en France.</p>
-          <p className="p2-texte">Je suis né différent : TTHPI, profondément et exceptionnellement surdoué, et TDAH.</p>
-          <p className="p2-texte">Depuis toujours, je me suis intéressé à ce que personne ne voulait ou ne pouvait regarder.</p>
+          {RAPPORT.map((l, k) => (
+            <p key={k} className={k === 5 ? "q" : k === 6 ? "r" : ""} style={{ animationDelay: `${300 + k * 140}ms` }}>
+              <b>{deux(k + 1)}</b>
+              {l}
+            </p>
+          ))}
           <p className="p2-decode">
-            <Decode texte="CE SITE SERT À PUBLIER CE QUE JE FAIS, POUR CEUX QUI VEULENT COMPRENDRE CE QUE FAIT UN POLYMATHE AU QUOTIDIEN." delai={900} duree={1800} />
+            <Decode texte="FIN DU RAPPORT" delai={1400} duree={500} />
             <b>▌</b>
           </p>
         </Tq>
+      </section>
+      <section className="n-sec">
+        <div className="p2-liste">
+          <Tq i={2}>
+            <Ligne n={1} icone="info" sel={info} fermer={info} onClick={() => (sonValide(), setInfo((o) => !o))}>
+              INFORMATION
+            </Ligne>
+          </Tq>
+          {info ? (
+            <div className="n-info">
+              <p className="p2-texte">
+                Ici, des vocaux, vidéos, photos, textes et fichiers seront partagés sur cette page. Suivez le compte Instagram de Franck et peut-être serez-vous averti des nouveautés.
+              </p>
+              <a className="p2-canal" href="https://www.instagram.com/fjhchristenhmbk/" target="_blank" rel="noopener noreferrer">
+                <span className="p2-tuile">
+                  <Icone nom="photo_camera" />
+                </span>
+                <span>
+                  <small>INSTAGRAM</small>
+                  <b>@fjhchristenhmbk</b>
+                </span>
+                <Icone nom="chevron_right" />
+              </a>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </>
+  );
+}
+
+/** L'album en « stories » : barres en segments, toucher à gauche / à droite, pause, son. */
+function Album() {
+  const [k, setK] = useState(0);
+  const [p, setP] = useState(0);
+  const [pause, setPause] = useState(false);
+  const [muet, setMuet] = useState(true);
+  const [duree, setDuree] = useState(5000);
+  const m = ALBUM[k]!;
+  useEffect(() => {
+    if (pause) return;
+    let raf = 0;
+    let avant = performance.now();
+    const pas = (n: number) => {
+      const dt = n - avant;
+      avant = n;
+      setP((x) => {
+        const v = x + dt / (m.kind === "video" ? duree : 5000);
+        if (v >= 1) {
+          setK((i) => (i + 1) % ALBUM.length);
+          return 0;
+        }
+        return v;
+      });
+      raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [pause, k, duree, m.kind]);
+  const aller = (pasK: number) => {
+    sonSurvol();
+    setK((i) => (i + pasK + ALBUM.length) % ALBUM.length);
+    setP(0);
+  };
+  return (
+    <Tq i={0} className="n-story">
+      <div className="n-story-segs">
+        {ALBUM.map((_, i) => (
+          <i key={i}>
+            <b style={{ width: `${i < k ? 100 : i === k ? p * 100 : 0}%` }} />
+          </i>
+        ))}
       </div>
-    </div>
+      {m.kind === "video" ? (
+        <video key={m.src} src={m.src} poster={m.poster} autoPlay loop playsInline muted={muet} onLoadedMetadata={(e) => setDuree(e.currentTarget.duration * 1000 || 5000)} />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={m.src} src={m.src} alt="" />
+      )}
+      <div className="viseur" key={`v${k}`} />
+      <button type="button" className="n-story-g" aria-label="Précédent" onClick={() => aller(-1)} />
+      <button type="button" className="n-story-d" aria-label="Suivant" onClick={() => aller(1)} />
+      <div className="n-story-bas">
+        <span>
+          {m.nom} · {deux(k + 1)}/{deux(ALBUM.length)}
+        </span>
+        <button type="button" aria-label={pause ? "Lecture" : "Pause"} onClick={() => setPause((x) => !x)}>
+          <Icone nom={pause ? "play_arrow" : "pause"} />
+        </button>
+        <button type="button" aria-label={muet ? "Activer le son" : "Couper le son"} onClick={() => setMuet((x) => !x)}>
+          <Icone nom={muet ? "volume_off" : "volume_up"} />
+        </button>
+      </div>
+      <Coins />
+    </Tq>
   );
 }
 
@@ -562,6 +707,122 @@ function Titre({ sous, children }: { sous: string; children: string }) {
 }
 
 /* ---------- Projets : tuiles ---------- */
+
+function Actualite({ t, citations, projets }: { t: number | null; citations: number; projets: number }) {
+  const [onglet, setOnglet] = useState(0);
+  const c = decompte(t, OUVERTURE);
+  const pE = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
+  const pA = t ? Math.min(1, Math.max(0, (t - AUBE_DEBUT) / (AUBE_FIN - AUBE_DEBUT))) : 0;
+  const jA = t ? Math.max(0, Math.ceil((AUBE_DEBUT - t) / 86400000)) : 0;
+  const ETOILES: [number, number][] = [
+    [40, 50],
+    [120, 30],
+    [210, 60],
+    [190, 125],
+    [100, 115],
+    [50, 160],
+    [150, 175],
+  ];
+  const allumees = Math.max(1, Math.round(pE * ETOILES.length));
+  const total = Math.max(1, citations + projets + 2);
+  const parts = [
+    { nom: "CITATIONS", n: citations, c: "#e8d3a8" },
+    { nom: "PROJETS", n: projets, c: "#4f8fe0" },
+    { nom: "ÉVÉNEMENTS", n: 2, c: "#9fd69a" },
+  ];
+  return (
+    <Section n="ACTUALITÉ" titre="OPÉRATIONS">
+      <div className="n-onglets">
+        {["ENDURREISEN", "L’AUBE", "CADRAN"].map((o, k) => (
+          <button key={o} type="button" className={k === onglet ? "on" : ""} onClick={() => (sonSurvol(), setOnglet(k))}>
+            <b>{deux(k + 1)}</b>
+            {o}
+          </button>
+        ))}
+      </div>
+      <div className="p2-panneau n-actu" key={onglet}>
+        <Coins />
+        {onglet === 0 ? (
+          <>
+            <svg viewBox="0 0 260 200" className="n-ciel" aria-hidden="true">
+              {Array.from({ length: 50 }, (_, i) => (
+                <circle key={i} cx={(i * 53) % 260} cy={(i * 37) % 200} r="0.9" fill="#fff" opacity=".3" />
+              ))}
+              <path d={`M${ETOILES.slice(0, allumees).map(([x, y]) => `${x} ${y}`).join(" L")}`} pathLength={1} className="n-ciel-trait" fill="none" stroke="#ffb000" strokeWidth="1.4" />
+              {ETOILES.map(([x, y], i) => (
+                <circle key={i} cx={x} cy={y} r={i === ETOILES.length - 1 ? 6 : 4} fill={i < allumees ? "#ffb000" : "#333"} className="n-ciel-pt" style={{ animationDelay: `${i * 150 + 300}ms` }} />
+              ))}
+            </svg>
+            <small>{"// ENDURREISEN · OUVERTURE LE 01.12.2026"}</small>
+            <div className="n-cpt">
+              {deux(c.j)}
+              <i>J</i>
+              {deux(c.h)}
+              <i>H</i>
+              {deux(c.m)}
+              <i>M</i>
+              {deux(c.s)}
+              <i>S</i>
+            </div>
+            <Segments p={pE} n={30} />
+            <div className="n-pct">
+              {Math.round(pE * 100)} %<small>PARCOURU · {allumees} ÉTOILES SUR {ETOILES.length}</small>
+            </div>
+          </>
+        ) : onglet === 1 ? (
+          <>
+            <small>{"// L’AUBE · DU 03.12.2026 AU 03.06.2027 · 6 MOIS"}</small>
+            <p className="n-statut">{t != null && t < AUBE_DEBUT ? `COMMENCE DANS ${jA} JOURS` : pA >= 1 ? "TERMINÉE" : `${Math.round(pA * 100)} % · FIN LE 03.06.2027`}</p>
+            <div className="n-aube">
+              {[0, 0.25, 0.5, 0.75, 1].map((e) => (
+                <span key={e} className={pA >= e && t != null && t >= AUBE_DEBUT ? "on" : ""}>
+                  <i />
+                  <small>{new Date(AUBE_DEBUT + (AUBE_FIN - AUBE_DEBUT) * e).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}</small>
+                </span>
+              ))}
+            </div>
+            <Segments p={pA} n={30} />
+          </>
+        ) : (
+          <>
+            <small>{"// LE CADRAN · TOUTES LES RUBRIQUES = 100"}</small>
+            <div className="n-cadran">
+              <svg viewBox="0 0 200 200" aria-hidden="true">
+                {Array.from({ length: 100 }, (_, i) => {
+                  const a = (i / 100) * Math.PI * 2;
+                  let coul = "#222";
+                  let acc = 0;
+                  for (const x of parts) {
+                    acc += (x.n / total) * 100;
+                    if (i < acc) {
+                      coul = x.c;
+                      break;
+                    }
+                  }
+                  return (
+                    <line key={i} x1={100 + 80 * Math.sin(a)} y1={100 - 80 * Math.cos(a)} x2={100 + 92 * Math.sin(a)} y2={100 - 92 * Math.cos(a)} stroke={coul} strokeWidth="2.2" className="n-cad-trait" style={{ animationDelay: `${i * 8}ms` }} />
+                  );
+                })}
+                <text x="100" y="108" textAnchor="middle" fill="#fff" fontSize="34" fontFamily="var(--f-mono)">
+                  {total}
+                </text>
+              </svg>
+              <ul>
+                {parts.map((x) => (
+                  <li key={x.nom}>
+                    <i style={{ background: x.c }} />
+                    {x.nom}
+                    <em>{deux(x.n)}</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
+    </Section>
+  );
+}
 
 function Tuiles({ t, citations, projets, charge, ouvrir }: { t: number | null; citations: Etoile[]; projets: Etoile[]; charge: boolean; ouvrir: (r: Rubrique) => void }) {
   const [face, setFace] = useState(0);
@@ -810,28 +1071,6 @@ function Recherche({ etoiles, fermer, aller }: { etoiles: Etoile[]; fermer: () =
           {q.trim() && res.length === 0 ? <p className="p2-decode">AUCUN RÉSULTAT.</p> : null}
         </div>
       </div>
-    </div>
-  );
-}
-
-function Visionneuse({ k, fermer }: { k: number; fermer: () => void }) {
-  const m = ALBUM[k]!;
-  useEffect(() => {
-    const f = (e: KeyboardEvent) => {
-      if (e.key === "Escape") fermer();
-    };
-    window.addEventListener("keydown", f);
-    return () => window.removeEventListener("keydown", f);
-  }, [fermer]);
-  return (
-    <div className="n-vision" onClick={fermer}>
-      {m.kind === "video" ? (
-        <video src={m.src} poster={m.poster} autoPlay loop playsInline muted />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={m.src} alt="" />
-      )}
-      <span>[TOUCHER] FERMER</span>
     </div>
   );
 }
