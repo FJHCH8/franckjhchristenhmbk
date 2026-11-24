@@ -22,8 +22,10 @@ import { createPortal } from "react-dom";
 import { AppMail, GardienMail, IconeMail } from "./Mail";
 import { AppMeteo, IconeMeteo } from "./Meteo";
 import { AppFichiers, IconeFichiers } from "./Fichiers";
-import { AppMusique, IconeMusique, NotifMusique, StatutMusique } from "./Musique";
+import { AppMusique, IconeMusique, NotifMusique, StatutMusique, memoireMusique, useLecteur } from "./Musique";
+import { useProtectionTelechargement } from "./protection";
 import { AppDictaphone, IconeDictaphone } from "./Dictaphone";
+import { AppOpakaalt, IconeOpakaalt } from "./Opakaalt";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
@@ -43,7 +45,7 @@ import { Bandeau, GardienAlarmes, bloques, contactsPerso, convsPerso, ecrireSess
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo" | "fichiers" | "musique" | "dictaphone";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo" | "fichiers" | "musique" | "dictaphone" | "opakaalt";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -63,6 +65,7 @@ const APPLIS: Appli[] = [
   { id: "fichiers", nom: "Fichiers" },
   { id: "musique", nom: "Musique" },
   { id: "dictaphone", nom: "Dictaphone" },
+  { id: "opakaalt", nom: "Opakaalt" },
   { id: "appareil", nom: "Appareil photo" },
   { id: "endurreisen", nom: "Alarme" },
   { id: "calculatrice", nom: "Calculatrice" },
@@ -73,6 +76,18 @@ const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
 const PAGE1: IdAppli[] = [];
 const PAGE2: IdAppli[] = [];
 const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "appareil"];
+
+/* Les pastilles de notification (point bleu Holo sur l'icône) : une appli qui a une notification non vue.
+   Elles disparaissent à l'ouverture de l'appli ou quand la notification est effacée ; gardées dans la session. */
+const pastillesVues = creerStore<string[]>("pastilles-vues", []);
+const PastillesCtx = createContext<Set<string>>(new Set());
+let clesCourantes: [string, string][] = [];
+function marquerVu(appli: string, cles: [string, string][]) {
+  const a = cles.filter(([x]) => x === appli).map(([, k]) => k);
+  const v = pastillesVues.lire();
+  if (a.every((k) => v.includes(k))) return;
+  pastillesVues.ecrire((l) => [...l.filter((k) => !a.includes(k)), ...a].slice(-200));
+}
 
 const CODE = "6458";
 const MAIL = "franckjhchristen@gmail.com";
@@ -179,6 +194,8 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return <IconeMusique taille={taille} />;
     case "dictaphone":
       return <IconeDictaphone taille={taille} />;
+    case "opakaalt":
+      return <IconeOpakaalt taille={taille} />;
     case "sharkobank":
       return png("sharkobank");
     case "peeporn":
@@ -288,6 +305,7 @@ function Activite<E extends string>({ act, children }: { act: Act<E>; children: 
 type Fenetre = { appli: Appli; depuis: { x: number; y: number; w: number; h: number; W: number; H: number } | null };
 
 export function OdysseeOS() {
+  useProtectionTelechargement();
   const t = useMaintenant();
   const sys = useEtatSysteme();
   const [boot, setBoot] = useState<boolean | null>(null);
@@ -448,6 +466,7 @@ export function OdysseeOS() {
     setRecherche(false);
     setRideau(false);
     sonAppli(a.id);
+    marquerVu(a.id, clesCourantes);
   }, []);
 
   // Une appli qui en ouvre une autre (Messages → Contacts, Contacts → Messages, notifications…)
@@ -553,7 +572,7 @@ export function OdysseeOS() {
       icone:
         nonLu?.qui === "samtelecom" ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src="/aakanos/sam-telecom-tete.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
+          <img draggable={false} src="/aakanos/sam-telecom-tete.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
         ) : (
           <IconeAppli id="messages" taille={40} />
         ),
@@ -570,7 +589,7 @@ export function OdysseeOS() {
       id: n.id,
       icone: n.icone ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={n.icone} alt="" width={40} height={40} style={{ objectFit: "cover" }} />
+        <img draggable={false} src={n.icone} alt="" width={40} height={40} style={{ objectFit: "cover" }} />
       ) : (
         <IconeAppli id={a.id} taille={40} />
       ),
@@ -581,6 +600,18 @@ export function OdysseeOS() {
     });
   }
   const notifs = toutes.filter((n): n is Notif => !!n && (!effacees.includes(n.id) || (n.id === "gael" && !!nonLu)));
+  const lecteurMusique = useLecteur();
+  const reglagesMusique = memoireMusique.useValeur();
+  const vuesPastilles = pastillesVues.useValeur();
+  const clesPastilles: [string, string][] = notifs.map((n) => [n.appli.id, n.id === "gael" && nonLu ? `gael:${nonLu.qui}:${nonLu.n}:${convs[nonLu.qui].length}` : n.id]);
+  if (reglagesMusique.file && lecteurMusique.charge === "pret") clesPastilles.push(["musique", "musique"]);
+  const pastilles = new Set(clesPastilles.filter(([, k]) => !vuesPastilles.includes(k)).map(([a]) => a));
+  const appliOuverte = fenetre?.appli.id;
+  useEffect(() => {
+    clesCourantes = clesPastilles;
+    // l'appli ouverte n'a pas de pastille : ce qui y arrive est vu
+    if (appliOuverte) marquerVu(appliOuverte, clesPastilles);
+  });
   const notifsTriees = nonLu ? [...notifs.filter((n) => n.id === "gael"), ...notifs.filter((n) => n.id !== "gael")] : notifs;
 
   const correspond = (e: Etoile) => sansAccent(`${e.titre} ${e.texte}`).includes(sansAccent(requete));
@@ -589,6 +620,7 @@ export function OdysseeOS() {
 
   return (
     <SystemeCtx.Provider value={sys}>
+    <PastillesCtx.Provider value={pastilles}>
     <RetourCtx.Provider value={{ poser }}>
       <div
         className={`os${sys.limites ? " os-limites" : ""}`}
@@ -642,7 +674,7 @@ export function OdysseeOS() {
           {ticker ? (
             <span className="os-ticker" aria-live="polite">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/aakanos/sam-telecom-tete.png" alt="" width={18} height={18} />
+              <img draggable={false} src="/aakanos/sam-telecom-tete.png" alt="" width={18} height={18} />
               <span>
                 <b>{ticker}</b>
               </span>
@@ -866,7 +898,7 @@ export function OdysseeOS() {
                 <div className="os-rideau-d">
                   <span className="os-operateur-r">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/aakanos/sam-telecom-tete.png" alt="" width={14} height={14} />
+                    <img draggable={false} src="/aakanos/sam-telecom-tete.png" alt="" width={14} height={14} />
                     SAM-TELECOM
                   </span>
                   <br />
@@ -963,6 +995,7 @@ export function OdysseeOS() {
         {boot === null ? <div className="os-boot" /> : null}
       </div>
     </RetourCtx.Provider>
+    </PastillesCtx.Provider>
     </SystemeCtx.Provider>
   );
 }
@@ -976,9 +1009,11 @@ function Loupe({ couleur }: { couleur: string }) {
 }
 
 function Icone({ a, ouvrir, sansNom }: { a: Appli; ouvrir: (a: Appli, el?: Element | null) => void; sansNom?: boolean }) {
+  const pastille = useContext(PastillesCtx).has(a.id);
   return (
-    <button className="os-app" onClick={(e) => ouvrir(a, e.currentTarget.querySelector(".os-icone"))}>
+    <button className={`os-app${pastille ? " a-pastille" : ""}`} onClick={(e) => ouvrir(a, e.currentTarget.querySelector(".os-icone"))}>
       <IconeAppli id={a.id} taille={sansNom ? 52 : 56} />
+      {pastille ? <i className="os-pastille" role="status" aria-label="Nouvelle notification" /> : null}
       {!sansNom && <span>{a.nom}</span>}
     </button>
   );
@@ -1282,6 +1317,8 @@ function ContenuAppli({
       return <AppMusique />;
     case "dictaphone":
       return <AppDictaphone />;
+    case "opakaalt":
+      return <AppOpakaalt />;
     case "messages":
       return <AppMessages {...gael} />;
     case "nounou":
@@ -1315,7 +1352,7 @@ function AppQui({ ouvrir }: { ouvrir: (a: Appli, el?: Element | null) => void })
     <div className="app-defile">
       <div className="qui-entete">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/media/franck.jpg" alt="" />
+        <img draggable={false} src="/media/franck.jpg" alt="" />
         <div>
           <b>Franck J.H. Christen H.M.B.K.</b>
           <span>Polymathe · né en 2007, en France</span>
@@ -1354,10 +1391,10 @@ function AppAlbum() {
     return (
       <div className="album-plein" onClick={() => (son("espace", 0.7), setVue((v) => ((v ?? 0) + 1) % ALBUM.length))}>
         {el.kind === "video" ? (
-          <video key={el.src} src={el.src} poster={el.poster} autoPlay loop playsInline muted />
+          <video draggable={false} controlsList="nodownload noremoteplayback" disablePictureInPicture key={el.src} src={el.src} poster={el.poster} autoPlay loop playsInline muted />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={el.src} src={el.src} alt="" />
+          <img draggable={false} key={el.src} src={el.src} alt="" />
         )}
         <span>
           {vue + 1} / {ALBUM.length}
@@ -1596,7 +1633,7 @@ const IC_BLOQUE = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 
 /** Une icône d'Android 4.2 (AOSP, Apache 2.0 : public/aakanos/aosp/LICENCES.txt). */
 const Aosp = ({ n, t = 32 }: { n: string; t?: number }) => (
   // eslint-disable-next-line @next/next/no-img-element
-  <img src={`/aakanos/aosp/${n}.svg`} alt="" width={t} height={t} style={{ display: "block" }} />
+  <img draggable={false} src={`/aakanos/aosp/${n}.svg`} alt="" width={t} height={t} style={{ display: "block" }} />
 );
 
 /** Appui long (500 ms) : le menu contextuel de Jelly Bean. */
@@ -1735,7 +1772,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
           .map((x) => (
             <button key={x.cle} className="msg-conv" onClick={() => (setEcrire(false), setConv(x.cle))}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="msg-avatar" src={x.photo} alt="" />
+              <img draggable={false} className="msg-avatar" src={x.photo} alt="" />
               <div>
                 <b>{x.nom}</b>
                 <span>{x.tel}</span>
@@ -1799,7 +1836,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
   if (!x) return null;
   const c = estCorr(conv) ? CORRESPONDANTS.find((y) => y.id === conv)! : null;
   // eslint-disable-next-line @next/next/no-img-element
-  const avatar = <img className="msg-avatar" src={x.photo} alt="" />;
+  const avatar = <img draggable={false} className="msg-avatar" src={x.photo} alt="" />;
   const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
   const bloque = (estCorr(conv) && BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv]) || (conv === "celjo" && celjoABloque);
   const jaiBloque = bloc.includes(conv);
@@ -1943,7 +1980,7 @@ function LigneConv({ x, bloque, ouvrir, menu, heure, children }: { x: Interlocut
       onContextMenu={appui.onContextMenu}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="msg-avatar" src={x.photo} alt="" />
+      <img draggable={false} className="msg-avatar" src={x.photo} alt="" />
       <div>
         <b>
           {x.nom}
@@ -1962,6 +1999,7 @@ const CONTACTS: Contact[] = [
   { id: "franck", nom: "Franck J.H. Christen H.M.B.K.", photo: "/media/franck.jpg", mail: MAIL, insta: "@fjhchristenhmbk", note: "Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui." },
   { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", tel: "+0-2003220008" },
   { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.jpg", tel: "+0-43365470730", note: "L’orque, prof de maths au fond de l’océan." },
+  { id: "psy", nom: "Cabinet Spaloova", photo: "/aakanos/psy-spaloova.svg", mail: "meinepsychologieverstehen@spaloova.tav", note: "Mon psychologue. Le wifi du cabinet est gratuit." },
 ];
 
 /** Avatar à initiale pour les contacts créés sur le téléphone (aucune image à télécharger). */
@@ -1978,7 +2016,7 @@ function tousLesContacts(perso: ContactPerso[]): FicheContact[] {
   return [...CONTACTS, ...perso.map((p) => ({ ...p, photo: avatarLettre(p.nom), perso: true }))].sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
 }
 
-/** Contacts : Celjo, Franck, Gaël, Pacifick, et ceux que le visiteur crée. */
+/** Contacts : Celjo, Franck, Gaël, Pacifick, le cabinet Spaloova, et ceux que le visiteur crée. */
 function AppContacts() {
   const perso = contactsPerso.useValeur();
   const bloc = bloques.useValeur();
@@ -2015,7 +2053,7 @@ function AppContacts() {
               {titre}
               <button className="ct-ligne" onClick={() => setChoisi(x.id)}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={x.photo} alt="" />
+                <img draggable={false} src={x.photo} alt="" />
                 <b>{x.nom}</b>
               </button>
             </div>
@@ -2034,7 +2072,7 @@ function AppContacts() {
     <div className="app-defile os-act entre" key={c.id}>
       <div className="ct-photo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={c.photo} alt="" />
+        <img draggable={false} src={c.photo} alt="" />
         <b>{c.nom}</b>
       </div>
       {c.tel ? (
@@ -2053,7 +2091,7 @@ function AppContacts() {
               <small>MOBILE</small>
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/phone.png" alt="" />
+            <img draggable={false} src="/aakanos/phone.png" alt="" />
           </a>
           {correspondant ? (
             <button className="ct-champ ct-action" onClick={() => ouvrirAppli("messages", c.id)}>
@@ -2075,7 +2113,7 @@ function AppContacts() {
               <small>PERSONNEL</small>
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/email.png" alt="" />
+            <img draggable={false} src="/aakanos/email.png" alt="" />
           </a>
         </>
       ) : null}
@@ -2088,7 +2126,7 @@ function AppContacts() {
               <small>INSTAGRAM</small>
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/camera.png" alt="" />
+            <img draggable={false} src="/aakanos/camera.png" alt="" />
           </a>
         </>
       ) : null}
@@ -2181,7 +2219,7 @@ function FormContact({ depart, fini }: { depart: ContactPerso | null; fini: (id:
       </div>
       <div className="ct-photo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={avatarLettre(nom || "?")} alt="" />
+        <img draggable={false} src={avatarLettre(nom || "?")} alt="" />
         <b>{depart ? "Modifier le contact" : "Nouveau contact"}</b>
       </div>
       <div className="os-titre-holo">NOM</div>
@@ -2299,10 +2337,10 @@ function AppTelephone() {
         <div className="tel-appel-photo">
           {contact ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={contact.photo} alt="" />
+            <img draggable={false} src={contact.photo} alt="" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/aakanos/avatar.png" alt="" />
+            <img draggable={false} src="/aakanos/avatar.png" alt="" />
           )}
           {appel !== "sonne" ? (
             <div className="tel-hs">
@@ -2334,14 +2372,14 @@ function AppTelephone() {
       {suggestion ? (
         <button type="button" className="tel-suggestion" onClick={() => setNumero(suggestion.tel!)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={suggestion.photo} alt="" />
+          <img draggable={false} src={suggestion.photo} alt="" />
           <b>{suggestion.nom}</b>
           <span>{suggestion.tel}</span>
         </button>
       ) : contact ? (
         <div className="tel-suggestion">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={contact.photo} alt="" />
+          <img draggable={false} src={contact.photo} alt="" />
           <b>{contact.nom}</b>
         </div>
       ) : null}

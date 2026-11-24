@@ -1182,3 +1182,225 @@ a.app-ligne:active { background: var(--presse); }
 .di-erreur img { width: 32px; height: 32px; flex: none; }
 .di-erreur > span { display: grid; gap: 6px; font-size: 15px; line-height: 1.4; color: #ddd; }
 .di-erreur b { font-weight: 400; color: #fff; }
+
+/* ---------------- Opakaalt (jeu 8 bits de James-games) ---------------- */
+.op-icone { display: grid; place-items: center; }
+.op-icone svg { width: 100%; height: 100%; image-rendering: pixelated; }
+.op { position: absolute; inset: 0; overflow: hidden; background: #000; color: #fff; font-family: var(--f-pixel), "Press Start 2P", monospace; font-size: 10px; line-height: 1.6; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.op svg { image-rendering: pixelated; }
+.op button { font: inherit; color: inherit; }
+.op::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 40; background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, .12) 0 1px, transparent 1px 3px); }
+.op-scene { position: absolute; inset: 0; overflow: hidden; }
+.op-ville, .op-casino, .op-hotel, .op-espace { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* la ville : le jour, le soir, la nuit */
+.op-ciel-soir, .op-ciel-nuit, .op-voile-nuit, .op-fen, .op-etoiles, .op-lune { opacity: 0; }
+.op-fige-nuit .op-ciel-jour, .op-fige-nuit .op-soleil, .op-fige-nuit .op-nuage { opacity: 0; }
+.op-fige-nuit .op-ciel-nuit, .op-fige-nuit .op-fen, .op-fige-nuit .op-etoiles, .op-fige-nuit .op-lune { opacity: 1; }
+.op-fige-nuit .op-voile-nuit { opacity: .45; }
+.op-fige-jour .op-soleil { transform: translate(140px, 50px); }
+.op-cycle .op-ciel-jour { animation: op-jour 36s linear infinite; }
+.op-cycle .op-ciel-soir { animation: op-soir 36s linear infinite; }
+.op-cycle .op-ciel-nuit, .op-cycle .op-etoiles { animation: op-nuit 36s linear infinite; }
+.op-cycle .op-voile-nuit { animation: op-voile 36s linear infinite; }
+.op-cycle .op-fen { animation: op-fenetres 36s steps(1) infinite; }
+.op-cycle .op-soleil { animation: op-soleil 36s linear infinite; }
+.op-cycle .op-lune { animation: op-lune 36s linear infinite; }
+.op-cycle .op-nuage { animation: op-nuages 36s linear infinite; }
+.op-etoiles rect { animation: op-clignote 1.6s steps(2) infinite; }
+@keyframes op-jour { 0%, 30% { opacity: 1; } 42%, 88% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes op-soir { 0%, 28% { opacity: 0; } 38% { opacity: 1; } 50%, 85% { opacity: 0; } 92% { opacity: .7; } 100% { opacity: 0; } }
+@keyframes op-nuit { 0%, 40% { opacity: 0; } 52%, 86% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes op-voile { 0%, 38% { opacity: 0; } 52%, 86% { opacity: .45; } 96%, 100% { opacity: 0; } }
+@keyframes op-fenetres { 0% { opacity: 0; } 44% { opacity: 1; } 92% { opacity: 0; } }
+@keyframes op-soleil { 0% { transform: translate(10px, 120px); } 20% { transform: translate(90px, 40px); } 40% { transform: translate(170px, 150px); } 41%, 89% { transform: translate(170px, 400px); } 90% { transform: translate(10px, 400px); } 100% { transform: translate(10px, 120px); } }
+@keyframes op-lune { 0%, 42% { opacity: 0; transform: translate(10px, 160px); } 50% { opacity: 1; } 66% { transform: translate(90px, 30px); } 84% { opacity: 1; } 90%, 100% { opacity: 0; transform: translate(170px, 140px); } }
+@keyframes op-nuages { 0% { transform: translateX(-40px); opacity: 1; } 40% { opacity: 1; } 50%, 85% { opacity: 0; } 100% { transform: translateX(60px); opacity: 1; } }
+@keyframes op-clignote { 50% { opacity: .2; } }
+.op-balise { animation: op-clignote 1s steps(2) infinite; }
+.op-voiture.a { animation: op-roule 7s linear infinite; }
+.op-voiture.b { animation: op-roule-g 9s linear infinite 1.5s; transform: translateX(220px); }
+.op-voiture.c { animation: op-roule 12s linear infinite 3s; transform: translateX(-60px); }
+@keyframes op-roule { from { transform: translateX(-40px); } to { transform: translateX(200px); } }
+@keyframes op-roule-g { from { transform: translateX(200px); } to { transform: translateX(-40px); } }
+.op-fige-jour .op-voiture, .op-fige-nuit .op-voiture { animation-duration: 5s; }
+
+/* menu */
+.op-menu-haut { position: absolute; left: 0; right: 0; top: 8%; text-align: center; z-index: 2; }
+.op-titre { margin: 0; font-family: inherit; font-size: 30px; line-height: 1.2; letter-spacing: 2px; color: #ffd84a; text-shadow: 3px 3px 0 #e0457b, 6px 6px 0 #2b1640; animation: op-flotte 2.4s steps(4) infinite; }
+.op-titre-petit { display: block; font-size: 22px; }
+@keyframes op-flotte { 50% { transform: translateY(-4px); } }
+.op-sous-titre { display: block; margin-top: 12px; font-size: 9px; color: #fff; text-shadow: 2px 2px 0 #2b1640; }
+.op-menu-bas { position: absolute; left: 0; right: 0; bottom: 3%; display: grid; justify-items: center; gap: 8px; padding: 0 16px; z-index: 2; text-align: center; }
+.op-bouton { display: inline-block; padding: 12px 18px; background: #ff5fae; color: #1a0620 !important; border: 3px solid #fff; box-shadow: 4px 4px 0 #3a0a2a; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+.op-bouton:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #3a0a2a; }
+.op-petit { padding: 8px 12px; font-size: 9px; }
+.op-nouvelle { animation: op-bouton 1.1s steps(2) infinite; }
+@keyframes op-bouton { 50% { background: #ffd84a; } }
+.op-regle { margin: 0; font-size: 8px; line-height: 1.7; color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; }
+.op-stats { margin: 0; font-size: 8px; color: #ffd84a; text-shadow: 1px 1px 0 #000; }
+.op-copyright { margin: 0; font-size: 7px; color: #c9b8e8; text-shadow: 1px 1px 0 #000; }
+.op-passer { position: absolute; top: 8px; right: 8px; z-index: 30; padding: 6px 8px; background: rgba(0, 0, 0, .55); border: 2px solid #fff; font-size: 8px; }
+
+/* personnages et cinématiques */
+.op-perso { position: absolute; bottom: 19.5%; z-index: 3; }
+.op-perso svg { display: block; }
+.op-perso.assis { bottom: 27%; }
+.op-perso.debout { bottom: 36%; }
+.op-scene-hotel .op-perso { bottom: 19.5%; }
+.op-vole { animation: op-vole 1.3s cubic-bezier(.3, .6, .4, 1) forwards; }
+@keyframes op-vole { to { transform: translate(-50%, -520px) rotate(-900deg) scale(.3); opacity: 0; } }
+.op-secousse { animation: op-secoue .12s steps(2) 4; }
+@keyframes op-secoue { 50% { transform: translate(4px, -3px); } }
+.op-boum { position: absolute; left: 50%; bottom: 34%; z-index: 5; transform: translateX(-50%); padding: 8px 12px; background: #ffd84a; color: #e0103a; border: 3px solid #1b1b2a; font-size: 18px; box-shadow: 4px 4px 0 #1b1b2a; animation: op-boum .4s steps(3) both; }
+@keyframes op-boum { from { transform: translateX(-50%) scale(.2) rotate(-20deg); } }
+.op-coeurs { position: absolute; left: 50%; top: -10px; width: 60px; height: 40px; transform: translateX(-50%); pointer-events: none; }
+.op-coeurs svg { position: absolute; bottom: 0; animation: op-coeur 1.5s steps(6) infinite both; }
+.op-coeurs svg:nth-child(1) { left: 4px; } .op-coeurs svg:nth-child(2) { left: 22px; } .op-coeurs svg:nth-child(3) { left: 42px; }
+@keyframes op-coeur { from { transform: translateY(10px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-30px); opacity: 0; } }
+.op-enseigne { position: absolute; left: 50%; top: 19.5%; z-index: 2; transform: translateX(-50%); font-size: 20px; letter-spacing: 3px; color: #ffd84a; text-shadow: 0 0 4px #ffd84a, 0 0 10px #ff9a00; animation: op-neon 3s steps(1) infinite; }
+.op-enseigne-hotel { left: 76%; top: 62%; font-size: 12px; color: #ff6fd8; text-shadow: 0 0 4px #ff6fd8, 0 0 10px #ff2fae; }
+@keyframes op-neon { 0%, 47%, 53%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.op-ampoule, .op-led { animation: op-clignote .8s steps(2) infinite; }
+.op-rouleau { animation: op-clignote .3s steps(2) infinite; } .op-rouleau.r1 { animation-delay: .1s; } .op-rouleau.r2 { animation-delay: .2s; }
+.op-lampe, .op-porte { animation: op-neon 4s steps(1) infinite; }
+.op-scintille { animation: op-clignote 2s steps(2) infinite; }
+.op-tapis { position: absolute; left: 4%; right: 4%; bottom: 12%; height: 24%; z-index: 4; background: #1f7a3a; border: 4px solid #d9b44a; box-shadow: inset 0 0 0 4px #145a2a, 0 6px 0 #2a0612; }
+.op-jetons { position: absolute; top: 24%; width: 16px; height: 22px; background: repeating-linear-gradient(#e84a5f 0 4px, #fff 4px 6px); border: 2px solid #1b1b2a; }
+.op-jetons.a { left: 18%; } .op-jetons.b { right: 18%; background: repeating-linear-gradient(#4fb0ff 0 4px, #fff 4px 6px); }
+.op-carte { position: absolute; left: 46%; top: 22%; width: 20px; height: 28px; background: #fff; border: 2px solid #1b1b2a; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px #e84a5f; }
+.op-bas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 10; padding: 8px; }
+.op-dialogue { position: relative; display: block; width: 100%; padding: 16px 12px 18px; text-align: left; background: #fff8e8; color: #1a1020 !important; border: 4px double #1a1020; box-shadow: 0 0 0 3px #fff8e8, 4px 4px 0 3px rgba(0, 0, 0, .5); font-size: 11px !important; line-height: 1.75; cursor: pointer; animation: op-apparait .18s steps(3); }
+.op-nom { position: absolute; top: -12px; left: 10px; padding: 3px 8px; font-size: 9px; color: #fff; border: 2px solid #1a1020; }
+.op-blond .op-nom { background: #c99a1c; }
+.op-femboy .op-nom { background: #d65fa0; }
+.op-fantome { visibility: hidden; }
+.op-suite { position: absolute; right: 8px; bottom: 4px; font-style: normal; font-size: 9px; animation: op-clignote .8s steps(2) infinite; }
+@keyframes op-apparait { from { opacity: 0; transform: translateY(6px); } }
+.op-noir { background: #000; display: grid; place-content: center; justify-items: center; gap: 18px; }
+.op-chargement { margin: 0; font-size: 14px; letter-spacing: 2px; animation: op-clignote 1s steps(2) infinite; }
+.op-barre-charge { width: 200px; height: 14px; border: 3px solid #fff; padding: 2px; }
+.op-barre-charge i { display: block; height: 100%; background: #ff5fae; animation: op-charge 2.2s steps(10) forwards; }
+@keyframes op-charge { from { width: 0; } to { width: 100%; } }
+.op-iris { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 25; }
+.op-iris-g { animation: op-iris 1.6s cubic-bezier(.5, 0, .8, .6) forwards; }
+@keyframes op-iris { from { transform: scale(60); } to { transform: scale(0); } }
+.op-scene-espace .op-volant { position: absolute; left: 0; top: 0; z-index: 3; animation: op-orbite 3.4s linear forwards; }
+@keyframes op-orbite { 0% { transform: translate(-40px, 70vh) rotate(0); } 50% { transform: translate(45vw, 14vh) rotate(540deg); } 100% { transform: translate(110vw, 40vh) rotate(1080deg); } }
+.op-continents { animation: op-tourne-terre 14s linear infinite; }
+@keyframes op-tourne-terre { from { transform: translateX(0); } to { transform: translateX(-240px); } }
+
+/* la table de jeu */
+.op-tournoi { position: absolute; inset: 0; }
+.op-tournoi-corps { position: absolute; inset: 0; overflow-y: auto; background: rgba(10, 2, 8, .55); }
+.op-jeu, .op-bilan { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 16px; min-height: 100%; }
+.op-score { display: flex; gap: 4px; justify-content: center; }
+.op-pastille { flex: 1; padding: 5px 2px; text-align: center; font-size: 7px; background: #2a0612; border: 2px solid #6b1a30; color: #c9a0b0; }
+.op-pastille.op-encours { border-color: #ffd84a; color: #ffd84a; animation: op-bouton-bord 1s steps(2) infinite; }
+@keyframes op-bouton-bord { 50% { border-color: #ff5fae; } }
+.op-p-toi { background: #145a2a; border-color: #7dff8a; color: #fff; } .op-p-blond { background: #5a1420; border-color: #ff6b6b; color: #fff; } .op-p-nul { background: #3a3a50; color: #fff; }
+.op-titre-jeu { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 8px; padding: 0 2px; }
+.op-titre-jeu b { font-size: 12px; color: #ff9ccf; text-transform: uppercase; font-weight: 400; }
+.op-titre-jeu > span { font-size: 8px; color: #ffd84a; }
+.op-score-manche { width: 100%; text-align: center; font-size: 10px !important; color: #fff !important; }
+.op-adversaire { position: relative; display: flex; justify-content: flex-end; align-items: flex-start; min-height: 92px; }
+.op-portrait { position: relative; padding: 2px; background: #4a0d1f; border: 3px solid #d9b44a; }
+.op-portrait svg { display: block; }
+.op-tremble { animation: op-secoue .15s steps(2) infinite; }
+.op-bulle { position: absolute; left: 0; right: 84px; top: 4px; padding: 8px; background: #fff; color: #1a1020; border: 3px solid #1a1020; font-size: 8px; line-height: 1.7; box-shadow: 3px 3px 0 rgba(0, 0, 0, .5); animation: op-apparait .2s steps(3); z-index: 3; }
+.op-bulle::after { content: ""; position: absolute; right: -11px; top: 12px; border: 6px solid transparent; border-left: 8px solid #1a1020; }
+.op-bulle.op-fort0 { background: #fff6b0; }
+.op-bulle.op-fort1 { background: #ffe1ec; }
+.op-bulle.op-fort2 { background: #ffc4da; font-size: 9px; }
+.op-bulle.op-fort3 { background: #ff9fc0; font-size: 10px; animation: op-apparait .2s steps(3), op-secoue .14s steps(2) infinite; }
+.op-pense { right: 84px; left: auto; width: 54px; text-align: center; }
+.op-points { display: inline-block; animation: op-clignote .6s steps(2) infinite; }
+.op-morpion { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: min(100%, 264px); margin: 4px auto; padding: 6px; background: #d9b44a; box-shadow: 4px 4px 0 #2a0612; }
+.op-m-case { aspect-ratio: 1; display: grid; place-items: center; background: #1f7a3a; border: 0; cursor: pointer; }
+.op-m-case:active { background: #2a9a4a; }
+.op-m-case svg { width: 70%; height: 70%; }
+.op-gagnante { animation: op-gagne .3s steps(2) infinite; }
+@keyframes op-gagne { 50% { filter: brightness(1.8); } }
+.op-indice { animation: op-indice .5s steps(2) infinite; }
+@keyframes op-indice { 50% { box-shadow: inset 0 0 0 4px #7dff8a; } }
+.op-p4 { display: grid; grid-template-columns: repeat(7, 1fr); width: min(100%, 336px); margin: 4px auto; padding: 4px; background: #2a4ad6; border: 3px solid #1a2a8a; box-shadow: 4px 4px 0 #2a0612; }
+.op-p4-col { display: grid; grid-template-rows: repeat(6, 1fr); gap: 4px; padding: 3px; background: transparent; border: 0; cursor: pointer; }
+.op-p4-col:active { background: #3a5af0; }
+.op-p4-trou { display: block; aspect-ratio: 1; background: #0b0614; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+.op-p4-X { background: #ff5fae; box-shadow: inset -4px -4px 0 #b02a6a; }
+.op-p4-O { background: #ffd84a; box-shadow: inset -4px -4px 0 #b08a10; }
+.op-chute { animation: op-chute .36s steps(6) both; }
+@keyframes op-chute { from { transform: translateY(calc(var(--r) * -118%)); } }
+.op-echiquier { display: grid; grid-template-columns: repeat(8, 1fr); width: min(100%, 336px); margin: 0 auto; border: 4px solid #4a2a12; box-shadow: 4px 4px 0 #2a0612; }
+.op-e-case { position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 0; cursor: pointer; }
+.op-e-case svg { width: 88%; height: 88%; }
+.op-clair { background: #e8d7a8; } .op-sombre { background: #9a7444; }
+.op-dernier { box-shadow: inset 0 0 0 100px rgba(255, 210, 58, .35); }
+.op-sel { box-shadow: inset 0 0 0 3px #ff5fae; }
+.op-cible::after { content: ""; position: absolute; left: 38%; top: 38%; width: 24%; height: 24%; background: rgba(255, 95, 174, .85); }
+.op-cible-prise { box-shadow: inset 0 0 0 3px #ff3b5c; }
+.op-roi-echec { background: #ff4a4a; }
+.op-prises { display: flex; flex-wrap: wrap; justify-content: center; min-height: 20px; gap: 1px; }
+.op-commandes { display: grid; justify-items: center; gap: 8px; margin-top: 6px; }
+.op-alerte { color: #ff6b6b; font-weight: 400; animation: op-clignote .5s steps(2) infinite; }
+.op-resultat { display: grid; justify-items: center; gap: 8px; width: 100%; padding: 10px; text-align: center; background: rgba(11, 6, 20, .92); border: 3px solid #fff; animation: op-apparait .2s steps(3); }
+.op-resultat b { font-weight: 400; font-size: 11px; }
+.op-resultat span { font-size: 9px; }
+.op-r-toi b { color: #7dff8a; } .op-r-blond b { color: #ff6b6b; } .op-r-nul b { color: #ffd84a; }
+.op-bilan { align-items: center; text-align: center; }
+.op-bilan .op-adversaire { width: 100%; }
+.op-bilan-titre { color: #ffd84a; font-size: 12px; font-weight: 400; text-transform: uppercase; }
+.op-tableau { width: 100%; border: 3px solid #d9b44a; background: #1a0610; }
+.op-t-ligne { display: grid; grid-template-columns: 1fr 56px 56px; padding: 6px 8px; border-top: 2px solid #3d0b1c; text-align: left; font-size: 9px; }
+.op-t-ligne b { text-align: center; font-weight: 400; }
+.op-t-tete { border-top: 0; color: #ffd84a; font-size: 8px; }
+.op-t-toi span::after { content: " ✓"; color: #7dff8a; } .op-t-blond span::after { content: " ✗"; color: #ff6b6b; } .op-t-nul span::after { content: " ="; color: #c9b8e8; }
+.op-dernier-jeu { margin: 4px 0; font-size: 10px; } .op-dernier-jeu b { font-weight: 400; color: #ff9ccf; }
+.op-honneur { margin-top: 4px; }
+
+/* générique */
+.op-credits { background: #000; }
+.op-defile { position: absolute; inset: 0 0 60px; overflow: hidden; }
+.op-defile-int { position: absolute; left: 0; right: 0; top: 100%; display: grid; justify-items: center; gap: 16px; padding: 0 18px; text-align: center; animation: op-defile 20s linear forwards; }
+.op-defile-int p { margin: 0; font-size: 9px; line-height: 1.8; color: #e8dcff; }
+@keyframes op-defile { from { transform: translateY(0); } to { transform: translateY(calc(-100% - 640px)); } }
+.op-james { font-size: 11px !important; color: #fff !important; }
+.op-neon { color: #ff3fd0 !important; text-shadow: 0 0 4px #ff3fd0, 0 0 10px #3df7ff; animation: op-neon 2.6s steps(1) infinite; }
+.op-chat-neon { filter: drop-shadow(0 0 3px #ff3fd0) drop-shadow(0 0 8px #3df7ff); animation: op-neon 2.6s steps(1) infinite; }
+.op-retour-menu { position: absolute; left: 0; right: 0; bottom: 14px; width: max-content; margin: 0 auto; z-index: 45; pointer-events: auto; }
+
+/* ---------------- Pastilles de notification (point bleu Holo) ---------------- */
+.os-app.a-pastille { position: relative; }
+.os-pastille { position: absolute; top: 2px; left: calc(50% + 17px); width: 13px; height: 13px; border-radius: 50%; background: var(--holo, #33b5e5); border: 2px solid #0a1a22; box-shadow: 0 0 6px rgba(51, 181, 229, .9); pointer-events: none; animation: os-pastille .3s cubic-bezier(.2, .8, .2, 1.4) both; }
+.os-dock .os-pastille { left: calc(50% + 14px); }
+@keyframes os-pastille { from { transform: scale(0); } }
+
+/* ---------------- Rien ne se télécharge : ni image, ni vidéo, ni son ---------------- */
+.os, .os * { -webkit-user-drag: none; -webkit-touch-callout: none; }
+.os img, .os video, .os svg, .os canvas { user-select: none; -webkit-user-select: none; }
+
+/* Sharkobank : le relevé synchronisé avec les courriels */
+.sk-solde.sk-negatif { color: #ff6b6b; }
+.sk-ops .sk-rejete b { text-decoration: line-through; }
+.sk-ops .sk-rejete strong { color: #6d7a86; text-decoration: line-through; }
+.sk-statut { color: #ff6b6b; }
+.hl.sk > .sk-bloc .sk-ops { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.op-annee { color: #ffd36b !important; letter-spacing: 2px; }
+/* Musique : modifier un titre (code d'édition du site) */
+.mu-cote .mu-plus { font-size: 26px; line-height: 1; color: #bbb; background: none; border-color: transparent; height: 36px; }
+.mu-info-plus { padding: 0 11px 6px 47px; font-size: 13px; color: #9a9a9a; }
+.mu-ed { z-index: 30; }
+.mu-ed .dlg { max-height: calc(100% - 32px); overflow: auto; }
+.mu-ed-corps { gap: 10px; }
+.mu-ed-champ { display: grid; gap: 2px; }
+.mu-ed-champ small { color: var(--holo); font-size: 12px; text-transform: uppercase; }
+.mu-ed-champ .holo-champ, .mu-ed-code { width: 100%; box-sizing: border-box; }
+.mu-ed-code { font-size: 26px; letter-spacing: 10px; text-align: center; }
+.mu-ed-erreur { color: #ff6b6b !important; }
+.mu-ed-pochette { display: flex; gap: 12px; align-items: center; }
+.mu-ed-pochette img { width: 96px; height: 96px; object-fit: cover; background: #111; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.mu-ed-pochette span { display: grid; gap: 8px; }
+.mu-ed-fichier { position: relative; display: inline-block; padding: 8px 12px; border: 1px solid #555; background: #333; font-size: 14px; cursor: pointer; }
+.mu-ed-fichier input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.mu-ed-lien { color: var(--holo); font-size: 13px; text-align: left; }
+.mu-pochette { object-fit: cover; }
