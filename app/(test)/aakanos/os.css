@@ -615,3 +615,25 @@ a.app-ligne:active { background: var(--presse); }
 .pp-miroir .jb-bouton { margin-top: 10px; }
 .hl-dlg { position: fixed; }
 .hl.sk > *, .hl.pp > * { flex: none; }
+/* Peeporn, version coquine : rose néon */
+.pp { background: radial-gradient(circle at 80% 0%, #3a0a2e 0, transparent 45%), radial-gradient(circle at 0% 60%, #2a0626 0, transparent 50%), #0a0510; }
+.pp-haut { background: linear-gradient(90deg, #1c0716, #2b0a26); border-bottom: 2px solid #ff3c9e; box-shadow: 0 2px 18px rgba(255, 60, 158, .35); }
+.pp-haut b { color: #fff; text-shadow: 0 0 8px #ff3c9e, 0 0 18px #ff3c9e, 2px 2px 0 #9c1060; }
+.pp-18 { font: 700 11px var(--f-mono), monospace; font-style: normal; color: #fff; background: #e0105a; padding: 3px 5px; border-radius: 2px; margin-right: 6px; }
+.pp-rub button { border-color: #4a1a40; background: #1a0818; color: #e9b7d3; }
+.pp-rub button.on { color: #fff; border-color: #ff3c9e; background: #3a0b2e; box-shadow: 0 0 10px rgba(255, 60, 158, .4); }
+.pp-rub button.live i { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #ff2b2b; box-shadow: 0 0 6px #ff2b2b; animation: n-rec 1s steps(2) infinite; }
+.pp-titre-rub { display: block; padding: 6px 12px 0; font: 11px var(--f-mono), monospace; letter-spacing: 1.5px; color: #ff7ac0; }
+.pp-img { position: relative; border-color: #3a1434; background: #1a0a1a; }
+.pp-img.charge { background: linear-gradient(90deg, #1a0a1a 0%, #3a1434 50%, #1a0a1a 100%); background-size: 200% 100%; }
+.pp-img.ko span { color: #5a2a50; }
+.pp-spin { border-color: rgba(255, 60, 158, .2); border-top-color: #ff3c9e; }
+.pp-badge, .pp-duree { position: absolute; font: 10px var(--f-mono), monospace; font-style: normal; color: #fff; padding: 2px 4px; background: rgba(0, 0, 0, .75); }
+.pp-badge { left: 5px; top: 5px; background: #e0105a; } .pp-badge.live { background: #ff2b2b; }
+.pp-duree { right: 5px; bottom: 5px; }
+.pp-vignette b { display: block; margin-top: 6px; font: 600 13px var(--p2), sans-serif; line-height: 1.2; color: #f2d6e6; }
+.pp-vignette span { display: block; margin-top: 2px; font: 10px var(--f-mono), monospace; color: #8a5a7a; }
+.pp-miroir { border-top-color: #ff3c9e; background: #1c0a1a; box-shadow: 0 0 30px rgba(255, 60, 158, .35), 0 10px 40px #000; }
+.pp-miroir p b { color: #ff7ac0; text-shadow: 0 0 10px rgba(255, 60, 158, .6); }
+.pp-miroir p.pp-puce { margin: 2px 4px 10px; font: 700 20px var(--p2), sans-serif; letter-spacing: 1px; color: #fff; text-shadow: 0 0 10px #ff3c9e; }
+.pp-age .dlg-titre { color: #ff3c9e; border-bottom-color: #ff3c9e; } .pp-age { border-top-color: #ff3c9e; }
