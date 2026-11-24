@@ -22,15 +22,17 @@ import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
+import { AppSamTelecom } from "./SamTelecom";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
   { id: "telephone", nom: "Téléphone" },
   { id: "pulpus", nom: "Pulpüs market" },
+  { id: "samtelecom", nom: "Sam-Telecom" },
   { id: "contacts", nom: "Contacts" },
   { id: "projets", nom: "Calendrier" },
   { id: "album", nom: "Album" },
@@ -42,7 +44,7 @@ const APPLIS: Appli[] = [
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
-const PAGE1: IdAppli[] = ["projets", "album", "citations", "contacts", "endurreisen", "instagram", "pulpus", "reglages"];
+const PAGE1: IdAppli[] = ["projets", "album", "citations", "contacts", "endurreisen", "instagram", "pulpus", "reglages", "samtelecom"];
 const PAGE2: IdAppli[] = [];
 const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "contacts"];
 
@@ -137,6 +139,11 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return png("phone");
     case "pulpus":
       return <LogoPulpus taille={taille} />;
+    case "samtelecom":
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="os-icone" src="/aakanos/sam-telecom-tete.png" width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />
+      );
     case "contacts":
       return png("contacts");
     case "qui":
@@ -974,6 +981,8 @@ function ContenuAppli({
       return <AppTelephone />;
     case "pulpus":
       return <AppPulpus />;
+    case "samtelecom":
+      return <AppSamTelecom />;
     case "qui":
       return <AppQui ouvrir={ouvrir} />;
     case "album":

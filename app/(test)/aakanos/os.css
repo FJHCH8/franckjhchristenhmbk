@@ -505,3 +505,53 @@ a.app-ligne:active { background: var(--presse); }
 @keyframes os-ticker-entre { from { transform: translateY(100%); } }
 @keyframes os-ticker-defile { to { transform: translateX(-100%); } }
 .msg-noreply { color: #999 !important; }
+
+/* ---------- Sam-Telecom : l'UI du site (Odyssée) sous une savane de nuit 8 bits, boutons Jelly Bean ---------- */
+.st { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #000; color: #fff; font-family: var(--p2), "Chakra Petch", sans-serif; padding-bottom: 46px; }
+.st-haut { position: relative; height: 230px; background: url(/aakanos/savane-nuit.png) center bottom / cover; image-rendering: pixelated; }
+.st-haut::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 70px; background: linear-gradient(transparent, #000); }
+.st-sam { position: absolute; left: 10px; bottom: 22px; width: 118px; z-index: 1; image-rendering: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .6)); }
+.st-titre { position: absolute; left: 134px; right: 10px; bottom: 58px; z-index: 1; }
+.st-titre small { display: block; font: 11px var(--f-mono), monospace; letter-spacing: 2px; text-shadow: 0 1px 3px #000; }
+.st-titre b { display: block; font-size: 29px; letter-spacing: 2px; line-height: 1.05; background: linear-gradient(100deg, #6fbdf5, #f4fbff 30%, #6fbdf5 60%, #f4fbff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: st-reflet 4s linear infinite; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .8)); }
+.st-titre span { font: 10px var(--f-mono), monospace; letter-spacing: 1.5px; color: #e8f6ff; text-shadow: 0 1px 3px #000; }
+@keyframes st-reflet { to { background-position: -200% 0; } }
+.st-carte { position: relative; z-index: 2; margin: -26px 12px 0; padding: 12px 14px 10px; background: rgba(8, 12, 16, .85); border: 1px solid #1d2a35; }
+.st-co { position: absolute; width: 10px; height: 10px; border: 0 solid #8fd0ff; }
+.st-co.a { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; } .st-co.b { right: -1px; top: -1px; border-right-width: 2px; border-top-width: 2px; }
+.st-co.c { left: -1px; bottom: -1px; border-left-width: 2px; border-bottom-width: 2px; } .st-co.d { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+.st-lab { display: block; font: 11px var(--f-mono), monospace; letter-spacing: 2px; color: #8fd0ff; }
+.st-mono { display: block; margin-top: 6px; font: 10px var(--f-mono), monospace; letter-spacing: 1.2px; color: #7d8c97; }
+.st-conso { display: flex; align-items: center; gap: 12px; }
+.st-anneau { width: 136px; height: 136px; flex: none; }
+.st-arc { filter: drop-shadow(0 0 6px #6fbdf5); animation: st-arc 1.2s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes st-arc { from { stroke-dasharray: 0 400; } }
+.st-n { font: 700 40px var(--p2), sans-serif; fill: #fff; } .st-n2 { font: 9px var(--f-mono), monospace; letter-spacing: 1.5px; fill: #8fd0ff; }
+.st-conso ul { list-style: none; margin: 0; padding: 0; flex: 1; }
+.st-conso li { display: grid; grid-template-columns: 10px 1fr; column-gap: 8px; margin: 7px 0; }
+.st-conso li i { grid-row: span 2; width: 8px; height: 8px; margin-top: 5px; background: #3a4048; } .st-conso li i.on { background: #8fd0ff; box-shadow: 0 0 6px #6fbdf5; }
+.st-conso li b { font-size: 14px; letter-spacing: 1px; } .st-conso li em { font: 10px var(--f-mono), monospace; color: #7d8c97; font-style: normal; letter-spacing: 1px; }
+.st-coeurs { display: flex; gap: 4px; margin-top: 6px; } .st-coeurs svg { flex: 1; max-width: 24px; aspect-ratio: 7 / 3.6; }
+.st-ligne { margin: 14px 14px 0; }
+.st-forfait { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.st-forfait b { font-size: 24px; letter-spacing: 1.5px; background: linear-gradient(100deg, #6fbdf5, #f4fbff 30%, #6fbdf5 60%, #f4fbff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: st-reflet 4s linear infinite; }
+.st-forfait span { font-size: 21px; font-weight: 700; white-space: nowrap; } .st-forfait em { font: 11px var(--f-mono), monospace; font-style: normal; color: #7d8c97; }
+.st-actions { display: grid; gap: 10px; margin: 16px 12px 0; }
+.st-pied { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; justify-content: space-between; font: 10px var(--f-mono), monospace; letter-spacing: 1.5px; color: #4a5560; }
+/* bouton Holo sombre de Jelly Bean (btn_default_holo_dark) */
+.jb-bouton { display: block; width: 100%; min-height: 48px; padding: 0 16px; border-radius: 2px; font: 400 16px var(--font-roboto), Roboto, sans-serif; color: #f3f3f3; text-align: center;
+  background: linear-gradient(#4a4a4a, #3a3a3a); border: 1px solid #2a2a2a; border-top-color: #5c5c5c; box-shadow: 0 1px 1px rgba(0, 0, 0, .6); }
+.jb-bouton:active { background: rgba(51, 181, 229, .6); border-color: #33b5e5; }
+.jb-bouton:focus-visible { outline: 2px solid #33b5e5; outline-offset: 1px; }
+.st-dlg-texte { padding: 14px 16px 6px; font-family: var(--font-roboto), Roboto, sans-serif; }
+.st-dlg-texte p { margin: 0 0 10px; font-size: 15px; line-height: 1.45; color: #ddd; } .st-dlg-texte p.rouge { color: #ff6b6b; }
+.st-essai { display: flex; align-items: center; gap: 12px; }
+.st-essai i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid rgba(51, 181, 229, .25); border-top-color: #33b5e5; animation: os-tourne .8s linear infinite; }
+/* barre de boutons des boîtes de dialogue Holo */
+.jb-boutons-dlg { display: flex; border-top: 1px solid #444; }
+.jb-boutons-dlg button { flex: 1; padding: 14px 8px; font: 400 15px var(--font-roboto), Roboto, sans-serif; color: #eee; background: none; }
+.jb-boutons-dlg button + button { border-left: 1px solid #444; }
+.jb-boutons-dlg button:active { background: var(--presse); } .jb-boutons-dlg button:disabled { color: #666; }
+.st .dlg { font-family: var(--font-roboto), Roboto, sans-serif; } .st .dlg-titre { font-family: var(--font-roboto), Roboto, sans-serif; }
+.jb-boutons-dlg button { text-align: center; }
+.st .dlg-fond { position: fixed; }
