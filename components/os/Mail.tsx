@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * E-mail : la messagerie Jelly Bean du téléphone, compte castotessis@nounoumail.dav.
+ * E-mail : la messagerie Jelly Bean du téléphone, compte castotessis@nounoumail.tav.
  * Pas d'internet avec le forfait Connard : on écrit, le message attend dans la boîte d'envoi.
  * Seule Sharkobank passe toujours, par son « réseau prioritaire » (facturé, évidemment).
  */
@@ -12,7 +12,7 @@ import { useRetour } from "./OdysseeOS";
 import { sonSynth } from "./sonsSynth";
 import { annonceBanque } from "./banque";
 
-export const COMPTE = "castotessis@nounoumail.dav";
+export const COMPTE = "castotessis@nounoumail.tav";
 
 /* ---------------- Logos (originaux, en SVG) ---------------- */
 
@@ -40,14 +40,14 @@ export { IconeMail };
 type Bloc = { p: string } | { fiche: [string, string][]; titre?: string } | { total: [string, string][] } | { logo: "peeporn" | "sharkobank" };
 export type Courriel = { id: string; de: "peeporn" | "sharkobank" | "psy"; nom: string; adresse: string; objet: string; date: string; heure: string; corps: Bloc[]; direct?: number };
 
-const SK = { de: "sharkobank" as const, nom: "Sharkobank", adresse: "alertes@sharkobank.dav" };
+const SK = { de: "sharkobank" as const, nom: "Sharkobank", adresse: "alertes@sharkobank.tav" };
 
 export const COURRIELS: Courriel[] = [
   {
     id: "pp1",
     de: "peeporn",
     nom: "Peeporn sex-shop",
-    adresse: "commandes@peeporn.dav",
+    adresse: "commandes@peeporn.tav",
     objet: "Paiement refusé pour votre commande 43-454535-86729",
     date: "23 nov.",
     heure: "22:14",

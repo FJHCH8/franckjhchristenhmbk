@@ -3,9 +3,9 @@
 /**
  * Opakaalt : un jeu 8 bits de James-games (pixel art et chiptune faits maison).
  * Menu sur la ville (le jour tombe, la nuit vient), la rencontre dans la rue, le casino,
- * trois jeux contre le blond (morpion, puissance 4, échecs), deux fins, le générique.
+ * trois jeux contre le blond (morpion, puissance 4, échecs), départage (Qui suis-je, Bataille navale, Baby-foot), deux fins, le générique.
  * Règle : on gagne en remportant au moins 2 des 3 jeux. Égalité de jeux : on compte les manches gagnées ;
- * encore égalité : morpion éclair jusqu'à ce qu'il y ait un gagnant.
+ * encore égalité : les trois mini-jeux, premier à 2, puis jusqu'à ce qu'il y ait un gagnant.
  * Dialogues : ceux de Franck, mot pour mot. Rien d'explicite à l'écran.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -14,6 +14,9 @@ import { useRetour } from "./OdysseeOS";
 import { creerStore } from "./session";
 import { ambianceVille, bruitage, musique, silence, type Bruitage, type NomPiste } from "./opakaaltSon";
 import { Blond, Casino, ChatNeon, CoeurPx, Femboy, PieceEchecs, Pixels, RueHotel, Terre, Ville, type Px } from "./opakaaltPixels";
+import { BabyFoot, BatailleNavale, QuiSuisJe } from "./OpakaaltMinis";
+import { memoireDiff, NIVEAUX, type Difficulte } from "./opakaaltDiff";
+import { uneReplique, type JeuParole, type MomentParole } from "./opakaaltRepliques";
 import {
   blond4,
   blondEchecs,
@@ -39,19 +42,10 @@ import {
 
 /* ---------------- Icône du tiroir ---------------- */
 
-const ICONE: Px[] = [
-  [0, 0, 16, 16, "#2b1640"], [1, 1, 14, 9, "#9bbc0f"], [2, 2, 12, 7, "#8bac0f"],
-  // un cœur sur l'écran façon Game Boy
-  [4, 3, 2, 1, "#ff4f8b"], [8, 3, 2, 1, "#ff4f8b"], [3, 4, 8, 2, "#ff4f8b"], [4, 6, 6, 1, "#ff4f8b"], [5, 7, 4, 1, "#ff4f8b"], [6, 8, 2, 0, "#ff4f8b"], [4, 4, 1, 1, "#ffd0e0"],
-  [11, 3, 2, 2, "#306230"], [12, 6, 1, 2, "#306230"],
-  // croix directionnelle et boutons
-  [3, 11, 1, 3, "#111"], [2, 12, 3, 1, "#111"], [10, 12, 2, 2, "#ff3b5c"], [13, 11, 2, 2, "#ff3b5c"],
-];
 export function IconeOpakaalt({ taille = 56 }: { taille?: number }) {
   return (
-    <span className="os-icone op-icone" style={{ width: taille, height: taille }}>
-      <Pixels rects={ICONE} w={16} h={16} taille={taille / 18} />
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img className="os-icone" src="/aakanos/opakaalt-icone.svg" width={taille} height={taille} alt="" draggable={false} />
   );
 }
 
@@ -104,9 +98,9 @@ function Dialogue({ qui, texte, suite }: { qui: Qui; texte: string; suite: () =>
 type Vue = {
   fx: number; bx: number; fdir: 1 | -1; bdir: 1 | -1; t: number; marche: boolean; boum: boolean;
   colere: boolean; bRougit: number; fRougit: number; bSourire: boolean; fSourire: boolean; fOpacite: number; bOpacite: number;
-  debout: boolean; coup: boolean; vol: boolean; coeurs: boolean; secousse: boolean;
+  debout: boolean; coup: boolean; vol: boolean; coeurs: boolean; secousse: boolean; zoom: number;
 };
-const VUE0: Vue = { fx: -15, bx: 115, fdir: 1, bdir: -1, t: 0, marche: false, boum: false, colere: false, bRougit: 0, fRougit: 0, bSourire: false, fSourire: false, fOpacite: 1, bOpacite: 1, debout: false, coup: false, vol: false, coeurs: false, secousse: false };
+const VUE0: Vue = { fx: -15, bx: 115, fdir: 1, bdir: -1, t: 0, marche: false, boum: false, colere: false, bRougit: 0, fRougit: 0, bSourire: false, fSourire: false, fOpacite: 1, bOpacite: 1, debout: false, coup: false, vol: false, coeurs: false, secousse: false, zoom: 1 };
 type Etape = { qui?: Qui; texte?: string; ms?: number; vue?: Partial<Vue>; son?: Bruitage; musique?: NomPiste };
 
 function useMarche(actif: boolean) {
@@ -142,11 +136,8 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
   const pas = useMarche(vue.marche);
   const assis = decor === "casino" && !vue.debout;
   const style = (x: number, dir: 1 | -1, op: number): CSSProperties => ({ left: `${x}%`, transform: `translateX(-50%) scaleX(${dir})`, transition: `left ${vue.t}ms linear, opacity .5s, bottom .4s`, opacity: op });
-  return (
-    <div className={`op-scene op-scene-${decor}${vue.secousse ? " op-secousse" : ""}`}>
-      {decor === "rue" ? <Ville /> : decor === "casino" ? <Casino /> : <RueHotel />}
-      {decor === "casino" ? <div className="op-enseigne" translate="no">CASINO</div> : null}
-      {decor === "hotel" ? <div className="op-enseigne op-enseigne-hotel">HÔTEL</div> : null}
+  const persos = (
+    <>
       <div className={`op-perso op-perso-f${assis ? " assis" : ""}${vue.vol ? " op-vole" : ""}`} style={style(vue.fx, vue.fdir, vue.fOpacite)}>
         <Femboy pas={pas} rougit={vue.fRougit} sourire={vue.fSourire} />
         {vue.fRougit >= 2 ? <Coeurs /> : null}
@@ -155,8 +146,28 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
         <Blond pas={pas} rougit={vue.bRougit} colere={vue.colere} sourire={vue.bSourire} coup={vue.coup} />
         {vue.bRougit >= 2 ? <Coeurs /> : null}
       </div>
+    </>
+  );
+  const monde = decor === "rue" ? (
+    <div className="op-camera" style={{ transform: `translateX(-50%) scale(${vue.zoom})`, transition: `transform ${Math.max(400, vue.t)}ms ease-in-out` }}>
+      <Ville couche="fond" anime={false} />
+      {persos}
+      <Ville couche="avant" />
+      {vue.boum ? <div className="op-boum">BAM!</div> : null}
+    </div>
+  ) : (
+    <>
+      {decor === "casino" ? <Casino /> : <RueHotel />}
+      {persos}
       {decor === "casino" ? <Tapis /> : null}
       {vue.boum ? <div className="op-boum">BAM!</div> : null}
+    </>
+  );
+  return (
+    <div className={`op-scene op-scene-${decor}${vue.secousse ? " op-secousse" : ""}`}>
+      {monde}
+      {decor === "casino" ? <div className="op-enseigne" translate="no">CASINO</div> : null}
+      {decor === "hotel" ? <div className="op-enseigne op-enseigne-hotel">HÔTEL</div> : null}
       {children}
       <div className="op-bas">
         {e?.texte && e.qui ? <Dialogue key={i} qui={e.qui} texte={e.texte} suite={suite} /> : null}
@@ -186,9 +197,10 @@ function Tapis() {
 }
 
 const INTRO: Etape[] = [
-  { musique: "intro", vue: { fx: -15, bx: 115, t: 0 }, ms: 300 },
-  { vue: { fx: 44, bx: 56, t: 2600, marche: true }, ms: 2600 },
-  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 38, bx: 62, t: 150 }, son: "boum", ms: 900 },
+  { musique: "intro", vue: { fx: 10, bx: 90, t: 0, zoom: 1, marche: true }, ms: 400 },
+  { vue: { fx: 26, bx: 74, t: 1800, zoom: 1.12, marche: true }, ms: 1800 },
+  { vue: { fx: 40, bx: 60, t: 1400, zoom: 2.05, marche: true }, ms: 1400 },
+  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 42, bx: 58, zoom: 2.2, t: 150 }, son: "boum", ms: 900 },
   { vue: { boum: false, secousse: false }, qui: "blond", texte: "ragarde ou tu marches pd!" },
   { qui: "femboy", texte: "je m’excuse je n’ai pas vue ou j’allais je suis tellement désolé." },
   // le blond se calme et le regarde
@@ -213,9 +225,8 @@ const VICTOIRE: Etape[] = [
   { vue: { marche: false, fOpacite: 0, bOpacite: 0 }, son: "porte", ms: 1000 },
 ];
 const DEFAITE: Etape[] = [
-  { musique: "defaite", vue: { fx: 26, bx: 74, fdir: 1, bdir: -1, t: 0, colere: true }, son: "chaise", ms: 700 },
-  { vue: { debout: true, bx: 40, t: 900, marche: true }, ms: 900 },
-  { vue: { marche: false, coup: true, secousse: true, boum: true }, son: "coup-de-pied", ms: 350 },
+  { musique: "defaite", vue: { fx: 36, bx: 62, fdir: 1, bdir: -1, t: 0, colere: true, debout: true }, qui: "blond", texte: "putain, tu commences à vraiment me faire chier, va te faire enculer." },
+  { vue: { coup: true, secousse: true, boum: true }, son: "coup-de-pied", ms: 280 },
   { vue: { vol: true, secousse: false, boum: false }, son: "envol", ms: 1300 },
 ];
 
@@ -250,18 +261,25 @@ function CoeurFerme({ apres, fin }: { apres: Bruitage; fin: () => void }) {
 
 /* ---------------- Le blond qui réagit (bulles) ---------------- */
 
-type Bulle = { texte: string; fort: number; cle: number } | null;
+type Bulle = { texte: string; fort: number; cle: number; qui?: Qui } | null;
 
 function Adversaire({ rougit, bulle, reflechit }: { rougit: number; bulle: Bulle; reflechit: boolean }) {
   const tr = useTraduire();
+  const femboy = bulle?.qui === "femboy";
   return (
-    <div className="op-adversaire">
-      <div className={`op-portrait${rougit >= 3 ? " op-tremble" : ""}`}>
-        <Blond rougit={rougit} sourire={rougit >= 1} taille={3} />
-        {rougit >= 2 ? <Coeurs /> : null}
-      </div>
+    <div className={`op-adversaire${femboy ? " op-adv-f" : ""}`}>
+      {femboy ? (
+        <div className="op-portrait op-portrait-f">
+          <Femboy rougit={1} sourire taille={3} />
+        </div>
+      ) : (
+        <div className={`op-portrait${rougit >= 3 ? " op-tremble" : ""}`}>
+          <Blond rougit={rougit} sourire={rougit >= 1} taille={3} />
+          {rougit >= 2 ? <Coeurs /> : null}
+        </div>
+      )}
       {bulle ? (
-        <div key={bulle.cle} className={`op-bulle op-fort${bulle.fort}`} translate="no">
+        <div key={bulle.cle} className={`op-bulle op-fort${bulle.fort}${femboy ? " op-bulle-f" : ""}`} translate="no">
           {tr(bulle.texte)}
         </div>
       ) : reflechit ? (
@@ -278,9 +296,10 @@ function Adversaire({ rougit, bulle, reflechit }: { rougit: number; bulle: Bulle
 const X_PX: Px[] = Array.from({ length: 7 }, (_, k): Px[] => [[k, k, 2, 1, "#ff6fae"], [6 - k, k, 2, 1, "#ff6fae"]]).flat();
 const O_PX: Px[] = [[2, 0, 4, 1, "#ffd84a"], [1, 1, 1, 1, "#ffd84a"], [6, 1, 1, 1, "#ffd84a"], [0, 2, 1, 4, "#ffd84a"], [7, 2, 1, 4, "#ffd84a"], [1, 6, 1, 1, "#ffd84a"], [6, 6, 1, 1, "#ffd84a"], [2, 7, 4, 1, "#ffd84a"]];
 
-type PropsJeu = { reagir: (r: "gagne" | "perd" | "bien" | "nul") => void; fin: (g: Gagnant, mancheToi: number, mancheBlond: number) => void; eclair?: boolean; entete: (manche: string, score: string, reflechit: boolean) => ReactNode };
+type PropsJeu = { reagir: (r: "gagne" | "perd" | "bien" | "nul") => void; fin: (g: Gagnant, mancheToi: number, mancheBlond: number) => void; eclair?: boolean; entete: (manche: string, score: string, reflechit: boolean) => ReactNode; parler?: (qui: Qui, jeu: JeuParole, moment: MomentParole) => void };
 
-function Morpion({ reagir, fin, eclair, entete }: PropsJeu) {
+function Morpion({ reagir, fin, eclair, entete, parler }: PropsJeu) {
+  const d = memoireDiff.useValeur().d;
   const [g, setG] = useState<Case[]>(Array(9).fill(""));
   const [manche, setManche] = useState(1);
   const [score, setScore] = useState({ toi: 0, blond: 0 });
@@ -313,13 +332,14 @@ function Morpion({ reagir, fin, eclair, entete }: PropsJeu) {
     if (resultat || w || plein || tour !== "O") return;
     const id = window.setTimeout(() => {
       const h = [...g];
-      h[blondMorpion(h, Math.min(0.85, 0.3 + nuls * 0.15))] = "O";
+      h[blondMorpion(h, d, nuls)] = "O";
       bruitage("rond");
       setG(h);
+      parler?.("blond", "morpion", "coup");
       conclure(h);
     }, 650);
     return () => window.clearTimeout(id);
-  }, [g, tour, resultat, w, plein, conclure, nuls]);
+  }, [g, tour, resultat, w, plein, conclure, nuls, d, parler]);
 
   const jouerCase = (i: number) => {
     if (resultat || tour !== "X" || g[i]) return bruitage("erreur");
@@ -328,6 +348,7 @@ function Morpion({ reagir, fin, eclair, entete }: PropsJeu) {
     bruitage("croix");
     setIndice(-1);
     setG(h);
+    parler?.("femboy", "morpion", "coup");
     conclure(h);
   };
   const suivante = () => {
@@ -392,7 +413,7 @@ function Commandes({ resultat, suivante, indice, dernier }: { resultat: Gagnant 
 
 /* ---------------- Puissance 4 ---------------- */
 
-function Puissance4({ reagir, fin, entete }: PropsJeu) {
+function Puissance4({ reagir, fin, entete, parler }: PropsJeu) {
   const [g, setG] = useState<Case[]>(Array(COLS * RANGS).fill(""));
   const [manche, setManche] = useState(1);
   const [score, setScore] = useState({ toi: 0, blond: 0 });
@@ -434,9 +455,9 @@ function Puissance4({ reagir, fin, entete }: PropsJeu) {
   );
   useEffect(() => {
     if (resultat || w || g.every(Boolean) || tour !== "O") return;
-    const id = window.setTimeout(() => poser(g, blond4(g, 0.22), "O"), 700);
+    const id = window.setTimeout(() => { poser(g, blond4(g, memoireDiff.lire().d), "O"); parler?.("blond", "puissance4", "coup"); }, 700);
     return () => window.clearTimeout(id);
-  }, [g, tour, resultat, w, poser]);
+  }, [g, tour, resultat, w, poser, parler]);
   const jouerCol = (c: number) => {
     if (resultat || tour !== "X" || !poser(g, c, "X")) return bruitage("erreur");
     setIndice(-1);
@@ -487,7 +508,7 @@ function Puissance4({ reagir, fin, entete }: PropsJeu) {
 
 const MAX_COUPS = 60;
 
-function Echecs({ reagir, fin, entete }: PropsJeu) {
+function Echecs({ reagir, fin, entete, parler }: PropsJeu) {
   const [e, setE] = useState<Echiquier>(depart);
   const [sel, setSel] = useState(-1);
   const [dernier, setDernier] = useState<Coup | null>(null);
@@ -535,11 +556,14 @@ function Echecs({ reagir, fin, entete }: PropsJeu) {
   useEffect(() => {
     if (resultat || e.trait !== "b") return;
     const id = window.setTimeout(() => {
-      const m = blondEchecs(e, 0.18);
-      if (m) apres(jouer(e, m), m, coups);
+      const m = blondEchecs(e, memoireDiff.lire().d);
+      if (m) {
+        parler?.(m.prise ? "blond" : "blond", "echecs", m.prise ? "prise" : "coup");
+        apres(jouer(e, m), m, coups);
+      }
     }, 550);
     return () => window.clearTimeout(id);
-  }, [e, resultat, apres, coups]);
+  }, [e, resultat, apres, coups, parler]);
 
   const toucher = (i: number) => {
     if (resultat || e.trait !== "w") return;
@@ -551,6 +575,7 @@ function Echecs({ reagir, fin, entete }: PropsJeu) {
         setSel(-1);
         setIndice(null);
         setCoups((c) => c + 1);
+        parler?.(m.prise ? "femboy" : "femboy", "echecs", m.prise ? "prise" : "coup");
         apres(n, m, coups + 1);
         return;
       }
@@ -636,44 +661,76 @@ function manquantes(b: string[], camp: "w" | "b") {
 /* ---------------- La table du casino : les trois jeux ---------------- */
 
 const JEUX = ["Morpion", "Puissance 4", "Échecs"] as const;
+const JEUX_DEP = ["Qui suis-je", "Bataille navale", "Baby-foot"] as const;
 const PISTE_JEU: NomPiste[] = ["morpion", "puissance4", "echecs"];
+const PISTE_DEP: NomPiste[] = ["quisuisje", "navale", "babyfoot"];
+const PAROLE_JEU: JeuParole[] = ["morpion", "puissance4", "echecs"];
+const PAROLE_DEP: JeuParole[] = ["quisuisje", "navale", "babyfoot"];
 
 function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const [jeu, setJeu] = useState(0);
   const [res, setRes] = useState<{ g: Gagnant; toi: number; blond: number }[]>([]);
-  const [vue, setVue] = useState<"jeu" | "bilan" | "eclair">("jeu");
+  const [dep, setDep] = useState<{ g: Gagnant; toi: number; blond: number }[]>([]);
+  const [vue, setVue] = useState<"jeu" | "bilan" | "departage" | "bilan-dep">("jeu");
+  const [iDep, setIDep] = useState(0);
   const [rougit, setRougit] = useState(0);
   const [bulle, setBulle] = useState<Bulle>(null);
   const [partie, setPartie] = useState(0);
+  useEffect(() => {
+    const h = (ev: Event) => {
+      const d = (ev as CustomEvent<{ vue?: "departage"; i?: number }>).detail;
+      if (d?.vue === "departage") {
+        setIDep(d.i ?? 0);
+        setVue("departage");
+      }
+    };
+    window.addEventListener("aakanos-opakaalt-tournoi", h);
+    return () => window.removeEventListener("aakanos-opakaalt-tournoi", h);
+  }, []);
+
   const gagnes = res.filter((r) => r.g === "toi").length;
   const perdus = res.filter((r) => r.g === "blond").length;
   const mToi = res.reduce((s, r) => s + r.toi, 0);
   const mBlond = res.reduce((s, r) => s + r.blond, 0);
+  const depToi = dep.filter((r) => r.g === "toi").length;
+  const depBlond = dep.filter((r) => r.g === "blond").length;
   const avanceRef = useRef(0);
+  const paroleRef = useRef<JeuParole>("morpion");
   useEffect(() => {
     avanceRef.current = gagnes - perdus;
   }, [gagnes, perdus]);
 
   useEffect(() => {
-    musique(vue === "bilan" ? "casino" : vue === "eclair" ? "morpion" : PISTE_JEU[jeu]!);
-  }, [jeu, vue]);
+    const nom = vue === "bilan" || vue === "bilan-dep" ? "casino" : vue === "departage" ? PISTE_DEP[iDep % 3]! : PISTE_JEU[jeu]!;
+    paroleRef.current = vue === "departage" ? PAROLE_DEP[iDep % 3]! : PAROLE_JEU[jeu]!;
+    musique(nom);
+  }, [jeu, vue, iDep]);
   useEffect(() => {
     if (!bulle) return;
     const id = window.setTimeout(() => setBulle(null), 4200);
     return () => window.clearTimeout(id);
   }, [bulle]);
 
+  const parler = useCallback((qui: Qui, jeuP: JeuParole, moment: MomentParole) => {
+    const texte = uneReplique(qui, jeuP, moment);
+    if (!texte) return;
+    setBulle({ texte, fort: qui === "blond" && (moment === "perd" || moment === "gagne") ? 2 : qui === "femboy" ? 1 : 0, qui, cle: Date.now() });
+  }, []);
+
   const reagir = useCallback((r: "gagne" | "perd" | "bien" | "nul") => {
+    const jeuP = paroleRef.current;
     if (r === "gagne" || r === "bien") {
       setRougit((x) => {
         const n = Math.min(3, Math.max(x + 1, 1 + avanceRef.current));
-        setBulle({ texte: T_MERDE, fort: n, cle: Date.now() });
+        setBulle({ texte: uneReplique("blond", jeuP, r === "gagne" ? "perd" : "bien"), fort: n, qui: "blond", cle: Date.now() });
         return n;
       });
       window.setTimeout(() => bruitage(r === "bien" ? "coeurs" : "rougit"), 250);
     } else if (r === "perd") {
       setRougit((x) => Math.max(0, x - 1));
-      setBulle({ texte: T_NUL, fort: 0, cle: Date.now() });
+      setBulle({ texte: uneReplique("blond", jeuP, "gagne"), fort: 0, qui: "blond", cle: Date.now() });
+    } else {
+      setBulle({ texte: uneReplique("blond", jeuP, "mal"), fort: 0, qui: "blond", cle: Date.now() });
     }
   }, []);
 
@@ -683,20 +740,40 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
     bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
   }, []);
 
-  // le verdict
-  const decide = gagnes >= 2 ? "toi" : perdus >= 2 ? "blond" : null;
-  let verdict: "toi" | "blond" | "eclair" | null = decide;
-  if (!verdict && res.length === 3) verdict = gagnes > perdus ? "toi" : perdus > gagnes ? "blond" : mToi > mBlond ? "toi" : mBlond > mToi ? "blond" : "eclair";
+  const finDep = useCallback((g: Gagnant, toi: number, blond: number) => {
+    setDep((l) => [...l, { g, toi, blond }]);
+    setVue("bilan-dep");
+    bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
+  }, []);
 
+  const decide = gagnes >= 2 ? "toi" : perdus >= 2 ? "blond" : null;
+  let verdict: "toi" | "blond" | "departage" | null = decide;
+  if (!verdict && res.length === 3) verdict = gagnes > perdus ? "toi" : perdus > gagnes ? "blond" : mToi > mBlond ? "toi" : mBlond > mToi ? "blond" : "departage";
+
+  const vDep: "toi" | "blond" | null = depToi >= 2 && depToi > depBlond ? "toi" : depBlond >= 2 && depBlond > depToi ? "blond" : dep.length >= 3 && depToi !== depBlond ? (depToi > depBlond ? "toi" : "blond") : dep.length >= 3 && depToi === depBlond ? null : (depToi >= 2 || depBlond >= 2) && depToi !== depBlond ? (depToi > depBlond ? "toi" : "blond") : null;
+
+  useEffect(() => {
+    if (vue === "bilan" && verdict === "blond") {
+      const id = window.setTimeout(() => termine(false), 900);
+      return () => window.clearTimeout(id);
+    }
+    if (vue === "bilan-dep" && vDep === "blond") {
+      const id = window.setTimeout(() => termine(false), 900);
+      return () => window.clearTimeout(id);
+    }
+  }, [vue, verdict, vDep, termine]);
+
+  const noms = vue === "departage" || vue === "bilan-dep" ? JEUX_DEP : JEUX;
+  const idx = vue === "departage" ? iDep % 3 : jeu;
   const entete = (manche: string, score: string, reflechit: boolean) => (
     <>
       <div className="op-score">
-        {JEUX.map((n, k) => (
-          <span key={n} className={`op-pastille${k === jeu && vue !== "bilan" ? " op-encours" : ""}${res[k] ? ` op-p-${res[k]!.g}` : ""}`}>{n}</span>
+        {noms.map((n, k) => (
+          <span key={`${n}-${k}`} className={`op-pastille${k === idx && vue !== "bilan" && vue !== "bilan-dep" ? " op-encours" : ""}${(vue === "bilan-dep" || vue === "departage" ? dep : res)[k] ? ` op-p-${(vue === "bilan-dep" || vue === "departage" ? dep : res)[k]!.g}` : ""}`}>{n}</span>
         ))}
       </div>
       <div className="op-titre-jeu">
-        <b>{vue === "eclair" ? "Morpion éclair" : JEUX[jeu]}</b>
+        <b>{vue === "departage" ? JEUX_DEP[iDep % 3] : JEUX[jeu]}</b>
         <span>{manche}</span>
         <span className="op-score-manche">
           <span>Toi</span> <span translate="no">{score}</span> <span>Blond</span>
@@ -706,25 +783,53 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
     </>
   );
 
+  const mini = () => {
+    const k = iDep % 3;
+    const props = { reagir, fin: finDep, parler, entete };
+    return k === 0 ? <QuiSuisJe {...props} /> : k === 1 ? <BatailleNavale {...props} /> : <BabyFoot {...props} />;
+  };
+
   return (
     <div className="op-tournoi">
       <Casino enseigne={false} />
       <div className="op-tournoi-corps">
         {vue === "jeu" ? (
           <div key={`${jeu}-${partie}`} className="op-jeu">
-            {jeu === 0 ? <Morpion reagir={reagir} fin={finJeu} entete={entete} /> : jeu === 1 ? <Puissance4 reagir={reagir} fin={finJeu} entete={entete} /> : <Echecs reagir={reagir} fin={finJeu} entete={entete} />}
+            {jeu === 0 ? <Morpion reagir={reagir} fin={finJeu} entete={entete} parler={parler} /> : jeu === 1 ? <Puissance4 reagir={reagir} fin={finJeu} entete={entete} parler={parler} /> : <Echecs reagir={reagir} fin={finJeu} entete={entete} parler={parler} />}
           </div>
-        ) : vue === "eclair" ? (
-          <div key="eclair" className="op-jeu">
-            <Morpion
-              eclair
-              reagir={reagir}
-              entete={entete}
-              fin={(g) => {
-                bruitage(g === "toi" ? "jeu-gagne" : "jeu-perdu");
-                termine(g === "toi");
-              }}
-            />
+        ) : vue === "departage" ? (
+          <div key={`dep-${iDep}-${partie}`} className="op-jeu">
+            {mini()}
+          </div>
+        ) : vue === "bilan-dep" ? (
+          <div className="op-bilan">
+            <Adversaire rougit={rougit} bulle={bulle} reflechit={false} />
+            <b className="op-bilan-titre">Départage</b>
+            <div className="op-tableau">
+              <div className="op-t-ligne op-t-tete">
+                <span>Jeu</span>
+                <b>Toi</b>
+                <b>Blond</b>
+              </div>
+              {dep.map((r, k) => (
+                <div key={k} className={`op-t-ligne op-t-${r.g}`}>
+                  <span>{JEUX_DEP[k % 3]}</span>
+                  <b>{r.toi}</b>
+                  <b>{r.blond}</b>
+                </div>
+              ))}
+            </div>
+            {vDep === "blond" ? (
+              <p className="op-regle">Le blond gagne le départage…</p>
+            ) : vDep === "toi" ? (
+              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(true))}>
+                Voir la fin
+              </button>
+            ) : (
+              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setIDep((n) => n + 1), setPartie((p) => p + 1), setVue("departage"))}>
+                <span>Jeu suivant :</span> <span>{JEUX_DEP[(iDep + 1) % 3]}</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="op-bilan">
@@ -747,13 +852,15 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
             <p className="op-dernier-jeu">
               <span>{res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[res.length - 1]}</b>
             </p>
-            {verdict === "eclair" ? (
+            {verdict === "departage" ? (
               <>
-                <p className="op-regle">Égalité parfaite ! Morpion éclair : le premier qui gagne une manche gagne tout.</p>
-                <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setVue("eclair"))}>
-                  Morpion éclair
+                <p className="op-regle">Égalité parfaite ! Départage : Qui suis-je, Bataille navale, Baby-foot. Premier à 2 jeux.</p>
+                <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setIDep(0), setVue("departage"))}>
+                  Départage
                 </button>
               </>
+            ) : verdict === "blond" ? (
+              <p className="op-regle">Le blond a gagné…</p>
             ) : verdict && res.length < 3 ? (
               <>
                 <p className="op-regle">{verdict === "toi" ? "Tu as déjà gagné 2 jeux sur 3 !" : "Le blond a déjà gagné 2 jeux sur 3…"}</p>
@@ -782,13 +889,36 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
 
 /* ---------------- Menu et générique ---------------- */
 
+function ChoixDifficulte({ onChoix }: { onChoix: (d: Difficulte) => void }) {
+  const actuel = memoireDiff.useValeur().d;
+  return (
+    <div className="op-scene op-menu">
+      <Ville anime />
+      <div className="op-menu-haut">
+        <h1 className="op-titre op-titre-petit" translate="no">OPAKAALT</h1>
+        <small className="op-sous-titre">Difficulté</small>
+      </div>
+      <div className="op-menu-bas op-choix-diff">
+        {NIVEAUX.map((n) => (
+          <button key={n.id} type="button" className={`op-bouton op-diff${actuel === n.id ? " op-diff-actuel" : ""}`} onClick={() => (bruitage("valider"), memoireDiff.ecrire({ d: n.id }), onChoix(n.id))}>
+            <b translate="no">{n.nom}</b>
+            <small>{n.sous}</small>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Menu({ jouer: lancer }: { jouer: () => void }) {
   const s = memoire.useValeur();
+  const [choix, setChoix] = useState(false);
   useEffect(() => {
     musique("menu");
     ambianceVille(true);
     return () => ambianceVille(false);
   }, []);
+  if (choix) return <ChoixDifficulte onChoix={() => lancer()} />;
   return (
     <div className="op-scene op-menu">
       <Ville anime />
@@ -799,7 +929,7 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
         <small className="op-sous-titre">Un amour en 8 bits</small>
       </div>
       <div className="op-menu-bas">
-        <button type="button" className="op-bouton op-nouvelle" onClick={() => (bruitage("valider"), lancer())}>
+        <button type="button" className="op-bouton op-nouvelle" onClick={() => (bruitage("valider"), setChoix(true))}>
           Nouvelle partie
         </button>
         <p className="op-regle">Gagne au moins 2 jeux sur 3 contre le blond : morpion, puissance 4, échecs.</p>
@@ -815,16 +945,12 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
 }
 
 const CREDITS = [
-  "Scénario : Franck",
-  "Direction artistique : le chat noir",
-  "Musique : un synthé 8 bits enfermé dans un téléphone",
-  "Morpion : trois croix et un rond",
-  "Puissance 4 : la gravité",
-  "Échecs : un cheval qui avance en L sans savoir pourquoi",
-  "Cascades : le femboy (aucune Terre n’a été blessée)",
-  "Coiffure du blond : un taille-haie",
-  "Remerciements : Celjo (non)",
-  "Aucun blond n’a été vexé pendant le tournage. Si, un peu.",
+  "Scénario : Addal Breypaasa",
+  "Musiques : Appov Hushpayabu",
+  "Jeux de : Morpions, Puissance 4, Bataille navale, Baby-foot, Quisuisje, Échecs",
+  "Nos joueurs : Femboy et le Blond.",
+  "Remerciement : Partenariat avec Pulpüs market et Nounou browser.",
+  "À bientôt.",
 ];
 
 function Credits({ fin }: { fin: () => void }) {
@@ -897,6 +1023,15 @@ export function AppOpakaalt() {
   const [phase, setPhase] = useState<Phase>("menu");
   const [tour, setTour] = useState(0);
   useRetour(phase !== "menu", () => setPhase("menu"));
+  useEffect(() => {
+    const h = (ev: Event) => {
+      const d = (ev as CustomEvent).detail;
+      if (typeof d === "string") setPhase(d as Phase);
+    };
+    window.addEventListener("aakanos-opakaalt-phase", h);
+    return () => window.removeEventListener("aakanos-opakaalt-phase", h);
+  }, []);
+
   useEffect(() => () => silence(), []);
   const aller = useCallback((p: Phase) => () => setPhase(p), []);
   const fins = useMemo(

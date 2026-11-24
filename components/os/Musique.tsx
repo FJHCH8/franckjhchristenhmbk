@@ -33,6 +33,8 @@ export const PISTES: Piste[] = [
     titre: "Les Aléas De L'amour",
     artiste: "Belyyeloshadi Orchestra",
     album: "Les Aléas De L'amour",
+    annee: "2012",
+    genre: "Pussydance",
     duree: 231,
     octets: 9_251_520,
     morceaux: [1, 2, 3, 4, 5].map((n) => `/aakanos/musique/les-aleas-de-l-amour.mp3.b64.${n}`),
@@ -45,6 +47,8 @@ export const PISTES: Piste[] = [
     titre: "Merry Fkng Christmas",
     artiste: "Rafayel Obaateppi",
     album: "Merry Fkng Christmas",
+    annee: "1998",
+    genre: "Coolshit",
     duree: 186,
     octets: 4_462_549,
     morceaux: [1, 2, 3].map((n) => `/aakanos/musique/merry-fkng-christmas.mp3.b64.${n}`),
@@ -55,7 +59,7 @@ export const PISTES: Piste[] = [
   },
 ];
 export const TITRE = PISTES[0]!;
-/* ---------------- Les fiches modifiées par Franck (code d'édition du site) ----------------
+/* ---------------- Les fiches modifiées par Franck (même code TOTP, même session que le site) ----------------
  * Seule exception à la remise à zéro du téléphone : enregistrées côté serveur, pour tout le monde.
  * Les titres gardent leurs données d'origine tant qu'ils n'ont pas été modifiés. */
 type Fiche = { titre?: string; artiste?: string; album?: string; annee?: string; genre?: string; pochette?: string; maj?: number };
@@ -272,12 +276,19 @@ export function chercher(s: number) {
   memoireMusique.ecrire((m) => ({ ...m, position: s }));
 }
 /** « Précédent » : au début du titre s'il a déjà joué plus de 3 s, sinon le titre d'avant (comme Jelly Bean). */
-function precedent() {
+export function precedent() {
   if (etat.position > 3 || PISTES.length < 2) return chercher(0);
   void changer(prochaine(-1), etat.lecture);
 }
-function suivant() {
+export function suivant() {
   void changer(prochaine(1), etat.lecture);
+}
+/** Arrête la lecture et retire la notification (le titre n'est plus « à l'écoute »). */
+export function arreter() {
+  audio?.pause();
+  if (audio) audio.currentTime = 0;
+  memoireMusique.ecrire((m) => ({ ...m, file: false, position: 0 }));
+  publier({ lecture: false, position: 0 });
 }
 
 /* ---------------- Les petits morceaux d'interface ---------------- */
@@ -293,30 +304,56 @@ function Img({ n, t, alt = "" }: { n: string; t?: number; alt?: string }) {
 }
 function Pochette({ taille, mini, piste }: { taille: number; mini?: boolean; piste?: number }) {
   const k = memoireMusique.useValeur().piste ?? 0;
-  const pistes = usePistes();
-  const p = pistes[piste ?? k] ?? TITRE;
+  const p = usePistes()[piste ?? k] ?? TITRE;
   // eslint-disable-next-line @next/next/no-img-element
   return <img className="mu-pochette" src={mini ? p.pochetteMini : p.pochette} width={taille} height={taille} alt="" draggable={false} />;
 }
 
-/** La notification « en cours de lecture » du rideau (MediaPlaybackService : icône, titre, artiste). */
-export function NotifMusique({ ouvrir }: { ouvrir: (e: Element) => void }) {
+/** La notification élargie « en cours de lecture » (MediaPlaybackService, Jelly Bean) : pochette, titre, artiste, progression, commandes. */
+export function NotifMusique({ ouvrir, compact }: { ouvrir?: (e: Element) => void; compact?: boolean }) {
   const l = useLecteur();
   const m = memoireMusique.useValeur();
   const pistes = usePistes();
-  if (!m.file || l.charge !== "pret") return null;
+  if (!m.file || l.charge === "rien") return null;
+  const courant = pistes[m.piste ?? 0] ?? TITRE;
+  const duree = l.duree || courant.duree;
+  const pos = l.position;
+  const part = duree > 0 ? Math.min(1, pos / duree) : 0;
+  const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
   return (
-    <div className="os-notif-bloc">
-      <button className="os-notif mu-notif" onClick={(e) => ouvrir(e.currentTarget)}>
-        <span className="os-notif-ic">
-          <Pochette taille={40} mini />
-        </span>
-        <span className="os-notif-t">
-          <b translate="no">{(pistes[m.piste ?? 0] ?? TITRE).titre}</b>
-          <span translate="no">{(pistes[m.piste ?? 0] ?? TITRE).artiste}</span>
-        </span>
-        <span className="os-notif-h">{l.lecture ? <Img n="music-stat_notify_musicplayer" /> : null}</span>
-      </button>
+    <div className={`os-notif-bloc mu-notif-bloc${compact ? " mu-notif-verrou" : ""}`}>
+      <div className="os-notif mu-notif mu-notif-elargie">
+        <button type="button" className="mu-notif-pochette" onClick={ouvrir ? (e) => ouvrir(e.currentTarget) : undefined} aria-label="Ouvrir Musique">
+          <Pochette taille={compact ? 56 : 72} mini />
+        </button>
+        <div className="mu-notif-corps">
+          <button type="button" className="mu-notif-textes" onClick={ouvrir ? (e) => ouvrir(e.currentTarget) : undefined}>
+            <b translate="no">{courant.titre}</b>
+            <span translate="no">{courant.artiste}</span>
+          </button>
+          <div className="mu-notif-progres" aria-hidden="true">
+            <em>{mmss(pos)}</em>
+            <i>
+              <b style={{ width: `${part * 100}%` }} />
+            </i>
+            <em>{mmss(duree)}</em>
+          </div>
+          <div className="mu-notif-cmds">
+            <button type="button" data-son="tick" aria-label="Précédent" onClick={(e) => (stop(e), precedent())}>
+              <Img n="ic_media_previous" t={32} />
+            </button>
+            <button type="button" data-son="tick" className="mu-notif-play" aria-label={l.lecture ? "Pause" : "Lecture"} onClick={(e) => (stop(e), basculer())}>
+              <Img n={l.lecture ? "ic_media_pause" : "ic_media_play"} t={36} />
+            </button>
+            <button type="button" data-son="tick" aria-label="Suivant" onClick={(e) => (stop(e), suivant())}>
+              <Img n="ic_media_next" t={32} />
+            </button>
+            <button type="button" data-son="tick" className="mu-notif-stop" aria-label="Arrêter" onClick={(e) => (stop(e), arreter())}>
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#ccc" d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -516,7 +553,6 @@ function EcranLecture() {
         <div
           className="mu-grande-pochette"
           onPointerDown={() => {
-            // appui long sur la pochette : « Modifier » (code d'édition demandé)
             appui.current = window.setTimeout(() => setEdition(true), 700);
           }}
           onPointerUp={() => appui.current && window.clearTimeout(appui.current)}
@@ -597,7 +633,7 @@ function EcranLecture() {
   );
 }
 
-/* ---------------- Modifier un titre : avec le code d'édition du site (même TOTP, même session) ---------------- */
+/* ---------------- Modifier un titre : même TOTP et même session que l'édition du site ---------------- */
 
 async function envoyerEdition(url: string, jeton: string, init: RequestInit) {
   const r = await fetch(url, { ...init, credentials: "same-origin", headers: { ...(init.headers ?? {}), "x-edition-jeton": jeton } });
@@ -619,6 +655,7 @@ function EditionTitre({ k, fermer }: { k: number; fermer: () => void }) {
   const [image, setImage] = useState<File | null>(null);
   const [apercu, setApercu] = useState<string | null>(null);
   const [sansPochette, setSansPochette] = useState(false);
+  const ouvert = Boolean(jeton);
   useEffect(() => {
     let vivant = true;
     fetch("/api/edition/session", { credentials: "same-origin", cache: "no-store" })
@@ -690,8 +727,8 @@ function EditionTitre({ k, fermer }: { k: number; fermer: () => void }) {
 
   return (
     <div className="dlg-fond mu-ed" onClick={(e) => e.target === e.currentTarget && fermer()}>
-      <div className="dlg" role="dialog" aria-label="Modifier le titre">
-        <div className="dlg-titre">Modifier le titre</div>
+      <div className="dlg" role="dialog" aria-label={ouvert ? "Modifier le titre" : "Code à six chiffres"}>
+        <div className="dlg-titre">{ouvert ? "Modifier le titre" : "Code"}</div>
         {verif ? (
           <div className="dlg-corps">
             <small>Vérification…</small>
