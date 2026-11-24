@@ -45,6 +45,7 @@ a { color: inherit; text-decoration: none; }
   position: absolute; left: 0; right: 0; top: 0; height: var(--statut); z-index: 50;
   display: flex; justify-content: space-between; align-items: center; padding: 0 6px;
   background: #000; font-size: 14px; touch-action: none; cursor: grab;
+  overflow: hidden;
 }
 .os-statut-g, .os-statut-d { display: flex; gap: 6px; align-items: center; }
 .os-mini { font-style: normal; font-size: 13px; color: #ddd; }
@@ -73,7 +74,7 @@ a { color: inherit; text-decoration: none; }
 .os-app .os-icone { transition: transform .12s, filter .12s; }
 .os-app:active .os-icone { transform: scale(.92); filter: drop-shadow(0 0 10px var(--holo)) brightness(1.15); }
 .os-grille { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 0; padding: 0 6px; }
-.os-grille-case { animation: os-pop .3s cubic-bezier(.2, .9, .3, 1.2) both; }
+.os-grille-case { animation: none; }
 @keyframes os-pop { from { opacity: 0; transform: scale(.6); } }
 
 /* Verrouillage à code */
@@ -155,6 +156,11 @@ a { color: inherit; text-decoration: none; }
 .os-barre-action > b { font-weight: 400; font-size: 19px; }
 .os-barre-menu { margin-left: auto; font-size: 22px; color: #ccc; padding: 0 8px; }
 .os-fenetre-corps { position: relative; flex: 1; min-height: 0; }
+/* Opakaalt : plein écran entre barre d’état et navigation, sans défilement, sans ticker par-dessus */
+.os-fenetre-opakaalt .os-barre-action { display: none; }
+.os-fenetre-opakaalt .os-fenetre-corps { overflow: hidden; }
+.os:has(.os-fenetre-opakaalt) .os-bandeau,
+.os:has(.os-fenetre-opakaalt) .os-statut .os-ticker { display: none; }
 .app-defile { position: absolute; inset: 0; overflow: auto; padding-bottom: 24px; -webkit-overflow-scrolling: touch; }
 .app-clair { background: #f7f7f3; color: #333; }
 
@@ -860,7 +866,7 @@ a.app-ligne:active { background: var(--presse); }
 /* ---------- Ajouts Jelly Bean : notifications, Messages, Contacts, Téléphone, Alarmes, Notes ---------- */
 
 /* Notification : le « ticker » de Jelly Bean qui défile dans la barre d'état */
-.os-bandeau { position: absolute; left: 0; right: 0; top: 0; height: var(--statut); z-index: 55; display: block; padding: 0; background: #000; text-align: left; }
+.os-bandeau { position: absolute; left: 0; right: 0; top: 0; height: var(--statut); z-index: 55; display: block; padding: 0; background: #000; text-align: left; overflow: hidden; }
 .os-bandeau .os-ticker img { width: 18px; height: 18px; object-fit: cover; }
 
 /* Écran d'alarme qui sonne */
@@ -1269,8 +1275,9 @@ a.app-ligne:active { background: var(--presse); }
 .op-jetons { position: absolute; top: 24%; width: 16px; height: 22px; background: repeating-linear-gradient(#e84a5f 0 4px, #fff 4px 6px); border: 2px solid #1b1b2a; }
 .op-jetons.a { left: 18%; } .op-jetons.b { right: 18%; background: repeating-linear-gradient(#4fb0ff 0 4px, #fff 4px 6px); }
 .op-carte { position: absolute; left: 46%; top: 22%; width: 20px; height: 28px; background: #fff; border: 2px solid #1b1b2a; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px #e84a5f; }
-.op-bas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 10; padding: 8px; }
-.op-dialogue { position: relative; display: block; width: 100%; padding: 16px 12px 18px; text-align: left; background: #fff8e8; color: #1a1020 !important; border: 4px double #1a1020; box-shadow: 0 0 0 3px #fff8e8, 4px 4px 0 3px rgba(0, 0, 0, .5); font-size: 11px !important; line-height: 1.75; cursor: pointer; animation: op-apparait .18s steps(3); }
+.op-bas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 10; padding: 8px; box-sizing: border-box; }
+.op-dialogue { position: relative; display: block; width: 100%; box-sizing: border-box; padding: 16px 12px 18px; text-align: left; background: #fff8e8; color: #1a1020 !important; border: 4px double #1a1020; box-shadow: 0 0 0 3px #fff8e8, 4px 4px 0 3px rgba(0, 0, 0, .5); font-size: 10px !important; line-height: 1.7; cursor: pointer; animation: op-apparait .18s steps(3); white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.op-texte { display: block; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
 .op-nom { position: absolute; top: -12px; left: 10px; padding: 3px 8px; font-size: 9px; color: #fff; border: 2px solid #1a1020; }
 .op-blond .op-nom { background: #c99a1c; }
 .op-femboy .op-nom { background: #d65fa0; }
@@ -1291,11 +1298,11 @@ a.app-ligne:active { background: var(--presse); }
 @keyframes op-tourne-terre { from { transform: translateX(0); } to { transform: translateX(-240px); } }
 
 /* la table de jeu */
-.op-tournoi { position: absolute; inset: 0; }
-.op-tournoi-corps { position: absolute; inset: 0; overflow-y: auto; background: rgba(10, 2, 8, .55); }
-.op-jeu, .op-bilan { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 16px; min-height: 100%; }
-.op-score { display: flex; gap: 4px; justify-content: center; }
-.op-pastille { flex: 1; padding: 5px 2px; text-align: center; font-size: 7px; background: #2a0612; border: 2px solid #6b1a30; color: #c9a0b0; }
+.op-tournoi { position: absolute; inset: 0; overflow: hidden; }
+.op-tournoi-corps { position: absolute; inset: 0; overflow: hidden; background: rgba(10, 2, 8, .55); display: flex; flex-direction: column; }
+.op-jeu, .op-bilan { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 6px 6px 8px; flex: 1; min-height: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
+.op-score { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; flex: none; }
+.op-pastille { flex: 1 1 28%; padding: 4px 2px; text-align: center; font-size: 6px; background: #2a0612; border: 2px solid #6b1a30; color: #c9a0b0; }
 .op-pastille.op-encours { border-color: #ffd84a; color: #ffd84a; animation: op-bouton-bord 1s steps(2) infinite; }
 @keyframes op-bouton-bord { 50% { border-color: #ff5fae; } }
 .op-p-toi { background: #145a2a; border-color: #7dff8a; color: #fff; } .op-p-blond { background: #5a1420; border-color: #ff6b6b; color: #fff; } .op-p-nul { background: #3a3a50; color: #fff; }
@@ -1303,7 +1310,7 @@ a.app-ligne:active { background: var(--presse); }
 .op-titre-jeu b { font-size: 12px; color: #ff9ccf; text-transform: uppercase; font-weight: 400; }
 .op-titre-jeu > span { font-size: 8px; color: #ffd84a; }
 .op-score-manche { width: 100%; text-align: center; font-size: 10px !important; color: #fff !important; }
-.op-adversaire { position: relative; display: flex; justify-content: flex-end; align-items: flex-start; min-height: 92px; }
+.op-adversaire { position: relative; display: flex; justify-content: flex-end; align-items: flex-start; min-height: 72px; flex: none; }
 .op-portrait { position: relative; padding: 2px; background: #4a0d1f; border: 3px solid #d9b44a; }
 .op-portrait svg { display: block; }
 .op-tremble { animation: op-secoue .15s steps(2) infinite; }
@@ -1315,7 +1322,7 @@ a.app-ligne:active { background: var(--presse); }
 .op-bulle.op-fort3 { background: #ff9fc0; font-size: 10px; animation: op-apparait .2s steps(3), op-secoue .14s steps(2) infinite; }
 .op-pense { right: 84px; left: auto; width: 54px; text-align: center; }
 .op-points { display: inline-block; animation: op-clignote .6s steps(2) infinite; }
-.op-morpion { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: min(100%, 264px); margin: 4px auto; padding: 6px; background: #d9b44a; box-shadow: 4px 4px 0 #2a0612; }
+.op-morpion { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: min(100%, 264px, 42dvh); max-height: min(264px, 46%); margin: 2px auto; padding: 6px; background: #d9b44a; box-shadow: 4px 4px 0 #2a0612; flex: 0 1 auto; }
 .op-m-case { aspect-ratio: 1; display: grid; place-items: center; background: #1f7a3a; border: 0; cursor: pointer; }
 .op-m-case:active { background: #2a9a4a; }
 .op-m-case svg { width: 70%; height: 70%; }
@@ -1323,7 +1330,7 @@ a.app-ligne:active { background: var(--presse); }
 @keyframes op-gagne { 50% { filter: brightness(1.8); } }
 .op-indice { animation: op-indice .5s steps(2) infinite; }
 @keyframes op-indice { 50% { box-shadow: inset 0 0 0 4px #7dff8a; } }
-.op-p4 { display: grid; grid-template-columns: repeat(7, 1fr); width: min(100%, 336px); margin: 4px auto; padding: 4px; background: #2a4ad6; border: 3px solid #1a2a8a; box-shadow: 4px 4px 0 #2a0612; }
+.op-p4 { display: grid; grid-template-columns: repeat(7, 1fr); width: min(100%, 336px, 52dvh); max-height: min(336px, 52%); margin: 2px auto; padding: 4px; background: #2a4ad6; border: 3px solid #1a2a8a; box-shadow: 4px 4px 0 #2a0612; flex: 0 1 auto; }
 .op-p4-col { display: grid; grid-template-rows: repeat(6, 1fr); gap: 4px; padding: 3px; background: transparent; border: 0; cursor: pointer; }
 .op-p4-col:active { background: #3a5af0; }
 .op-p4-trou { display: block; aspect-ratio: 1; background: #0b0614; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
@@ -1331,7 +1338,7 @@ a.app-ligne:active { background: var(--presse); }
 .op-p4-O { background: #ffd84a; box-shadow: inset -4px -4px 0 #b08a10; }
 .op-chute { animation: op-chute .36s steps(6) both; }
 @keyframes op-chute { from { transform: translateY(calc(var(--r) * -118%)); } }
-.op-echiquier { display: grid; grid-template-columns: repeat(8, 1fr); width: min(100%, 336px); margin: 0 auto; border: 4px solid #4a2a12; box-shadow: 4px 4px 0 #2a0612; }
+.op-echiquier { display: grid; grid-template-columns: repeat(8, 1fr); width: min(100%, 336px, 48dvh); max-height: min(336px, 48%); margin: 0 auto; border: 4px solid #4a2a12; box-shadow: 4px 4px 0 #2a0612; flex: 0 1 auto; }
 .op-e-case { position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 0; cursor: pointer; }
 .op-e-case svg { width: 88%; height: 88%; }
 .op-clair { background: #e8d7a8; } .op-sombre { background: #9a7444; }
@@ -1360,10 +1367,20 @@ a.app-ligne:active { background: var(--presse); }
 
 /* générique */
 .op-credits { background: #000; }
-.op-defile { position: absolute; inset: 0 0 60px; overflow: hidden; }
-.op-defile-int { position: absolute; left: 0; right: 0; top: 100%; display: grid; justify-items: center; gap: 16px; padding: 0 18px; text-align: center; animation: op-defile 20s linear forwards; }
+.op-defile { position: absolute; inset: 0 0 64px; overflow: hidden; }
+.op-defile-int { position: absolute; left: 0; right: 0; top: 100%; display: grid; justify-items: center; gap: 16px; padding: 0 18px 28px; text-align: center; animation: op-defile 20s linear forwards; }
 .op-defile-int p { margin: 0; font-size: 9px; line-height: 1.8; color: #e8dcff; }
-@keyframes op-defile { from { transform: translateY(0); } to { transform: translateY(calc(-100% - 640px)); } }
+.op-credits-script {
+  display: block;
+  width: min(86%, 280px);
+  height: auto;
+  margin: 10px auto 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes op-defile { from { transform: translateY(0); } to { transform: translateY(-100%); } }
 .op-james { font-size: 11px !important; color: #fff !important; }
 .op-neon { color: #ff3fd0 !important; text-shadow: 0 0 4px #ff3fd0, 0 0 10px #3df7ff; animation: op-neon 2.6s steps(1) infinite; }
 .op-chat-logo { position: relative; display: inline-block; overflow: visible; }
@@ -1470,7 +1487,10 @@ a.app-ligne:active { background: var(--presse); }
 .os-fenetre { will-change: transform, opacity; }
 .os-tiroir, .os-rideau, .dlg, .dlg-fond { will-change: transform, opacity; }
 .app-ligne, .mu-ligne, .fi-ligne, .ml-ligne, .os-notif, .dlg-choix { transition: background-color .12s ease; }
-.os-grille-case { animation: os-pop .36s cubic-bezier(.2, .8, .2, 1) both; }
+.os-grille-case { animation: none !important; opacity: 1; transform: none; }
+/* Tiroir : les icônes apparaissent tout de suite, sans fondu ni décalage ni échelle */
+.os-tiroir { transform: none !important; transition: none !important; }
+.os-tiroir.ouvert { transform: none !important; transition: none !important; }
 .os-toast { animation: os-monte .28s cubic-bezier(.2, .8, .2, 1) both; }
 
 /* Opakaalt : fondus d'écran, sans bloquer les clics */
@@ -1534,7 +1554,7 @@ a.app-ligne:active { background: var(--presse); }
 
 
 /* Intro caméra : monde 180×320, pieds sur le trottoir, voitures devant */
-.op-scene-rue { background: #7ec8ff; }
+.op-scene-rue { background: #7ec8ff; overflow: hidden; contain: paint; }
 .op-camera {
   position: absolute;
   left: 50%;
@@ -1594,6 +1614,37 @@ a.app-ligne:active { background: var(--presse); }
 .op-nav-bateau { background: #8a8a8a; }
 
 .op-baby-canvas { display: block; width: calc(100% - 16px); margin: 8px auto; background: #1f7a3a; border: 3px solid #fff; image-rendering: auto; touch-action: none; }
+
+/* Opakaalt : les jeux tiennent dans l’écran, sans barre de défilement */
+.op-qui, .op-nav, .op-baby { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.op-qui-grille { flex: 1 1 auto; min-height: 0; margin: 2px 6px; }
+.op-qui-case { min-height: 0; display: grid; place-items: center; }
+.op-qui-case svg, .op-qui-face { max-height: 100%; width: 100%; height: auto; }
+.op-qui-qs { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 2px 6px 4px; overflow: visible; }
+.op-qui-qs .op-bouton { padding: 5px 4px; font-size: 6px; width: 100%; text-transform: none; letter-spacing: 0; }
+.op-nav-deux { flex: 1; min-height: 0; align-items: center; gap: 8px; padding: 4px; }
+.op-nav-grille { grid-template-columns: repeat(6, 1fr); width: min(42vw, 140px); gap: 2px; }
+.op-nav-case { width: 100%; height: auto; aspect-ratio: 1; }
+.op-baby { min-height: 0; }
+.op-baby-canvas { width: min(100% - 16px, 100%); max-height: 48%; height: auto; margin: 4px auto; flex: 1 1 auto; object-fit: contain; }
+.op-prises, .op-commandes, .op-titre-jeu, .op-resultat { flex: none; }
+.op-bilan { overflow: hidden; }
+.op-tableau { overflow: hidden; }
+.op-t-ligne { padding: 3px 6px; font-size: 8px; }
+.op, .op-scene, .op-credits { overflow: hidden; overscroll-behavior: none; }
+@media (max-height: 700px) {
+  .op-adversaire { min-height: 58px; }
+  .op-adversaire svg { transform: scale(.85); transform-origin: top right; }
+  .op-titre { font-size: 24px; }
+  .op-menu-haut { top: 5%; }
+  .op-menu-bas { bottom: 2%; gap: 6px; }
+  .op-regle { font-size: 7px; }
+}
+@media (max-height: 580px) {
+  .op-adversaire { min-height: 48px; }
+  .op-pastille { font-size: 5px; padding: 2px 1px; }
+  .op-titre { font-size: 20px; letter-spacing: 1px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .op-camera { transition: none !important; }
