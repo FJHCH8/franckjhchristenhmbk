@@ -89,7 +89,7 @@ export function HanckTerrain() {
         c.a += c.va * dt;
         if (c.y + c.r > sol) {
           // un petit « bonk » s'il tombe assez vite (seulement après un geste du visiteur)
-          if (c.vy > 420 && aJoue.current && !muet()) sonChoc(c.vy);
+          if (c.vy > 420 && !muet()) sonChoc(c.vy);
           c.y = sol - c.r;
           c.vy = Math.abs(c.vy) > 60 ? -c.vy * 0.38 : 0;
           c.vx *= 0.9;

@@ -622,3 +622,6 @@ html body .pano-pivot button.is-actif{
 .hanck-titre { mix-blend-mode: difference; text-shadow: none; }
 .hanck-titre small, .hanck-titre b, .hanck-titre span { color: #fff; text-shadow: none; }
 .hanck-relancer { background: rgba(255, 255, 255, .14) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-color: rgba(255, 255, 255, .45) !important; }
+/* le doigt peut faire glisser les volets par-dessus le terrain Hanck (seuls les logos se tiennent) */
+.hanck-terrain { touch-action: auto; }
+.pano-pivot { touch-action: pan-y; }

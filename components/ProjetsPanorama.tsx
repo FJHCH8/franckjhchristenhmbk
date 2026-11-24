@@ -118,6 +118,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
   const piste = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const [volet, setVolet] = useState(0);
+  const glisse = useRef<number | null>(null);
 
   const endurFini = maintenant != null && maintenant >= PROJECTS_OPENING_MS;
   const aube = maintenant == null ? 0 : Math.min(1, Math.max(0, (maintenant - AUBE_START_MS) / (AUBE_END_MS - AUBE_START_MS)));
@@ -164,7 +165,21 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
         </div>
       </div>
       <p className="pano-actualite">actualité</p>
-      <nav className="pano-pivot" aria-label="Volets">
+      <nav
+        className="pano-pivot"
+        aria-label="Volets"
+        onTouchStart={(e) => {
+          glisse.current = e.touches[0]?.clientX ?? null;
+        }}
+        onTouchEnd={(e) => {
+          // glisser le doigt sur la barre des titres change de volet
+          const x0 = glisse.current;
+          const x1 = e.changedTouches[0]?.clientX;
+          glisse.current = null;
+          if (x0 == null || x1 == null || Math.abs(x1 - x0) < 30) return;
+          aller(Math.max(0, Math.min(VOLETS.length - 1, volet + (x1 < x0 ? 1 : -1))));
+        }}
+      >
         {VOLETS.map((v, i) => (
           <button key={v} type="button" className={volet === i ? "is-actif" : ""} onClick={() => aller(i)}>
             {v}
