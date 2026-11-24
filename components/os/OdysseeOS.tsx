@@ -78,7 +78,7 @@ const CORRESPONDANTS: { id: Correspondant; nom: string; photo: string; accueil?:
 /** Les SMS automatiques de l'opérateur, reçus 5 secondes après le déverrouillage. On ne peut pas y répondre. */
 const SMS_SAM_TELECOM = [
   "Sam-Telecom : Bonjour, nous vous remercions de votre fidélité. Votre facture de novembre est disponible dans votre Espace Client, sur notre site internet et dans l’application Sam-Telecom. Téléchargez l’application sur Pulpüs market pour suivre votre consommation et modifier votre forfait.",
-  "Rappel : votre ligne bénéficie d’un forfait Enfant. Il ne comprend ni la connexion à internet ni les appels : seul l’envoi de SMS est inclus. Les appels d’urgence ne sont pas disponibles sur cette ligne, car la fonction a été désactivée ou n’a pas encore été activée. Pour l’activer ou faire évoluer votre forfait, rendez-vous dans votre Espace Client. Sam-Telecom vous souhaite une excellente journée. Ceci est un message automatique, merci de ne pas y répondre.",
+  "Rappel : votre ligne bénéficie d’un forfait Connard. Il ne comprend ni la connexion à internet ni les appels : seul l’envoi de SMS est inclus. Les appels d’urgence ne sont pas disponibles sur cette ligne, car la fonction a été désactivée ou n’a pas encore été activée. Pour l’activer ou faire évoluer votre forfait, rendez-vous dans votre Espace Client. Sam-Telecom vous souhaite une excellente journée. Ceci est un message automatique, merci de ne pas y répondre.",
 ];
 const REPONSE_CELJO = "Salut mon pote, écoute, je suis grave occupé à refaire ma moto, alors je te répondrai quand je pourrai.";
 const REPONSE_PACIFICK = "Tu me parles encore après m’avoir dit que j’avais faux ?! Va te faire voir !";
