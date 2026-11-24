@@ -647,7 +647,11 @@ export function OdysseeOS() {
               <div className="os-rideau-tete">
                 <div className="os-rideau-h">{heure}</div>
                 <div className="os-rideau-d">
-                  <span className="os-operateur-r">SAM-TELECOM</span>
+                  <span className="os-operateur-r">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/aakanos/sam-telecom-tete.png" alt="" width={14} height={14} />
+                    SAM-TELECOM
+                  </span>
                   <br />
                   {date.split(" ")[0]?.toUpperCase()}
                   <br />
@@ -845,7 +849,11 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
 
   return (
     <div className={`os-verrou${part ? " part" : ""}`}>
-      <div className="os-operateur">Sam-Telecom</div>
+      <div className="os-operateur">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/aakanos/sam-telecom-tete.png" alt="" width={16} height={16} />
+        Sam-Telecom
+      </div>
       <div className="os-verrou-heure">
         {heure.slice(0, 2)}
         <span>:</span>
@@ -1506,6 +1514,8 @@ function AppTelephone() {
           )}
           {appel !== "sonne" ? (
             <div className="tel-hs">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="tel-hs-logo" src="/aakanos/sam-telecom.png" alt="Sam-Telecom" />
               <p>Désolé, mais votre forfait ne vous permet pas d’accéder à internet ou d’appeler.</p>
               <p>Merci de faire évoluer votre forfait avec Sam-Telecom.</p>
             </div>
