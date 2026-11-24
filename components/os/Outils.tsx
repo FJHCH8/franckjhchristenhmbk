@@ -112,7 +112,7 @@ function Alarmes() {
           </button>
           <button type="button" className="hz-modifier" aria-label="Modifier l’alarme" onClick={() => setEdite(a)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/aosp/ic_menu_edit.svg" alt="" width={28} height={28} style={{ display: "block" }} />
+            <img draggable={false} src="/aakanos/aosp/ic_menu_edit.svg" alt="" width={28} height={28} style={{ display: "block" }} />
           </button>
         </div>
       ))}

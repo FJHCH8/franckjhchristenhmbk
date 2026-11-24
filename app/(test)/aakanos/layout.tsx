@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Chakra_Petch, Libre_Baskerville, Pacifico, Roboto, Share_Tech_Mono } from "next/font/google";
+import { Chakra_Petch, Libre_Baskerville, Pacifico, Press_Start_2P, Roboto, Share_Tech_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import "./os.css";
 
@@ -12,6 +12,8 @@ const mono = Share_Tech_Mono({ subsets: ["latin"], weight: "400", variable: "--f
 const banque = Libre_Baskerville({ subsets: ["latin"], weight: ["400", "700"], variable: "--f-banque" });
 // En-tête des courriels Peeporn (police script, licence OFL)
 const glam = Pacifico({ subsets: ["latin"], weight: "400", variable: "--f-glam" });
+// Opakaalt, le jeu 8 bits (police pixel, licence OFL)
+const pixel = Press_Start_2P({ subsets: ["latin", "latin-ext"], weight: "400", variable: "--f-pixel" });
 
 export const metadata: Metadata = {
   title: "AakanOS",
@@ -29,7 +31,7 @@ export const viewport: Viewport = {
 export default function DispositionAakanOS({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
-      <body className={`${roboto.variable} ${chakra.variable} ${mono.variable} ${banque.variable} ${glam.variable}`}>{children}</body>
+      <body className={`${roboto.variable} ${chakra.variable} ${mono.variable} ${banque.variable} ${glam.variable} ${pixel.variable}`}>{children}</body>
     </html>
   );
 }

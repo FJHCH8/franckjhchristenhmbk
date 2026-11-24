@@ -10,6 +10,7 @@ import { creerStore, heureCourte, notifier } from "./Memoire";
 import { toast } from "./Systeme";
 import { useRetour } from "./OdysseeOS";
 import { sonSynth } from "./sonsSynth";
+import { annonceBanque } from "./banque";
 
 export const COMPTE = "castotessis@nounoumail.dav";
 
@@ -19,6 +20,9 @@ export const COMPTE = "castotessis@nounoumail.dav";
 const LOGO_PEEPORN = "/aakanos/peeporn.png";
 /** L'icône Sharkobank existante (celle de l'appli) pour l'avatar de l'expéditeur. */
 const LOGO_SHARKOBANK = "/aakanos/sharkobank.png";
+/** L'avatar du cabinet du psychologue de Casto (dessin original, SVG). */
+export const LOGO_PSY = "/aakanos/psy-spaloova.svg";
+export const PSY = { nom: "Cabinet Spaloova", adresse: "meinepsychologieverstehen@spaloova.tav" };
 /** Le logo envoyé par Franck, pour l'en-tête des courriers Sharkobank. */
 const ENTETE_SHARKOBANK = "/aakanos/sharkobank-mail-logo.svg";
 
@@ -34,7 +38,7 @@ export { IconeMail };
 /* ---------------- Le courrier ---------------- */
 
 type Bloc = { p: string } | { fiche: [string, string][]; titre?: string } | { total: [string, string][] } | { logo: "peeporn" | "sharkobank" };
-export type Courriel = { id: string; de: "peeporn" | "sharkobank"; nom: string; adresse: string; objet: string; date: string; heure: string; corps: Bloc[]; direct?: number };
+export type Courriel = { id: string; de: "peeporn" | "sharkobank" | "psy"; nom: string; adresse: string; objet: string; date: string; heure: string; corps: Bloc[]; direct?: number };
 
 const SK = { de: "sharkobank" as const, nom: "Sharkobank", adresse: "alertes@sharkobank.dav" };
 
@@ -194,6 +198,30 @@ export const COURRIELS: Courriel[] = [
       { p: "Le service Recouvrement Sharkobank" },
     ],
   },
+  {
+    // Il passe sans forfait internet : le téléphone s'est raccroché tout seul au wifi du cabinet.
+    id: "ps1",
+    de: "psy",
+    ...PSY,
+    objet: "Nos consultations (lisez jusqu’au bout, pour une fois)",
+    date: "",
+    heure: "",
+    direct: 95_000,
+    corps: [
+      { p: "Monsieur Casto," },
+      { p: "Si ce courriel vous parvient, c’est que votre téléphone vient encore de se connecter tout seul au wifi de mon cabinet. Vous êtes donc, une fois de plus, dans ma salle d’attente. Je le sais. Ma secrétaire le sait. Le routeur le sait." },
+      { p: "Mettons les choses au clair, avec toute la bienveillance qu’il me reste, c’est-à-dire presque aucune : vous ne venez pas en consultation. Vous venez pour le wifi. Vous vous asseyez, vous hochez la tête, vous dites « c’est très intéressant, docteur », et pendant ce temps vous téléchargez. Ma bande passante n’est pas un dispositif thérapeutique." },
+      { p: "Votre addiction au sexe est un vrai sujet, et j’aurais sincèrement aimé la traiter. Mais il est difficile d’avancer quand vous passez la séance à rafraîchir Peeporn sur le réseau « Cabinet_Invités ». Oui, je vois passer les commandes. Oui, la grenouille aussi." },
+      { p: "Je vous ai proposé cent fois des rendez-vous par téléphone. Vous m’avez répondu que votre forfait Sam-Telecom ne passait ni les appels ni internet. Alors trouvez un travail. Un vrai. Payez-vous enfin une ligne et une connexion, et nous ferons nos séances à distance, chacun chez soi, très, très loin l’un de l’autre." },
+      { p: "Et ne me dites pas que vous n’avez pas les moyens d’y penser : votre banque m’a déjà appelé deux fois pour savoir si vous étiez solvable. Je leur ai dit la vérité. Je crois qu’ils vont vous facturer mon appel." },
+      { p: "Je suis épuisé. Je dors mal. Ma plante verte est morte pendant votre dernière séance, et je ne crois pas aux coïncidences." },
+      { p: "Alors je vais vous le dire franchement, une bonne fois pour toutes :" },
+      { p: "vous êtes feignant, vous êtes addict au sexe, vous avez des goûts très bizarres, vous êtes quelqu'un de bizarre, euh c'est quand que vous allez agir pour vous-même. Je vous remercie, je vous souhaite d'aller vous faire enculer, avec tout respect bien sûr." },
+      { p: "PS : la séance de mardi reste due. Le wifi aussi." },
+      { p: "Cordialement (c’est une formule)," },
+      { p: "Votre psychologue, cabinet Spaloova" },
+    ],
+  },
 ];
 
 /* ---------------- Ce que le visiteur a fait (gardé dans la session) ---------------- */
@@ -211,7 +239,7 @@ const DOSSIERS: [Dossier, string][] = [
   ["corbeille", "Corbeille"],
 ];
 
-const logo = (de: Courriel["de"]) => (de === "peeporn" ? LOGO_PEEPORN : LOGO_SHARKOBANK);
+const logo = (de: Courriel["de"]) => (de === "peeporn" ? LOGO_PEEPORN : de === "psy" ? LOGO_PSY : LOGO_SHARKOBANK);
 
 /** Les courriels de Sharkobank qui arrivent pendant la visite (avec notification et son). */
 export function GardienMail({ actif }: { actif: boolean }) {
@@ -225,6 +253,9 @@ export function GardienMail({ actif }: { actif: boolean }) {
           if (etatMail.lire().arrives[c.id]) return;
           etatMail.ecrire((e) => ({ ...e, arrives: { ...e.arrives, [c.id]: heureCourte() } }));
           notifier({ titre: c.nom, texte: c.objet, appli: "mail", icone: logo(c.de) });
+          // le prélèvement annoncé arrive aussi sur le compte : notification Sharkobank
+          const b = annonceBanque(c.id, etatMail.lire().arrives);
+          if (b) ids.push(window.setTimeout(() => notifier({ ...b, appli: "sharkobank", icone: LOGO_SHARKOBANK }), 6500));
         }, c.direct),
       );
     }
@@ -238,11 +269,11 @@ export function GardienMail({ actif }: { actif: boolean }) {
 /** Icônes d'action d'Android 4.2 (AOSP, Apache 2.0 : public/aakanos/aosp/LICENCES.txt). */
 const Ico = ({ n }: { n: string }) => (
   // eslint-disable-next-line @next/next/no-img-element
-  <img src={`/aakanos/aosp/${n}.svg`} alt="" width={32} height={32} />
+  <img draggable={false} src={`/aakanos/aosp/${n}.svg`} alt="" width={32} height={32} />
 );
 function Etoile({ on }: { on: boolean }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/aakanos/aosp/${on ? "btn_star_big_on" : "btn_star_big_off"}.svg`} alt="" width={32} height={32} />;
+  return <img draggable={false} src={`/aakanos/aosp/${on ? "btn_star_big_on" : "btn_star_big_off"}.svg`} alt="" width={32} height={32} />;
 }
 
 export function AppMail() {
@@ -395,7 +426,7 @@ export function AppMail() {
           </div>
           <div className="ml-expediteur">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logo(c.de)} alt="" />
+            <img draggable={false} src={logo(c.de)} alt="" />
             <div>
               <b>{c.nom}</b>
               <small translate="no">{c.adresse}</small>
@@ -434,7 +465,7 @@ export function AppMail() {
       ) : null}
       <div className="ml-recherche">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/aakanos/aosp/ic_menu_search_holo_light.svg" alt="" width={24} height={24} />
+        <img draggable={false} src="/aakanos/aosp/ic_menu_search_holo_light.svg" alt="" width={24} height={24} />
         <input value={cherche} onChange={(v) => setCherche(v.target.value)} placeholder="Rechercher dans les e-mails" aria-label="Rechercher dans les e-mails" />
       </div>
       <div className="ml-liste">
@@ -444,7 +475,7 @@ export function AppMail() {
             <div key={x.id} className={`ml-ligne${lu ? "" : " nonlu"}`}>
               <button className="ml-ligne-corps" onClick={() => (basculer("lus", x.id, true), setOuvert(x.id))}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logo(x.de)} alt="" />
+                <img draggable={false} src={logo(x.de)} alt="" />
                 <div>
                   <b>{x.nom}</b>
                   <span>{x.objet}</span>
@@ -487,13 +518,13 @@ function BlocMail({ b }: { b: Bloc }): ReactNode {
     return b.logo === "peeporn" ? (
       <div className="ml-logo ml-logo-pp" translate="no">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LOGO_PEEPORN} alt="" width={192} height={192} />
+        <img draggable={false} src={LOGO_PEEPORN} alt="" width={192} height={192} />
         <b>Peeporn Sex-shop</b>
       </div>
     ) : (
       <div className="ml-logo ml-logo-sk" translate="no">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={ENTETE_SHARKOBANK} alt="" width={240} height={255} />
+        <img draggable={false} src={ENTETE_SHARKOBANK} alt="" width={240} height={255} />
         <b>Sharkobank</b>
       </div>
     );

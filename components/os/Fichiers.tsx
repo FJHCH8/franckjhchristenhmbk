@@ -8,12 +8,12 @@
  * Ouvrir le .mp3 lance Musique ; ouvrir une photo ou la vidéo ouvre l'Album.
  * Sons : uniquement les effets AOSP du téléphone (Effect_Tick, KeypressDelete via data-son).
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRetour } from "./OdysseeOS";
 import { creerStore } from "./session";
 import { Dlg, toast } from "./Systeme";
 import { ouvrirAppli } from "./Memoire";
-import { POCHETTE_MINI, TITRE } from "./Musique";
+import { PISTES, usePistes, type Piste } from "./Musique";
 
 const A = "/aakanos/aosp";
 
@@ -22,10 +22,13 @@ export function IconeFichiers({ taille = 56 }: { taille?: number }) {
   return <img className="os-icone" src={`${A}/cmfm-ic_launcher.svg`} width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />;
 }
 
-type Element_ = { nom: string; type: "dossier" | "audio" | "image" | "video"; date: string; octets?: number; enfants?: Element_[]; ouvrir?: () => void };
+type Element_ = { nom: string; type: "dossier" | "audio" | "image" | "video"; date: string; octets?: number; enfants?: Element_[]; ouvrir?: () => void; piste?: number };
 
 const D = (nom: string, date: string, enfants: Element_[] = []): Element_ => ({ nom, type: "dossier", date, enfants });
-const RACINE: Element_ = D("sdcard0", "24/11/2026 09:12", [
+/** Music/<artiste>/<titre>.mp3 : suit les fiches modifiées par Franck (titre, artiste, pochette). */
+const dossiersMusique = (pistes: Piste[]) =>
+  pistes.map((p, k) => D(p.dossier, p.date, [{ nom: `${p.titre}.mp3`, type: "audio", date: p.date, octets: p.octets, piste: k, ouvrir: () => ouvrirAppli("musique", `jouer:${k}`) }]));
+const BASE: Element_ = D("sdcard0", "24/11/2026 09:12", [
   D("Alarms", "12/07/2012 10:00"),
   D("Android", "12/07/2012 10:00", [D("data", "24/11/2026 09:12")]),
   D("DCIM", "24/11/2026 09:41", [
@@ -36,11 +39,11 @@ const RACINE: Element_ = D("sdcard0", "24/11/2026 09:12", [
   ]),
   D("Download", "12/07/2012 10:00"),
   D("Movies", "12/07/2012 10:00"),
-  D("Music", "24/11/2026 19:03", [
-    D("Belyyeloshadi Orchestra", "24/11/2026 19:03", [
-      { nom: `${TITRE.titre}.mp3`, type: "audio", date: "24/11/2026 19:03", octets: TITRE.octets, ouvrir: () => ouvrirAppli("musique", "jouer") },
-    ]),
-  ]),
+  D(
+    "Music",
+    "24/11/2026 21:28",
+    dossiersMusique(PISTES),
+  ),
   D("Notifications", "12/07/2012 10:00"),
   D("Pictures", "12/07/2012 10:00", [D("Screenshots", "12/07/2012 10:00")]),
   D("Podcasts", "12/07/2012 10:00"),
@@ -51,7 +54,9 @@ const RAC = "/storage/sdcard0";
 
 const memoireFichiers = creerStore<{ chemin: string[]; historique: string[] }>("fichiers", { chemin: [], historique: [] });
 
-function trouver(chemin: string[]): Element_ {
+const racine = (pistes: Piste[]): Element_ => ({ ...BASE, enfants: BASE.enfants!.map((e) => (e.nom === "Music" ? { ...e, enfants: dossiersMusique(pistes) } : e)) });
+
+function trouver(RACINE: Element_, chemin: string[]): Element_ {
   let e = RACINE;
   for (const n of chemin) e = e.enfants?.find((x) => x.nom === n) ?? e;
   return e;
@@ -76,7 +81,9 @@ export function AppFichiers() {
   const aller = (c: string[]) =>
     memoireFichiers.ecrire((m) => ({ chemin: c, historique: [RAC + (c.length ? "/" + c.join("/") : ""), ...m.historique.filter((h) => h !== RAC + (c.length ? "/" + c.join("/") : ""))].slice(0, 12) }));
   useRetour(chemin.length > 0 || dlg !== null, () => (dlg ? setDlg(null) : aller(chemin.slice(0, -1))));
-  const dossier = trouver(chemin);
+  const pistes = usePistes();
+  const RACINE = useMemo(() => racine(pistes), [pistes]);
+  const dossier = trouver(RACINE, chemin);
   const liste = [...(dossier.enfants ?? [])].sort((a, b) => (a.type === "dossier") === (b.type === "dossier") ? a.nom.localeCompare(b.nom) : a.type === "dossier" ? -1 : 1);
   const occupe = SYSTEME + total(RACINE);
   const versChemin = (p: string) => p.replace(RAC, "").split("/").filter(Boolean);
@@ -112,7 +119,7 @@ export function AppFichiers() {
             <span className="fi-ic">
               {e.type === "audio" ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="fi-vignette" src={POCHETTE_MINI} width={40} height={40} alt="" draggable={false} />
+                <img className="fi-vignette" src={(pistes[e.piste ?? 0] ?? pistes[0]!).pochetteMini} width={40} height={40} alt="" draggable={false} />
               ) : e.type === "image" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img className="fi-vignette" src="/media/franck.jpg" width={40} height={40} alt="" draggable={false} />
