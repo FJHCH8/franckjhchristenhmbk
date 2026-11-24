@@ -5,6 +5,8 @@
  * Fond noir pur, barre du haut (constellation + cheval + ODYSSÉE), menu numéroté,
  * Accueil, Qui suis-je, Projets (tuiles de mission + intérieur), recherche, vrais Paramètres.
  */
+import { createPortal } from "react-dom";
+import { TRANSCRIPTIONS } from "@/lib/transcriptions";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider, useTraduire } from "@/components/Locale";
@@ -485,7 +487,7 @@ function Accueil() {
                 </Ligne>
                 <div className="n-ac-corps">
                   <p>{r.texte}</p>
-                  <Lecteur src={r.audio} actif={ouvert === k} />
+                  <Lecteur src={r.audio} actif={ouvert === k} titre={r.titre} transcription={TRANSCRIPTIONS[r.id]} />
                   <small className="n-ecoute-legende">{r.legende}</small>
                 </div>
               </div>
@@ -500,6 +502,7 @@ function Accueil() {
 /** Les enregistrements de l'accueil : on ouvre, on regarde la peinture, on écoute. */
 const ECOUTES = [
   {
+    id: "polymathie" as const,
     titre: "LA POLYMATHIE",
     texte: "Chercher partout, relier ce qui semble séparé.",
     image: "/explorer/polymathie.webp",
@@ -508,6 +511,7 @@ const ECOUTES = [
     legende: "Benjamin Franklin, par David Martin (1767)",
   },
   {
+    id: "autoromantisme" as const,
     titre: "L’AUTOROMANTISME",
     texte: "Die Autoromantik nach Franck Christen. Avec Freya.",
     image: "/explorer/autoromantisme.webp",
@@ -523,15 +527,24 @@ function minutes(s: number) {
 }
 
 /** Lecteur audio du site : lecture / pause, barre que l'on touche pour avancer, temps. Se met en pause si on referme. */
-function Lecteur({ src, actif }: { src: string; actif: boolean }) {
+function Lecteur({ src, actif, titre, transcription }: { src: string; actif: boolean; titre: string; transcription: string[] }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [lit, setLit] = useState(false);
   const [t, setT] = useState(0);
   const [duree, setDuree] = useState(0);
+  const [feuille, setFeuille] = useState(false);
+  const titreLu = useTraduire()(titre);
 
   useEffect(() => {
     if (!actif) ref.current?.pause();
   }, [actif]);
+
+  useEffect(() => {
+    if (!feuille) return;
+    const k = (e: KeyboardEvent) => e.key === "Escape" && setFeuille(false);
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [feuille]);
 
   const basculer = () => {
     const a = ref.current;
@@ -543,19 +556,8 @@ function Lecteur({ src, actif }: { src: string; actif: boolean }) {
     } else a.pause();
   };
 
-  return (
+  const commandes = (
     <div className={`n-lecteur${lit ? " lit" : ""}`}>
-      <audio
-        ref={ref}
-        className="n-lecteur-son"
-        src={src}
-        preload="metadata"
-        onPlay={() => setLit(true)}
-        onPause={() => setLit(false)}
-        onEnded={() => setLit(false)}
-        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
-        onLoadedMetadata={(e) => setDuree(e.currentTarget.duration)}
-      />
       <button type="button" className="n-lecteur-btn" onClick={basculer} aria-label={lit ? "Pause" : "Écouter"}>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           {lit ? <path d="M6 5h4v14H6zM14 5h4v14h-4z" /> : <path d="M7 4.5v15l12.5-7.5z" />}
@@ -580,6 +582,50 @@ function Lecteur({ src, actif }: { src: string; actif: boolean }) {
       />
       <span className="n-lecteur-t">{minutes(duree)}</span>
     </div>
+  );
+
+  return (
+    <>
+      <audio
+        ref={ref}
+        className="n-lecteur-son"
+        src={src}
+        preload="metadata"
+        onPlay={() => setLit(true)}
+        onPause={() => setLit(false)}
+        onEnded={() => setLit(false)}
+        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => setDuree(e.currentTarget.duration)}
+      />
+      {commandes}
+      <button type="button" className="n-transcription-btn" onClick={() => (sonValide(), setFeuille(true))}>
+        TRANSCRIPTION
+      </button>
+      {feuille
+        ? createPortal(
+            <div className="n-feuille" role="dialog" aria-modal="true" aria-label={`Transcription · ${titreLu}`}>
+              <div className="n-feuille-tete">
+                <small>
+                  {"// "}
+                  <span>TRANSCRIPTION</span>
+                  {" · "}
+                  {titreLu}
+                </small>
+                <button type="button" className="n-feuille-fermer" onClick={() => (sonRetour(), setFeuille(false))} aria-label="Fermer">
+                  <Icone nom="close" />
+                </button>
+              </div>
+              <div className="n-feuille-texte" lang="de" translate="no">
+                {transcription.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
+              <div className="n-feuille-bas">{commandes}</div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }
 
