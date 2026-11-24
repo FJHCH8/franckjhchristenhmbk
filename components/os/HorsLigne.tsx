@@ -6,7 +6,7 @@
  * Sharkobank facture chaque tentative ; Peeporn conseille un miroir.
  */
 import { useEffect, useState, type ReactNode } from "react";
-import { sonBillets, sonPieces, sonProut, sonWahWah } from "./sonsAndroid";
+import { son, sonBillets, sonPieces, sonProut, sonWahWah } from "./sonsAndroid";
 
 /** Chargement qui dure un peu, puis échoue ; relancé à chaque changement de `cle`. */
 function useEchec(cle: number, ms = 1900) {
@@ -153,6 +153,12 @@ const fermerAppli = () => window.dispatchEvent(new Event("aakanos-fermer-appli")
 /* ---------------- Appareil photo (cassé) ---------------- */
 
 export function AppAppareilPhoto() {
+  // l'appareil essaie quand même : mise au point, déclencheur (sons AOSP), puis l'erreur
+  useEffect(() => {
+    son("miseAuPoint");
+    const id = window.setTimeout(() => son("declencheur"), 550);
+    return () => window.clearTimeout(id);
+  }, []);
   return (
     <div className="hl photo">
       <div className="photo-viseur" aria-hidden="true">
