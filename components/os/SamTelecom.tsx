@@ -93,7 +93,7 @@ export function AppSamTelecom() {
         <div className="st-titre">
           <small>{`// ${bonjour}`}</small>
           <b>SAM-TELECOM</b>
-          <span>CASTO · +0-2007 06 45</span>
+          <span>CASTO · +0-2007645803</span>
         </div>
       </div>
 

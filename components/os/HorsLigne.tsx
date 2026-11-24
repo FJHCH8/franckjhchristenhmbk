@@ -6,7 +6,7 @@
  * Sharkobank facture chaque tentative ; Peeporn conseille un miroir.
  */
 import { useEffect, useState, type ReactNode } from "react";
-import { sonBillets, sonPieces, sonTromboneTriste, sonWahWah } from "./sonsAndroid";
+import { sonBillets, sonPieces, sonProut, sonWahWah } from "./sonsAndroid";
 
 /** Chargement qui dure un peu, puis échoue ; relancé à chaque changement de `cle`. */
 function useEchec(cle: number, ms = 1900) {
@@ -249,7 +249,7 @@ export function AppPeeporn() {
               <p>Ce site contient des grenouilles très peu habillées. Avez-vous plus de 18 ans ?</p>
             </div>
             <div className="jb-boutons-dlg">
-              <button type="button" onClick={() => (sonTromboneTriste(), setAge("non"))}>
+              <button type="button" onClick={() => (sonProut(), setAge("non"))}>
                 Non
               </button>
               <button type="button" onClick={() => (sonWahWah(), setAge("oui"), relancer())}>
@@ -266,7 +266,7 @@ export function AppPeeporn() {
             <img src="/aakanos/peeporn-non.png" alt="" />
             <p>
               Malheureusement, tu ne vas pas pouvoir entrer sur l’application, ma puce.
-              <b>Retourne téter ton biberon et laisse les grandes grenouilles tranquilles.</b>
+              <b>Retourne t’auto-sucer, on veut pas de toi ici.</b>
             </p>
             {/* pas le choix : OK, et l'appli se ferme */}
             <button type="button" className="jb-bouton" onClick={fermerAppli}>

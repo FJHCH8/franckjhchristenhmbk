@@ -24,12 +24,13 @@ import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
 import { AppSamTelecom } from "./SamTelecom";
 import { useLocale, type LocaleName } from "@/components/Locale";
-import { dtmf, prechargerSons, son, tonaliteRetour } from "./sonsAndroid";
+import { dtmf, prechargerSons, son, sonAppli, tonaliteRetour } from "./sonsAndroid";
+import { AppCalculatrice, AppHorloge } from "./Outils";
 import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -45,7 +46,8 @@ const APPLIS: Appli[] = [
   { id: "messages", nom: "Messages" },
   { id: "nounou", nom: "Nounou" },
   { id: "appareil", nom: "Appareil photo" },
-  { id: "endurreisen", nom: "Endurreisen" },
+  { id: "endurreisen", nom: "Alarme" },
+  { id: "calculatrice", nom: "Calculatrice" },
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
@@ -58,7 +60,6 @@ const CODE = "6458";
 const MAIL = "franckjhchristen@gmail.com";
 const INSTA = "https://instagram.com/fjhchristenhmbk";
 const OUVERTURE = new Date("2026-12-01T00:00:00+01:00").getTime();
-const DEBUT_ENDU = new Date("2026-07-23T00:00:00+02:00").getTime();
 const AUBE_DEBUT = new Date("2026-12-03T00:00:00+01:00").getTime();
 const AUBE_FIN = new Date("2027-06-03T00:00:00+02:00").getTime();
 
@@ -174,6 +175,15 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return <IconeAncienne nom="citations" taille={taille} />;
     case "endurreisen":
       return <IconeAncienne nom="endurreisen" taille={taille} />;
+    case "calculatrice":
+      return (
+        <svg className="os-icone" viewBox="0 0 64 64" width={taille} height={taille} aria-hidden="true">
+          <rect x="10" y="4" width="44" height="56" rx="5" fill="#3a3f47" stroke="#1c1f24" strokeWidth="2" />
+          <rect x="15" y="9" width="34" height="13" rx="2" fill="#0b2a52" />
+          <text x="45" y="19.5" textAnchor="end" fontSize="9" fill="#33b5e5" fontFamily="monospace">2+2=6</text>
+          {[0, 1, 2, 3].map((r) => [0, 1, 2].map((c) => <rect key={`${r}${c}`} x={15 + c * 12} y={26 + r * 8} width="9" height="6" rx="1.5" fill={c === 2 && r === 3 ? "#33b5e5" : "#d9dde2"} />))}
+        </svg>
+      );
     case "dauphin":
       return <IconeDauphin taille={taille} />;
   }
@@ -358,6 +368,7 @@ export function OdysseeOS() {
     setRecents(false);
     setRecherche(false);
     setRideau(false);
+    sonAppli(a.id);
   }, []);
 
   // Un contact qu'on appelle ouvre l'appli Téléphone.
@@ -1026,7 +1037,9 @@ function ContenuAppli({
     case "citations":
       return <AppCitations etoiles={etoiles} />;
     case "endurreisen":
-      return <AppEndurreisen t={t} />;
+      return <AppHorloge />;
+    case "calculatrice":
+      return <AppCalculatrice />;
     case "messages":
       return <AppMessages {...gael} />;
     case "nounou":
@@ -1236,43 +1249,6 @@ function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
           <span>{c.date}</span>
         </button>
       ))}
-    </div>
-  );
-}
-
-function AppEndurreisen({ t }: { t: number | null }) {
-  const c = decompte(t, OUVERTURE);
-  const p = t ? Math.min(1, Math.max(0, (t - DEBUT_ENDU) / (OUVERTURE - DEBUT_ENDU))) : 0;
-  const R = 110;
-  const L = 2 * Math.PI * R;
-  return (
-    <div className="app-defile endu">
-      <div className="endu-boite">
-        <svg viewBox="0 0 260 260" width="260" height="260">
-          <circle cx="130" cy="130" r={R} fill="none" stroke="#2a2a2a" strokeWidth="10" />
-          <circle
-            cx="130"
-            cy="130"
-            r={R}
-            fill="none"
-            stroke="#33b5e5"
-            strokeWidth="10"
-            strokeDasharray={L}
-            strokeDashoffset={L * (1 - p)}
-            transform="rotate(-90 130 130)"
-            style={{ transition: "stroke-dashoffset 1s linear" }}
-          />
-          <circle cx={130 + R * Math.sin(p * 2 * Math.PI)} cy={130 - R * Math.cos(p * 2 * Math.PI)} r="9" fill="#33b5e5" />
-        </svg>
-        <div className="endu-centre">
-          <b>{c.fini ? "0" : c.j}</b>
-          <span>jours</span>
-          <em>
-            {deux(c.h)}:{deux(c.m)}:{deux(c.s)}
-          </em>
-        </div>
-      </div>
-      <p className="endu-txt">{c.fini ? "Endurreisen est ouvert." : "avant l’ouverture d’Endurreisen, le 1ᵉʳ décembre 2026"}</p>
     </div>
   );
 }

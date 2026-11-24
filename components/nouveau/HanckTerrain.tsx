@@ -8,6 +8,15 @@
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { DauphinPixel } from "@/components/os/Dauphin";
 import { LogoNounou } from "@/components/os/Nounou";
+import { sonChoc, sonLancer } from "@/components/os/sonsAndroid";
+
+const muet = () => {
+  try {
+    return localStorage.getItem("tac-sons") === "off";
+  } catch {
+    return false;
+  }
+};
 
 type Corps = { x: number; y: number; vx: number; vy: number; a: number; va: number; r: number; tenu: boolean };
 
@@ -33,6 +42,7 @@ export function HanckTerrain() {
   const terrain = useRef<HTMLDivElement>(null);
   const elements = useRef<(HTMLDivElement | null)[]>([]);
   const corps = useRef<Corps[]>([]);
+  const aJoue = useRef(false);
   const prise = useRef<{ i: number; dx: number; dy: number; px: number; py: number; t: number } | null>(null);
 
   const lacher = useCallback(() => {
@@ -78,6 +88,8 @@ export function HanckTerrain() {
         c.y += c.vy * dt;
         c.a += c.va * dt;
         if (c.y + c.r > sol) {
+          // un petit « bonk » s'il tombe assez vite (seulement après un geste du visiteur)
+          if (c.vy > 420 && aJoue.current && !muet()) sonChoc(c.vy);
           c.y = sol - c.r;
           c.vy = Math.abs(c.vy) > 60 ? -c.vy * 0.38 : 0;
           c.vx *= 0.9;
@@ -191,6 +203,8 @@ export function HanckTerrain() {
                 c.vy *= 2400 / v;
               }
               prise.current = null;
+              aJoue.current = true;
+              if (v > 500 && !muet()) sonLancer();
             }}
             onPointerCancel={() => {
               const c = corps.current[i];
@@ -206,7 +220,7 @@ export function HanckTerrain() {
           <b>HANCK 7 PRO MAX</b>
           <span>le téléphone de Casto, sous AakanOS</span>
         </div>
-        <button type="button" className="hanck-relancer" onClick={lacher}>
+        <button type="button" className="hanck-relancer" onClick={() => ((aJoue.current = true), lacher())}>
           ↻ lâcher encore
         </button>
       </div>

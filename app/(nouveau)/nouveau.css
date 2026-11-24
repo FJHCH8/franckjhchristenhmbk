@@ -767,3 +767,17 @@ html, body { background: #000; }
 /* avertissement AakanOS : le rouge et le blanc rougeâtre défilent */
 .ptac .p2-action.rouge { background: linear-gradient(100deg, #e0303a 0%, #ff8a92 20%, #fff3f4 35%, #ff8a92 50%, #e0303a 65%, #ff8a92 80%, #e0303a 100%) !important; background-size: 300% 100% !important; animation: n-rouge-bouge 2.4s linear infinite !important; }
 @keyframes n-rouge-bouge { from { background-position: 0% 0; } to { background-position: 150% 0; } }
+
+/* ---------- 0.2 · page en cours (menu du haut, volets de l'actualité) : le bleu grandit dans le texte ---------- */
+.n-liens button[aria-current="page"]::after { content: none; }
+.n-liens button[aria-current="page"], .n-pano .pano-pivot button.is-actif {
+  mix-blend-mode: normal; text-shadow: none;
+  background-image: linear-gradient(90deg, #6fbdf5 0%, #f4fbff 11%, #6fbdf5 22%, #f4fbff 33%, #6fbdf5 44%, #f4fbff 55%, #6fbdf5 66.6%, rgba(255, 255, 255, .92) 66.7%, rgba(255, 255, 255, .92) 100%);
+  background-size: 300% 100%; background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent;
+  animation: n-remplir .6s cubic-bezier(.2, .8, .2, 1) forwards, n-scintille 2.8s ease-in-out .6s infinite alternate;
+}
+@keyframes n-remplir { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@keyframes n-scintille { from { background-position: 0% 0; } to { background-position: 25% 0; } }
+/* le grand titre du bas, en couleur inversée */
+.n-pied .matrice { mix-blend-mode: difference; }

@@ -670,3 +670,46 @@ a.app-ligne:active { background: var(--presse); }
 .pp-defile { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pp-voile { overflow-y: auto; }
 .hl.pp > .pp-defile { flex: 1 1 auto; }
+
+/* ---------- Alarme (horloge, alarmes, minuteur, chrono) ---------- */
+.hz { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; color: #eee; }
+.hz-onglets { flex: none; display: flex; background: #1c1c1c; border-bottom: 1px solid #333; }
+.hz-onglets button { flex: 1; padding: 14px 4px 11px; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; color: #aaa; border-bottom: 3px solid transparent; }
+.hz-onglets button.on { color: #fff; border-bottom-color: var(--holo); }
+.hz-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 16px; }
+.hz-horloge { text-align: center; margin-top: 40px; }
+.hz-heure { font-weight: 100; font-size: 86px; line-height: 1; letter-spacing: -2px; }
+.hz-heure span { color: var(--holo); }
+.hz-heure small { font-size: 28px; color: #888; margin-left: 6px; }
+.hz-date { margin-top: 12px; font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: var(--holo); }
+.hz-ville { margin-top: 30px; font-size: 13px; color: #777; }
+.hz-alarmes { display: grid; gap: 0; }
+.hz-alarme { display: grid; grid-template-columns: 1fr auto; text-align: left; padding: 14px 4px; border-bottom: 1px solid #262626; color: #666; }
+.hz-alarme b { font-weight: 200; font-size: 40px; line-height: 1; }
+.hz-alarme span { grid-column: 1; font-size: 13px; margin-top: 4px; }
+.hz-alarme.on { color: #fff; } .hz-alarme.on span { color: var(--holo); }
+.hz-interrupteur { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-style: normal; font-size: 12px; padding: 5px 10px; border: 1px solid #444; background: #222; color: #888; }
+.hz-alarme.on .hz-interrupteur { background: rgba(51, 181, 229, .25); border-color: var(--holo); color: #fff; }
+.hz-ajouter { margin-top: 16px; }
+.hz-minuteur, .hz-chrono { display: grid; justify-items: center; gap: 14px; margin-top: 30px; }
+.hz-gros { font-weight: 100; font-size: 68px; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.hz-gros.fini { color: #ff4444; animation: hz-clignote .5s steps(2) infinite; }
+@keyframes hz-clignote { 50% { opacity: .3; } }
+.hz-fini { margin: 0; color: #ff6b6b; font-size: 16px; }
+.hz-ajouts, .hz-actions { display: grid; grid-auto-flow: column; gap: 8px; width: 100%; }
+.hz-principal { background: linear-gradient(#2d8fbf, #1f6f99) !important; border-color: #1a5f85 !important; }
+.hz-tours { list-style: none; width: 100%; margin: 6px 0 0; padding: 0; }
+.hz-tours li { display: flex; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #222; font-size: 15px; }
+.hz-tours span { color: #888; }
+
+/* ---------- Calculatrice ---------- */
+.calc { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; }
+.calc-ecran { flex: 1; min-height: 120px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; gap: 6px; padding: 16px; border-bottom: 1px solid #333; }
+.calc-expr { font-weight: 200; font-size: 36px; color: #ddd; word-break: break-all; text-align: right; }
+.calc-res { font-weight: 300; font-size: 30px; color: var(--holo); text-align: right; }
+.calc-pave { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); background: #151515; }
+.calc-pave button { height: 76px; font-weight: 200; font-size: 30px; color: #fff; border: 1px solid #222; background: #1c1c1c; }
+.calc-pave button.op { background: #262626; color: var(--holo); }
+.calc-pave button.c { color: #ff6b6b; }
+.calc-pave button:active { background: var(--presse); }
+.calc-pave button { display: grid; place-items: center; text-align: center; padding: 0; }

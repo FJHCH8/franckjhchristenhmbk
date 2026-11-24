@@ -257,3 +257,124 @@ export function sonWahWah() {
     }
   }
 }
+
+/** Un bruit de prout (pour ceux qui ont moins de 18 ans). */
+export function sonProut() {
+  const c = contexte();
+  if (!c) return;
+  const t = c.currentTime + 0.03;
+  const d = 0.75;
+  const o = c.createOscillator();
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(95, t);
+  o.frequency.linearRampToValueAtTime(70, t + d * 0.6);
+  o.frequency.linearRampToValueAtTime(110, t + d);
+  const tremble = c.createOscillator();
+  const prof = c.createGain();
+  tremble.frequency.value = 28;
+  prof.gain.value = 22;
+  tremble.connect(prof).connect(o.frequency);
+  const f = c.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.value = 420;
+  f.Q.value = 4;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.22, t + 0.04);
+  g.gain.setValueAtTime(0.2, t + d * 0.7);
+  g.gain.exponentialRampToValueAtTime(0.001, t + d);
+  const s = bruit(c, d);
+  const fb = c.createBiquadFilter();
+  fb.type = "bandpass";
+  fb.frequency.value = 160;
+  const gb = c.createGain();
+  gb.gain.value = 0.25;
+  o.connect(f).connect(g).connect(c.destination);
+  s.connect(fb).connect(gb).connect(g);
+  o.start(t);
+  tremble.start(t);
+  s.start(t);
+  o.stop(t + d + 0.05);
+  tremble.stop(t + d + 0.05);
+}
+
+/** Un « fiouuu » quand on lance un logo. */
+export function sonLancer() {
+  const c = contexte();
+  if (!c) return;
+  const t = c.currentTime;
+  const s = bruit(c, 0.35);
+  const f = c.createBiquadFilter();
+  f.type = "bandpass";
+  f.Q.value = 3;
+  f.frequency.setValueAtTime(600, t);
+  f.frequency.exponentialRampToValueAtTime(2600, t + 0.3);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.exponentialRampToValueAtTime(0.18, t + 0.08);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.34);
+  s.connect(f).connect(g).connect(c.destination);
+  s.start(t);
+}
+
+/** Un petit « bonk » 8 bits quand un logo touche le sol (plus fort s'il tombe vite). */
+export function sonChoc(force: number) {
+  const c = contexte();
+  if (!c) return;
+  const t = c.currentTime;
+  const o = c.createOscillator();
+  o.type = "square";
+  o.frequency.setValueAtTime(220 + Math.random() * 80, t);
+  o.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+  const g = c.createGain();
+  g.gain.setValueAtTime(Math.min(0.12, 0.02 + force * 0.00005), t);
+  g.gain.exponentialRampToValueAtTime(0.0008, t + 0.13);
+  o.connect(g).connect(c.destination);
+  o.start(t);
+  o.stop(t + 0.15);
+}
+
+function notes(seq: [number, number, OscillatorType?][], vol = 0.08, ecart = 0.09) {
+  const c = contexte();
+  if (!c) return;
+  seq.forEach(([hz, d, type], i) => {
+    const t = c.currentTime + i * ecart;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type ?? "sine";
+    o.frequency.value = hz;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + d);
+    o.connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + d + 0.02);
+  });
+}
+
+/** Chaque appli a son son à l'ouverture. */
+export function sonAppli(id: string) {
+  switch (id) {
+    case "telephone": return dtmf("1"), setTimeout(() => dtmf("9"), 110);
+    case "messages": return notes([[880, 0.12], [1320, 0.16]], 0.07, 0.07);
+    case "nounou": return notes([[392, 0.15, "triangle"], [523, 0.15, "triangle"], [659, 0.25, "triangle"]], 0.09, 0.08);
+    case "appareil": return son("tick");
+    case "contacts": return notes([[660, 0.08], [990, 0.12]], 0.06, 0.05);
+    case "album": return notes([[1046, 0.1], [784, 0.1], [1318, 0.2]], 0.05, 0.06);
+    case "projets": return notes([[523, 0.1], [784, 0.18]], 0.06, 0.08);
+    case "citations": return notes([[1568, 0.06, "triangle"], [1760, 0.06, "triangle"], [1568, 0.1, "triangle"]], 0.05, 0.05);
+    case "endurreisen": return notes([[1046, 0.08, "square"], [1046, 0.08, "square"]], 0.04, 0.16);
+    case "calculatrice": return notes([[1200, 0.04, "square"], [900, 0.04, "square"], [1500, 0.06, "square"]], 0.035, 0.06);
+    case "reglages": return notes([[300, 0.05, "square"], [450, 0.07, "square"]], 0.04, 0.06);
+    case "pulpus": return notes([[220, 0.12], [330, 0.12], [262, 0.18]], 0.1, 0.07);
+    case "samtelecom": return notes([[110, 0.35, "sawtooth"], [82, 0.4, "sawtooth"]], 0.07, 0.12);
+    case "sharkobank": return sonPieces(3);
+    case "peeporn": return notes([[392, 0.2, "triangle"], [466, 0.35, "triangle"]], 0.09, 0.14);
+    default: return notes([[880, 0.1]], 0.05);
+  }
+}
+
+/** La sonnerie du minuteur / de l'alarme : bip-bip-bip-bip. */
+export function sonSonnerie(fois = 4) {
+  for (let k = 0; k < fois; k++) setTimeout(() => notes([[1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"]], 0.05, 0.12), k * 900);
+}
