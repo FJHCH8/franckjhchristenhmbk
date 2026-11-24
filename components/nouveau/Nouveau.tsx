@@ -47,12 +47,44 @@ function bip(f = 1400, d = 0.035, v = 0.03, type: OscillatorType = "square") {
     o.stop(audio.currentTime + d);
   } catch {}
 }
+let dernierSon = 0;
 const sonSurvol = () => bip(1800, 0.02, 0.018);
 const sonValide = () => {
+  dernierSon = Date.now();
   bip(900, 0.05, 0.035);
   setTimeout(() => bip(1500, 0.06, 0.03), 55);
 };
-const sonRetour = () => bip(700, 0.05, 0.03);
+const sonRetour = () => {
+  dernierSon = Date.now();
+  bip(700, 0.05, 0.03);
+};
+/** Des sons sur tout le site : tout bouton ou lien qui n'a pas déjà le sien joue le « valider ». */
+function useSonsPartout() {
+  useEffect(() => {
+    const clic = (e: MouseEvent) => {
+      const el = (e.target as HTMLElement | null)?.closest?.("button, a, [role=button], input[type=range], label");
+      if (!el || Date.now() - dernierSon < 150) return;
+      const fermer = !!el.querySelector('path[d^="M19 6.41"]');
+      if (fermer) sonRetour();
+      else sonValide();
+    };
+    const survol = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      const el = (e.target as HTMLElement | null)?.closest?.("button, a");
+      if (el && el !== dernierSurvol) {
+        dernierSurvol = el;
+        sonSurvol();
+      }
+    };
+    let dernierSurvol: globalThis.Element | null = null;
+    document.addEventListener("click", clic);
+    document.addEventListener("pointerover", survol);
+    return () => {
+      document.removeEventListener("click", clic);
+      document.removeEventListener("pointerover", survol);
+    };
+  }, []);
+}
 
 /* ---------- outils ---------- */
 function useMaintenant() {
@@ -217,6 +249,7 @@ export function Nouveau({ vue = "accueil" }: { vue?: Vue }) {
 const CHEMIN: Record<Vue, string> = { accueil: "/", qui: "/qui-suis-je", projets: "/projets" };
 
 function Site({ depart }: { depart: Vue }) {
+  useSonsPartout();
   const t = useMaintenant();
   const [pret, setPret] = useState(false);
   const [vue, setVue] = useState<Vue>(depart);

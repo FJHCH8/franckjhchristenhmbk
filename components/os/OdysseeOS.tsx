@@ -176,14 +176,7 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
     case "endurreisen":
       return <IconeAncienne nom="endurreisen" taille={taille} />;
     case "calculatrice":
-      return (
-        <svg className="os-icone" viewBox="0 0 64 64" width={taille} height={taille} aria-hidden="true">
-          <rect x="10" y="4" width="44" height="56" rx="5" fill="#3a3f47" stroke="#1c1f24" strokeWidth="2" />
-          <rect x="15" y="9" width="34" height="13" rx="2" fill="#0b2a52" />
-          <text x="45" y="19.5" textAnchor="end" fontSize="9" fill="#33b5e5" fontFamily="monospace">2+2=6</text>
-          {[0, 1, 2, 3].map((r) => [0, 1, 2].map((c) => <rect key={`${r}${c}`} x={15 + c * 12} y={26 + r * 8} width="9" height="6" rx="1.5" fill={c === 2 && r === 3 ? "#33b5e5" : "#d9dde2"} />))}
-        </svg>
-      );
+      return png("calculator");
     case "dauphin":
       return <IconeDauphin taille={taille} />;
   }

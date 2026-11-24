@@ -6,3 +6,5 @@ Fichiers : settings.png, mms.png, contacts.png, calendar.png, camera.png, email.
 Sons (public/aakanos/sons) : Effect_Tick, KeypressStandard, KeypressDelete, KeypressReturn, Lock, Unlock, Capella, camera_click
 Source : Android Open Source Project, platform/frameworks/base, data/sounds (branche jb-release), convertis en MP3.
 Copyright (C) The Android Open Source Project — Licence Apache 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+
+Icône calculator.png : Android Open Source Project, platform/packages/apps/Calculator (jb-release), res/mipmap-xhdpi/ic_launcher_calculator.png — Licence Apache 2.0.
