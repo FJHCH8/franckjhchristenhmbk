@@ -7,6 +7,9 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { sonSonnerie } from "./sonsAndroid";
+import { alarmes, notifier, type Alarme } from "./Memoire";
+import { ChoixSonnerie, toast } from "./Systeme";
+import { choixSons, nomSonnerie } from "./sonneries";
 
 const deux = (n: number) => String(Math.floor(n)).padStart(2, "0");
 
@@ -70,24 +73,152 @@ function Horloge() {
   );
 }
 
+const JOURS_COURTS = ["Dim.", "Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam."];
+const ORDRE_JOURS = [1, 2, 3, 4, 5, 6, 0];
+
+/** « Lun., mar., … » : chaque jour est un nœud de texte à part, pour que les traductions suivent. */
+function TexteJours({ a }: { a: Alarme }) {
+  if (a.texte) return <>{a.texte}</>;
+  if (a.jours.length === 0) return <>Une fois</>;
+  if (a.jours.length === 7) return <>Tous les jours</>;
+  const j = ORDRE_JOURS.filter((x) => a.jours.includes(x));
+  return (
+    <>
+      {j.map((x, k) => (
+        <span key={x} className="hz-jour">
+          {k === 0 ? JOURS_COURTS[x] : JOURS_COURTS[x]!.toLowerCase()}
+          {k < j.length - 1 ? <span translate="no">{", "}</span> : null}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function Alarmes() {
-  const [liste, setListe] = useState([
-    { h: "07:00", jours: "Lun., mar., mer., jeu., ven.", on: true },
-    { h: "09:30", jours: "Sam., dim.", on: false },
-    { h: "00:00", jours: "Ouverture d’Endurreisen", on: true },
-  ]);
+  // Les trois alarmes d'origine, puis celles du visiteur : tout est gardé dans la session.
+  const liste = alarmes.useValeur();
+  const [edite, setEdite] = useState<Alarme | null>(null);
   return (
     <div className="hz-alarmes">
-      {liste.map((a, i) => (
-        <button key={i} type="button" className={`hz-alarme${a.on ? " on" : ""}`} onClick={() => setListe((l) => l.map((x, k) => (k === i ? { ...x, on: !x.on } : x)))}>
-          <b>{a.h}</b>
-          <span>{a.jours}</span>
-          <i className="hz-interrupteur">{a.on ? "OUI" : "NON"}</i>
-        </button>
+      {liste.map((a) => (
+        <div key={a.id} className="hz-ligne">
+          <button type="button" className={`hz-alarme${a.on ? " on" : ""}`} onClick={() => alarmes.ecrire((l) => l.map((x) => (x.id === a.id ? { ...x, on: !x.on } : x)))}>
+            <b>{`${deux(a.h)}:${deux(a.m)}`}</b>
+            <span>
+              {a.libelle ? <em className="hz-libelle">{a.libelle}</em> : null}
+              {a.libelle ? <span translate="no">{" · "}</span> : null}
+              <TexteJours a={a} />
+            </span>
+            <i className="hz-interrupteur">{a.on ? "OUI" : "NON"}</i>
+          </button>
+          <button type="button" className="hz-modifier" aria-label="Modifier l’alarme" onClick={() => setEdite(a)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/aakanos/aosp/ic_menu_edit.svg" alt="" width={28} height={28} style={{ display: "block" }} />
+          </button>
+        </div>
       ))}
-      <button type="button" className="jb-bouton hz-ajouter" onClick={() => setListe((l) => [...l, { h: "08:00", jours: "Une fois", on: true }])}>
+      {liste.length === 0 ? <p className="hz-vide">Aucune alarme</p> : null}
+      <button type="button" className="jb-bouton hz-ajouter" onClick={() => setEdite({ id: "", h: 8, m: 0, jours: [], on: true })}>
         + Ajouter une alarme
       </button>
+      {edite ? <EditeurAlarme depart={edite} fermer={() => setEdite(null)} /> : null}
+    </div>
+  );
+}
+
+function EditeurAlarme({ depart, fermer }: { depart: Alarme; fermer: () => void }) {
+  const [h, setH] = useState(depart.h);
+  const [m, setM] = useState(depart.m);
+  const [jours, setJours] = useState<number[]>(depart.jours);
+  const [libelle, setLibelle] = useState(depart.libelle ?? "");
+  const [sonA, setSonA] = useState<string | undefined>(depart.son);
+  const [choix, setChoix] = useState(false);
+  const sons = choixSons.useValeur();
+  const nouvelle = depart.id === "";
+  const tourner = (v: number, d: number, max: number) => (v + d + max) % max;
+  const roue = (v: number, set: (n: number) => void, max: number, pas: number, nom: string) => (
+    <div className="hz-roue">
+      <button type="button" aria-label={`${nom} +`} onClick={() => set(tourner(v, pas, max))}>
+        ▲
+      </button>
+      <b translate="no">{deux(v)}</b>
+      <button type="button" aria-label={`${nom} −`} onClick={() => set(tourner(v, -pas, max))}>
+        ▼
+      </button>
+    </div>
+  );
+  const enregistrer = () => {
+    const changeJours = jours.join() !== depart.jours.join();
+    const a: Alarme = {
+      ...depart,
+      id: nouvelle ? `al${Date.now().toString(36)}` : depart.id,
+      h,
+      m,
+      jours,
+      libelle: libelle.trim().slice(0, 40) || undefined,
+      son: sonA,
+      // Le texte d'origine reste tant qu'on ne touche pas aux jours.
+      texte: changeJours ? undefined : depart.texte,
+      date: changeJours ? undefined : depart.date,
+      on: true,
+    };
+    alarmes.ecrire((l) => (nouvelle ? [...l, a] : l.map((x) => (x.id === a.id ? a : x))));
+    toast(`Alarme réglée pour ${deux(h)}:${deux(m)}`);
+    fermer();
+  };
+  return (
+    <div className="dlg-fond" onClick={fermer}>
+      <div className="dlg hz-editeur" onClick={(e) => e.stopPropagation()}>
+        <div className="dlg-titre">{nouvelle ? "Nouvelle alarme" : "Modifier l’alarme"}</div>
+        <div className="dlg-corps">
+          <div className="hz-roues">
+            {roue(h, setH, 24, 1, "Heures")}
+            <span>:</span>
+            {roue(m, setM, 60, 5, "Minutes")}
+          </div>
+          <div className="hz-jours">
+            {ORDRE_JOURS.map((x) => (
+              <button
+                key={x}
+                type="button"
+                className={jours.includes(x) ? "on" : ""}
+                onClick={() => setJours((l) => (l.includes(x) ? l.filter((y) => y !== x) : [...l, x].sort()))}
+              >
+                {JOURS_COURTS[x]}
+              </button>
+            ))}
+          </div>
+          <input className="holo-champ" value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder="Libellé" aria-label="Libellé" />
+        </div>
+        <button type="button" className="dlg-choix hz-son" onClick={() => setChoix(true)}>
+          <span>
+            <b>Sonnerie</b>
+            <small translate="no">{nomSonnerie(sonA ?? sons.alarme)}</small>
+          </span>
+        </button>
+        {choix ? <ChoixSonnerie categorie="alarme" valeur={sonA ?? sons.alarme} choisir={setSonA} fermer={() => setChoix(false)} /> : null}
+        {!nouvelle ? (
+          <button
+            type="button"
+            className="dlg-choix hz-supprimer"
+            onClick={() => {
+              alarmes.ecrire((l) => l.filter((x) => x.id !== depart.id));
+              toast("Alarme supprimée");
+              fermer();
+            }}
+          >
+            Supprimer l’alarme
+          </button>
+        ) : null}
+        <div className="dlg-boutons">
+          <button type="button" onClick={fermer}>
+            Annuler
+          </button>
+          <button type="button" onClick={enregistrer}>
+            OK
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -97,6 +228,9 @@ function Minuteur() {
   const [reste, setReste] = useState(60);
   const [marche, setMarche] = useState(false);
   const [fini, setFini] = useState(false);
+  useEffect(() => {
+    if (fini) notifier({ titre: "Minuteur", texte: "Le temps est écoulé", appli: "endurreisen", icone: "/aakanos/aosp/ic_lock_idle_alarm.svg", son: false });
+  }, [fini]);
   useEffect(() => {
     if (!marche) return;
     const id = window.setInterval(() => {

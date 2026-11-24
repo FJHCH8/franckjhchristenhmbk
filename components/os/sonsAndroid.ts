@@ -3,6 +3,9 @@
  * le « tick » des touches, le clavier, le verrouillage, la notification Capella.
  * Plus les tonalités du téléphone, générées comme sur un vrai réseau : DTMF du pavé, tonalité de retour d'appel.
  */
+import { estMuet } from "./sonsSynth";
+import { jouerNotification } from "./sonneries";
+
 const FICHIERS = {
   tick: "Effect_Tick",
   touche: "KeypressStandard",
@@ -19,7 +22,7 @@ const tampons: Partial<Record<NomSon, AudioBuffer>> = {};
 let chargement: Promise<void> | null = null;
 
 function contexte(): AudioContext | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || estMuet()) return null;
   if (!ctx) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
@@ -51,6 +54,8 @@ export function prechargerSons() {
 }
 
 export function son(nom: NomSon, volume = 1) {
+  // La notification suit le choix des Réglages › Son (Capella par défaut).
+  if (nom === "notif") return jouerNotification();
   const c = contexte();
   if (!c) return;
   const b = tampons[nom];

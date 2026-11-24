@@ -18,6 +18,9 @@ import {
   type PointerEvent as PE,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
+import { AppMail, GardienMail, IconeMail } from "./Mail";
+import { AppMeteo, IconeMeteo } from "./Meteo";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
@@ -27,10 +30,13 @@ import { useLocale, type LocaleName } from "@/components/Locale";
 import { dtmf, prechargerSons, son, sonAppli, tonaliteRetour } from "./sonsAndroid";
 import { AppCalculatrice, AppHorloge } from "./Outils";
 import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
+import { estMuet, sonSynth } from "./sonsSynth";
+import { Demarrage, Dlg, Interrupteur, SousReglage, SystemeCtx, Toasts, Touches, toast, useEtatSysteme, useSysteme, type EcranReglage } from "./Systeme";
+import { Bandeau, GardienAlarmes, bloques, contactsPerso, convsPerso, ecrireSession, lireSession, notesPerso, notifier, notifsSup, ouvrirAppli, prendreCible, reinitialiserTelephone, type ContactPerso, type NotePerso } from "./Memoire";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "samtelecom" | "sharkobank" | "peeporn" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "appareil" | "calculatrice" | "endurreisen" | "reglages" | "dauphin" | "mail" | "meteo";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
@@ -45,6 +51,8 @@ const APPLIS: Appli[] = [
   { id: "citations", nom: "Notes" },
   { id: "messages", nom: "Messages" },
   { id: "nounou", nom: "Nounou" },
+  { id: "mail", nom: "E-mail" },
+  { id: "meteo", nom: "Météo" },
   { id: "appareil", nom: "Appareil photo" },
   { id: "endurreisen", nom: "Alarme" },
   { id: "calculatrice", nom: "Calculatrice" },
@@ -146,6 +154,10 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
       return png("phone");
     case "pulpus":
       return <LogoPulpus taille={taille} />;
+    case "mail":
+      return <IconeMail taille={taille} />;
+    case "meteo":
+      return <IconeMeteo taille={taille} />;
     case "sharkobank":
       return png("sharkobank");
     case "peeporn":
@@ -201,7 +213,7 @@ function PictoStatut({ type }: { type: "citation" | "message" | "alarme" }) {
 
 const RetourCtx = createContext<{ poser: (f: (() => boolean) | null) => void }>({ poser: () => {} });
 /** Une appli qui a des sous-écrans déclare ici comment revenir en arrière. */
-function useRetour(actif: boolean, f: () => void) {
+export function useRetour(actif: boolean, f: () => void) {
   const { poser } = useContext(RetourCtx);
   const ref = useRef(f);
   useEffect(() => {
@@ -256,6 +268,19 @@ type Fenetre = { appli: Appli; depuis: { x: number; y: number; w: number; h: num
 
 export function OdysseeOS() {
   const t = useMaintenant();
+  const sys = useEtatSysteme();
+  const [boot, setBoot] = useState<boolean | null>(null);
+  useEffect(() => {
+    let deja = false;
+    try {
+      deja = sessionStorage.getItem("aakanos-boot") === "1";
+      sessionStorage.setItem("aakanos-boot", "1");
+    } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- le démarrage ne se joue qu’une fois par session
+    setBoot(!deja);
+  }, []);
+  const finBoot = useCallback(() => setBoot(false), []);
+  const [qs, setQs] = useState(false);
   const [verrou, setVerrou] = useState(true);
   const [tiroir, setTiroir] = useState(false);
   const [onglet, setOnglet] = useState<"applis" | "widgets">("applis");
@@ -275,6 +300,29 @@ export function OdysseeOS() {
   const [nonLu, setNonLu] = useState<{ qui: Correspondant; n: number } | null>(null);
   const minuteurs = useRef<number[]>([]);
   const convOuverte = useRef<Correspondant | null>(null);
+  // La session garde les conversations, les notifications lues ou effacées (jusqu'à « Réinitialiser le téléphone »).
+  const memoireChargee = useRef(false);
+  useEffect(() => {
+    const c = lireSession<Record<Correspondant, MsgGael[]>>("convs");
+    const n = lireSession<{ qui: Correspondant; n: number } | null>("non-lu");
+    const e = lireSession<string[]>("effacees");
+    if (c) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- lecture unique de la session au montage
+      setConvs((x) => ({ ...x, ...c }));
+    }
+    if (n) setNonLu(n);
+    if (e) setEffacees(e);
+    memoireChargee.current = true;
+  }, []);
+  useEffect(() => {
+    if (memoireChargee.current) ecrireSession("convs", convs);
+  }, [convs]);
+  useEffect(() => {
+    if (memoireChargee.current) ecrireSession("non-lu", nonLu);
+  }, [nonLu]);
+  useEffect(() => {
+    if (memoireChargee.current) ecrireSession("effacees", effacees);
+  }, [effacees]);
   useEffect(() => () => minuteurs.current.forEach((m) => clearTimeout(m)), []);
   const envoyer = useCallback((qui: Correspondant, texte: string) => {
     const id = Date.now();
@@ -283,6 +331,7 @@ export function OdysseeOS() {
       rang = c[qui].filter((x) => x.de === "moi").length;
       return { ...c, [qui]: [...c[qui], { id, de: "moi", texte, h: heureCourte() }] };
     });
+    sonSynth("envoye");
     const plus = (f: () => void, ms: number) => minuteurs.current.push(window.setTimeout(f, ms));
     const reponse = qui === "gael" ? REPONSES_GAEL[rang] : rang === 0 ? (qui === "celjo" ? REPONSE_CELJO : REPONSE_PACIFICK) : undefined;
     // Celjo ne lit plus rien après sa première réponse.
@@ -294,9 +343,15 @@ export function OdysseeOS() {
       setEcrit(qui);
       plus(() => {
         setEcrit(null);
+        // Un contact bloqué n'arrive plus jusqu'au téléphone.
+        if (bloques.lire().includes(qui)) return;
         setConvs((c) => ({ ...c, [qui]: [...c[qui], { id: Date.now(), de: "lui", texte: reponse, h: heureCourte() }] }));
         if (convOuverte.current !== qui) setNonLu((n) => ({ qui, n: n && n.qui === qui ? n.n + 1 : 1 }));
         son("notif");
+        if (convOuverte.current !== qui) {
+          const cor = CORRESPONDANTS.find((x) => x.id === qui)!;
+          notifier({ titre: cor.nom, texte: reponse, appli: "messages", icone: cor.photo, son: false, rideau: false });
+        }
       }, 2200 + reponse.length * 35);
     }, vu + 900);
   }, []);
@@ -305,6 +360,8 @@ export function OdysseeOS() {
   const recevoirSamTelecom = useCallback(() => {
     if (smsRecu.current) return;
     smsRecu.current = true;
+    // Déjà reçu plus tôt dans la session : on ne le renvoie pas.
+    if (lireSession<Record<string, unknown[]>>("convs")?.samtelecom?.length) return;
     minuteurs.current.push(
       window.setTimeout(() => {
         const h = heureCourte();
@@ -315,6 +372,10 @@ export function OdysseeOS() {
         minuteurs.current.push(window.setTimeout(() => setTicker(null), 4200));
       }, 5000),
     );
+  }, []);
+  const effacerConv = useCallback((qui: Correspondant) => {
+    setConvs((c) => ({ ...c, [qui]: [] }));
+    setNonLu((n) => (n && n.qui === qui ? null : n));
   }, []);
   const vuConv = useCallback((qui: Correspondant | null) => {
     convOuverte.current = qui;
@@ -364,6 +425,15 @@ export function OdysseeOS() {
     sonAppli(a.id);
   }, []);
 
+  // Une appli qui en ouvre une autre (Messages → Contacts, Contacts → Messages, notifications…)
+  useEffect(() => {
+    const f = (e: Event) => {
+      const a = APPLIS.find((x) => x.id === (e as CustomEvent<string>).detail);
+      if (a) ouvrir(a);
+    };
+    window.addEventListener("aakanos-ouvrir", f);
+    return () => window.removeEventListener("aakanos-ouvrir", f);
+  }, [ouvrir]);
   // Un contact qu'on appelle ouvre l'appli Téléphone.
   useEffect(() => {
     const f = () => ouvrir(par("telephone"));
@@ -437,6 +507,7 @@ export function OdysseeOS() {
   const tirage = useRef<number | null>(null);
   const [tire, setTire] = useState(0);
 
+  const sup = notifsSup.useValeur();
   type Notif = { id: string; icone: ReactNode; titre: string; texte: string; auteur?: string; h: string; appli: Appli };
   const toutes: (Notif | null)[] = [
     derniere
@@ -465,6 +536,23 @@ export function OdysseeOS() {
       appli: par("messages"),
     },
   ];
+  // Les notifications reçues pendant la session (alarmes, minuteur, contacts…)
+  for (const n of sup) {
+    const a = APPLIS.find((x) => x.id === n.appli) ?? par("messages");
+    toutes.push({
+      id: n.id,
+      icone: n.icone ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={n.icone} alt="" width={40} height={40} style={{ objectFit: "cover" }} />
+      ) : (
+        <IconeAppli id={a.id} taille={40} />
+      ),
+      titre: n.titre,
+      texte: n.texte,
+      h: n.h,
+      appli: a,
+    });
+  }
   const notifs = toutes.filter((n): n is Notif => !!n && (!effacees.includes(n.id) || (n.id === "gael" && !!nonLu)));
   const notifsTriees = nonLu ? [...notifs.filter((n) => n.id === "gael"), ...notifs.filter((n) => n.id !== "gael")] : notifs;
 
@@ -473,17 +561,18 @@ export function OdysseeOS() {
   const etoilesTrouvees = requete ? (etoiles ?? []).filter(correspond).slice(0, 8) : [];
 
   return (
+    <SystemeCtx.Provider value={sys}>
     <RetourCtx.Provider value={{ poser }}>
       <div
-        className="os"
+        className={`os${sys.limites ? " os-limites" : ""}`}
         onPointerDownCapture={() => void prechargerSons()}
         onClickCapture={(e) => {
           // le « tick » d'Android à chaque toucher (le pavé du téléphone joue ses propres tonalités)
           const el = (e.target as Element).closest("button, a, [role=button]");
-          if (el && !el.closest(".tel-pave")) son("tick", 0.8);
+          if (el && !el.closest(".tel-pave") && sys.sonsTouches) son("tick", 0.8);
         }}
       >
-        <div className="os-fond">
+        <div className={`os-fond fond-${sys.fond}`}>
           <i />
           <i />
           <i />
@@ -520,16 +609,26 @@ export function OdysseeOS() {
             {!verrou
               ? notifs.map((n) => (
                   <i key={n.id} className="os-mini">
-                    <PictoStatut type={n.id === "citation" ? "citation" : n.id === "gael" ? "message" : "alarme"} />
+                    <PictoStatut type={n.id === "citation" ? "citation" : n.id === "gael" || n.appli.id === "messages" ? "message" : "alarme"} />
                   </i>
                 ))
               : null}
           </span>
           <span className="os-statut-d">
+            {sys.muet ? (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#ddd" aria-hidden="true"><path d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z" /></svg>
+            ) : null}
+            {sys.bt && !sys.avion ? (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#ddd" aria-hidden="true"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z" /></svg>
+            ) : null}
+            {sys.avion ? (
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="#ddd" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" /></svg>
+            ) : sys.wifi ? (
             <svg viewBox="0 0 24 24" width="15" height="15" fill="#33b5e5" aria-hidden="true">
               <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4l2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" />
             </svg>
-            <b className="os-barres">
+            ) : null}
+            <b className={`os-barres${sys.avion ? " eteint" : ""}`}>
               <i />
               <i />
               <i />
@@ -665,7 +764,7 @@ export function OdysseeOS() {
                   etoiles={etoiles}
                   ouvrir={ouvrir}
                   quitter={quitter}
-                  gael={{ convs, ecrit, envoyer, vu: vuConv }}
+                  gael={{ convs, ecrit, envoyer, vu: vuConv, effacer: effacerConv }}
                 />
               </FenetreAppli>
             ) : null}
@@ -731,12 +830,28 @@ export function OdysseeOS() {
                   <br />
                   {date.split(" ").slice(1).join(" ").toUpperCase()} {d?.getFullYear()}
                 </div>
+                <button className={`os-rideau-qs${qs ? " on" : ""}`} aria-label="Réglages rapides" onClick={() => setQs((q) => !q)}>
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="#ccc" aria-hidden="true"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z" /></svg>
+                </button>
                 <button className="os-rideau-reglages" aria-label="Réglages" onClick={(e) => ouvrir(par("reglages"), e.currentTarget)}>
                   <svg viewBox="0 0 24 24" width="28" height="28" fill="#ccc">
                     <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" />
                   </svg>
                 </button>
               </div>
+              {qs ? (
+                <ReglagesRapides
+                  ouvrirReglages={(e) => ouvrir(par("reglages"), e)}
+                  verrouiller={() => {
+                    son("verrou");
+                    setRideau(false);
+                    setQs(false);
+                    if (fenetre) fermerFenetre();
+                    setTiroir(false);
+                    setVerrou(true);
+                  }}
+                />
+              ) : (
               <div className="os-rideau-liste">
                 {notifsTriees.map((n, i) => (
                   <div key={n.id} className="os-notif-bloc" style={{ animationDelay: `${i * 40}ms` }}>
@@ -752,13 +867,13 @@ export function OdysseeOS() {
                     {i === 0 ? (
                       <div className="os-notif-actions">
                         <button onClick={(e) => ouvrir(n.appli, e.currentTarget)}>OUVRIR</button>
-                        <button onClick={() => setEffacees((x) => [...x, n.id])}>IGNORER</button>
+                        <button onClick={() => (setEffacees((x) => [...x, n.id]), notifsSup.ecrire((l) => l.filter((y) => y.id !== n.id)))}>IGNORER</button>
                       </div>
                     ) : null}
                   </div>
                 ))}
                 {notifs.length > 0 ? (
-                  <button className="os-effacer" onClick={() => setEffacees(["citation", "endurreisen", "gael"])}>
+                  <button className="os-effacer" onClick={() => (setEffacees(["citation", "endurreisen", "gael"]), notifsSup.ecrire([]))}>
                     EFFACER
                   </button>
                 ) : (
@@ -769,6 +884,7 @@ export function OdysseeOS() {
                   <small>quitter AakanOS</small>
                 </button>
               </div>
+              )}
               <button className="os-rideau-poignee" aria-label="Fermer" onClick={() => setRideau(false)} />
             </div>
           </>
@@ -792,8 +908,17 @@ export function OdysseeOS() {
             </svg>
           </button>
         </nav>
+        {!verrou ? <Bandeau ouvrir={(id) => { const a = APPLIS.find((x) => x.id === id); if (a) ouvrir(a); }} /> : null}
+        <GardienAlarmes actif={boot === false} />
+        <GardienMail actif={!verrou && boot === false} />
+        <Toasts />
+        {sys.touches ? <Touches /> : null}
+        <i className="os-lum" style={{ opacity: (1 - sys.lum) * 0.75 }} aria-hidden="true" />
+        {boot ? <Demarrage fini={finBoot} /> : null}
+        {boot === null ? <div className="os-boot" /> : null}
       </div>
     </RetourCtx.Provider>
+    </SystemeCtx.Provider>
   );
 }
 
@@ -877,10 +1002,61 @@ const TOUCHES: [string, string][] = [
   ["OK", ""],
 ];
 
+/** L'anneau de déverrouillage de Jelly Bean : on tire le cadenas hors du cercle. */
+function AnneauVerrou({ onFini }: { onFini: () => void }) {
+  const [p, setP] = useState<{ x: number; y: number } | null>(null);
+  const [fini, setFini] = useState(false);
+  const centre = useRef<{ x: number; y: number } | null>(null);
+  const R = 118;
+  const d = p ? Math.hypot(p.x, p.y) : 0;
+  const lim = p && d > R ? { x: (p.x / d) * R, y: (p.y / d) * R } : p;
+  return (
+    <div className={`anneau${p ? " actif" : ""}${fini ? " fini" : ""}`}>
+      <div className="anneau-zone">
+        <i className="anneau-cercle" />
+        <i className="anneau-cible" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z" /></svg>
+        </i>
+        <button
+          className="anneau-poignee"
+          aria-label="Déverrouiller"
+          style={lim ? { transform: `translate(${lim.x}px, ${lim.y}px)` } : undefined}
+          onPointerDown={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            centre.current = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            e.currentTarget.setPointerCapture(e.pointerId);
+            setP({ x: 0, y: 0 });
+          }}
+          onPointerMove={(e) => {
+            if (!centre.current) return;
+            setP({ x: e.clientX - centre.current.x, y: e.clientY - centre.current.y });
+          }}
+          onPointerUp={() => {
+            centre.current = null;
+            if (d > R * 0.85) {
+              setFini(true);
+              sonSynth("bulle");
+              window.setTimeout(onFini, 260);
+            } else setP(null);
+          }}
+          onClick={(e) => {
+            // Au clavier (Entrée), ou un simple toucher : on indique le geste.
+            if (e.detail === 0) onFini();
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
+        </button>
+      </div>
+      <p className="anneau-aide">{p ? "Relâchez hors du cercle" : "Faites glisser le cadenas pour déverrouiller"}</p>
+    </div>
+  );
+}
+
 function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; date: string; onOuvrir: () => void; onQuitter: () => void }) {
   const [saisi, setSaisi] = useState("");
   const [erreur, setErreur] = useState(false);
   const [part, setPart] = useState(false);
+  const [etape, setEtape] = useState<"anneau" | "code">("anneau");
 
   const verifier = useCallback(
     (code: string) => {
@@ -914,16 +1090,20 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
+      if (etape === "anneau") {
+        if (/^[0-9]$/.test(e.key) || e.key === "Enter" || e.key === " ") setEtape("code");
+        return;
+      }
       if (/^[0-9]$/.test(e.key)) appui(e.key);
       else if (e.key === "Backspace") appui("⌫");
       else if (e.key === "Enter") appui("OK");
     };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
-  }, [appui]);
+  }, [appui, etape]);
 
   return (
-    <div className={`os-verrou${part ? " part" : ""}`}>
+    <div className={`os-verrou${part ? " part" : ""} etape-${etape}`}>
       <div className="os-operateur">
         {/* Sam en cubes 3D, qui tourne sur lui-même (24 images calculées en 3D) */}
         <i className="sam-tourne" aria-hidden="true" />
@@ -935,6 +1115,18 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
         {heure.slice(3)}
       </div>
       <div className="os-verrou-date">{date}</div>
+      {etape === "anneau" ? (
+        <>
+          <AnneauVerrou onFini={() => setEtape("code")} />
+          <button type="button" className="os-verrou-quitter anneau-quitter" onClick={onQuitter}>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M10 17l1.4-1.4L8.8 13H20v-2H8.8l2.6-2.6L10 7l-5 5zM4 5h7V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7v-2H4z" />
+            </svg>
+            Quitter AakanOS
+          </button>
+        </>
+      ) : (
+      <>
       <div className={`os-verrou-msg${erreur ? " erreur" : ""}`}>{erreur ? "Code incorrect, réessaie" : "Saisis ton code"}</div>
       <div className={`os-code${erreur ? " secoue" : ""}`}>
         {[0, 1, 2, 3].map((i) => (
@@ -956,6 +1148,8 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
           </button>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 }
@@ -1033,6 +1227,10 @@ function ContenuAppli({
       return <AppHorloge />;
     case "calculatrice":
       return <AppCalculatrice />;
+    case "mail":
+      return <AppMail />;
+    case "meteo":
+      return <AppMeteo />;
     case "messages":
       return <AppMessages {...gael} />;
     case "nounou":
@@ -1218,11 +1416,59 @@ function AppProjets({ t, etoiles }: { t: number | null; etoiles: Etoile[] | null
 }
 
 function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
-  // Notes : chaque citation est une note sur papier jaune.
+  // Notes : chaque citation est une note sur papier jaune. Le visiteur peut aussi écrire les siennes.
   const liste = (etoiles ?? []).filter((e) => e.genre !== "projet" && e.texte?.trim());
+  const mes = notesPerso.useValeur();
   const [ouverte, setOuverte] = useState<string | null>(null);
-  useRetour(ouverte !== null, () => setOuverte(null));
+  const [edite, setEdite] = useState<NotePerso | null>(null);
+  const [cherche, setCherche] = useState("");
+  const fermerEdition = () => {
+    if (!edite) return;
+    const t = edite.texte.trim();
+    if (t) notesPerso.ecrire((l) => (l.some((x) => x.id === edite.id) ? l.map((x) => (x.id === edite.id ? { ...edite, texte: t, modifie: Date.now() } : x)) : [{ ...edite, texte: t, modifie: Date.now() }, ...l]));
+    else notesPerso.ecrire((l) => l.filter((x) => x.id !== edite.id));
+    setEdite(null);
+  };
+  useRetour(ouverte !== null || edite !== null, () => (edite ? fermerEdition() : setOuverte(null)));
+  const [confirmer, setConfirmer] = useState(false);
   const n = liste.find((c) => c.id === ouverte);
+  if (edite) {
+    return (
+      <div className="app-defile note-papier note-edition">
+        <div className="note-barre">
+          <button onClick={fermerEdition}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#6b5a1e" aria-hidden="true">
+              <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+            OK
+          </button>
+          {mes.some((x) => x.id === edite.id) ? (
+            <button onClick={() => setConfirmer(true)}>Supprimer</button>
+          ) : null}
+        </div>
+        <div className="note-date">{dateNote(edite.modifie)}</div>
+        <textarea className="note-saisie" value={edite.texte} onChange={(e) => setEdite({ ...edite, texte: e.target.value.slice(0, 2000) })} placeholder="Écrire une note" aria-label="Écrire une note" autoFocus />
+        {confirmer ? (
+          <DlgFenetre titre="Supprimer la note ?" fermer={() => setConfirmer(false)}>
+            <p className="dlg-corps">Cette note sera supprimée.</p>
+            <div className="dlg-boutons">
+              <button onClick={() => setConfirmer(false)}>Annuler</button>
+              <button
+                onClick={() => {
+                  notesPerso.ecrire((l) => l.filter((x) => x.id !== edite.id));
+                  setConfirmer(false);
+                  setEdite(null);
+                  toast("Note supprimée");
+                }}
+              >
+                Supprimer
+              </button>
+            </div>
+          </DlgFenetre>
+        ) : null}
+      </div>
+    );
+  }
   if (n) {
     return (
       <div className="app-defile note-papier">
@@ -1232,70 +1478,300 @@ function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
       </div>
     );
   }
+  const q = sansAccent(cherche.trim());
+  const garde = (t: string) => !q || sansAccent(t).includes(q);
+  const mesVues = mes.filter((x) => garde(x.texte));
+  const citVues = liste.filter((c) => garde(`${c.texte} ${c.auteur ?? ""}`));
   return (
     <div className="app-defile">
-      <Titre>NOTES · {liste.length}</Titre>
+      <div className="ct-recherche note-recherche">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="#888"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
+        <input className="ct-cherche" value={cherche} onChange={(e) => setCherche(e.target.value)} placeholder="Rechercher dans les notes" aria-label="Rechercher dans les notes" />
+        <button className="ct-ajout" aria-label="Nouvelle note" onClick={() => setEdite({ id: `n${Date.now().toString(36)}`, texte: "", modifie: Date.now() })}>
+          <Aosp n="ic_menu_add" />
+        </button>
+      </div>
+      <Titre>MES NOTES · {mesVues.length}</Titre>
+      {mesVues.map((x) => (
+        <button key={x.id} className="note-ligne note-perso" onClick={() => setEdite(x)}>
+          <b>{x.texte.slice(0, 40)}{x.texte.length > 40 ? "…" : ""}</b>
+          <span>{dateNote(x.modifie)}</span>
+        </button>
+      ))}
+      {mes.length === 0 ? (
+        <button className="note-ligne note-nouvelle" onClick={() => setEdite({ id: `n${Date.now().toString(36)}`, texte: "", modifie: Date.now() })}>
+          <b>+ Nouvelle note</b>
+          <span>Elle reste sur ce téléphone jusqu’à la fin de la session</span>
+        </button>
+      ) : null}
+      <Titre>NOTES · {citVues.length}</Titre>
       {etoiles === null ? <Chargement /> : null}
-      {liste.map((c) => (
+      {citVues.map((c) => (
         <button key={c.id} className="note-ligne" onClick={() => setOuverte(c.id)}>
           <b>{c.texte.slice(0, 40)}{c.texte.length > 40 ? "…" : ""}</b>
           <span>{c.date}</span>
         </button>
       ))}
+      {q && mesVues.length + citVues.length === 0 ? <p className="os-vide">Aucune note trouvée</p> : null}
     </div>
   );
 }
 
-type PropsGael = { convs: Record<Correspondant, MsgGael[]>; ecrit: Correspondant | null; envoyer: (qui: Correspondant, t: string) => void; vu: (ouverte: Correspondant | null) => void };
+function dateNote(t: number) {
+  const d = new Date(t);
+  return `${deux(d.getDate())}/${deux(d.getMonth() + 1)}/${d.getFullYear()} ${deux(d.getHours())}:${deux(d.getMinutes())}`;
+}
 
-function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
-  const [conv, setConv] = useState<Correspondant | null>(null);
+type PropsGael = { convs: Record<Correspondant, MsgGael[]>; ecrit: Correspondant | null; envoyer: (qui: Correspondant, t: string) => void; vu: (ouverte: Correspondant | null) => void; effacer: (qui: Correspondant) => void };
+
+/** Une boîte de dialogue posée sur toute la fenêtre de l'appli, même quand la liste a défilé. */
+function DlgFenetre(props: { titre: string; children: ReactNode; fermer: () => void }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [cible, setCible] = useState<Element | null>(null);
+  useEffect(() => {
+    setCible(ref.current?.closest(".os-fenetre-corps") ?? null);
+  }, []);
+  return (
+    <>
+      <span ref={ref} hidden />
+      {cible ? createPortal(<Dlg {...props} />, cible) : null}
+    </>
+  );
+}
+
+/** Icônes Holo de la barre d'action (Jelly Bean). */
+const IC_BLOQUE = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z";
+
+/** Une icône d'Android 4.2 (AOSP, Apache 2.0 : public/aakanos/aosp/LICENCES.txt). */
+const Aosp = ({ n, t = 32 }: { n: string; t?: number }) => (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img src={`/aakanos/aosp/${n}.svg`} alt="" width={t} height={t} style={{ display: "block" }} />
+);
+
+/** Appui long (500 ms) : le menu contextuel de Jelly Bean. */
+function useAppuiLong(f: () => void) {
+  const t = useRef<number | null>(null);
+  const long = useRef(false);
+  const fin = () => {
+    if (t.current !== null) window.clearTimeout(t.current);
+    t.current = null;
+  };
+  return {
+    onPointerDown: () => {
+      long.current = false;
+      fin();
+      t.current = window.setTimeout(() => {
+        long.current = true;
+        f();
+      }, 500);
+    },
+    onPointerUp: fin,
+    onPointerLeave: fin,
+    onContextMenu: (e: { preventDefault: () => void }) => {
+      e.preventDefault();
+      fin();
+      long.current = true;
+      f();
+    },
+    estLong: () => long.current,
+  };
+}
+
+function copier(texte: string) {
+  void navigator.clipboard?.writeText(texte).catch(() => {});
+  toast("Texte copié");
+}
+
+type Interlocuteur = { cle: string; nom: string; photo: string; tel?: string; contact?: string; perso: boolean };
+
+/** Tous ceux à qui on peut écrire : les correspondants d'origine, puis les contacts créés par le visiteur. */
+function interlocuteurs(perso: ContactPerso[]): Interlocuteur[] {
+  return [
+    ...CORRESPONDANTS.map((c) => {
+      const ct = CONTACTS.find((x) => x.id === c.id);
+      return { cle: c.id, nom: c.nom, photo: c.photo, tel: ct?.tel, contact: ct?.id, perso: false };
+    }),
+    ...perso.map((p) => ({ cle: p.id, nom: p.nom, photo: avatarLettre(p.nom), tel: p.tel, contact: p.id, perso: true })),
+  ];
+}
+
+function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
+  const perso = contactsPerso.useValeur();
+  const mesConvs = convsPerso.useValeur();
+  const bloc = bloques.useValeur();
+  const [conv, setConv] = useState<string | null>(() => prendreCible("messages") ?? null);
+  const [ecrire, setEcrire] = useState(false);
+  const [menu, setMenu] = useState<Interlocuteur | null>(null);
+  const [bulle, setBulle] = useState<string | null>(null);
+  const [confirmer, setConfirmer] = useState<Interlocuteur | null>(null);
   const [texte, setTexte] = useState("");
   const liste = useRef<HTMLDivElement>(null);
-  useRetour(conv !== null, () => setConv(null));
+  useRetour(conv !== null || ecrire, () => (ecrire ? setEcrire(false) : setConv(null)));
+  const estCorr = (k: string | null): k is Correspondant => !!k && CORRESPONDANTS.some((c) => c.id === k);
   useEffect(() => {
-    vu(conv);
+    vu(estCorr(conv) ? conv : null);
     return () => vu(null);
   }, [conv, vu]);
-  const msgs = conv ? convs[conv] : [];
+  const tous = interlocuteurs(perso);
+  const msgsDe = (k: string): { id: number; de: "moi" | "lui"; texte: string; h: string; lu?: boolean }[] => (estCorr(k) ? convs[k] : mesConvs[k] ?? []);
+  const msgs = conv ? msgsDe(conv) : [];
   useEffect(() => {
     const l = liste.current;
     if (l) l.scrollTo({ top: l.scrollHeight, behavior: "smooth" });
   }, [msgs.length, ecrit, conv]);
 
-  if (!conv) {
+  const basculerBloque = (x: Interlocuteur) => {
+    const deja = bloc.includes(x.cle);
+    bloques.ecrire((l) => (deja ? l.filter((y) => y !== x.cle) : [...l, x.cle]));
+    toast(deja ? "Contact débloqué" : "Contact bloqué");
+  };
+  const supprimer = (x: Interlocuteur) => {
+    if (estCorr(x.cle)) effacer(x.cle);
+    else convsPerso.ecrire((c) => ({ ...c, [x.cle]: [] }));
+    toast("Conversation supprimée");
+    setConv(null);
+  };
+  const options = (x: Interlocuteur) => (
+    <DlgFenetre titre={x.nom} fermer={() => setMenu(null)}>
+      {x.tel ? (
+        <button className="dlg-choix" onClick={() => (setMenu(null), appelerDepuisAakanOS(x.tel!))}>
+          Appeler
+        </button>
+      ) : null}
+      {x.contact ? (
+        <button className="dlg-choix" onClick={() => (setMenu(null), ouvrirAppli("contacts", x.contact))}>
+          Voir le contact
+        </button>
+      ) : null}
+      {x.tel ? (
+        <button className="dlg-choix" onClick={() => (setMenu(null), copier(x.tel!))}>
+          Copier le numéro
+        </button>
+      ) : null}
+      <button className="dlg-choix" onClick={() => (setMenu(null), basculerBloque(x))}>
+        {bloc.includes(x.cle) ? "Débloquer le contact" : "Bloquer le contact"}
+      </button>
+      <button className="dlg-choix" onClick={() => (setMenu(null), setConfirmer(x))}>
+        Supprimer la conversation
+      </button>
+    </DlgFenetre>
+  );
+  const dialogues = (
+    <>
+      {menu ? options(menu) : null}
+      {confirmer ? (
+        <DlgFenetre titre="Supprimer la conversation ?" fermer={() => setConfirmer(null)}>
+          <p className="dlg-corps">Toute la conversation sera supprimée.</p>
+          <div className="dlg-boutons">
+            <button onClick={() => setConfirmer(null)}>Annuler</button>
+            <button onClick={() => (supprimer(confirmer), setConfirmer(null))}>Supprimer</button>
+          </div>
+        </DlgFenetre>
+      ) : null}
+    </>
+  );
+
+  if (ecrire) {
     return (
       <div className="app-defile os-act entre">
-        {[...CORRESPONDANTS]
-          .filter((c) => c.id !== "samtelecom" || convs.samtelecom.length > 0)
-          .sort((a, b) => (convs[b.id].at(-1)?.id ?? 0) - (convs[a.id].at(-1)?.id ?? 0))
-          .map((c) => {
-          const dernier = convs[c.id].at(-1);
-          return (
-            <button key={c.id} className="msg-conv" onClick={() => setConv(c.id)}>
+        <div className="msg-barre">
+          <b>Nouveau message</b>
+        </div>
+        <Titre>À :</Titre>
+        {tous
+          .filter((x) => x.tel)
+          .map((x) => (
+            <button key={x.cle} className="msg-conv" onClick={() => (setEcrire(false), setConv(x.cle))}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="msg-avatar" src={c.photo} alt="" />
+              <img className="msg-avatar" src={x.photo} alt="" />
               <div>
-                <b>{c.nom}</b>
-                <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : c.accueil ? "Le contact de Franck est dans Contacts" : "Nouvelle conversation"}</span>
+                <b>{x.nom}</b>
+                <span>{x.tel}</span>
               </div>
-              <em>{dernier?.h ?? (c.accueil ? "09:41" : "")}</em>
             </button>
-          );
-        })}
+          ))}
+        <button className="msg-conv msg-nouveau-contact" onClick={() => (setEcrire(false), ouvrirAppli("contacts", "nouveau"))}>
+          <i className="msg-avatar msg-plus" aria-hidden="true">+</i>
+          <div>
+            <b>Créer un contact</b>
+            <span>Dans l’appli Contacts</span>
+          </div>
+        </button>
       </div>
     );
   }
-  const c = CORRESPONDANTS.find((x) => x.id === conv)!;
+
+  if (!conv) {
+    const persoAvecMsgs = tous.filter((x) => x.perso && (mesConvs[x.cle]?.length ?? 0) > 0);
+    return (
+      <div className="app-defile os-act entre">
+        <div className="msg-barre">
+          <b>{`Conversations`}</b>
+          <button aria-label="Nouveau message" onClick={() => setEcrire(true)}>
+            <Aosp n="ic_menu_compose" />
+          </button>
+        </div>
+        {[...CORRESPONDANTS]
+          .filter((c) => c.id !== "samtelecom" || convs.samtelecom.length > 0)
+          .sort((a, b) => (convs[b.id].at(-1)?.id ?? 0) - (convs[a.id].at(-1)?.id ?? 0))
+          .map((c) => (
+            <LigneConv
+              key={c.id}
+              x={tous.find((y) => y.cle === c.id)!}
+              bloque={bloc.includes(c.id)}
+              ouvrir={() => setConv(c.id)}
+              menu={setMenu}
+              heure={convs[c.id].at(-1)?.h ?? (c.accueil ? "09:41" : "")}
+            >
+              {(() => {
+                const dernier = convs[c.id].at(-1);
+                return <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : c.accueil ? "Le contact de Franck est dans Contacts" : "Nouvelle conversation"}</span>;
+              })()}
+            </LigneConv>
+          ))}
+        {persoAvecMsgs.map((x) => {
+          const dernier = mesConvs[x.cle]!.at(-1)!;
+          return (
+            <LigneConv key={x.cle} x={x} bloque={bloc.includes(x.cle)} ouvrir={() => setConv(x.cle)} menu={setMenu} heure={dernier.h}>
+              <span>{`Moi : ${dernier.texte}`}</span>
+            </LigneConv>
+          );
+        })}
+        <p className="os-vide msg-astuce">Appui long sur une conversation pour plus d’options</p>
+        {dialogues}
+      </div>
+    );
+  }
+
+  const x = tous.find((y) => y.cle === conv);
+  if (!x) return null;
+  const c = estCorr(conv) ? CORRESPONDANTS.find((y) => y.id === conv)! : null;
   // eslint-disable-next-line @next/next/no-img-element
-  const avatar = <img className="msg-avatar" src={c.photo} alt="" />;
+  const avatar = <img className="msg-avatar" src={x.photo} alt="" />;
   const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
-  const bloque = BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv];
+  const bloque = estCorr(conv) && BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv];
+  const jaiBloque = bloc.includes(conv);
+  const choixBulle = msgs.find((m) => String(m.id) === bulle);
   return (
     <div className="msg-fil os-act entre" key={conv}>
+      <div className="msg-tete">
+        {avatar}
+        <div>
+          <b>{x.nom}</b>
+          <span>{x.tel ?? "SMS de l’opérateur"}</span>
+        </div>
+        {x.tel ? (
+          <button aria-label="Appeler" onClick={() => appelerDepuisAakanOS(x.tel!)}>
+            <Aosp n="ic_menu_call" />
+          </button>
+        ) : null}
+        <button aria-label="Options" onClick={() => setMenu(x)}>
+          <Aosp n="ic_menu_moreoverflow_normal_holo_dark" />
+        </button>
+      </div>
       <div className="msg-liste" ref={liste}>
         <div className="msg-date">AUJOURD’HUI</div>
-        {c.accueil ? (
+        {c?.accueil ? (
           <div className="msg-bulle">
             {avatar}
             <p>
@@ -1306,14 +1782,14 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
         ) : null}
         {msgs.map((m) =>
           m.de === "moi" ? (
-            <div key={m.id} className="msg-bulle moi">
+            <div key={m.id} className="msg-bulle moi" onClick={() => setBulle(String(m.id))}>
               <p>
                 {m.texte}
                 <em>{m === derniersMoi ? (m.lu ? `Lu · ${m.h}` : `Envoyé · ${m.h}`) : m.h}</em>
               </p>
             </div>
           ) : (
-            <div key={m.id} className="msg-bulle">
+            <div key={m.id} className="msg-bulle" onClick={() => setBulle(String(m.id))}>
               {avatar}
               <p>
                 {m.texte}
@@ -1333,7 +1809,7 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
           </div>
         ) : null}
       </div>
-      {ecrit === conv ? <div className="msg-statut">{`${c.nom} est en train d’écrire…`}</div> : null}
+      {ecrit === conv ? <div className="msg-statut">{`${x.nom} est en train d’écrire…`}</div> : null}
       {conv === "samtelecom" ? (
         <div className="msg-bloque msg-noreply">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#888" aria-hidden="true">
@@ -1341,12 +1817,20 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
           </svg>
           Vous ne pouvez pas répondre à ce message.
         </div>
+      ) : jaiBloque ? (
+        <div className="msg-bloque">
+          <Aosp n="ic_menu_block" t={24} />
+          <span>Vous avez bloqué ce contact.</span>
+          <button className="msg-debloquer" onClick={() => basculerBloque(x)}>
+            DÉBLOQUER
+          </button>
+        </div>
       ) : bloque ? (
         <div className="msg-bloque">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
+            <path d={IC_BLOQUE} />
           </svg>
-          {`${c.nom} vous a bloqué. Vous ne pouvez plus lui écrire.`}
+          {`${x.nom} vous a bloqué. Vous ne pouvez plus lui écrire.`}
         </div>
       ) : (
         <form
@@ -1355,7 +1839,11 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
             e.preventDefault();
             const v = texte.trim();
             if (!v) return;
-            envoyer(conv, v);
+            if (estCorr(conv)) envoyer(conv, v);
+            else {
+              convsPerso.ecrire((cv) => ({ ...cv, [conv]: [...(cv[conv] ?? []), { id: Date.now(), de: "moi", texte: v, h: heureCourte() }] }));
+              sonSynth("envoye");
+            }
             setTexte("");
           }}
         >
@@ -1363,7 +1851,7 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
             value={texte}
             onChange={(e) => setTexte(e.target.value)}
             onKeyDown={(e) => son(e.key === "Backspace" ? "effacer" : e.key === "Enter" ? "entree" : "touche", 0.7)}
-            placeholder={`Écrire un message à ${c.nom}`}
+            placeholder={x.perso ? "Écrire un message" : `Écrire un message à ${x.nom}`}
             enterKeyHint="send"
           />
           <button aria-label="Envoyer" disabled={!texte.trim()}>
@@ -1373,7 +1861,46 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
           </button>
         </form>
       )}
+      {choixBulle ? (
+        <DlgFenetre titre="Options du message" fermer={() => setBulle(null)}>
+          <button className="dlg-choix" onClick={() => (setBulle(null), copier(choixBulle.texte))}>
+            Copier le texte
+          </button>
+          {x.tel ? (
+            <button className="dlg-choix" onClick={() => (setBulle(null), appelerDepuisAakanOS(x.tel!))}>
+              Appeler
+            </button>
+          ) : null}
+          <div className="dlg-corps msg-details">{`${choixBulle.de === "moi" ? "Envoyé" : "Reçu"} · ${choixBulle.h}`}</div>
+        </DlgFenetre>
+      ) : null}
+      {dialogues}
     </div>
+  );
+}
+
+function LigneConv({ x, bloque, ouvrir, menu, heure, children }: { x: Interlocuteur; bloque: boolean; ouvrir: () => void; menu: (x: Interlocuteur) => void; heure: string; children: ReactNode }) {
+  const appui = useAppuiLong(() => menu(x));
+  return (
+    <button
+      className={`msg-conv${bloque ? " msg-conv-bloque" : ""}`}
+      onClick={() => !appui.estLong() && ouvrir()}
+      onPointerDown={appui.onPointerDown}
+      onPointerUp={appui.onPointerUp}
+      onPointerLeave={appui.onPointerLeave}
+      onContextMenu={appui.onContextMenu}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="msg-avatar" src={x.photo} alt="" />
+      <div>
+        <b>
+          {x.nom}
+          {bloque ? <small className="msg-etiquette">BLOQUÉ</small> : null}
+        </b>
+        {children}
+      </div>
+      <em>{heure}</em>
+    </button>
   );
 }
 
@@ -1385,21 +1912,52 @@ const CONTACTS: Contact[] = [
   { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.jpg", tel: "+0-43365470730", note: "L’orque, prof de maths au fond de l’océan." },
 ];
 
-/** Contacts : Celjo, Franck, Gaël, Pacifick. */
+/** Avatar à initiale pour les contacts créés sur le téléphone (aucune image à télécharger). */
+const TEINTES = ["#33b5e5", "#aa66cc", "#99cc00", "#ffbb33", "#ff4444", "#0099cc"];
+function avatarLettre(nom: string) {
+  const l = (nom.trim()[0] ?? "?").toUpperCase().replace(/[<&>"']/g, "?");
+  const f = TEINTES[[...nom].reduce((a, c) => a + c.charCodeAt(0), 0) % TEINTES.length]!;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${f}"/><text x="48" y="64" font-family="Roboto,sans-serif" font-size="48" fill="#fff" text-anchor="middle">${l}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+type FicheContact = Contact & { perso?: boolean };
+function tousLesContacts(perso: ContactPerso[]): FicheContact[] {
+  return [...CONTACTS, ...perso.map((p) => ({ ...p, photo: avatarLettre(p.nom), perso: true }))].sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+}
+
+/** Contacts : Celjo, Franck, Gaël, Pacifick, et ceux que le visiteur crée. */
 function AppContacts() {
-  const [choisi, setChoisi] = useState<string | null>(null);
-  useRetour(choisi !== null, () => setChoisi(null));
-  const c = CONTACTS.find((x) => x.id === choisi);
+  const perso = contactsPerso.useValeur();
+  const bloc = bloques.useValeur();
+  const [choisi, setChoisi] = useState<string | null>(() => {
+    const c = prendreCible("contacts");
+    return c && c !== "nouveau" ? c : null;
+  });
+  const [edition, setEdition] = useState<ContactPerso | "nouveau" | null>(() => (prendreCible("contacts") === "nouveau" ? "nouveau" : null));
+  const [cherche, setCherche] = useState("");
+  const [supprimer, setSupprimer] = useState(false);
+  useRetour(choisi !== null || edition !== null, () => (edition ? setEdition(null) : setChoisi(null)));
+  const tous = tousLesContacts(perso);
+  const c = tous.find((x) => x.id === choisi);
+
+  if (edition) return <FormContact depart={edition === "nouveau" ? null : edition} fini={(id) => (setEdition(null), id ? setChoisi(id) : null)} />;
+
   if (!c) {
+    const q = sansAccent(cherche.trim());
+    const vus = q ? tous.filter((x) => sansAccent(x.nom).includes(q) || (x.tel ?? "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "§")) : tous;
     return (
       <div className="app-defile os-act entre">
         <div className="ct-recherche">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="#888"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
-          <span>Rechercher des contacts</span>
+          <input className="ct-cherche" value={cherche} onChange={(e) => setCherche(e.target.value)} placeholder="Rechercher des contacts" aria-label="Rechercher des contacts" />
+          <button className="ct-ajout" aria-label="Nouveau contact" onClick={() => setEdition("nouveau")}>
+            <Aosp n="ic_menu_invite" />
+          </button>
         </div>
-        {CONTACTS.map((x, i) => {
+        {vus.map((x, i) => {
           const l = x.nom[0]!.toUpperCase();
-          const titre = i === 0 || CONTACTS[i - 1]!.nom[0]!.toUpperCase() !== l ? <div className="os-titre-holo">{l}</div> : null;
+          const titre = i === 0 || vus[i - 1]!.nom[0]!.toUpperCase() !== l ? <div className="os-titre-holo">{l}</div> : null;
           return (
             <div key={x.id}>
               {titre}
@@ -1411,10 +1969,15 @@ function AppContacts() {
             </div>
           );
         })}
-        <p className="os-vide">{CONTACTS.length} contacts</p>
+        {q && vus.length === 0 ? <p className="os-vide">Aucun contact trouvé</p> : null}
+        <p className="os-vide">{tous.length} contacts</p>
+        <button className="ct-nouveau" onClick={() => setEdition("nouveau")}>
+          + Nouveau contact
+        </button>
       </div>
     );
   }
+  const correspondant = CORRESPONDANTS.some((y) => y.id === c.id) || c.perso;
   return (
     <div className="app-defile os-act entre" key={c.id}>
       <div className="ct-photo">
@@ -1440,6 +2003,15 @@ function AppContacts() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/aakanos/phone.png" alt="" />
           </a>
+          {correspondant ? (
+            <button className="ct-champ ct-action" onClick={() => ouvrirAppli("messages", c.id)}>
+              <span>
+                <b>Envoyer un message</b>
+                <small>SMS</small>
+              </span>
+              <Aosp n="ic_menu_compose" />
+            </button>
+          ) : null}
         </>
       ) : null}
       {c.mail ? (
@@ -1474,7 +2046,102 @@ function AppContacts() {
           <p className="app-texte">{c.note}</p>
         </>
       ) : null}
+      {c.tel || c.perso ? <div className="os-titre-holo">OPTIONS</div> : null}
+      {c.tel ? (
+        <button
+          className="ct-option"
+          onClick={() => {
+            const deja = bloc.includes(c.id);
+            bloques.ecrire((l) => (deja ? l.filter((y) => y !== c.id) : [...l, c.id]));
+            toast(deja ? "Contact débloqué" : "Contact bloqué");
+          }}
+        >
+          {bloc.includes(c.id) ? "Débloquer le contact" : "Bloquer le contact"}
+        </button>
+      ) : null}
+      {c.perso ? (
+        <>
+          <button className="ct-option" onClick={() => setEdition(perso.find((p) => p.id === c.id) ?? null)}>
+            Modifier le contact
+          </button>
+          <button className="ct-option ct-danger" onClick={() => setSupprimer(true)}>
+            Supprimer le contact
+          </button>
+        </>
+      ) : null}
+      {supprimer ? (
+        <DlgFenetre titre="Supprimer le contact ?" fermer={() => setSupprimer(false)}>
+          <p className="dlg-corps">Ce contact sera supprimé de ce téléphone.</p>
+          <div className="dlg-boutons">
+            <button onClick={() => setSupprimer(false)}>Annuler</button>
+            <button
+              onClick={() => {
+                contactsPerso.ecrire((l) => l.filter((p) => p.id !== c.id));
+                convsPerso.ecrire((cv) => ({ ...cv, [c.id]: [] }));
+                setSupprimer(false);
+                setChoisi(null);
+                toast("Contact supprimé");
+              }}
+            >
+              Supprimer
+            </button>
+          </div>
+        </DlgFenetre>
+      ) : null}
     </div>
+  );
+}
+
+function FormContact({ depart, fini }: { depart: ContactPerso | null; fini: (id: string | null) => void }) {
+  const [nom, setNom] = useState(depart?.nom ?? "");
+  const [tel, setTel] = useState(depart?.tel ?? "");
+  const [mail, setMail] = useState(depart?.mail ?? "");
+  const [note, setNote] = useState(depart?.note ?? "");
+  const valide = nom.trim().length > 0 && (tel.trim() === "" || /^[+\d][\d\s().-]{2,}$/.test(tel.trim()));
+  return (
+    <form
+      className="app-defile os-act entre ct-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!valide) return;
+        const fiche: ContactPerso = {
+          id: depart?.id ?? `p${Date.now().toString(36)}`,
+          nom: nom.trim().slice(0, 60),
+          tel: tel.trim().slice(0, 30) || undefined,
+          mail: mail.trim().slice(0, 80) || undefined,
+          note: note.trim().slice(0, 300) || undefined,
+        };
+        contactsPerso.ecrire((l) => (depart ? l.map((p) => (p.id === depart.id ? fiche : p)) : [...l, fiche]));
+        toast(depart ? "Contact modifié" : "Contact enregistré");
+        fini(fiche.id);
+      }}
+    >
+      <div className="ct-form-barre">
+        <button type="submit" disabled={!valide}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill={valide ? "#33b5e5" : "#555"} aria-hidden="true">
+            <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+          OK
+        </button>
+        <button type="button" onClick={() => fini(depart?.id ?? null)}>
+          Annuler
+        </button>
+      </div>
+      <div className="ct-photo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={avatarLettre(nom || "?")} alt="" />
+        <b>{depart ? "Modifier le contact" : "Nouveau contact"}</b>
+      </div>
+      <div className="os-titre-holo">NOM</div>
+      <input className="ct-saisie" value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Nom" aria-label="Nom" autoFocus />
+      <div className="os-titre-holo">TÉLÉPHONE</div>
+      <input className="ct-saisie" value={tel} onChange={(e) => setTel(e.target.value)} placeholder="Téléphone" aria-label="Téléphone" inputMode="tel" />
+      <div className="os-titre-holo">E-MAIL</div>
+      <input className="ct-saisie" value={mail} onChange={(e) => setMail(e.target.value)} placeholder="E-mail" aria-label="E-mail" inputMode="email" />
+      <div className="os-titre-holo">NOTE</div>
+      <textarea className="ct-saisie" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note" aria-label="Note" rows={3} />
+      {!valide && nom.trim() ? <p className="os-vide">Ce numéro de téléphone n’est pas valide</p> : null}
+    </form>
   );
 }
 
@@ -1489,6 +2156,7 @@ function appelerDepuisAakanOS(num: string) {
 /** Les trois notes montantes du « numéro hors service ». */
 function sonHorsService() {
   try {
+    if (estMuet()) return;
     const ctx = new AudioContext();
     [913.8, 1370.6, 1776.7].forEach((f, i) => {
       const o = ctx.createOscillator();
@@ -1561,7 +2229,11 @@ function AppTelephone() {
   }, [appel]);
   useRetour(appel !== null, () => setAppel(null));
   const norme = (x: string) => x.replace(/[^\d+]/g, "");
-  const contact = CONTACTS.find((c) => c.tel && norme(c.tel) === norme(numero));
+  const perso = contactsPerso.useValeur();
+  const fiches = tousLesContacts(perso);
+  const contact = fiches.find((c) => c.tel && norme(c.tel) === norme(numero));
+  const chiffres = numero.replace(/\D/g, "");
+  const suggestion = !contact && chiffres.length >= 2 ? fiches.find((c) => c.tel && c.tel.replace(/\D/g, "").includes(chiffres)) : undefined;
 
   if (appel) {
     return (
@@ -1607,6 +2279,20 @@ function AppTelephone() {
           </button>
         ) : null}
       </div>
+      {suggestion ? (
+        <button type="button" className="tel-suggestion" onClick={() => setNumero(suggestion.tel!)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={suggestion.photo} alt="" />
+          <b>{suggestion.nom}</b>
+          <span>{suggestion.tel}</span>
+        </button>
+      ) : contact ? (
+        <div className="tel-suggestion">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={contact.photo} alt="" />
+          <b>{contact.nom}</b>
+        </div>
+      ) : null}
       <div className="tel-pave">
         {TOUCHES_TEL.map(([a, b]) => (
           <button key={a} type="button" onClick={() => (dtmf(a), setNumero((n) => (n.length < 18 ? n + (a === "0" && n === "" ? "+" : a) : n)))}>
@@ -1624,7 +2310,19 @@ function AppTelephone() {
   );
 }
 
-function LigneReglage({ icone, titre, sous, onClick }: { icone: ReactNode; titre: string; sous?: string; onClick?: () => void }) {
+function LigneReglage({ icone, titre, sous, onClick, droite }: { icone: ReactNode; titre: string; sous?: string; onClick?: () => void; droite?: ReactNode }) {
+  if (droite) {
+    return (
+      <div className="reg-ligne" role="button" tabIndex={0} onClick={onClick}>
+        <span className="reg-ic">{icone}</span>
+        <span className="reg-t">
+          <b>{titre}</b>
+          {sous ? <small>{sous}</small> : null}
+        </span>
+        <span className="reg-droite">{droite}</span>
+      </div>
+    );
+  }
   return (
     <button className="reg-ligne" onClick={onClick}>
       <span className="reg-ic">{icone}</span>
@@ -1649,10 +2347,55 @@ const LANGUES_TEL: [LocaleName, string][] = [
   ["tavissiv", "Tavissiv (Aaka)"],
 ];
 
+const TITRES_REGLAGES: Record<EcranReglage, string> = {
+  wifi: "Wi-Fi",
+  bluetooth: "Bluetooth",
+  affichage: "Affichage",
+  son: "Son",
+  stockage: "Stockage",
+  batterie: "Batterie",
+  dateheure: "Date et heure",
+  dev: "Options pour les développeurs",
+};
+
+/** Le panneau « Réglages rapides » du rideau (tuiles façon Jelly Bean). */
+function ReglagesRapides({ ouvrirReglages, verrouiller }: { ouvrirReglages: (el: Element) => void; verrouiller: () => void }) {
+  const s = useSysteme();
+  const tuile = (cle: string, titre: string, sous: string, actif: boolean, d: string, onClick: (el: Element) => void) => (
+    <button key={cle} className={`qs-tuile${actif ? " on" : ""}`} onClick={(e) => onClick(e.currentTarget)}>
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true">
+        <path d={d} />
+      </svg>
+      <b>{titre}</b>
+      <small>{sous}</small>
+    </button>
+  );
+  return (
+    <div className="qs">
+      {tuile("casto", "Casto", "Propriétaire", true, "M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z", () => toast("Casto. Magnifique, d’après lui."))}
+      {tuile("lum", "Luminosité", `${Math.round(s.lum * 100)} %`, true, "M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18a6 6 0 1 1 0-12z", () => s.regler({ lum: s.lum >= 0.95 ? 0.3 : s.lum >= 0.55 ? 1 : 0.6 }))}
+      {tuile("reglages", "Réglages", "Tous les réglages", true, "M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z", ouvrirReglages)}
+      {tuile("wifi", "Wi-Fi", s.avion ? "Mode Avion" : s.wifi ? "Pas d’internet" : "Désactivé", s.wifi && !s.avion, "M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4l2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z", () => (s.avion ? toast("Désactivez d’abord le mode Avion") : s.regler({ wifi: !s.wifi })))}
+      {tuile("reseau", "Sam-Telecom", "Forfait Connard", !s.avion, "M2 22h20V2z", () => toast("Forfait Connard : SMS uniquement"))}
+      {tuile("batt", "Batterie", "75 %", true, "M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z", () => toast("75 %. Il en reste assez pour attendre."))}
+      {tuile("bt", "Bluetooth", s.bt && !s.avion ? "Activé" : "Désactivé", s.bt && !s.avion, "M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z", () => (s.avion ? toast("Désactivez d’abord le mode Avion") : s.regler({ bt: !s.bt })))}
+      {tuile("son", s.muet ? "Silencieux" : "Son", s.muet ? "Aucun son" : "Activé", !s.muet, s.muet ? "M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z" : "M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z", () => {
+        s.regler({ muet: !s.muet });
+        if (s.muet) window.setTimeout(() => sonSynth("bulle"), 30);
+      })}
+      {tuile("avion", "Mode Avion", s.avion ? "Activé" : "Désactivé", s.avion, "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z", () => s.regler({ avion: !s.avion }))}
+      {tuile("verrou", "Verrouiller", "Écran", false, "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z", verrouiller)}
+    </div>
+  );
+}
+
 function AppReglages({ quitter }: { quitter: () => void }) {
-  const act = useActivite<"liste" | "apropos">("liste");
+  const act = useActivite<"liste" | "apropos" | EcranReglage>("liste");
+  const sys = useSysteme();
+  const tapes = useRef(0);
   const ecran = act.ecran;
   const [dialogue, setDialogueBrut] = useState<null | "apparence" | "langue">(null);
+  const [remise, setRemise] = useState(false);
   const [dlgSort, setDlgSort] = useState(false);
   const setDialogue = (v: null | "apparence" | "langue") => {
     if (v) return setDialogueBrut(v);
@@ -1671,6 +2414,28 @@ function AppReglages({ quitter }: { quitter: () => void }) {
     setDialogue(null);
   };
 
+  if (ecran !== "liste" && ecran !== "apropos") {
+    return (
+      <Activite act={act}>
+        <div className="reg2-entete">{TITRES_REGLAGES[ecran]}</div>
+        <div className="reg2-cadre">
+          <SousReglage ecran={ecran} />
+        </div>
+      </Activite>
+    );
+  }
+  const build = () => {
+    if (sys.dev) return toast("Inutile, vous êtes déjà développeur.");
+    tapes.current += 1;
+    const reste = 7 - tapes.current;
+    if (reste <= 0) {
+      tapes.current = 0;
+      sys.regler({ dev: true });
+      sonSynth("dev");
+      toast("Vous êtes maintenant développeur !");
+    } else if (reste <= 4) toast(`Plus que ${reste} étape${reste > 1 ? "s" : ""} pour devenir développeur.`);
+  };
+
   if (ecran === "apropos") {
     return (
       <Activite act={act}>
@@ -1687,12 +2452,19 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           ["Propriétaire", "Casto"],
           ["Modèle", "Hanck 7 Pro Max"],
           ["Navigateur", "Nounou Browser"],
+          ["Interface", "Holo · inspirée de Jelly Bean 4.1"],
+          ["Opérateur", "Sam-Telecom · forfait Connard"],
+          ["Version de bande de base", "SAM-CONNARD-01"],
         ].map(([a, b]) => (
           <div key={a} className="app-ligne">
             <b>{a}</b>
             <span>{b}</span>
           </div>
         ))}
+        <button className="app-ligne reg2-build" onClick={build}>
+          <b>Numéro de build</b>
+          <span>ODY-0.2.241124 · test-keys</span>
+        </button>
         <a className="app-ligne" href="/aakanos/NOTICE.txt" target="_blank" rel="noopener noreferrer">
           <b>Licences open source</b>
           <span>Icônes et sons système : licence Apache 2.0</span>
@@ -1705,6 +2477,28 @@ function AppReglages({ quitter }: { quitter: () => void }) {
   return (
     <Activite act={act}>
     <div className="app-defile">
+      <Titre>SANS FIL ET RÉSEAUX</Titre>
+      <LigneReglage
+        icone={ic("M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4l2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z")}
+        titre="Wi-Fi"
+        sous={sys.avion ? "Mode Avion activé" : sys.wifi ? "Pas d’accès à internet" : "Désactivé"}
+        onClick={() => act.aller("wifi")}
+        droite={<Interrupteur on={sys.wifi && !sys.avion} onChange={(v) => (sys.avion ? toast("Désactivez d’abord le mode Avion") : sys.regler({ wifi: v }))} />}
+      />
+      <LigneReglage
+        icone={ic("M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z")}
+        titre="Bluetooth"
+        sous={sys.bt && !sys.avion ? "Visible : Hanck 7 Pro Max" : "Désactivé"}
+        onClick={() => act.aller("bluetooth")}
+        droite={<Interrupteur on={sys.bt && !sys.avion} onChange={(v) => (sys.avion ? toast("Désactivez d’abord le mode Avion") : sys.regler({ bt: v }))} />}
+      />
+      <LigneReglage
+        icone={ic("M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z")}
+        titre="Mode Avion"
+        sous="Aucun effet sur le forfait Connard, qui ne fait déjà presque rien"
+        onClick={() => sys.regler({ avion: !sys.avion })}
+        droite={<Interrupteur on={sys.avion} onChange={(v) => sys.regler({ avion: v })} />}
+      />
       <Titre>PERSONNEL</Titre>
       <LigneReglage
         icone={ic("M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a2.5 2.5 0 0 0 2.5-2.5c0-.61-.23-1.2-.64-1.67a.528.528 0 0 1-.13-.33c0-.28.22-.5.5-.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm5.5 11c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-3-4c-.83 0-1.5-.67-1.5-1.5S13.67 6 14.5 6s1.5.67 1.5 1.5S15.33 9 14.5 9zM5 11.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S7.33 13 6.5 13 5 12.33 5 11.5zm6-4c0 .83-.67 1.5-1.5 1.5S8 8.33 8 7.5 8.67 6 9.5 6s1.5.67 1.5 1.5z")}
@@ -1719,6 +2513,10 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         onClick={() => setDialogue("langue")}
       />
       <Titre>APPAREIL</Titre>
+      <LigneReglage icone={ic("M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z")} titre="Son" sous={sys.muet ? "Mode silencieux" : "Sons activés"} onClick={() => act.aller("son")} />
+      <LigneReglage icone={ic("M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z")} titre="Affichage" sous={`Luminosité ${Math.round(sys.lum * 100)} % · fond d’écran`} onClick={() => act.aller("affichage")} />
+      <LigneReglage icone={ic("M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z")} titre="Stockage" sous="Le vrai stockage Vercel du site" onClick={() => act.aller("stockage")} />
+      <LigneReglage icone={ic("M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z")} titre="Batterie" sous="Sur batterie · 75 %" onClick={() => act.aller("batterie")} />
       <LigneReglage
         icone={ic("M19 9c-2-2-3.01-7-9.03-7C4.95 2 1.94 6 2 11.52 2.06 17.04 6.96 19 9.73 19c2.6 0 4.3-1.38 5.65-2.88C17 14.3 21 13.24 21 11.5c0-1.06-1.13-1.6-2-2.5z")}
         titre="Easter egg"
@@ -1732,13 +2530,32 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         onClick={() => window.location.assign("/?parametres=edition")}
       />
       <Titre>SYSTÈME</Titre>
+      <LigneReglage icone={ic("M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z")} titre="Date et heure" sous="Automatique · Europe/Paris" onClick={() => act.aller("dateheure")} />
+      {sys.dev ? (
+        <LigneReglage icone={ic("M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0 4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z")} titre="Options pour les développeurs" onClick={() => act.aller("dev")} />
+      ) : null}
       <LigneReglage
         icone={ic("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z")}
         titre="À propos du téléphone"
         sous="AakanOS · Odyssée 0.2"
         onClick={() => act.aller("apropos")}
       />
+      <LigneReglage
+        icone={ic("M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18z")}
+        titre="Réinitialiser le téléphone"
+        sous="Efface contacts, messages, notes, alarmes et réglages de cette session"
+        onClick={() => setRemise(true)}
+      />
       <LigneReglage icone={ic("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z")} titre="Revenir au site classique" sous="Quitter AakanOS" onClick={quitter} />
+      {remise ? (
+        <DlgFenetre titre="Réinitialiser le téléphone ?" fermer={() => setRemise(false)}>
+          <p className="dlg-corps">Tout ce que vous avez fait sur ce téléphone sera effacé : contacts créés, messages, notes, alarmes, contacts bloqués et réglages. Le téléphone redémarrera.</p>
+          <div className="dlg-boutons">
+            <button onClick={() => setRemise(false)}>Annuler</button>
+            <button onClick={reinitialiserTelephone}>Réinitialiser</button>
+          </div>
+        </DlgFenetre>
+      ) : null}
 
       {dialogue ? (
         <div className={`dlg-fond${dlgSort ? " sort" : ""}`} onClick={() => setDialogue(null)}>
