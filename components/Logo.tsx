@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
  * dans l'ordre de la ligne : du haut, par l'amas, jusqu'en bas à droite.
  * Troisième valeur : la part de la ligne déjà tracée quand on atteint ce rond.
  */
-const RONDS: [number, number, number][] = [
+export const RONDS: [number, number, number][] = [
   [148.7, 17.6, 0.0],
   [112.1, 80.8, 0.192],
   [128.0, 89.6, 0.24],
@@ -18,7 +18,7 @@ const RONDS: [number, number, number][] = [
 ];
 
 /** La ligne unique qui relie tous les ronds, du haut vers le bas. */
-const LIGNE = "M148.7 17.6 L112.1 80.8 L128.0 89.6 L116.8 91.6 L27.2 75.0 L29.2 90.4 L70.6 136.2 L123.8 171.7 L168.1 176.5";
+export const LIGNE = "M148.7 17.6 L112.1 80.8 L128.0 89.6 L116.8 91.6 L27.2 75.0 L29.2 90.4 L70.6 136.2 L123.8 171.7 L168.1 176.5";
 
 /**
  * Le logo de Franck : des ronds de même taille reliés par une seule ligne fine.

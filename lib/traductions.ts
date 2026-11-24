@@ -61,6 +61,7 @@ const LIGNES: [string, string, string, string][] = [
   ["écouter", "Anhören", "Lyssna", "Selaou"],
   ["pause", "Pause", "Paus", "Ehan"],
   ["lecture", "Wiedergabe", "Uppspelning", "Lenn"],
+  ["étoile", "Stern", "Stjärna", "Steredenn"],
   ["transcription", "Transkript", "Transkription", "Treuzskrivadur"],
   ["masquer la transcription", "Transkript ausblenden", "Dölj transkriptionen", "Kuzhat an treuzskrivadur"],
   ["activer le son", "Ton einschalten", "Slå på ljudet", "Lakaat ar son"],

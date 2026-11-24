@@ -711,3 +711,36 @@ html, body { background: #000; }
 .n-feuille-bas { flex: none; padding: 10px 14px 0; border-top: 1px solid #1f1f1f; max-width: 760px; width: 100%; margin: 0 auto; box-sizing: border-box; }
 .n-feuille-bas .n-lecteur { margin: 0; }
 @keyframes n-feuille-monte { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 0.2 · Le cardiogramosciloscope ---------- */
+.n-moniteur { margin: 4px 4px 12px; user-select: none; -webkit-user-select: none; }
+.n-moniteur-ecran { position: relative; height: 96px; border: 1px solid #2c4a60; background: #02070b repeating-linear-gradient(90deg, transparent 0 21px, #0c1c27 21px 22px), repeating-linear-gradient(0deg, transparent 0 15px, #0c1c27 15px 16px); overflow: hidden; touch-action: pan-y; cursor: grab; box-shadow: inset 0 0 30px rgba(0, 0, 0, .9); }
+.n-moniteur-ecran canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.n-moniteur-ecran::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .55)); }
+.n-moniteur-aiguille { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #f4fbff; box-shadow: 0 0 10px #6fbdf5; opacity: .85; }
+.n-moniteur-hud { position: absolute; left: 7px; right: 7px; top: 5px; display: flex; justify-content: space-between; pointer-events: none; z-index: 1; }
+.n-moniteur-hud small { font-family: var(--f-mono); font-size: 10px; letter-spacing: 1.5px; color: #8fd0ff; }
+.n-moniteur-hud .rec { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #3a4a55; vertical-align: 1px; }
+.n-moniteur.lit .n-moniteur-hud .rec { background: #ff4b4b; box-shadow: 0 0 6px #ff4b4b; animation: n-rec 1s steps(2) infinite; }
+@keyframes n-rec { 50% { opacity: .25; } }
+.n-moniteur-regle { position: relative; height: 42px; margin-top: 4px; overflow: hidden; border-bottom: 1px solid #1a2630; touch-action: pan-y; cursor: grab; outline: none; -webkit-mask: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); mask: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); }
+.n-moniteur-regle:focus-visible { box-shadow: inset 0 0 0 1px #8fd0ff; }
+.n-moniteur-piste { position: absolute; left: 50%; top: 10px; height: 30px; }
+.n-moniteur-piste i { position: absolute; top: 0; width: 1px; height: 4px; background: #44535e; }
+.n-moniteur-piste i.cinq { height: 7px; }
+.n-moniteur-piste i.dix { height: 12px; }
+.n-moniteur-piste i.passe { background: #8fd0ff; }
+.n-moniteur-piste i b { position: absolute; top: 14px; left: 0; transform: translateX(-50%); font-family: var(--f-mono); font-size: 9px; font-weight: 400; color: #7d8c97; white-space: nowrap; }
+.n-moniteur-piste em { position: absolute; top: -6px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #1c2a34; border: 1px solid #3b5566; transition: background .3s, box-shadow .3s; }
+.n-moniteur-piste em.on { background: #8fd0ff; border-color: #f4fbff; box-shadow: 0 0 8px #6fbdf5; }
+.n-moniteur-aig2 { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #f4fbff; box-shadow: 0 0 8px #6fbdf5; }
+.n-moniteur-bas { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.n-moniteur-bas .n-lecteur-btn { width: 44px; height: 44px; }
+.n-moniteur-constel { width: 44px; height: 44px; flex: none; }
+.n-moniteur-constel path { fill: none; stroke-width: 4; }
+.n-moniteur-constel .fond { stroke: #1c2a34; }
+.n-moniteur-constel .trace { stroke: #8fd0ff; stroke-dasharray: 1; filter: drop-shadow(0 0 4px #6fbdf5); }
+.n-moniteur-constel circle { fill: #1c2a34; }
+.n-moniteur-constel circle.on { fill: #8fd0ff; filter: drop-shadow(0 0 5px #6fbdf5); }
+.n-moniteur-etoile { margin-left: auto; font-family: var(--f-mono); font-size: 12px; letter-spacing: 1.5px; color: #cfe9ff; text-shadow: 0 1px 4px #000; }
+.n-feuille-bas .n-moniteur { margin: 0; }

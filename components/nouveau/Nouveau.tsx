@@ -7,6 +7,8 @@
  */
 import { createPortal } from "react-dom";
 import { TRANSCRIPTIONS } from "@/lib/transcriptions";
+import { ONDES, lireOnde } from "@/lib/ondes";
+import { Moniteur } from "@/components/nouveau/Moniteur";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider, useTraduire } from "@/components/Locale";
@@ -487,7 +489,7 @@ function Accueil() {
                 </Ligne>
                 <div className="n-ac-corps">
                   <p>{r.texte}</p>
-                  <Lecteur src={r.audio} actif={ouvert === k} titre={r.titre} transcription={TRANSCRIPTIONS[r.id]} />
+                  <Lecteur id={r.id} src={r.audio} actif={ouvert === k} titre={r.titre} transcription={TRANSCRIPTIONS[r.id]} />
                   <small className="n-ecoute-legende">{r.legende}</small>
                 </div>
               </div>
@@ -521,13 +523,9 @@ const ECOUTES = [
   },
 ];
 
-function minutes(s: number) {
-  if (!Number.isFinite(s) || s < 0) s = 0;
-  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-}
-
 /** Lecteur audio du site : lecture / pause, barre que l'on touche pour avancer, temps. Se met en pause si on referme. */
-function Lecteur({ src, actif, titre, transcription }: { src: string; actif: boolean; titre: string; transcription: string[] }) {
+function Lecteur({ id, src, actif, titre, transcription }: { id: keyof typeof ONDES; src: string; actif: boolean; titre: string; transcription: string[] }) {
+  const onde = useMemo(() => lireOnde(ONDES[id]), [id]);
   const ref = useRef<HTMLAudioElement>(null);
   const [lit, setLit] = useState(false);
   const [t, setT] = useState(0);
@@ -538,6 +536,18 @@ function Lecteur({ src, actif, titre, transcription }: { src: string; actif: boo
   useEffect(() => {
     if (!actif) ref.current?.pause();
   }, [actif]);
+
+  useEffect(() => {
+    if (!lit) return;
+    let raf = 0;
+    const pas = () => {
+      const a = ref.current;
+      if (a) setT(a.currentTime);
+      raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [lit]);
 
   useEffect(() => {
     if (!feuille) return;
@@ -556,33 +566,12 @@ function Lecteur({ src, actif, titre, transcription }: { src: string; actif: boo
     } else a.pause();
   };
 
-  const commandes = (
-    <div className={`n-lecteur${lit ? " lit" : ""}`}>
-      <button type="button" className="n-lecteur-btn" onClick={basculer} aria-label={lit ? "Pause" : "Écouter"}>
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-          {lit ? <path d="M6 5h4v14H6zM14 5h4v14h-4z" /> : <path d="M7 4.5v15l12.5-7.5z" />}
-        </svg>
-      </button>
-      <span className="n-lecteur-t">{minutes(t)}</span>
-      <input
-        type="range"
-        className="n-lecteur-barre"
-        min={0}
-        max={duree || 1}
-        step={0.1}
-        value={t}
-        aria-label="Avancer dans l’enregistrement"
-        style={{ ["--p" as string]: `${duree ? (t / duree) * 100 : 0}%` } as CSSProperties}
-        onChange={(e) => {
-          const a = ref.current;
-          const v = Number(e.target.value);
-          if (a) a.currentTime = v;
-          setT(v);
-        }}
-      />
-      <span className="n-lecteur-t">{minutes(duree)}</span>
-    </div>
-  );
+  const aller = (v: number) => {
+    const a = ref.current;
+    if (a) a.currentTime = v;
+    setT(v);
+  };
+  const commandes = <Moniteur onde={onde} t={t} duree={duree} lit={lit} basculer={basculer} aller={aller} />;
 
   return (
     <>
