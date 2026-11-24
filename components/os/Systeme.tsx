@@ -7,6 +7,17 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { estMuet, regleMuet, sonSynth } from "./sonsSynth";
 import { SONNERIES, choixSons, jouerSonnerie, nomSonnerie, type Categorie } from "./sonneries";
+import { son } from "./sonsAndroid";
+import { volumes, type Canal } from "./volume";
+
+/** Le « tic » d'Android quand on règle un volume (VolumeIncremental, AOSP), pas plus d'un toutes les 150 ms. */
+let dernierBip = 0;
+function bipVolume(k: Canal) {
+  const t = Date.now();
+  if (t - dernierBip < 150) return;
+  dernierBip = t;
+  son("volume", 1, k);
+}
 
 export type Fond = "faisceaux" | "savane" | "holo" | "nebuleuse";
 export const FONDS: { id: Fond; nom: string }[] = [
@@ -212,7 +223,7 @@ export function ChoixSonnerie({ categorie, valeur, choisir, fermer }: { categori
   const ecouter = (f: string) => {
     stop.current();
     setSel(f);
-    stop.current = jouerSonnerie(f);
+    stop.current = jouerSonnerie(f, false, categorie === "alarme" ? "alarme" : "sonnerie");
   };
   return (
     <Dlg titre={TITRES_SONS[categorie]} fermer={fermer}>
@@ -258,6 +269,7 @@ export function SousReglage({ ecran }: { ecran: EcranReglage }) {
   const [cherche, setCherche] = useState(false);
   const [mdp, setMdp] = useState("");
   const sons = choixSons.useValeur();
+  const vols = volumes.useValeur();
   const [choixSon, setChoixSon] = useState<Categorie | null>(null);
   const [heure, setHeure] = useState(() => new Date());
   useEffect(() => {
@@ -349,10 +361,23 @@ export function SousReglage({ ecran }: { ecran: EcranReglage }) {
             <Ligne titre="Mode silencieux" sous={s.muet ? "Aucun son système" : "Les sons sont activés"} droite={<Interrupteur on={s.muet} onChange={(v) => s.regler({ muet: v })} />} />
             <Titre>VOLUMES</Titre>
             <div className="reg2-vol">
-              {["Sonnerie et notifications", "Musique, vidéo, jeux", "Alarmes"].map((n, i) => (
+              {(
+                [
+                  ["sonnerie", "Sonnerie et notifications"],
+                  ["media", "Musique, vidéo, jeux"],
+                  ["alarme", "Alarmes"],
+                ] as const
+              ).map(([k, n]) => (
                 <div key={n}>
                   <small>{n}</small>
-                  <Curseur valeur={s.muet ? 0 : [0.7, 0.55, 0.85][i]!} onChange={() => s.muet && s.regler({ muet: false })} />
+                  <Curseur
+                    valeur={s.muet ? 0 : vols[k]}
+                    onChange={(v) => {
+                      if (s.muet) s.regler({ muet: false });
+                      volumes.ecrire((x) => ({ ...x, [k]: v }));
+                      bipVolume(k);
+                    }}
+                  />
                 </div>
               ))}
             </div>

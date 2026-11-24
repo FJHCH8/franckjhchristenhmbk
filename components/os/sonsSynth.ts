@@ -2,6 +2,8 @@
  * Sons originaux d'AakanOS, synthétisés en direct (Web Audio) : démarrage, retour, erreurs, bulles, mode développeur, message envoyé.
  * Aucun fichier son : tout est calculé ici. Plus l'interrupteur « muet » de tout le téléphone.
  */
+import { sortie } from "./volume";
+
 const CLE_MUET = "aakanos-muet";
 
 export function estMuet(): boolean {
@@ -41,7 +43,7 @@ function note(a: AudioContext, f: number, debut: number, duree: number, vol = 0.
   g.gain.setValueAtTime(0.0001, debut);
   g.gain.exponentialRampToValueAtTime(vol, debut + 0.012);
   g.gain.exponentialRampToValueAtTime(0.0001, debut + duree);
-  o.connect(g).connect(a.destination);
+  o.connect(g).connect(sortie(a));
   o.start(debut);
   o.stop(debut + duree + 0.02);
 }

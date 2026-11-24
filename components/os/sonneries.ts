@@ -4,6 +4,7 @@
  */
 import { creerStore } from "./session";
 import { estMuet } from "./sonsSynth";
+import { sortie, type Canal } from "./volume";
 
 export type Categorie = "appel" | "notif" | "alarme";
 
@@ -15,8 +16,10 @@ export const SONNERIES: Record<Categorie, string[]> = {
 const NOMS: Record<string, string> = { Pixiedust: "Pixie Dust" };
 export const nomSonnerie = (f: string) => NOMS[f] ?? f;
 
+/** Les sons de départ du téléphone (aussi après « Réinitialiser le téléphone »). */
+export const SONS_DEPART: Record<Categorie, string> = { appel: "Orion", notif: "Pixiedust", alarme: "Argon" };
 /** Les choix du visiteur, gardés dans la session comme le reste du téléphone. */
-export const choixSons = creerStore<Record<Categorie, string>>("sons", { appel: "Andromeda", notif: "Capella", alarme: "Cesium" });
+export const choixSons = creerStore<Record<Categorie, string>>("sons", SONS_DEPART);
 
 let ctx: AudioContext | null = null;
 function contexte(): AudioContext | null {
@@ -53,7 +56,7 @@ function charger(c: AudioContext, f: string) {
 }
 
 /** Joue un fichier (en boucle pour une alarme ou une sonnerie) ; renvoie de quoi l'arrêter. */
-export function jouerSonnerie(f: string, boucle = false): () => void {
+export function jouerSonnerie(f: string, boucle = false, canal: Canal = "sonnerie"): () => void {
   const c = contexte();
   if (!c) return () => {};
   let src: AudioBufferSourceNode | null = null;
@@ -63,7 +66,7 @@ export function jouerSonnerie(f: string, boucle = false): () => void {
     src = c.createBufferSource();
     src.buffer = b;
     src.loop = boucle;
-    src.connect(c.destination);
+    src.connect(sortie(c, canal));
     src.start();
   });
   return () => {
@@ -74,7 +77,7 @@ export function jouerSonnerie(f: string, boucle = false): () => void {
   };
 }
 
-/** La notification choisie (Capella par défaut). */
+/** La notification choisie (Pixie Dust par défaut). */
 export function jouerNotification() {
   jouerSonnerie(choixSons.lire().notif);
 }
