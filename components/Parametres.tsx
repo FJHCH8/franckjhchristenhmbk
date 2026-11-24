@@ -10,7 +10,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { T, useLocale } from "@/components/Locale";
+import { T, useLocale, useTraduire, type LocaleName } from "@/components/Locale";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { clic } from "@/lib/sons";
@@ -19,7 +19,7 @@ type Choix = "apparence" | "langue" | "contact" | "apropos" | "systeme" | "editi
 
 const RUBRIQUES: { id: Choix; nom: string; icone: NomIcone; aide: string }[] = [
   { id: "apparence", nom: "apparence", icone: "palette", aide: "LE SITE CLASSIQUE, OU AAKANOS : LE SITE COMME UN TÉLÉPHONE." },
-  { id: "langue", nom: "langue", icone: "language", aide: "CHOISIS LA LANGUE DU SITE : FRANÇAIS OU TAVISSIV." },
+  { id: "langue", nom: "langue", icone: "language", aide: "CHOISIS LA LANGUE DU SITE." },
   { id: "contact", nom: "contact", icone: "mail", aide: "DEUX CHEMINS MÈNENT JUSQU’À FRANCK." },
   { id: "apropos", nom: "à propos", icone: "info", aide: "CE QU’EST CE SITE, ET COMMENT IL ÉVOLUE." },
   { id: "systeme", nom: "système", icone: "phone_iphone", aide: "ODYSSÉE · LE SYSTÈME DU SITE ET SES MISES À JOUR." },
@@ -45,8 +45,9 @@ const deux = (n: number) => String(n).padStart(2, "0");
 /* ---------------- petits outils ---------------- */
 
 /** Texte qui se décode lettre par lettre (en Tavissiv : affiché tel quel, dans son écriture). */
-function Decode({ texte, delai = 0, duree = 700 }: { texte: string; delai?: number; duree?: number }) {
+function Decode({ texte: brut, delai = 0, duree = 700 }: { texte: string; delai?: number; duree?: number }) {
   const { locale } = useLocale();
+  const texte = useTraduire()(brut);
   const [aff, setAff] = useState(() => texte.replace(/[^\s]/g, " "));
   useEffect(() => {
     if (locale === "tavissiv") return;
@@ -230,7 +231,7 @@ function PanneauLangue() {
         <Decode texte="Choisis la langue du site" duree={500} />
       </h3>
       <Tq i={1}>
-        <button type="button" role="radio" aria-checked={locale === "fr"} aria-label="Français (Bretagne)" className={`p2-radio${locale === "fr" ? " sel" : ""}`} onClick={() => (clic(), setLocale("fr"))}>
+        <button type="button" role="radio" aria-checked={locale === "fr"} aria-label="Français (Bretagne)" className={`p2-radio${locale === "fr" ? " sel" : ""}`} onClick={() => (clic(), setLocale("fr"))} translate="no">
           <i />
           <span>
             <T>français</T>
@@ -240,7 +241,22 @@ function PanneauLangue() {
           </em>
         </button>
       </Tq>
-      <Tq i={2}>
+      {(
+        [
+          ["de", "Deutsch", "Deutschland"],
+          ["sv", "svenska", "Sverige"],
+          ["br", "brezhoneg", "Breizh"],
+        ] as [LocaleName, string, string][]
+      ).map(([id, nom, pays], k) => (
+        <Tq i={2 + k} key={id}>
+          <button type="button" role="radio" aria-checked={locale === id} className={`p2-radio${locale === id ? " sel" : ""}`} onClick={() => (clic(), setLocale(id))} translate="no">
+            <i />
+            <span>{nom}</span>
+            <em>{pays}</em>
+          </button>
+        </Tq>
+      ))}
+      <Tq i={5}>
         <button
           type="button"
           role="radio"

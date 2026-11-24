@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
-import { LocaleProvider } from "@/components/Locale";
+import { LocaleProvider, useTraduire } from "@/components/Locale";
 import { Parametres } from "@/components/Parametres";
 import { Logo } from "@/components/Logo";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
@@ -68,7 +68,8 @@ function decompte(t: number | null, cible: number) {
   return { j: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60, fini: t != null && r <= 0 };
 }
 
-function Decode({ texte, delai = 0, duree = 700 }: { texte: string; delai?: number; duree?: number }) {
+function Decode({ texte: brut, delai = 0, duree = 700 }: { texte: string; delai?: number; duree?: number }) {
+  const texte = useTraduire()(brut);
   const [aff, setAff] = useState(() => texte.replace(/[^\s]/g, " "));
   useEffect(() => {
     let raf = 0;
@@ -464,6 +465,8 @@ function Accueil() {
                 <div className="n-ac-img" aria-hidden="true">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={r.image} alt="" style={{ objectPosition: r.cadre }} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="ent" src={r.image} alt="" />
                 </div>
                 <div className="n-ac-espace" />
                 <Ligne
@@ -510,7 +513,7 @@ const ECOUTES = [
     image: "/explorer/autoromantisme.webp",
     cadre: "50% 50%",
     audio: "/explorer/autoromantisme.mp3",
-    legende: "Les mains qui se croisent et se serrent",
+    legende: "Titessis, par Franck J.H. Christen",
   },
 ];
 
