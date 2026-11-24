@@ -95,12 +95,12 @@ export function NavigateurNounou() {
               <i className="nounou-sable" />
             </div>
             <h2>Hors connexion</h2>
-            <p>Le dauphin s’est échoué sur le sable… Internet ne répond pas.</p>
+            <p>Gypsy le dauphin s’est échoué sur le sable… Internet ne répond pas.</p>
             <button type="button" className="nounou-jouer" onClick={() => setVue("jeu")}>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
-              AIDER LE DAUPHIN À NAGER
+              AIDER GYPSY À NAGER
             </button>
             <small>Impossible d’ouvrir « {adresse} »</small>
           </div>

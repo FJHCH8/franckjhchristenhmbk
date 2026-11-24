@@ -443,3 +443,44 @@ a.app-ligne:active { background: var(--presse); }
 .nounou-cherche { display: flex; align-items: center; gap: 10px; width: calc(100% - 32px); margin-top: 36px; padding: 6px 12px; background: #fff; border: 1px solid #c9d4c9; border-radius: 2px; box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
 .nounou-cherche input { flex: 1; min-width: 0; height: 36px; border: 0; outline: none; font: 16px var(--font-roboto), sans-serif; color: #222; background: none; user-select: text; -webkit-user-select: text; }
 .nounou-cherche:focus-within { border-color: #5f8fb0; box-shadow: 0 0 0 1px #5f8fb0; }
+/* Sam-Telecom */
+.os-operateur { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 12px; color: #aaa; letter-spacing: 1px; }
+.os-operateur-r { color: var(--holo); }
+/* Téléphone */
+.tel { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; }
+.tel-numero { flex: none; display: flex; align-items: center; height: 92px; padding: 0 12px 0 20px; border-bottom: 2px solid var(--holo); background: #111; }
+.tel-numero span { flex: 1; font-weight: 200; font-size: 34px; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tel-pave { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); }
+.tel-pave button { display: grid; place-items: center; align-content: center; border-bottom: 1px solid #1c1c1c; border-right: 1px solid #1c1c1c; transition: background .1s; }
+.tel-pave button:nth-child(3n) { border-right: 0; }
+.tel-pave button:active { background: var(--presse); }
+.tel-pave b { font-weight: 200; font-size: 34px; line-height: 1; }
+.tel-pave span { font-size: 10px; color: #888; letter-spacing: 1px; height: 12px; margin-top: 3px; }
+.tel-appeler { flex: none; height: 66px; display: grid; place-items: center; background: linear-gradient(#2f9a33, #1d7a22); border-top: 1px solid #4ec453; }
+.tel-appeler:disabled { opacity: .4; }
+.tel-appeler:active { background: #3fb544; }
+.tel-appel { position: absolute; inset: 0; display: flex; flex-direction: column; background: #000; }
+.tel-appel-haut { flex: none; padding: 16px 18px; background: #1c1c1c; border-bottom: 2px solid var(--holo); display: grid; gap: 2px; }
+.tel-appel-haut small { color: var(--holo); font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.tel-appel-haut b { font-weight: 300; font-size: 26px; }
+.tel-appel-haut span { color: #999; font-size: 14px; }
+.tel-appel-haut em { font-style: normal; color: #ccc; font-size: 14px; }
+.tel-appel-photo { position: relative; flex: 1; overflow: hidden; background: #111; }
+.tel-appel-photo img { width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+.tel-hs { position: absolute; left: 14px; right: 14px; bottom: 14px; padding: 14px 16px; background: rgba(0, 0, 0, .82); border-left: 3px solid #ff4444; animation: os-monte .35s both; }
+.tel-hs p { margin: 0 0 6px; font-size: 15px; line-height: 1.4; }
+.tel-raccrocher { flex: none; height: 76px; display: grid; place-items: center; background: linear-gradient(#d43a3a, #a51f1f); border-top: 1px solid #ff6a6a; }
+.tel-raccrocher.fini { background: #333; border-color: #444; }
+/* Pulpüs market */
+.pulpus { position: absolute; inset: 0; display: flex; flex-direction: column; background: #f3f3f3; color: #222; }
+.pulpus-tete { flex: none; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 14px; background: #fff; border-bottom: 3px solid #33b5e5; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+.pulpus-tete b { font-weight: 400; font-size: 20px; color: #333; }
+.pulpus-charge { flex: 1; display: grid; place-content: center; justify-items: center; gap: 14px; color: #777; font-size: 14px; }
+.pulpus-charge i { width: 46px; height: 46px; border-radius: 50%; border: 4px solid rgba(51, 181, 229, .2); border-top-color: #33b5e5; animation: os-tourne .9s linear infinite; }
+.pulpus-hs { flex: 1; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 0 24px; text-align: center; animation: os-fondu .4s both; }
+.pulpus-hs p { margin: 0; font-size: 17px; color: #444; line-height: 1.4; }
+.pulpus-bulle { transform-origin: 66px 62px; animation: pp-bulle 2.4s ease-in-out infinite; }
+@keyframes pp-bulle { 0%, 100% { transform: scale(.4); opacity: .6; } 60% { transform: scale(1.3); opacity: 1; } }
+.pulpus-z { animation: pp-z 2.4s ease-in-out infinite; } .pulpus-z.b { animation-delay: .6s; }
+@keyframes pp-z { 0% { opacity: 0; transform: translateY(6px); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+.pulpus-reessayer { margin-top: 8px; padding: 10px 22px; border: 1px solid #ccc; background: #fff; color: #33b5e5; font-size: 13px; font-weight: 700; letter-spacing: 1px; }

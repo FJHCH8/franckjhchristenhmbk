@@ -8,7 +8,7 @@
  * Ouverture directe possible avec « ?parametres=<rubrique> ».
  */
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { T, useLocale } from "@/components/Locale";
 import { Icone, type NomIcone } from "@/components/Icone";
@@ -89,10 +89,31 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
 }
 
 function Segments({ p }: { p: number; n?: number; delai?: number }) {
-  // Barre de progression provisoire (la nouvelle barre est en cours de choix).
+  // Barre de chargement : un mélange du jeu 8 bits et des cœurs de jeu d'aventure.
+  // Des cœurs en pixels, en relief comme des blocs, qui se remplissent un par un (le dernier à moitié).
+  const id = useId().replace(/:/g, "");
+  const n = 10;
+  const v = Math.max(0, Math.min(1, p)) * n;
   return (
-    <div className="barre-p" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
-      <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
+    <div className="coeurs" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
+      {Array.from({ length: n }, (_, k) => {
+        const f = Math.max(0, Math.min(1, Math.round((v - k) * 2) / 2));
+        return (
+          <svg key={k} viewBox="0 0 7 6" shapeRendering="crispEdges" style={{ animationDelay: `${k * 70}ms` }} className={f === 1 ? "plein" : f > 0 ? "moitie" : ""}>
+            <defs>
+              <clipPath id={`${id}-${k}`}>
+                <rect x="0" y="0" width={7 * f} height="6" />
+              </clipPath>
+            </defs>
+            <path d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z" fill="#2a2d31" />
+            <g clipPath={`url(#${id}-${k})`}>
+              <path d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z" fill="#8fd0ff" />
+              <path d="M1 1h1v1H1zM2 0h1v1H2z" fill="#eef8ff" />
+              <path d="M5 2h1v1H5zM4 3h1v1H4zM3 4h1v1H3z" fill="#4f9fdc" />
+            </g>
+          </svg>
+        );
+      })}
     </div>
   );
 }

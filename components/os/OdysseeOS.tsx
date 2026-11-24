@@ -21,13 +21,16 @@ import {
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
 import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
+import { AppPulpus, LogoPulpus } from "./Pulpus";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "telephone" | "pulpus" | "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
+  { id: "telephone", nom: "Téléphone" },
+  { id: "pulpus", nom: "Pulpüs market" },
   { id: "contacts", nom: "Contacts" },
   { id: "projets", nom: "Calendrier" },
   { id: "album", nom: "Album" },
@@ -39,9 +42,9 @@ const APPLIS: Appli[] = [
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
-const PAGE1: IdAppli[] = ["projets", "album", "citations", "messages", "contacts", "nounou", "endurreisen", "instagram"];
-const PAGE2: IdAppli[] = ["reglages"];
-const DOCK: IdAppli[] = ["contacts", "messages", "nounou", "reglages"];
+const PAGE1: IdAppli[] = ["projets", "album", "citations", "contacts", "endurreisen", "instagram", "pulpus", "reglages"];
+const PAGE2: IdAppli[] = [];
+const DOCK: IdAppli[] = ["telephone", "messages", "nounou", "contacts"];
 
 const CODE = "6458";
 const MAIL = "franckjhchristen@gmail.com";
@@ -64,7 +67,17 @@ const ALBUM = [
   { kind: "photo" as const, src: "/media/franck.jpg", poster: undefined, nom: "Photo" },
 ];
 
-type MsgGael = { id: number; de: "moi" | "gael"; texte: string; h: string; lu?: boolean };
+type MsgGael = { id: number; de: "moi" | "lui"; texte: string; h: string; lu?: boolean };
+type Correspondant = "gael" | "celjo" | "pacifick";
+const CORRESPONDANTS: { id: Correspondant; nom: string; photo: string; accueil?: string }[] = [
+  { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", accueil: "Salut ! Tu veux joindre Franck ? Son contact est dans l’appli Contacts." },
+  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.svg" },
+  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.svg" },
+];
+const REPONSE_CELJO = "Salut mon pote, écoute, je suis grave occupé à refaire ma moto, alors je te répondrai quand je pourrai.";
+const REPONSE_PACIFICK = "Tu me parles encore après m’avoir dit que j’avais faux ?! Va te faire voir !";
+/** Après combien de réponses la personne bloque la conversation (0 = jamais). */
+const BLOQUE_APRES: Record<Correspondant, number> = { gael: 3, celjo: 0, pacifick: 1 };
 const REPONSES_GAEL = [
   "Je suis désolé, mais moi, je ne peux pas te répondre. Il faut que tu envoies un mail à Franck.",
   "Je suis désolé. Mais je ne peux pas te répondre.",
@@ -114,6 +127,10 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
     <img className="os-icone" src={`/aakanos/${f}.png`} width={taille} height={taille} alt="" draggable={false} />
   );
   switch (id) {
+    case "telephone":
+      return png("phone");
+    case "pulpus":
+      return <LogoPulpus taille={taille} />;
     case "contacts":
       return png("contacts");
     case "qui":
@@ -226,39 +243,39 @@ export function OdysseeOS() {
   const [historique, setHistorique] = useState<Appli[]>([]);
   const [effacees, setEffacees] = useState<string[]>([]);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
-  // Le téléphone repart de zéro à chaque chargement : la conversation avec Gaël aussi.
-  const [msgs, setMsgs] = useState<MsgGael[]>([]);
-  const [gaelEcrit, setGaelEcrit] = useState(false);
-  const [nonLu, setNonLu] = useState(0);
+  // Le téléphone repart de zéro à chaque chargement : les conversations aussi.
+  const [convs, setConvs] = useState<Record<Correspondant, MsgGael[]>>({ gael: [], celjo: [], pacifick: [] });
+  const [ecrit, setEcrit] = useState<Correspondant | null>(null);
+  const [nonLu, setNonLu] = useState<{ qui: Correspondant; n: number } | null>(null);
   const minuteurs = useRef<number[]>([]);
-  const convOuverte = useRef(false);
+  const convOuverte = useRef<Correspondant | null>(null);
   useEffect(() => () => minuteurs.current.forEach((m) => clearTimeout(m)), []);
-  const envoyerAGael = useCallback((texte: string) => {
+  const envoyer = useCallback((qui: Correspondant, texte: string) => {
     const id = Date.now();
     let rang = 0;
-    setMsgs((m) => {
-      rang = m.filter((x) => x.de === "moi").length;
-      return [...m, { id, de: "moi", texte, h: heureCourte() }];
+    setConvs((c) => {
+      rang = c[qui].filter((x) => x.de === "moi").length;
+      return { ...c, [qui]: [...c[qui], { id, de: "moi", texte, h: heureCourte() }] };
     });
     const plus = (f: () => void, ms: number) => minuteurs.current.push(window.setTimeout(f, ms));
-    // Il voit le message entre 5 et 10 secondes plus tard…
-    const vu = 5000 + Math.random() * 5000;
-    plus(() => setMsgs((m) => m.map((x) => (x.id === id ? { ...x, lu: true } : x))), vu);
-    // …puis il écrit, et il répond (trois fois au plus).
+    const reponse = qui === "gael" ? REPONSES_GAEL[rang] : rang === 0 ? (qui === "celjo" ? REPONSE_CELJO : REPONSE_PACIFICK) : undefined;
+    // Celjo ne lit plus rien après sa première réponse.
+    if (qui === "celjo" && rang > 0) return;
+    const vu = (qui === "gael" ? 5000 : 3000) + Math.random() * (qui === "gael" ? 5000 : 3000);
+    plus(() => setConvs((c) => ({ ...c, [qui]: c[qui].map((x) => (x.id === id ? { ...x, lu: true } : x)) })), vu);
+    if (!reponse) return;
     plus(() => {
-      const reponse = REPONSES_GAEL[rang];
-      if (!reponse) return;
-      setGaelEcrit(true);
+      setEcrit(qui);
       plus(() => {
-        setGaelEcrit(false);
-        setMsgs((m) => [...m, { id: Date.now(), de: "gael", texte: reponse, h: heureCourte() }]);
-        if (!convOuverte.current) setNonLu((n) => n + 1);
+        setEcrit(null);
+        setConvs((c) => ({ ...c, [qui]: [...c[qui], { id: Date.now(), de: "lui", texte: reponse, h: heureCourte() }] }));
+        if (convOuverte.current !== qui) setNonLu((n) => ({ qui, n: n && n.qui === qui ? n.n + 1 : 1 }));
       }, 2200 + reponse.length * 35);
     }, vu + 900);
   }, []);
-  const vuConv = useCallback((o: boolean) => {
-    convOuverte.current = o;
-    if (o) setNonLu(0);
+  const vuConv = useCallback((qui: Correspondant | null) => {
+    convOuverte.current = qui;
+    if (qui) setNonLu((n) => (n && n.qui === qui ? null : n));
   }, []);
   const retourAppli = useRef<(() => boolean) | null>(null);
   const poser = useCallback((f: (() => boolean) | null) => {
@@ -303,6 +320,12 @@ export function OdysseeOS() {
     setRideau(false);
   }, []);
 
+  // Un contact qu'on appelle ouvre l'appli Téléphone.
+  useEffect(() => {
+    const f = () => ouvrir(par("telephone"));
+    window.addEventListener("aakanos-appel", f);
+    return () => window.removeEventListener("aakanos-appel", f);
+  }, [ouvrir]);
   const fermerFenetre = useCallback(() => {
     setFermeture(true);
     setTimeout(() => {
@@ -379,13 +402,13 @@ export function OdysseeOS() {
     {
       id: "gael",
       icone: <IconeAppli id="messages" taille={40} />,
-      titre: nonLu > 1 ? `Gaël (${nonLu} messages)` : "Gaël",
-      texte: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.texte ?? "" : "Le contact de Franck est dans Contacts",
-      h: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.h ?? "09:41" : "09:41",
+      titre: nonLu ? `${CORRESPONDANTS.find((c) => c.id === nonLu.qui)!.nom}${nonLu.n > 1 ? ` (${nonLu.n} messages)` : ""}` : "Gaël",
+      texte: nonLu ? convs[nonLu.qui].filter((m) => m.de === "lui").at(-1)?.texte ?? "" : "Le contact de Franck est dans Contacts",
+      h: nonLu ? convs[nonLu.qui].filter((m) => m.de === "lui").at(-1)?.h ?? "09:41" : "09:41",
       appli: par("messages"),
     },
   ];
-  const notifs = toutes.filter((n): n is Notif => !!n && (!effacees.includes(n.id) || (n.id === "gael" && nonLu > 0)));
+  const notifs = toutes.filter((n): n is Notif => !!n && (!effacees.includes(n.id) || (n.id === "gael" && !!nonLu)));
   const notifsTriees = nonLu ? [...notifs.filter((n) => n.id === "gael"), ...notifs.filter((n) => n.id !== "gael")] : notifs;
 
   const correspond = (e: Etoile) => sansAccent(`${e.titre} ${e.texte}`).includes(sansAccent(requete));
@@ -568,7 +591,7 @@ export function OdysseeOS() {
                   etoiles={etoiles}
                   ouvrir={ouvrir}
                   quitter={quitter}
-                  gael={{ msgs, ecrit: gaelEcrit, envoyer: envoyerAGael, vu: vuConv }}
+                  gael={{ convs, ecrit, envoyer, vu: vuConv }}
                 />
               </FenetreAppli>
             ) : null}
@@ -624,6 +647,8 @@ export function OdysseeOS() {
               <div className="os-rideau-tete">
                 <div className="os-rideau-h">{heure}</div>
                 <div className="os-rideau-d">
+                  <span className="os-operateur-r">SAM-TELECOM</span>
+                  <br />
                   {date.split(" ")[0]?.toUpperCase()}
                   <br />
                   {date.split(" ").slice(1).join(" ").toUpperCase()} {d?.getFullYear()}
@@ -820,6 +845,7 @@ function Verrouillage({ heure, date, onOuvrir }: { heure: string; date: string; 
 
   return (
     <div className={`os-verrou${part ? " part" : ""}`}>
+      <div className="os-operateur">Sam-Telecom</div>
       <div className="os-verrou-heure">
         {heure.slice(0, 2)}
         <span>:</span>
@@ -893,6 +919,10 @@ function ContenuAppli({
   switch (id) {
     case "contacts":
       return <AppContacts />;
+    case "telephone":
+      return <AppTelephone />;
+    case "pulpus":
+      return <AppPulpus />;
     case "qui":
       return <AppQui ouvrir={ouvrir} />;
     case "album":
@@ -1153,114 +1183,118 @@ function AppEndurreisen({ t }: { t: number | null }) {
   );
 }
 
-type PropsGael = { msgs: MsgGael[]; ecrit: boolean; envoyer: (t: string) => void; vu: (ouverte: boolean) => void };
+type PropsGael = { convs: Record<Correspondant, MsgGael[]>; ecrit: Correspondant | null; envoyer: (qui: Correspondant, t: string) => void; vu: (ouverte: Correspondant | null) => void };
 
-function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
-  const act = useActivite<"liste" | "conv">("liste");
+function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
+  const [conv, setConv] = useState<Correspondant | null>(null);
   const [texte, setTexte] = useState("");
   const liste = useRef<HTMLDivElement>(null);
-  useRetour(act.ecran === "conv", act.retour);
+  useRetour(conv !== null, () => setConv(null));
   useEffect(() => {
-    vu(act.ecran === "conv");
-    return () => vu(false);
-  }, [act.ecran, vu]);
+    vu(conv);
+    return () => vu(null);
+  }, [conv, vu]);
+  const msgs = conv ? convs[conv] : [];
   useEffect(() => {
     const l = liste.current;
     if (l) l.scrollTo({ top: l.scrollHeight, behavior: "smooth" });
-  }, [msgs.length, ecrit, act.ecran]);
-  // eslint-disable-next-line @next/next/no-img-element
-  const avatar = <img className="msg-avatar" src="/aakanos/gael.jpg" alt="" />;
-  const dernier = msgs.at(-1);
-  const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
-  // Après sa 3e réponse, Gaël bloque la conversation.
-  const bloque = msgs.filter((m) => m.de === "gael").length >= REPONSES_GAEL.length;
+  }, [msgs.length, ecrit, conv]);
 
-  if (act.ecran === "liste") {
+  if (!conv) {
     return (
-      <Activite act={act}>
-        <div className="app-defile">
-          <button className="msg-conv" onClick={() => act.aller("conv")}>
-            {avatar}
-            <div>
-              <b>Gaël</b>
-              <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : "Le contact de Franck est dans Contacts"}</span>
-            </div>
-            <em>{dernier?.h ?? "09:41"}</em>
-          </button>
-          <p className="os-vide">Un seul contact</p>
-        </div>
-      </Activite>
+      <div className="app-defile os-act entre">
+        {CORRESPONDANTS.map((c) => {
+          const dernier = convs[c.id].at(-1);
+          return (
+            <button key={c.id} className="msg-conv" onClick={() => setConv(c.id)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="msg-avatar" src={c.photo} alt="" />
+              <div>
+                <b>{c.nom}</b>
+                <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : c.accueil ? "Le contact de Franck est dans Contacts" : "Nouvelle conversation"}</span>
+              </div>
+              <em>{dernier?.h ?? (c.accueil ? "09:41" : "")}</em>
+            </button>
+          );
+        })}
+      </div>
     );
   }
+  const c = CORRESPONDANTS.find((x) => x.id === conv)!;
+  // eslint-disable-next-line @next/next/no-img-element
+  const avatar = <img className="msg-avatar" src={c.photo} alt="" />;
+  const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
+  const bloque = BLOQUE_APRES[conv] > 0 && msgs.filter((m) => m.de === "lui").length >= BLOQUE_APRES[conv];
   return (
-    <Activite act={act}>
-      <div className="msg-fil">
-        <div className="msg-liste" ref={liste}>
-          <div className="msg-date">AUJOURD’HUI</div>
+    <div className="msg-fil os-act entre" key={conv}>
+      <div className="msg-liste" ref={liste}>
+        <div className="msg-date">AUJOURD’HUI</div>
+        {c.accueil ? (
           <div className="msg-bulle">
             {avatar}
             <p>
-              Salut ! Tu veux joindre Franck ? Son contact est dans l’appli Contacts.<em>09:40</em>
+              {c.accueil}
+              <em>09:40</em>
             </p>
           </div>
-          {msgs.map((m) =>
-            m.de === "moi" ? (
-              <div key={m.id} className="msg-bulle moi">
-                <p>
-                  {m.texte}
-                  <em>{m === derniersMoi ? (m.lu ? `Lu · ${m.h}` : `Envoyé · ${m.h}`) : m.h}</em>
-                </p>
-              </div>
-            ) : (
-              <div key={m.id} className="msg-bulle">
-                {avatar}
-                <p>
-                  {m.texte}
-                  <em>{m.h}</em>
-                </p>
-              </div>
-            ),
-          )}
-          {ecrit ? (
-            <div className="msg-bulle">
-              {avatar}
-              <p className="msg-ecrit">
-                <span />
-                <span />
-                <span />
+        ) : null}
+        {msgs.map((m) =>
+          m.de === "moi" ? (
+            <div key={m.id} className="msg-bulle moi">
+              <p>
+                {m.texte}
+                <em>{m === derniersMoi ? (m.lu ? `Lu · ${m.h}` : `Envoyé · ${m.h}`) : m.h}</em>
               </p>
             </div>
-          ) : null}
-        </div>
-        {ecrit ? <div className="msg-statut">Gaël est en train d’écrire…</div> : null}
-        {bloque ? (
-          <div className="msg-bloque">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
-            </svg>
-            Gaël vous a bloqué. Vous ne pouvez plus lui écrire.
+          ) : (
+            <div key={m.id} className="msg-bulle">
+              {avatar}
+              <p>
+                {m.texte}
+                <em>{m.h}</em>
+              </p>
+            </div>
+          ),
+        )}
+        {ecrit === conv ? (
+          <div className="msg-bulle">
+            {avatar}
+            <p className="msg-ecrit">
+              <span />
+              <span />
+              <span />
+            </p>
           </div>
-        ) : (
+        ) : null}
+      </div>
+      {ecrit === conv ? <div className="msg-statut">{c.nom} est en train d’écrire…</div> : null}
+      {bloque ? (
+        <div className="msg-bloque">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
+          </svg>
+          {c.nom} vous a bloqué. Vous ne pouvez plus lui écrire.
+        </div>
+      ) : (
         <form
           className="msg-saisie"
           onSubmit={(e) => {
             e.preventDefault();
             const v = texte.trim();
             if (!v) return;
-            envoyer(v);
+            envoyer(conv, v);
             setTexte("");
           }}
         >
-          <input value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Écrire un message à Gaël" enterKeyHint="send" />
+          <input value={texte} onChange={(e) => setTexte(e.target.value)} placeholder={`Écrire un message à ${c.nom}`} enterKeyHint="send" />
           <button aria-label="Envoyer" disabled={!texte.trim()}>
             <svg viewBox="0 0 24 24" width="26" height="26" fill={texte.trim() ? "#33b5e5" : "#555"}>
               <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
           </button>
         </form>
-        )}
-      </div>
-    </Activite>
+      )}
+    </div>
   );
 }
 
@@ -1312,7 +1346,14 @@ function AppContacts() {
       {c.tel ? (
         <>
           <div className="os-titre-holo">TÉLÉPHONE</div>
-          <a className="ct-champ" href={`tel:${c.tel}`}>
+          <a
+            className="ct-champ"
+            href={`tel:${c.tel}`}
+            onClick={(e) => {
+              e.preventDefault();
+              appelerDepuisAakanOS(c.tel!);
+            }}
+          >
             <span>
               <b>{c.tel}</b>
               <small>MOBILE</small>
@@ -1354,6 +1395,148 @@ function AppContacts() {
           <p className="app-texte">{c.note}</p>
         </>
       ) : null}
+    </div>
+  );
+}
+
+/* ---------------- Téléphone (réseau Sam-Telecom) ---------------- */
+
+let appelEnAttente: string | null = null;
+function appelerDepuisAakanOS(num: string) {
+  appelEnAttente = num;
+  window.dispatchEvent(new Event("aakanos-appel"));
+}
+
+/** Les trois notes montantes du « numéro hors service ». */
+function sonHorsService() {
+  try {
+    const ctx = new AudioContext();
+    [913.8, 1370.6, 1776.7].forEach((f, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = f;
+      const t0 = ctx.currentTime + i * 0.38;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.18, t0 + 0.02);
+      g.gain.setValueAtTime(0.18, t0 + 0.3);
+      g.gain.linearRampToValueAtTime(0, t0 + 0.33);
+      o.connect(g).connect(ctx.destination);
+      o.start(t0);
+      o.stop(t0 + 0.35);
+    });
+    window.setTimeout(() => void ctx.close(), 1600);
+  } catch {}
+}
+
+const TOUCHES_TEL: [string, string][] = [
+  ["1", ""],
+  ["2", "ABC"],
+  ["3", "DEF"],
+  ["4", "GHI"],
+  ["5", "JKL"],
+  ["6", "MNO"],
+  ["7", "PQRS"],
+  ["8", "TUV"],
+  ["9", "WXYZ"],
+  ["*", ""],
+  ["0", "+"],
+  ["#", ""],
+];
+
+function AppTelephone() {
+  // Ouvert depuis un contact : l'appel part tout de suite.
+  const [numero, setNumero] = useState(() => appelEnAttente ?? "");
+  const [appel, setAppel] = useState<null | "sonne" | "hs" | "fin">(() => (appelEnAttente ? "sonne" : null));
+  const [duree, setDuree] = useState(0);
+  const lancer = useCallback((n: string) => {
+    if (!n) return;
+    setNumero(n);
+    setAppel("sonne");
+    setDuree(0);
+  }, []);
+  useEffect(() => {
+    appelEnAttente = null;
+  }, []);
+  useEffect(() => {
+    if (appel !== "sonne") return;
+    const t1 = window.setTimeout(() => {
+      setAppel("hs");
+      sonHorsService();
+    }, 2600);
+    return () => window.clearTimeout(t1);
+  }, [appel]);
+  useEffect(() => {
+    if (appel !== "hs") return;
+    const t = window.setTimeout(() => setAppel("fin"), 6500);
+    return () => window.clearTimeout(t);
+  }, [appel]);
+  useEffect(() => {
+    if (appel !== "sonne") return;
+    const id = window.setInterval(() => setDuree((d) => d + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [appel]);
+  useRetour(appel !== null, () => setAppel(null));
+  const norme = (x: string) => x.replace(/[^\d+]/g, "");
+  const contact = CONTACTS.find((c) => c.tel && norme(c.tel) === norme(numero));
+
+  if (appel) {
+    return (
+      <div className="tel-appel os-act entre">
+        <div className="tel-appel-haut">
+          <small>{appel === "sonne" ? "APPEL EN COURS" : appel === "hs" ? "SAM-TELECOM" : "APPEL TERMINÉ"}</small>
+          <b>{contact ? contact.nom : numero}</b>
+          {contact ? <span>{numero}</span> : null}
+          <em>{appel === "sonne" ? `Appel… 00:${String(duree).padStart(2, "0")}` : appel === "hs" ? "Numéro hors service" : "Appel terminé"}</em>
+        </div>
+        <div className="tel-appel-photo">
+          {contact ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={contact.photo} alt="" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/aakanos/avatar.png" alt="" />
+          )}
+          {appel !== "sonne" ? (
+            <div className="tel-hs">
+              <p>Désolé, mais votre forfait ne vous permet pas d’accéder à internet ou d’appeler.</p>
+              <p>Merci de faire évoluer votre forfait avec Sam-Telecom.</p>
+            </div>
+          ) : null}
+        </div>
+        <button type="button" className={`tel-raccrocher${appel === "fin" ? " fini" : ""}`} onClick={() => setAppel(null)} aria-label="Raccrocher">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="#fff">
+            <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="tel">
+      <div className="tel-numero">
+        <span>{numero || " "}</span>
+        {numero ? (
+          <button type="button" aria-label="Effacer" onClick={() => setNumero((n) => n.slice(0, -1))}>
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="#aaa">
+              <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z" />
+            </svg>
+          </button>
+        ) : null}
+      </div>
+      <div className="tel-pave">
+        {TOUCHES_TEL.map(([a, b]) => (
+          <button key={a} type="button" onClick={() => setNumero((n) => (n.length < 18 ? n + (a === "0" && n === "" ? "+" : a) : n))}>
+            <b>{a}</b>
+            <span>{b}</span>
+          </button>
+        ))}
+      </div>
+      <button type="button" className="tel-appeler" onClick={() => lancer(numero)} disabled={!numero} aria-label="Appeler">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="#fff">
+          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+        </svg>
+      </button>
     </div>
   );
 }

@@ -460,7 +460,7 @@ export function JeuDauphin() {
       if (j.etat === "pret") {
         ctx.fillStyle = "#535353";
         ctx.font = "bold 12px 'Courier New', monospace";
-        ctx.fillText("TOUCHE : SAUTER LES MINES", W / 2, 56);
+        ctx.fillText("GYPSY · TOUCHE : SAUTER LES MINES", W / 2, 56);
         ctx.fillText("GLISSE VERS LE BAS : PLONGER", W / 2, 74);
       }
       if (j.etat === "fini") {
@@ -487,7 +487,7 @@ export function JeuDauphin() {
 
   return (
     <div className="jeu-dauphin">
-      <canvas ref={toile} aria-label="Jeu du dauphin : toucher pour sauter les mines, glisser vers le bas pour plonger sous les oiseaux" />
+      <canvas ref={toile} aria-label="Jeu de Gypsy le dauphin : toucher pour sauter les mines, glisser vers le bas pour plonger sous les oiseaux" />
     </div>
   );
 }

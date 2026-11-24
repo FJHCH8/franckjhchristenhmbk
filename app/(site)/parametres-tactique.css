@@ -191,3 +191,13 @@
 /* lancer AakanOS : avertissement rouge blanc rougeâtre */
 .ptac .p2-action.rouge { background: linear-gradient(100deg, #e0303a 0%, #ff9aa0 25%, #fff3f4 50%, #ff9aa0 75%, #e0303a 100%) !important; background-size: 200% 100% !important; animation: reflet-bleu 3.2s linear infinite !important; color: #2a0006; text-transform: none; letter-spacing: .3px; font-size: 16px; line-height: 1.3; }
 .ptac .p2-action-txt { text-align: left; }
+
+/* barre : cœurs 8 bits */
+.coeurs { display: flex; gap: 4px; margin-top: 12px; flex-wrap: nowrap; }
+.coeurs svg { width: 18px; height: 16px; flex: none; animation: coeur-pop .35s steps(3) both; }
+.coeurs svg.plein { animation: coeur-pop .35s steps(3) both, coeur-bat 1.6s steps(2) .8s infinite; }
+@keyframes coeur-pop { from { transform: scale(0); } }
+@keyframes coeur-bat { 50% { transform: scale(1.12); } }
+@media (max-width: 860px) { .coeurs svg { width: 15px; height: 13px; } }
+
+.coeurs { gap: 3px; } .coeurs svg { flex: 1 1 0; min-width: 0; max-width: 18px; height: auto; aspect-ratio: 7 / 6; }
