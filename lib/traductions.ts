@@ -24,6 +24,12 @@ const MOIS: [string, string, string, string][] = [
 ];
 
 const LIGNES: [string, string, string, string][] = [
+  // actualité : Hanck 7 Pro Max
+  ["// nouveau", "// Neu", "// Nytt", "// Nevez"],
+  ["le téléphone de casto, sous aakanos", "das Telefon von Casto, mit AakanOS", "Castos telefon, med AakanOS", "pellgomz Casto, dindan AakanOS"],
+  ["↻ lâcher encore", "↻ nochmal fallen lassen", "↻ släpp igen", "↻ laoskel adarre"],
+  ["attrape les logos, déplace-les, lance-les.", "Schnapp dir die Logos, schieb sie herum, wirf sie.", "Fånga logotyperna, flytta dem, kasta dem.", "Pak al logoioù, fiñv anezho, strink anezho."],
+  ["actualité : hanck # pro max, endurreisen, l'aube et le cadran", "Aktuelles: Hanck # Pro Max, Endurreisen, die Morgendämmerung und das Zifferblatt", "Aktuellt: Hanck # Pro Max, Endurreisen, gryningen och urtavlan", "Keleier: Hanck # Pro Max, Endurreisen, ar gouloù-deiz hag ar c’hadran"],
   // page 404
   ["erreur 404", "Fehler 404", "Fel 404", "Fazi 404"],
   ["la page que vous voulez n’existe pas.", "Die Seite, die Sie suchen, existiert nicht.", "Sidan du letar efter finns inte.", "N’eus ket eus ar bajenn a fell deoc’h."],

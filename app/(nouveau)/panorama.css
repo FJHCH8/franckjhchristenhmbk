@@ -605,3 +605,16 @@ html body .pano-pivot button.is-actif{
   0%, 100% { opacity: 0.72; }
   50% { opacity: 1; }
 }
+/* ---------- Actualité : Hanck 7 Pro Max, les logos qui tombent (8 bits) ---------- */
+.hanck { position: relative; }
+.hanck-terrain { position: relative; height: 300px; overflow: hidden; border: 1px solid #1d2a35; background: #2a6fc9 url(/media/hanck/paysage.png) center bottom / cover no-repeat; image-rendering: pixelated; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.hanck-corps { position: absolute; left: 0; top: 0; z-index: 2; display: grid; place-items: center; cursor: grab; touch-action: none; will-change: transform; filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .35)); }
+.hanck-corps:active { cursor: grabbing; }
+.hanck-corps img, .hanck-corps svg { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; pointer-events: none; }
+.hanck-titre { position: absolute; left: 12px; top: 10px; z-index: 1; pointer-events: none; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
+.hanck-titre small { display: block; font: 10px var(--f-mono), monospace; letter-spacing: 2px; color: #fff; }
+.hanck-titre b { display: block; font-family: var(--p2), "Chakra Petch", sans-serif; font-size: 26px; letter-spacing: 2px; color: #fff; line-height: 1.05; }
+.hanck-titre span { font: 11px var(--f-mono), monospace; letter-spacing: 1px; color: #eaf6ff; }
+.hanck-relancer { position: absolute; right: 10px; top: 10px; z-index: 3; padding: 6px 10px !important; font: 11px var(--f-mono), monospace; letter-spacing: 1.5px; color: #fff !important; background: rgba(0, 0, 0, .35) !important; border: 1px solid rgba(255, 255, 255, .5) !important; }
+.hanck-aide { margin: 8px 0 0; font: 11px var(--f-mono), monospace; letter-spacing: 1.5px; color: #8fd0ff; text-transform: uppercase; }
+.hanck-relancer { top: auto; bottom: 8px; right: 8px; }
