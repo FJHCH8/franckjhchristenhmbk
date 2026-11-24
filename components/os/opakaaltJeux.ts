@@ -1,8 +1,9 @@
 /**
- * Opakaalt : les cerveaux des trois jeux (morpion, puissance 4, échecs) et ceux du blond.
- * Le blond est bon mais pas parfait : il lui arrive de se déconcentrer (il te regarde).
+ * Opakaalt : les cerveaux des jeux (morpion, puissance 4, échecs, qui-suis-je, bataille navale)
+ * et ceux du blond, calibrés par le niveau Soumis / Versa / Top.
  * L'indice, lui, joue au mieux pour toi.
  */
+import { paramsDiff, type Difficulte } from "./opakaaltDiff";
 
 /* ---------------- Morpion ---------------- */
 
@@ -44,9 +45,11 @@ export function meilleurMorpion(g: Case[], moi: "X" | "O"): number {
   }
   return coup;
 }
-/** Le blond joue « O ». distraction : probabilité de jouer n'importe où. */
-export function blondMorpion(g: Case[], distraction: number): number {
+/** Le blond joue « O ». */
+export function blondMorpion(g: Case[], d: Difficulte, nuls = 0): number {
   const libres = g.map((v, i) => (v ? -1 : i)).filter((i) => i >= 0);
+  const p = paramsDiff(d);
+  const distraction = Math.min(0.92, p.morpion + nuls * p.morpionNuls);
   if (Math.random() < distraction) return libres[Math.floor(Math.random() * libres.length)]!;
   return meilleurMorpion(g, "O");
 }
@@ -138,10 +141,11 @@ export function meilleur4(g: Grille4, moi: "X" | "O", prof = 5): number {
   }
   return coup;
 }
-export function blond4(g: Grille4, distraction: number): number {
+export function blond4(g: Grille4, d: Difficulte): number {
   const libres = [0, 1, 2, 3, 4, 5, 6].filter((c) => chute(g, c) >= 0);
-  if (Math.random() < distraction) return libres[Math.floor(Math.random() * libres.length)]!;
-  return meilleur4(g, "O", 4);
+  const p = paramsDiff(d);
+  if (Math.random() < p.p4) return libres[Math.floor(Math.random() * libres.length)]!;
+  return meilleur4(g, "O", p.p4prof);
 }
 
 /* ---------------- Échecs ---------------- */
@@ -382,13 +386,168 @@ function chercher(e: Echiquier, prof: number): { m: Coup; s: number }[] {
 export function indiceEchecs(e: Echiquier): Coup | null {
   return chercher(e, 3)[0]?.m ?? null;
 }
-/** Le blond (noirs) : correct, mais il lui arrive de jouer n'importe quoi en te regardant. */
-export function blondEchecs(e: Echiquier, distraction: number): Coup | null {
+/** Le blond (noirs), calibré par le niveau. */
+export function blondEchecs(e: Echiquier, d: Difficulte): Coup | null {
   const l = coupsLegaux(e);
   if (!l.length) return null;
-  if (Math.random() < distraction) return l[Math.floor(Math.random() * l.length)]!;
-  const res = chercher(e, 2);
+  const p = paramsDiff(d);
+  if (Math.random() < p.echecs) return l[Math.floor(Math.random() * l.length)]!;
+  const res = chercher(e, p.echecsProf);
+  if (!res.length) return l[0]!;
+  const marge = d === "top" ? 8 : d === "versa" ? 15 : 40;
   const best = res[0]!.s;
-  const proches = res.filter((r) => r.s >= best - 15);
+  const proches = res.filter((r) => r.s >= best - marge);
   return proches[Math.floor(Math.random() * proches.length)]!.m;
+}
+
+/* ---------------- Qui suis-je ---------------- */
+
+export type TraitsQui = {
+  cheveux: "rose" | "blond" | "brun" | "roux";
+  long: boolean;
+  lunettes: boolean;
+  chapeau: boolean;
+  barbe: boolean;
+  yeux: "bleu" | "vert" | "marron";
+  sourire: boolean;
+};
+
+export type QuestionQui = { id: string; texte: string; test: (t: TraitsQui) => boolean };
+
+export const QUESTIONS_QUI: QuestionQui[] = [
+  { id: "barbe", texte: "A-t-il une barbe ?", test: (t) => t.barbe },
+  { id: "lunettes", texte: "Porte-t-il des lunettes ?", test: (t) => t.lunettes },
+  { id: "chapeau", texte: "Porte-t-il un chapeau ?", test: (t) => t.chapeau },
+  { id: "long", texte: "A-t-il les cheveux longs ?", test: (t) => t.long },
+  { id: "rose", texte: "A-t-il les cheveux roses ?", test: (t) => t.cheveux === "rose" },
+  { id: "blond", texte: "A-t-il les cheveux blonds ?", test: (t) => t.cheveux === "blond" },
+  { id: "brun", texte: "A-t-il les cheveux bruns ?", test: (t) => t.cheveux === "brun" },
+  { id: "roux", texte: "A-t-il les cheveux roux ?", test: (t) => t.cheveux === "roux" },
+  { id: "bleu", texte: "A-t-il les yeux bleus ?", test: (t) => t.yeux === "bleu" },
+  { id: "vert", texte: "A-t-il les yeux verts ?", test: (t) => t.yeux === "vert" },
+  { id: "marron", texte: "A-t-il les yeux marron ?", test: (t) => t.yeux === "marron" },
+  { id: "sourire", texte: "Sourit-il ?", test: (t) => t.sourire },
+];
+
+export const VISAGES: TraitsQui[] = [
+  { cheveux: "blond", long: false, lunettes: false, chapeau: false, barbe: true, yeux: "bleu", sourire: true },
+  { cheveux: "blond", long: true, lunettes: true, chapeau: false, barbe: false, yeux: "vert", sourire: false },
+  { cheveux: "rose", long: true, lunettes: false, chapeau: false, barbe: false, yeux: "vert", sourire: true },
+  { cheveux: "rose", long: false, lunettes: true, chapeau: true, barbe: true, yeux: "marron", sourire: false },
+  { cheveux: "brun", long: false, lunettes: false, chapeau: true, barbe: true, yeux: "marron", sourire: true },
+  { cheveux: "brun", long: true, lunettes: true, chapeau: false, barbe: false, yeux: "bleu", sourire: false },
+  { cheveux: "roux", long: false, lunettes: true, chapeau: false, barbe: false, yeux: "vert", sourire: true },
+  { cheveux: "roux", long: true, lunettes: false, chapeau: true, barbe: true, yeux: "bleu", sourire: false },
+  { cheveux: "blond", long: false, lunettes: true, chapeau: true, barbe: false, yeux: "marron", sourire: true },
+  { cheveux: "rose", long: true, lunettes: false, chapeau: true, barbe: false, yeux: "bleu", sourire: false },
+  { cheveux: "brun", long: false, lunettes: false, chapeau: false, barbe: false, yeux: "vert", sourire: true },
+  { cheveux: "roux", long: false, lunettes: false, chapeau: false, barbe: true, yeux: "marron", sourire: false },
+];
+
+export function meilleurQuestionQui(restants: number[], posees: Set<string>): QuestionQui | null {
+  const pool = restants.map((i) => VISAGES[i]!);
+  let best: QuestionQui | null = null;
+  let score = 99;
+  for (const q of QUESTIONS_QUI) {
+    if (posees.has(q.id)) continue;
+    const oui = pool.filter((t) => q.test(t)).length;
+    if (oui === 0 || oui === pool.length) continue;
+    const s = Math.abs(oui - (pool.length - oui));
+    if (s < score) { score = s; best = q; }
+  }
+  return best;
+}
+
+export function questionBlondQui(restants: number[], posees: Set<string>, d: Difficulte): QuestionQui | null {
+  const bonnes = QUESTIONS_QUI.filter((q) => {
+    if (posees.has(q.id)) return false;
+    const pool = restants.map((i) => VISAGES[i]!);
+    const oui = pool.filter((t) => q.test(t)).length;
+    return oui > 0 && oui < pool.length;
+  });
+  if (!bonnes.length) return null;
+  if (Math.random() < paramsDiff(d).quiErreur) return bonnes[Math.floor(Math.random() * bonnes.length)]!;
+  return meilleurQuestionQui(restants, posees) ?? bonnes[0]!;
+}
+
+/* ---------------- Bataille navale (6×6) ---------------- */
+
+export const NAV_N = 6;
+export const NAV_TAILLES = [3, 2, 2] as const;
+
+export type CaseNav = "vide" | "eau" | "touche" | "coule";
+export type Flotte = { bateaux: number[][]; cellules: Set<number> };
+
+export function placerFlotte(rand: () => number = Math.random): Flotte {
+  const cellules = new Set<number>();
+  const bateaux: number[][] = [];
+  for (const len of NAV_TAILLES) {
+    let ok = false;
+    for (let t = 0; t < 80 && !ok; t++) {
+      const horiz = rand() < 0.5;
+      const maxR = horiz ? NAV_N : NAV_N - len + 1;
+      const maxC = horiz ? NAV_N - len + 1 : NAV_N;
+      const r = Math.floor(rand() * maxR);
+      const c = Math.floor(rand() * maxC);
+      const pts = Array.from({ length: len }, (_, i) => (horiz ? r * NAV_N + c + i : (r + i) * NAV_N + c));
+      if (pts.some((p) => cellules.has(p))) continue;
+      pts.forEach((p) => cellules.add(p));
+      bateaux.push(pts);
+      ok = true;
+    }
+  }
+  return { bateaux, cellules };
+}
+
+export function etatTir(flotte: Flotte, tirs: Set<number>, i: number): CaseNav {
+  if (!flotte.cellules.has(i)) return "eau";
+  const bateau = flotte.bateaux.find((b) => b.includes(i));
+  if (bateau && bateau.every((p) => p === i || tirs.has(p))) return "coule";
+  return "touche";
+}
+
+export function flotteCoulee(flotte: Flotte, tirs: Set<number>) {
+  return [...flotte.cellules].every((c) => tirs.has(c));
+}
+
+export function blondNavale(tirs: Set<number>, flotte: Flotte, d: Difficulte): number {
+  const libres = Array.from({ length: NAV_N * NAV_N }, (_, i) => i).filter((i) => !tirs.has(i));
+  const mode = paramsDiff(d).navale;
+  if (mode === "random" || !libres.length) return libres[Math.floor(Math.random() * libres.length)] ?? 0;
+  const touches = [...tirs].filter((i) => flotte.cellules.has(i) && etatTir(flotte, tirs, i) !== "coule");
+  // ne pas retirer un bateau déjà coulé des cibles : etatTir a besoin des tirs déjà faits ; on filtre les cellules de bateaux non coulés
+  const nonCoules = flotte.bateaux.filter((b) => !b.every((p) => tirs.has(p))).flat();
+  const hits = [...tirs].filter((i) => nonCoules.includes(i));
+  const voisins = (i: number) => {
+    const r = Math.floor(i / NAV_N);
+    const c = i % NAV_N;
+    return [c > 0 ? i - 1 : -1, c < NAV_N - 1 ? i + 1 : -1, r > 0 ? i - NAV_N : -1, r < NAV_N - 1 ? i + NAV_N : -1].filter((x) => x >= 0 && !tirs.has(x));
+  };
+  if (hits.length) {
+    // aligner si deux touches consécutives
+    if (hits.length >= 2) {
+      const tries: number[] = [];
+      for (const a of hits) for (const b of hits) {
+        if (a >= b) continue;
+        if (Math.floor(a / NAV_N) === Math.floor(b / NAV_N) && Math.abs(a - b) < NAV_N) {
+          const dlt = a > b ? 1 : -1;
+          const ext = [Math.min(a, b) - 1, Math.max(a, b) + 1];
+          for (const x of ext) if (x >= 0 && x < NAV_N * NAV_N && Math.floor(x / NAV_N) === Math.floor(a / NAV_N) && !tirs.has(x)) tries.push(x);
+        }
+        if (a % NAV_N === b % NAV_N) {
+          const ext = [Math.min(a, b) - NAV_N, Math.max(a, b) + NAV_N];
+          for (const x of ext) if (x >= 0 && x < NAV_N * NAV_N && x % NAV_N === a % NAV_N && !tirs.has(x)) tries.push(x);
+        }
+      }
+      if (tries.length) return tries[Math.floor(Math.random() * tries.length)]!;
+    }
+    const adj = hits.flatMap(voisins);
+    if (adj.length) return adj[Math.floor(Math.random() * adj.length)]!;
+  }
+  if (mode === "smart") {
+    const pares = libres.filter((i) => (Math.floor(i / NAV_N) + (i % NAV_N)) % 2 === 0);
+    const pool = pares.length ? pares : libres;
+    return pool[Math.floor(Math.random() * pool.length)]!;
+  }
+  return libres[Math.floor(Math.random() * libres.length)]!;
 }

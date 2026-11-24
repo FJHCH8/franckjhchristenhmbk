@@ -1366,7 +1366,34 @@ a.app-ligne:active { background: var(--presse); }
 @keyframes op-defile { from { transform: translateY(0); } to { transform: translateY(calc(-100% - 640px)); } }
 .op-james { font-size: 11px !important; color: #fff !important; }
 .op-neon { color: #ff3fd0 !important; text-shadow: 0 0 4px #ff3fd0, 0 0 10px #3df7ff; animation: op-neon 2.6s steps(1) infinite; }
-.op-chat-neon { filter: drop-shadow(0 0 3px #ff3fd0) drop-shadow(0 0 8px #3df7ff); animation: op-neon 2.6s steps(1) infinite; }
+.op-chat-logo { position: relative; display: inline-block; overflow: visible; }
+.op-chat-halo { position: absolute; left: 50%; top: 48%; width: 160%; height: 160%; border-radius: 50%; transform: translate(-50%, -50%) scale(.3); background: radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(255,230,255,.7) 28%, rgba(180,220,255,.4) 52%, transparent 72%); filter: blur(8px); pointer-events: none; z-index: 0; animation: op-chat-halo 2.4s ease-out 6.2s both; }
+.op-chat-logo svg { position: relative; z-index: 1; overflow: visible; }
+.op-chat-poil { fill: #0b0b12; animation: op-chat-poil 2.4s steps(2) 6.2s both; }
+.op-chat-contour { fill: #ff3fd0; animation: op-chat-contour 2.4s steps(2) 6.2s both; }
+.op-chat-mine { fill: #ff5a96; animation: op-chat-mine 2.4s steps(2) 6.2s both; }
+.op-chat-oeil-g { fill: #7dff6a; }
+.op-chat-oeil-d { fill: #7dff6a; animation: op-chat-oeil-d 2.4s steps(2) 6.2s both; }
+.op-chat-nez { fill: #ff6fae; }
+.op-chat-bande { fill: #d01028; }
+.op-chat-diese { fill: #fff; }
+.op-chat-neon { filter: drop-shadow(0 0 3px #ff3fd0) drop-shadow(0 0 8px #3df7ff); animation: op-chat-neon-filtre 2.4s ease-out 6.2s both; }
+@keyframes op-chat-halo {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.25); }
+  35% { opacity: .55; transform: translate(-50%, -50%) scale(.85); }
+  52% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  100% { opacity: .5; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes op-chat-poil { 0%, 54% { fill: #0b0b12; } 70%, 100% { fill: #f6f6fa; } }
+@keyframes op-chat-contour { 0%, 54% { fill: #ff3fd0; } 70%, 100% { fill: #c8e8ff; } }
+@keyframes op-chat-mine { 0%, 54% { fill: #ff5a96; } 70%, 100% { fill: #241228; } }
+@keyframes op-chat-oeil-d { 0%, 54% { fill: #7dff6a; } 70%, 100% { fill: #40a8ff; } }
+@keyframes op-chat-neon-filtre {
+  0%, 45% { filter: drop-shadow(0 0 3px #ff3fd0) drop-shadow(0 0 8px #3df7ff); }
+  52% { filter: drop-shadow(0 0 18px #fff) drop-shadow(0 0 32px #fff) drop-shadow(0 0 8px #c8e8ff); }
+  100% { filter: drop-shadow(0 0 6px #c8e8ff) drop-shadow(0 0 16px #ffffff); }
+}
+
 .op-retour-menu { position: absolute; left: 0; right: 0; bottom: 14px; width: max-content; margin: 0 auto; z-index: 45; pointer-events: auto; }
 
 /* ---------------- Pastilles de notification (point bleu Holo) ---------------- */
@@ -1572,4 +1599,10 @@ a.app-ligne:active { background: var(--presse); }
   .op-camera { transition: none !important; }
   .op-voiture.a, .op-voiture.b, .op-voiture.c { animation: none !important; }
   .op-nouvelle, .op-titre { animation: none !important; }
+  .op-chat-halo { animation: none !important; opacity: .5; transform: translate(-50%, -50%) scale(1); }
+  .op-chat-poil { animation: none !important; fill: #f6f6fa; }
+  .op-chat-contour { animation: none !important; fill: #c8e8ff; }
+  .op-chat-mine { animation: none !important; fill: #241228; }
+  .op-chat-oeil-d { animation: none !important; fill: #40a8ff; }
+  .op-chat-neon { animation: none !important; filter: drop-shadow(0 0 6px #c8e8ff) drop-shadow(0 0 16px #ffffff); }
 }

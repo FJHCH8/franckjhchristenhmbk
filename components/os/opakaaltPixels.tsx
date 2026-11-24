@@ -161,15 +161,73 @@ export function CoeurPx({ taille = 3, couleur = "#ff4f8b", className, style }: {
   );
 }
 
-/** Le logo de James-games : un chat noir en néon. */
+/** Le logo de James-games : chat les poings sur les hanches, pas content, brassard rouge au « # ». */
 export function ChatNeon({ taille = 6 }: { taille?: number }) {
-  const N = "#0b0b12";
-  const r: Px[] = [
-    [2, 0, 1, 2, N], [8, 0, 1, 2, N], [2, 2, 7, 5, N], [1, 3, 9, 3, N],
-    [3, 4, 1, 1, "#7dff6a"], [7, 4, 1, 1, "#7dff6a"], [5, 5, 1, 1, "#ff6fae"],
-    [2, 7, 8, 6, N], [1, 9, 10, 4, N], [11, 8, 1, 4, N], [12, 6, 1, 3, N], [13, 5, 1, 2, N],
+  const w = 25;
+  const h = 21;
+  const W = w + 2;
+  const H = h + 2;
+  type Role = "poil" | "mine" | "oeilG" | "oeilD" | "nez" | "bande" | "diese";
+  const places: { x: number; y: number; rw: number; rh: number; role: Role }[] = [
+    // oreilles, tête, cou, torse
+    { x: 9, y: 0, rw: 1, rh: 2, role: "poil" }, { x: 15, y: 0, rw: 1, rh: 2, role: "poil" },
+    { x: 9, y: 2, rw: 7, rh: 6, role: "poil" }, { x: 8, y: 3, rw: 9, rh: 4, role: "poil" },
+    { x: 10, y: 8, rw: 5, rh: 2, role: "poil" },
+    { x: 9, y: 9, rw: 7, rh: 10, role: "poil" }, { x: 8, y: 12, rw: 9, rh: 7, role: "poil" },
+    // sourcils + bouche (pas content)
+    { x: 9, y: 3, rw: 2, rh: 1, role: "mine" }, { x: 15, y: 3, rw: 2, rh: 1, role: "mine" },
+    { x: 11, y: 7, rw: 1, rh: 1, role: "mine" }, { x: 12, y: 8, rw: 2, rh: 1, role: "mine" }, { x: 14, y: 7, rw: 1, rh: 1, role: "mine" },
+    // yeux (le droit devient bleu après l’éclair)
+    { x: 10, y: 5, rw: 1, rh: 1, role: "oeilG" }, { x: 14, y: 5, rw: 1, rh: 1, role: "oeilD" },
+    { x: 12, y: 6, rw: 1, rh: 1, role: "nez" },
+    // bras gauche : coude en dehors, poing sur la hanche
+    { x: 7, y: 10, rw: 3, rh: 2, role: "poil" }, { x: 5, y: 11, rw: 3, rh: 2, role: "poil" },
+    { x: 3, y: 12, rw: 3, rh: 3, role: "poil" }, { x: 2, y: 13, rw: 2, rh: 3, role: "poil" },
+    { x: 4, y: 15, rw: 3, rh: 2, role: "poil" }, { x: 6, y: 17, rw: 4, rh: 3, role: "poil" },
+    // bras droit : épaule, brassard, coude en bas, poing sur la hanche
+    { x: 15, y: 10, rw: 2, rh: 3, role: "poil" },
+    { x: 16, y: 9, rw: 7, rh: 7, role: "bande" },
+    { x: 22, y: 16, rw: 2, rh: 3, role: "poil" }, { x: 21, y: 16, rw: 1, rh: 1, role: "poil" },
+    { x: 18, y: 18, rw: 4, rh: 1, role: "poil" }, { x: 15, y: 17, rw: 5, rh: 3, role: "poil" },
   ];
-  return <Pixels rects={r} w={14} h={13} taille={taille} contour="#ff3fd0" className="op-chat-neon" />;
+  // « # » blanc, 5×7, directement sur le rouge (pas de pastille)
+  const diese = [".#.#.", ".#.#.", "#####", ".#.#.", "#####", ".#.#.", ".#.#."];
+  diese.forEach((row, dy) => [...row].forEach((ch, dx) => { if (ch === "#") places.push({ x: 17 + dx, y: 9 + dy, rw: 1, rh: 1, role: "diese" }); }));
+
+  const role: (Role | "contour" | null)[] = Array(W * H).fill(null);
+  for (const p of places) for (let j = 0; j < p.rh; j++) for (let i = 0; i < p.rw; i++) {
+    const X = p.x + i + 1, Y = p.y + j + 1;
+    if (X >= 0 && X < W && Y >= 0 && Y < H) role[Y * W + X] = p.role;
+  }
+  const plein = (X: number, Y: number) => Y >= 0 && Y < H && X >= 0 && X < W && role[Y * W + X] !== null && role[Y * W + X] !== "contour";
+  for (let Y = 0; Y < H; Y++) for (let X = 0; X < W; X++) {
+    if (role[Y * W + X]) continue;
+    if (plein(X - 1, Y) || plein(X + 1, Y) || plein(X, Y - 1) || plein(X, Y + 1)) role[Y * W + X] = "contour";
+  }
+  const CLASSE: Record<string, string> = {
+    poil: "op-chat-poil", mine: "op-chat-mine", oeilG: "op-chat-oeil-g", oeilD: "op-chat-oeil-d",
+    nez: "op-chat-nez", bande: "op-chat-bande", diese: "op-chat-diese", contour: "op-chat-contour",
+  };
+  const runs: { x: number; y: number; n: number; c: string }[] = [];
+  for (let Y = 0; Y < H; Y++) {
+    let X = 0;
+    while (X < W) {
+      const r = role[Y * W + X];
+      if (!r) { X++; continue; }
+      let n = 1;
+      while (X + n < W && role[Y * W + X + n] === r) n++;
+      runs.push({ x: X, y: Y, n, c: CLASSE[r]! });
+      X += n;
+    }
+  }
+  return (
+    <span className="op-chat-logo">
+      <i className="op-chat-halo" aria-hidden="true" />
+      <svg className="op-chat-neon" viewBox={`0 0 ${W} ${H}`} width={W * taille} height={H * taille} shapeRendering="crispEdges" aria-hidden="true">
+        {runs.map((r, k) => <rect key={k} className={r.c} x={r.x} y={r.y} width={r.n} height={1} />)}
+      </svg>
+    </span>
+  );
 }
 
 /** Les pièces d'échecs, en pixels (10 × 10). */
@@ -216,11 +274,15 @@ const LOIN = immeubles(7, 14, 70, 150, ["#5b6d9a", "#52628c", "#64729e"]);
 const PRES = immeubles(31, 12, 40, 110, ["#2f3a5e", "#38446c", "#2a3354", "#3c3460"]);
 
 /** La ville aux gratte-ciel. anime : le jour passe, la nuit tombe, en boucle. */
-export function Ville({ anime = false, nuit = false }: { anime?: boolean; nuit?: boolean }) {
+export function Ville({ anime = false, nuit = false, couche = "tout" }: { anime?: boolean; nuit?: boolean; couche?: "tout" | "fond" | "avant" }) {
   const SOL = 250;
   const cls = anime ? " op-cycle" : nuit ? " op-fige-nuit" : " op-fige-jour";
+  const fond = couche !== "avant";
+  const avant = couche !== "fond";
   return (
-    <svg className={`op-ville${cls}`} viewBox="0 0 180 320" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden="true">
+    <svg className={`${couche === "avant" ? "op-ville-avant" : "op-ville"}${couche === "avant" ? "" : cls}`} viewBox="0 0 180 320" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden="true">
+      {couche === "avant" ? <rect width="180" height="320" fill="none" /> : null}
+      {fond ? <>
       <rect className="op-ciel-jour" width="180" height="320" fill="#7ec8ff" />
       <rect className="op-ciel-jour" y="150" width="180" height="100" fill="#b4e1ff" />
       <rect className="op-ciel-soir" width="180" height="320" fill="#ff8a5c" />
@@ -247,9 +309,9 @@ export function Ville({ anime = false, nuit = false }: { anime?: boolean; nuit?:
         <rect x="110" y="70" width="30" height="6" fill="#fff" />
         <rect x="118" y="65" width="12" height="5" fill="#fff" />
       </g>
-      {[LOIN, PRES].map((couche, k) => (
+      {[LOIN, PRES].map((rang, k) => (
         <g key={k} className={k ? "op-pres" : "op-loin"}>
-          {couche.map((b, i) => (
+          {rang.map((b, i) => (
             <g key={i} transform={`translate(${b.x} ${SOL - b.h})`}>
               <rect width={b.w} height={b.h} fill={b.col} />
               <rect width="2" height={b.h} fill="#00000022" />
@@ -266,16 +328,20 @@ export function Ville({ anime = false, nuit = false }: { anime?: boolean; nuit?:
         </g>
       ))}
       <rect className="op-voile-nuit" width="180" height={SOL} fill="#06081f" />
-      {/* trottoir, route, voitures */}
-      <rect y={SOL} width="180" height="10" fill="#9a9aa8" />
+      </> : null}
+      {fond ? <>
+      {/* trottoir (bande grise au-dessus de la chaussée) */}
+      <rect y={SOL} width="180" height="14" fill="#9a9aa8" />
       <rect y={SOL} width="180" height="1" fill="#c8c8d2" />
-      <rect y={SOL + 10} width="180" height="60" fill="#3a3a44" />
+      </> : null}
+      {avant ? <>
+      <rect y={SOL + 14} width="180" height="56" fill="#3a3a44" />
       {Array.from({ length: 12 }, (_, i) => (
-        <rect key={i} x={i * 16} y={SOL + 28} width="8" height="2" fill="#e8e8e8" />
+        <rect key={i} x={i * 16} y={SOL + 32} width="8" height="2" fill="#e8e8e8" />
       ))}
       <g className="op-voiture a">
-        <rect x="0" y={SOL + 16} width="22" height="6" fill="#e84a5f" />
-        <rect x="5" y={SOL + 12} width="11" height="4" fill="#e84a5f" />
+        <rect x="0" y={SOL + 20} width="22" height="6" fill="#e84a5f" />
+        <rect x="5" y={SOL + 16} width="11" height="4" fill="#e84a5f" />
         <rect x="7" y={SOL + 13} width="7" height="3" fill="#a7e0ff" />
         <rect x="3" y={SOL + 21} width="4" height="3" fill="#111" />
         <rect x="15" y={SOL + 21} width="4" height="3" fill="#111" />
@@ -290,11 +356,12 @@ export function Ville({ anime = false, nuit = false }: { anime?: boolean; nuit?:
         <rect x="9" y={SOL + 28} width="6" height="2" fill="#222" />
       </g>
       <g className="op-voiture c">
-        <rect x="0" y={SOL + 46} width="34" height="10" fill="#4fb0ff" />
-        <rect x="2" y={SOL + 47} width="30" height="3" fill="#bfe6ff" />
-        <rect x="4" y={SOL + 55} width="5" height="3" fill="#111" />
-        <rect x="25" y={SOL + 55} width="5" height="3" fill="#111" />
+        <rect x="0" y={SOL + 50} width="34" height="10" fill="#4fb0ff" />
+        <rect x="2" y={SOL + 51} width="30" height="3" fill="#bfe6ff" />
+        <rect x="4" y={SOL + 59} width="5" height="3" fill="#111" />
+        <rect x="25" y={SOL + 59} width="5" height="3" fill="#111" />
       </g>
+      </> : null}
     </svg>
   );
 }
