@@ -79,8 +79,8 @@ type MsgGael = { id: number; de: "moi" | "lui"; texte: string; h: string; lu?: b
 type Correspondant = "gael" | "celjo" | "pacifick" | "samtelecom";
 const CORRESPONDANTS: { id: Correspondant; nom: string; photo: string; accueil?: string }[] = [
   { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", accueil: "Salut ! Tu veux joindre Franck ? Son contact est dans l’appli Contacts." },
-  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.svg" },
-  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.svg" },
+  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.jpg" },
+  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.jpg" },
   { id: "samtelecom", nom: "Sam-Telecom", photo: "/aakanos/sam-telecom-tete.png" },
 ];
 /** Les SMS automatiques de l'opérateur, reçus 5 secondes après le déverrouillage. On ne peut pas y répondre. */
@@ -1410,10 +1410,10 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
 
 type Contact = { id: string; nom: string; photo: string; tel?: string; mail?: string; insta?: string; note?: string };
 const CONTACTS: Contact[] = [
-  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.svg", tel: "+0-20070600084", note: "Le lapin, toujours sur son scooter." },
+  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.jpg", tel: "+0-20070600084", note: "Le lapin motard, toujours sur sa moto." },
   { id: "franck", nom: "Franck J.H. Christen H.M.B.K.", photo: "/media/franck.jpg", mail: MAIL, insta: "@fjhchristenhmbk", note: "Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui." },
   { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", tel: "+0-2003220008" },
-  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.svg", tel: "+0-43365470730", note: "L’orque. Il nage." },
+  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.jpg", tel: "+0-43365470730", note: "L’orque, prof de maths au fond de l’océan." },
 ];
 
 /** Contacts : Celjo, Franck, Gaël, Pacifick. */

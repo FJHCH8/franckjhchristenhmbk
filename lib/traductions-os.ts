@@ -93,8 +93,8 @@ export const LIGNES_OS: [string, string, string, string][] = [
   ["e-mail", "E-Mail", "E-post", "Postel"],
   ["personnel", "Privat", "Personlig", "Personel"],
   ["réseaux", "Netzwerke", "Nätverk", "Rouedadoù"],
-  ["le lapin, toujours sur son scooter.", "Der Hase, immer auf seinem Roller.", "Kaninen, alltid på sin skoter.", "Al lapin, atav war e skoter."],
-  ["l’orque. il nage.", "Der Orca. Er schwimmt.", "Späckhuggaren. Han simmar.", "An orc’h. Neuñviñ a ra."],
+  ["le lapin motard, toujours sur sa moto.", "Der Biker-Hase, immer auf seinem Motorrad.", "Motorcykelkaninen, alltid på sin motorcykel.", "Al lapin moto, atav war e varc’h-tan."],
+  ["l’orque, prof de maths au fond de l’océan.", "Der Orca, Mathelehrer auf dem Meeresgrund.", "Späckhuggaren, mattelärare på havets botten.", "An orc’h, kelenner matematik e foñs ar meurvor."],
   // nounou, pulpüs, dauphin
   ["rechercher ou saisir une adresse", "Suchen oder Adresse eingeben", "Sök eller ange en adress", "Klask pe skrivañ ur chomlec’h"],
   ["rechercher avec nounou", "Mit Nounou suchen", "Sök med Nounou", "Klask gant Nounou"],
