@@ -121,3 +121,139 @@ export function tonaliteRetour(): () => void {
     } catch {}
   };
 }
+
+/* ---------- Sons des applis (générés) ---------- */
+
+function bruit(c: AudioContext, duree: number) {
+  const b = c.createBuffer(1, Math.max(1, Math.floor(c.sampleRate * duree)), c.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const s = c.createBufferSource();
+  s.buffer = b;
+  return s;
+}
+
+/** Des pièces qui tombent et tintent. */
+export function sonPieces(n = 6) {
+  const c = contexte();
+  if (!c) return;
+  for (let i = 0; i < n; i++) {
+    const t = c.currentTime + i * 0.075 + Math.random() * 0.03;
+    const f = 2600 + Math.random() * 1600;
+    for (const [mult, vol] of [[1, 0.09], [2.76, 0.045], [5.4, 0.02]] as const) {
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.frequency.value = f * mult;
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18 + Math.random() * 0.1);
+      o.connect(g).connect(c.destination);
+      o.start(t);
+      o.stop(t + 0.3);
+    }
+  }
+}
+
+/** La compteuse de billets : un « brrrrt » de papier, puis un « ka-ching ». */
+export function sonBillets() {
+  const c = contexte();
+  if (!c) return;
+  const t0 = c.currentTime;
+  for (let i = 0; i < 16; i++) {
+    const t = t0 + i * 0.034;
+    const s = bruit(c, 0.022);
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 2800 + (i % 3) * 300;
+    f.Q.value = 1.2;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
+    s.connect(f).connect(g).connect(c.destination);
+    s.start(t);
+  }
+  const t = t0 + 0.62;
+  for (const [hz, vol] of [[1318, 0.08], [1976, 0.06], [2637, 0.04], [3951, 0.02]] as const) {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.frequency.value = hz;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+    o.connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 1.2);
+  }
+}
+
+/** Le trombone triste : « wah wah wah waaaah ». */
+export function sonTromboneTriste() {
+  const c = contexte();
+  if (!c) return;
+  const notes: [number, number][] = [[233, 0.42], [220, 0.42], [208, 0.42], [196, 1.5]];
+  let t = c.currentTime + 0.05;
+  for (const [hz, d] of notes) {
+    const o = c.createOscillator();
+    const f = c.createBiquadFilter();
+    const g = c.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(hz, t);
+    f.type = "lowpass";
+    f.frequency.setValueAtTime(500, t);
+    f.frequency.linearRampToValueAtTime(1400, t + 0.12);
+    f.frequency.linearRampToValueAtTime(700, t + d);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.11, t + 0.05);
+    g.gain.setValueAtTime(0.11, t + d - 0.08);
+    g.gain.linearRampToValueAtTime(0, t + d);
+    if (d > 1) {
+      const lfo = c.createOscillator();
+      const prof = c.createGain();
+      lfo.frequency.value = 6;
+      prof.gain.value = 5;
+      lfo.connect(prof).connect(o.frequency);
+      lfo.start(t + 0.3);
+      lfo.stop(t + d);
+    }
+    o.connect(f).connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + d + 0.02);
+    t += d;
+  }
+}
+
+/** La guitare wah-wah des vieux films coquins : « bow-chicka-bow-wow ». */
+export function sonWahWah() {
+  const c = contexte();
+  if (!c) return;
+  const t0 = c.currentTime + 0.05;
+  const coups: [number, number, number, boolean][] = [
+    // [début, durée, fréquence, wah ouvert ?]
+    [0, 0.34, 82.4, true],
+    [0.36, 0.09, 164.8, false],
+    [0.48, 0.09, 164.8, false],
+    [0.6, 0.34, 98, true],
+    [0.98, 0.7, 82.4, true],
+  ];
+  for (const [deb, d, hz, wah] of coups) {
+    const t = t0 + deb;
+    for (const det of [0, 4]) {
+      const o = c.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.value = hz * 2 + det;
+      const f = c.createBiquadFilter();
+      f.type = "bandpass";
+      f.Q.value = 6;
+      f.frequency.setValueAtTime(wah ? 350 : 1800, t);
+      if (wah) {
+        f.frequency.exponentialRampToValueAtTime(2200, t + d * 0.45);
+        f.frequency.exponentialRampToValueAtTime(400, t + d);
+      }
+      const g = c.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(wah ? 0.16 : 0.1, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(f).connect(g).connect(c.destination);
+      o.start(t);
+      o.stop(t + d + 0.02);
+    }
+  }
+}

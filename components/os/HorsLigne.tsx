@@ -6,6 +6,7 @@
  * Sharkobank facture chaque tentative ; Peeporn conseille un miroir.
  */
 import { useEffect, useState, type ReactNode } from "react";
+import { sonBillets, sonPieces, sonTromboneTriste, sonWahWah } from "./sonsAndroid";
 
 /** Chargement qui dure un peu, puis échoue ; relancé à chaque changement de `cle`. */
 function useEchec(cle: number, ms = 1900) {
@@ -53,6 +54,10 @@ const euros = (v: number) => `${v.toFixed(2).replace(".", ",")} €`;
 
 export function AppSharkobank() {
   const [essais, setEssais] = useState(1);
+  useEffect(() => {
+    const id = window.setTimeout(sonBillets, 350);
+    return () => window.clearTimeout(id);
+  }, []);
   const [dlg, setDlg] = useState<string | null>(null);
   const charge = useEchec(essais);
   return (
@@ -127,7 +132,7 @@ export function AppSharkobank() {
         <button type="button" className="jb-bouton" onClick={() => setDlg("Épargne")}>
           Épargne
         </button>
-        <button type="button" className="jb-bouton sk-reessai" disabled={charge} onClick={() => setEssais((n) => n + 1)}>
+        <button type="button" className="jb-bouton sk-reessai" disabled={charge} onClick={() => (sonPieces(), setEssais((n) => n + 1))}>
           {charge ? "Connexion sécurisée…" : `Réessayer (${euros(FRAIS)})`}
         </button>
       </div>
@@ -210,6 +215,7 @@ export function AppPeeporn() {
           </svg>
         </span>
       </div>
+      <div className="pp-defile">
       <div className="pp-rub">
         {RUBRIQUES.map((r, k) => (
           <button key={r} type="button" className={`${k === rub ? "on" : ""}${r === "Live cam" ? " live" : ""}`} onClick={() => (setRub(k), relancer())}>
@@ -233,6 +239,8 @@ export function AppPeeporn() {
         ))}
       </div>
 
+      </div>
+
       {age === null ? (
         <div className="dlg-fond hl-dlg">
           <div className="dlg pp-age" role="dialog" aria-modal="true">
@@ -241,10 +249,10 @@ export function AppPeeporn() {
               <p>Ce site contient des grenouilles très peu habillées. Avez-vous plus de 18 ans ?</p>
             </div>
             <div className="jb-boutons-dlg">
-              <button type="button" onClick={() => setAge("non")}>
+              <button type="button" onClick={() => (sonTromboneTriste(), setAge("non"))}>
                 Non
               </button>
-              <button type="button" onClick={() => (setAge("oui"), relancer())}>
+              <button type="button" onClick={() => (sonWahWah(), setAge("oui"), relancer())}>
                 Oui
               </button>
             </div>

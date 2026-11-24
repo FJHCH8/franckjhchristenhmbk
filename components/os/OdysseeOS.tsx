@@ -1364,7 +1364,7 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
           </div>
         ) : null}
       </div>
-      {ecrit === conv ? <div className="msg-statut">{c.nom} est en train d’écrire…</div> : null}
+      {ecrit === conv ? <div className="msg-statut">{`${c.nom} est en train d’écrire…`}</div> : null}
       {conv === "samtelecom" ? (
         <div className="msg-bloque msg-noreply">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#888" aria-hidden="true">
@@ -1377,7 +1377,7 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
           </svg>
-          {c.nom} vous a bloqué. Vous ne pouvez plus lui écrire.
+          {`${c.nom} vous a bloqué. Vous ne pouvez plus lui écrire.`}
         </div>
       ) : (
         <form
@@ -1716,8 +1716,8 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           ["Version d’Odyssée", "0.2 · 24 novembre 2026"],
           ["Version précédente", "0.1 · 23 novembre 2026"],
           ["Propriétaire", "Casto"],
+          ["Modèle", "Hanck 7 Pro Max"],
           ["Navigateur", "Nounou Browser"],
-          ["Interface", "inspirée d’Android 4.1 Jelly Bean"],
         ].map(([a, b]) => (
           <div key={a} className="app-ligne">
             <b>{a}</b>
@@ -1726,7 +1726,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
         ))}
         <a className="app-ligne" href="/aakanos/NOTICE.txt" target="_blank" rel="noopener noreferrer">
           <b>Licences open source</b>
-          <span>Icônes système : Android Open Source Project, licence Apache 2.0</span>
+          <span>Icônes et sons système : licence Apache 2.0</span>
         </a>
       </div>
       </Activite>
