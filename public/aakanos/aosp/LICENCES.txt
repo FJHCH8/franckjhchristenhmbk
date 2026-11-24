@@ -6,7 +6,24 @@ Icônes reprises telles quelles (PNG d'origine intégré dans un fichier SVG du 
   Copyright (C) The Android Open Source Project.
 - lockclock-weather_na.svg, lockclock-weather_30.svg : CyanogenMod LockClock (cm-10.1, Android 4.2), res/drawable-xhdpi.
   Copyright (C) 2012 The CyanogenMod Project.
-- dashclock-ic_weather_partly_cloudy.svg (icône de l'appli Météo) : DashClock Widget de Roman Nurik (Google), v1.2 (2013,
+- dashclock-ic_weather_partly_cloudy.svg (ancienne icône de l'appli Météo, plus utilisée depuis l'icône de Franck) : DashClock Widget de Roman Nurik (Google), v1.2 (2013,
   Android 4.2, style Holo), main/res/drawable-xhdpi/ic_weather_partly_cloudy.png. Copyright 2013 Google Inc.
   Il n'existe pas d'appli météo dans AOSP ; les icônes météo de Google (Google Now, Actualités et météo) ne sont pas
   sous licence libre, elles ne sont donc pas utilisées.
+- music-*.svg (onglets, listes, aléatoire, répétition, indicateur de lecture, icône de notification) : Android Open Source Project,
+  platform/packages/apps/Music (jb-release), res/drawable-hdpi. Copyright (C) The Android Open Source Project.
+  L'icône de l'appli Musique est music.png (app_music, même source, voir ../NOTICE.txt).
+- soundrecorder-*.svg (icône du Dictaphone, dégradé, vumètre, boutons enregistrer / lire / arrêter, voyant) : Android Open
+  Source Project, platform/packages/apps/SoundRecorder (jb-release), res/drawable-hdpi. Copyright (C) The Android Open Source Project.
+- ic_media_play.svg, ic_media_pause.svg, ic_media_next.svg, ic_media_previous.svg, stat_sys_headset.svg : Android Open Source
+  Project, platform/frameworks/base (jb-release), core/res/res/drawable-xhdpi. Copyright (C) The Android Open Source Project.
+- cmfm-*.svg (icône de l'appli Fichiers, dossiers, types de fichiers, fil d'Ariane, barre d'outils) : CyanogenMod File Manager
+  (CMFileManager, branche cm-10.1, Android 4.2 Jelly Bean, style Holo), res/drawable-xhdpi. Copyright (c) 2012-2013 The CyanogenMod
+  Project, licence Apache 2.0 (fichiers NOTICE et MODULE_LICENSE_APACHE2 du projet). AOSP Jelly Bean n'a pas de gestionnaire de
+  fichiers : c'est l'équivalent libre le plus proche, de la même époque et du même style.
+Autres images (pas sous licence AOSP) :
+- ../meteo-franck.svg (icône de l'appli Météo) : dessin fourni par Franck J.H. Christen (soleil sur ciel bleu), redessiné en SVG net.
+- ../musique/belyyeloshadi-orchestra-pochette*.svg : pochette de « Les Aléas De L'amour » (Belyyeloshadi Orchestra), fournie par
+  Franck J.H. Christen ; image d'origine simplement réduite (600 px et 128 px), intégrée dans un SVG.
+- ../musique/les-aleas-de-l-amour.mp3.b64.1 à .5 : le titre « Les Aléas De L'amour » de Belyyeloshadi Orchestra, fourni par Franck
+  J.H. Christen ; MP3 d'origine (320 kb/s, 9 251 520 octets) inchangé, encodé en base64 et coupé en cinq morceaux.

@@ -384,6 +384,8 @@ export function sonAppli(id: string) {
     case "messages": return notes([[880, 0.12], [1320, 0.16]], 0.07, 0.07);
     case "nounou": return notes([[392, 0.15, "triangle"], [523, 0.15, "triangle"], [659, 0.25, "triangle"]], 0.09, 0.08);
     case "appareil": return son("tick");
+    // Fichiers, Musique, Dictaphone : seulement le « tick » AOSP du toucher, aucun son synthétisé
+    case "fichiers": case "musique": case "dictaphone": return;
     case "contacts": return notes([[660, 0.08], [990, 0.12]], 0.06, 0.05);
     case "album": return notes([[1046, 0.1], [784, 0.1], [1318, 0.2]], 0.05, 0.06);
     case "projets": return notes([[523, 0.1], [784, 0.18]], 0.06, 0.08);

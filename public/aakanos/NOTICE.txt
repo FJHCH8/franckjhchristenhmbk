@@ -8,3 +8,7 @@ Source : Android Open Source Project, platform/frameworks/base, data/sounds (bra
 Copyright (C) The Android Open Source Project — Licence Apache 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
 
 Icône calculator.png : Android Open Source Project, platform/packages/apps/Calculator (jb-release), res/mipmap-xhdpi/ic_launcher_calculator.png — Licence Apache 2.0.
+
+Applis Fichiers, Musique (avec Radio FM) et Dictaphone : icônes AOSP (Music, SoundRecorder, frameworks/base) et CyanogenMod File Manager
+(cm-10.1), toutes sous licence Apache 2.0 ; détail dans aosp/LICENCES.txt. Leurs sons sont uniquement des effets AOSP Jelly Bean déjà
+présents dans sons/ (Effect_Tick, Dock, Undock, VideoRecord, LowBattery).
