@@ -625,6 +625,8 @@ html body .pano-pivot button.is-actif{
 /* le doigt peut faire glisser les volets par-dessus le terrain Hanck (seuls les logos se tiennent) */
 .hanck-terrain { touch-action: auto; }
 .pano-pivot { touch-action: pan-y; }
-/* tous les titres de la barre restent visibles : un peu plus petits sur téléphone, et ils passent à la ligne si besoin */
-.n-pano .pano-pivot { flex-wrap: wrap; white-space: nowrap; overflow: visible; gap: .25rem 1.1rem; }
-@media (max-width: 860px) { .n-pano .pano-pivot button { font-size: clamp(1.25rem, 5.4vw, 1.7rem); } }
+/* les titres restent sur une seule ligne ; s'ils dépassent, on fait défiler la barre sur le côté avec le doigt */
+.n-pano .pano-pivot { flex-wrap: nowrap; white-space: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x pan-y; }
+.n-pano .pano-pivot::-webkit-scrollbar { display: none; }
+.n-pano .pano-pivot button { flex: none; }
+.n-pano .pano-pivot::after { content: ""; flex: none; width: 1px; }

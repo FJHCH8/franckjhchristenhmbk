@@ -118,7 +118,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
   const piste = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const [volet, setVolet] = useState(0);
-  const glisse = useRef<number | null>(null);
+  const barre = useRef<HTMLElement>(null);
 
   const endurFini = maintenant != null && maintenant >= PROJECTS_OPENING_MS;
   const aube = maintenant == null ? 0 : Math.min(1, Math.max(0, (maintenant - AUBE_START_MS) / (AUBE_END_MS - AUBE_START_MS)));
@@ -147,6 +147,12 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
     };
   }, []);
 
+  // le titre du volet affiché reste visible dans la barre
+  useEffect(() => {
+    const b = barre.current?.children[volet] as HTMLElement | undefined;
+    b?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  }, [volet]);
+
   const aller = (i: number) => {
     const node = piste.current;
     if (node) node.scrollTo({ left: i * node.clientWidth, behavior: "smooth" });
@@ -168,17 +174,7 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
       <nav
         className="pano-pivot"
         aria-label="Volets"
-        onTouchStart={(e) => {
-          glisse.current = e.touches[0]?.clientX ?? null;
-        }}
-        onTouchEnd={(e) => {
-          // glisser le doigt sur la barre des titres change de volet
-          const x0 = glisse.current;
-          const x1 = e.changedTouches[0]?.clientX;
-          glisse.current = null;
-          if (x0 == null || x1 == null || Math.abs(x1 - x0) < 30) return;
-          aller(Math.max(0, Math.min(VOLETS.length - 1, volet + (x1 < x0 ? 1 : -1))));
-        }}
+        ref={barre}
       >
         {VOLETS.map((v, i) => (
           <button key={v} type="button" className={volet === i ? "is-actif" : ""} onClick={() => aller(i)}>
