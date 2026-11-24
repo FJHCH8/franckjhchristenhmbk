@@ -124,12 +124,14 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
     </div>
   );
 }
-function Segments({ p, n = 24, delai = 0 }: { p: number; n?: number; delai?: number }) {
+function Segments({ p }: { p: number; n?: number; delai?: number }) {
+  // Barre de chargement façon Wii U : piste arrondie, remplissage cyan lumineux qui ondule, anneau qui tourne.
   return (
-    <div className="segs">
-      {Array.from({ length: n }, (_, k) => (
-        <i key={k} className={k < Math.round(p * n) ? "on" : ""} style={{ animationDelay: `${delai + k * 22}ms` }} />
-      ))}
+    <div className="wiiu" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
+      <div className="wiiu-piste">
+        <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
+      </div>
+      <span className="wiiu-anneau" aria-hidden="true" />
     </div>
   );
 }
@@ -227,7 +229,6 @@ function Site({ depart }: { depart: Vue }) {
   const t = useMaintenant();
   const [pret, setPret] = useState(false);
   const [vue, setVue] = useState<Vue>(depart);
-  const [glitch, setGlitch] = useState(0);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   const [rubrique, setRubrique] = useState<Rubrique | null>(null);
   const [recherche, setRecherche] = useState(false);
@@ -278,14 +279,12 @@ function Site({ depart }: { depart: Vue }) {
   const aller = useCallback((v: Vue, r: Rubrique | null = null) => {
     sonValide();
     if (window.location.pathname !== CHEMIN[v]) window.history.pushState(null, "", CHEMIN[v]);
-    setGlitch((g) => g + 1);
     setVue(v);
     setRubrique(r);
     window.scrollTo({ top: 0 });
   }, []);
   const retour = useCallback(() => {
     sonRetour();
-    setGlitch((g) => g + 1);
     if (rubrique) setRubrique(null);
     else {
       setVue("accueil");
@@ -388,7 +387,6 @@ function Site({ depart }: { depart: Vue }) {
 
       {recherche ? <Recherche etoiles={etoiles ?? []} fermer={() => (sonRetour(), setRecherche(false))} aller={(r) => (setRecherche(false), aller("projets", r))} /> : null}
 
-      <div className="n-glitch" key={glitch} />
     </div>
   );
 }
@@ -435,10 +433,11 @@ function Accueil({ aller }: { aller: (v: Vue, r?: Rubrique | null) => void }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/blason-christen.jpg" alt="Blason des Christen" />
           <i className="n-sep2" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-gouttes.png" alt="Les gouttes de Franck" className="n-gouttes" />
+          <span className="n-constel-franck" aria-label="La constellation de Franck">
+            <Logo anime />
+          </span>
         </Tq>
-        <p className="n-etiquette">LE BLASON DES CHRISTEN · LES GOUTTES DE FRANCK</p>
+        <p className="n-etiquette">LE BLASON DES CHRISTEN · LA CONSTELLATION DE FRANCK</p>
       </Section>
 
       <Section n="02 · EXPLORER" titre="FRANCK J.H. CHRISTEN">
@@ -514,12 +513,26 @@ function Suivant({ nom, aller }: { nom: string; aller: () => void }) {
   );
 }
 
+/** Texte caché à l'encre invisible (comme sur Telegram ou iMessage) : un nuage de points qui scintille ; un toucher le révèle. */
+function Secret({ texte }: { texte: string }) {
+  const [vu, setVu] = useState(false);
+  return (
+    <button type="button" className={`n-secret${vu ? " vu" : ""}`} onClick={() => setVu((v) => !v)} aria-label={vu ? texte : "Texte caché : toucher pour l’afficher"}>
+      <span className="n-secret-texte">{texte}</span>
+      <span className="n-secret-encre" aria-hidden="true" />
+    </button>
+  );
+}
+
 function Pied() {
   return (
     <footer className="n-pied">
       <Matrice />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/blason-christen.jpg" alt="" className="n-blason" />
+      <p className="n-code">
+        CODE D’AAKANOS · <Secret texte="6458" />
+      </p>
       <p>© FRANCK J.H. CHRISTEN H.M.B.K. · ODYSSÉE 0.2</p>
     </footer>
   );

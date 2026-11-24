@@ -101,7 +101,10 @@ export function NavigateurNounou({ raccourcis }: { raccourcis: { nom: string; ic
             <h2>Hors connexion</h2>
             <p>Le dauphin s’est échoué sur le sable… Internet ne répond pas.</p>
             <button type="button" className="nounou-jouer" onClick={() => setVue("jeu")}>
-              ▶ AIDER LE DAUPHIN À NAGER
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              AIDER LE DAUPHIN À NAGER
             </button>
             <small>Impossible d’ouvrir « {adresse} »</small>
           </div>

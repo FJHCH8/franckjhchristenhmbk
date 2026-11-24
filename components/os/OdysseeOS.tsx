@@ -24,10 +24,11 @@ import { LogoNounou, NavigateurNounou } from "./Nounou";
 
 /* ---------------- Données ---------------- */
 
-type IdAppli = "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
+type IdAppli = "contacts" | "qui" | "album" | "projets" | "citations" | "messages" | "nounou" | "instagram" | "endurreisen" | "reglages" | "dauphin";
 type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
+  { id: "contacts", nom: "Contacts" },
   { id: "qui", nom: "Qui suis-je" },
   { id: "projets", nom: "Projets" },
   { id: "album", nom: "Album" },
@@ -40,9 +41,9 @@ const APPLIS: Appli[] = [
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
-const PAGE1: IdAppli[] = ["qui", "projets", "album", "citations", "messages", "nounou", "instagram", "endurreisen"];
-const PAGE2: IdAppli[] = ["dauphin", "reglages"];
-const DOCK: IdAppli[] = ["qui", "messages", "nounou", "reglages"];
+const PAGE1: IdAppli[] = ["qui", "projets", "album", "citations", "messages", "contacts", "nounou", "endurreisen"];
+const PAGE2: IdAppli[] = ["instagram", "dauphin", "reglages"];
+const DOCK: IdAppli[] = ["contacts", "messages", "nounou", "reglages"];
 
 const CODE = "6458";
 const MAIL = "franckjhchristen@gmail.com";
@@ -69,9 +70,8 @@ type MsgGael = { id: number; de: "moi" | "gael"; texte: string; h: string; lu?: 
 const REPONSES_GAEL = [
   "Je suis désolé, mais moi, je ne peux pas te répondre. Il faut que tu envoies un mail à Franck.",
   "Je suis désolé. Mais je ne peux pas te répondre.",
-  "Putain, tu commences à vraiment me faire chier, va te faire enculer 😂",
+  "Putain, tu commences à vraiment me faire chier, va te faire enculer.",
 ];
-const CLE_GAEL = "aakanos-gael";
 const heureCourte = () => {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -116,8 +116,10 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
     <img className="os-icone" src={`/aakanos/${f}.png`} width={taille} height={taille} alt="" draggable={false} />
   );
   switch (id) {
-    case "qui":
+    case "contacts":
       return png("contacts");
+    case "qui":
+      return <IconeAncienne nom="qui" taille={taille} />;
     case "projets":
       return png("calendar");
     case "messages":
@@ -137,6 +139,21 @@ export function IconeAppli({ id, taille = 56 }: { id: IdAppli; taille?: number }
     case "dauphin":
       return <IconeDauphin taille={taille} />;
   }
+}
+
+/** Petits pictogrammes de notification de la barre d'état (style Android 4.1). */
+function PictoStatut({ type }: { type: "citation" | "message" | "alarme" }) {
+  const d =
+    type === "citation"
+      ? "M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"
+      : type === "message"
+        ? "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"
+        : "M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39 6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a9 9 0 0 0 0-18zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z";
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="#ddd" aria-hidden="true">
+      <path d={d} />
+    </svg>
+  );
 }
 
 /* ---------------- Retour (bouton ◁) dans les applis ---------------- */
@@ -211,23 +228,12 @@ export function OdysseeOS() {
   const [historique, setHistorique] = useState<Appli[]>([]);
   const [effacees, setEffacees] = useState<string[]>([]);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
-  const [msgs, setMsgs] = useState<MsgGael[]>(() => {
-    try {
-      const v = typeof window !== "undefined" ? localStorage.getItem(CLE_GAEL) : null;
-      return v ? (JSON.parse(v) as MsgGael[]).map((m) => ({ ...m, lu: m.de === "moi" ? true : m.lu })) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Le téléphone repart de zéro à chaque chargement : la conversation avec Gaël aussi.
+  const [msgs, setMsgs] = useState<MsgGael[]>([]);
   const [gaelEcrit, setGaelEcrit] = useState(false);
   const [nonLu, setNonLu] = useState(0);
   const minuteurs = useRef<number[]>([]);
   const convOuverte = useRef(false);
-  useEffect(() => {
-    try {
-      localStorage.setItem(CLE_GAEL, JSON.stringify(msgs.slice(-60)));
-    } catch {}
-  }, [msgs]);
   useEffect(() => () => minuteurs.current.forEach((m) => clearTimeout(m)), []);
   const envoyerAGael = useCallback((texte: string) => {
     const id = Date.now();
@@ -376,7 +382,7 @@ export function OdysseeOS() {
       id: "gael",
       icone: <IconeAppli id="messages" taille={40} />,
       titre: nonLu > 1 ? `Gaël (${nonLu} messages)` : "Gaël",
-      texte: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.texte ?? "" : "📎 2 contacts : e-mail, Instagram",
+      texte: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.texte ?? "" : "Le contact de Franck est dans Contacts",
       h: nonLu ? msgs.filter((m) => m.de === "gael").at(-1)?.h ?? "09:41" : "09:41",
       appli: par("messages"),
     },
@@ -419,7 +425,7 @@ export function OdysseeOS() {
             {!verrou
               ? notifs.map((n) => (
                   <i key={n.id} className="os-mini">
-                    {n.id === "citation" ? "❞" : n.id === "gael" ? "✉" : "◷"}
+                    <PictoStatut type={n.id === "citation" ? "citation" : n.id === "gael" ? "message" : "alarme"} />
                   </i>
                 ))
               : null}
@@ -574,7 +580,9 @@ export function OdysseeOS() {
                 <div className="os-recherche-barre">
                   <Loupe couleur="#33b5e5" />
                   <input autoFocus placeholder="Rechercher dans AakanOS" value={requete} onChange={(e) => setRequete(e.target.value)} />
-                  <button onClick={() => (requete ? setRequete("") : setRecherche(false))}>✕</button>
+                  <button aria-label="Effacer" onClick={() => (requete ? setRequete("") : setRecherche(false))}>
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#aaa"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+                  </button>
                 </div>
                 <div className="os-titre-holo">APPLIS</div>
                 {resultats.map((a) => (
@@ -860,7 +868,9 @@ function FenetreAppli({ f, fermeture, onRetour, children }: { f: Fenetre; fermet
           <IconeAppli id={f.appli.id} taille={34} />
         </button>
         <b>{f.appli.nom}</b>
-        <span className="os-barre-menu">⋮</span>
+        <span className="os-barre-menu" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="#ccc"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+        </span>
       </div>
       <div className="os-fenetre-corps">{children}</div>
     </div>
@@ -883,6 +893,8 @@ function ContenuAppli({
   gael: PropsGael;
 }) {
   switch (id) {
+    case "contacts":
+      return <AppContacts />;
     case "qui":
       return <AppQui ouvrir={ouvrir} />;
     case "album":
@@ -988,7 +1000,11 @@ function AppAlbum() {
       <div className="album-grille">
         {ALBUM.map((el, i) => (
           <button key={el.src} onClick={() => setVue(i)} style={{ backgroundImage: `url(${el.poster ?? el.src})` }}>
-            {el.kind === "video" ? <span>▶</span> : null}
+            {el.kind === "video" ? (
+              <span>
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -1123,6 +1139,8 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
   const avatar = <img className="msg-avatar" src="/aakanos/gael.jpg" alt="" />;
   const dernier = msgs.at(-1);
   const derniersMoi = msgs.filter((m) => m.de === "moi").at(-1);
+  // Après sa 3e réponse, Gaël bloque la conversation.
+  const bloque = msgs.filter((m) => m.de === "gael").length >= REPONSES_GAEL.length;
 
   if (act.ecran === "liste") {
     return (
@@ -1132,7 +1150,7 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
             {avatar}
             <div>
               <b>Gaël</b>
-              <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : "📎 2 contacts : e-mail, Instagram"}</span>
+              <span>{dernier ? `${dernier.de === "moi" ? "Moi : " : ""}${dernier.texte}` : "Le contact de Franck est dans Contacts"}</span>
             </div>
             <em>{dernier?.h ?? "09:41"}</em>
           </button>
@@ -1149,37 +1167,7 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
           <div className="msg-bulle">
             {avatar}
             <p>
-              Salut ! Tu veux joindre Franck ? Voilà ses contacts 👇<em>09:40</em>
-            </p>
-          </div>
-          <div className="msg-bulle suite">
-            <i />
-            <a className="msg-carte" href={`mailto:${MAIL}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/aakanos/email.png" alt="" />
-              <div>
-                <small>E-MAIL</small>
-                <b>{MAIL}</b>
-              </div>
-              <span>ÉCRIRE</span>
-            </a>
-          </div>
-          <div className="msg-bulle suite">
-            <i />
-            <a className="msg-carte" href={INSTA} target="_blank" rel="noopener noreferrer">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/aakanos/camera.png" alt="" />
-              <div>
-                <small>INSTAGRAM</small>
-                <b>@fjhchristenhmbk</b>
-              </div>
-              <span>OUVRIR</span>
-            </a>
-          </div>
-          <div className="msg-bulle suite">
-            <i />
-            <p>
-              Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui.<em>09:41</em>
+              Salut ! Tu veux joindre Franck ? Son contact est dans l’appli Contacts.<em>09:40</em>
             </p>
           </div>
           {msgs.map((m) =>
@@ -1212,6 +1200,14 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
           ) : null}
         </div>
         {ecrit ? <div className="msg-statut">Gaël est en train d’écrire…</div> : null}
+        {bloque ? (
+          <div className="msg-bloque">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
+            </svg>
+            Gaël vous a bloqué. Vous ne pouvez plus lui écrire.
+          </div>
+        ) : (
         <form
           className="msg-saisie"
           onSubmit={(e) => {
@@ -1229,6 +1225,63 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
             </svg>
           </button>
         </form>
+        )}
+      </div>
+    </Activite>
+  );
+}
+
+/** Contacts : une seule fiche, celle de Franck. */
+function AppContacts() {
+  const act = useActivite<"liste" | "fiche">("liste");
+  useRetour(act.ecran === "fiche", act.retour);
+  if (act.ecran === "liste") {
+    return (
+      <Activite act={act}>
+        <div className="app-defile">
+          <div className="ct-recherche">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="#888"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
+            <span>Rechercher des contacts</span>
+          </div>
+          <div className="os-titre-holo">F</div>
+          <button className="ct-ligne" onClick={() => act.aller("fiche")}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/media/franck.jpg" alt="" />
+            <b>Franck J.H. Christen H.M.B.K.</b>
+          </button>
+          <p className="os-vide">1 contact</p>
+        </div>
+      </Activite>
+    );
+  }
+  return (
+    <Activite act={act}>
+      <div className="app-defile">
+        <div className="ct-photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/media/franck.jpg" alt="" />
+          <b>Franck J.H. Christen H.M.B.K.</b>
+        </div>
+        <div className="os-titre-holo">E-MAIL</div>
+        <a className="ct-champ" href={`mailto:${MAIL}`}>
+          <span>
+            <b>{MAIL}</b>
+            <small>PERSONNEL</small>
+          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/aakanos/email.png" alt="" />
+        </a>
+        <div className="os-titre-holo">RÉSEAUX</div>
+        <a className="ct-champ" href={INSTA} target="_blank" rel="noopener noreferrer">
+          <span>
+            <b>@fjhchristenhmbk</b>
+            <small>INSTAGRAM</small>
+          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/aakanos/camera.png" alt="" />
+        </a>
+        <div className="os-titre-holo">NOTE</div>
+        <p className="app-texte">Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui.</p>
       </div>
     </Activite>
   );

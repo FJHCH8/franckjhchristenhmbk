@@ -88,12 +88,14 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
   );
 }
 
-function Segments({ p, n = 30 }: { p: number; n?: number }) {
+function Segments({ p }: { p: number; n?: number; delai?: number }) {
+  // Barre de chargement façon Wii U : piste arrondie, remplissage cyan lumineux qui ondule, anneau qui tourne.
   return (
-    <div className="segs">
-      {Array.from({ length: n }, (_, k) => (
-        <i key={k} className={k < Math.round(p * n) ? "on" : ""} />
-      ))}
+    <div className="wiiu" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
+      <div className="wiiu-piste">
+        <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
+      </div>
+      <span className="wiiu-anneau" aria-hidden="true" />
     </div>
   );
 }
@@ -608,7 +610,6 @@ export function Parametres() {
       {ouvertFenetre
         ? createPortal(
             <div className={`ptac${fermant ? " ferme" : ""}${choix ? " ouvert" : ""}`} role="dialog" aria-modal="true" aria-label="Paramètres">
-              <div className="ptac-glitch" />
               <header className="ptac-haut">
                 <span className="ptac-logo">
                   <LogoOdyssee /> ODYSSÉE
