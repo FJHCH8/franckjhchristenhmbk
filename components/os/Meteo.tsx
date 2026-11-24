@@ -2,7 +2,8 @@
 
 /**
  * Nounou Météo Services : la météo d'AakanOS, en Holo sombre comme Jelly Bean.
- * Icônes d'origine sous licence Apache 2.0 (AOSP et LockClock de CyanogenMod, voir public/aakanos/aosp/LICENCES.txt).
+ * Icônes d'origine sous licence Apache 2.0 (AOSP et LockClock de CyanogenMod, voir public/aakanos/aosp/LICENCES.txt) ;
+ * l'icône de l'appli est celle de Franck (soleil sur ciel bleu), redessinée nette en SVG.
  * Sans connexion, évidemment : « --° », un bouton Réessayer qui échoue toujours.
  */
 import { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ const A = "/aakanos/aosp";
 export function IconeMeteo({ taille = 56 }: { taille?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className="os-icone" src={`${A}/dashclock-ic_weather_partly_cloudy.svg`} width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />
+    <img className="os-icone" src="/aakanos/meteo-franck.svg" width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />
   );
 }
 

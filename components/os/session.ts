@@ -48,6 +48,6 @@ export function creerStore<T>(cle: string, init: T) {
     };
   };
   const useValeur = () => useSyncExternalStore(abonner, lire, () => init);
-  return { lire, ecrire, useValeur };
+  return { lire, ecrire, useValeur, abonner };
 }
 
