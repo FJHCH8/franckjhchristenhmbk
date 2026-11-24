@@ -6,10 +6,9 @@
  * – Calculatrice, qui répond n'importe quoi (2 + 2 = 6).
  */
 import { useEffect, useRef, useState } from "react";
-import { sonSonnerie } from "./sonsAndroid";
 import { alarmes, notifier, type Alarme } from "./Memoire";
 import { ChoixSonnerie, toast } from "./Systeme";
-import { choixSons, nomSonnerie } from "./sonneries";
+import { choixSons, jouerSonnerie, nomSonnerie } from "./sonneries";
 
 const deux = (n: number) => String(Math.floor(n)).padStart(2, "0");
 
@@ -198,7 +197,7 @@ function EditeurAlarme({ depart, fermer }: { depart: Alarme; fermer: () => void 
         </button>
         {choix ? <ChoixSonnerie categorie="alarme" valeur={sonA ?? sons.alarme} choisir={setSonA} fermer={() => setChoix(false)} /> : null}
         {!nouvelle ? (
-          <button
+          <button data-son="effacer"
             type="button"
             className="dlg-choix hz-supprimer"
             onClick={() => {
@@ -214,7 +213,7 @@ function EditeurAlarme({ depart, fermer }: { depart: Alarme; fermer: () => void 
           <button type="button" onClick={fermer}>
             Annuler
           </button>
-          <button type="button" onClick={enregistrer}>
+          <button type="button" data-son="entree" onClick={enregistrer}>
             OK
           </button>
         </div>
@@ -238,7 +237,8 @@ function Minuteur() {
         if (r <= 1) {
           setMarche(false);
           setFini(true);
-          sonSonnerie();
+          // la fin du minuteur sonne avec l'alarme choisie (Argon par défaut, AOSP), 6 secondes
+          window.setTimeout(jouerSonnerie(choixSons.lire().alarme, true, "alarme"), 6000);
           return 0;
         }
         return r - 1;
@@ -265,10 +265,10 @@ function Minuteur() {
         ))}
       </div>
       <div className="hz-actions">
-        <button type="button" className="jb-bouton" onClick={() => (setMarche(false), setFini(false), setReste(total))}>
+        <button type="button" data-son="effacer" className="jb-bouton" onClick={() => (setMarche(false), setFini(false), setReste(total))}>
           Réinitialiser
         </button>
-        <button type="button" className="jb-bouton hz-principal" disabled={reste === 0} onClick={() => setMarche((m) => !m)}>
+        <button type="button" data-son={marche ? "videoFin" : "videoDebut"} className="jb-bouton hz-principal" disabled={reste === 0} onClick={() => setMarche((m) => !m)}>
           {marche ? "Pause" : "Démarrer"}
         </button>
       </div>
@@ -298,10 +298,10 @@ function Chrono() {
     <div className="hz-chrono">
       <div className="hz-gros">{f(ecoule)}</div>
       <div className="hz-actions">
-        <button type="button" className="jb-bouton" onClick={() => (marche ? setTours((t) => [ecoule, ...t]) : (setEcoule(0), setTours([])))}>
+        <button type="button" data-son={marche ? "declencheur" : "effacer"} className="jb-bouton" onClick={() => (marche ? setTours((t) => [ecoule, ...t]) : (setEcoule(0), setTours([])))}>
           {marche ? "Tour" : "Réinitialiser"}
         </button>
-        <button type="button" className="jb-bouton hz-principal" onClick={() => setMarche((m) => !m)}>
+        <button type="button" data-son={marche ? "videoFin" : "videoDebut"} className="jb-bouton hz-principal" onClick={() => setMarche((m) => !m)}>
           {marche ? "Arrêter" : "Démarrer"}
         </button>
       </div>
@@ -388,7 +388,7 @@ export function AppCalculatrice() {
       </div>
       <div className="calc-pave">
         {TOUCHES.map((k) => (
-          <button key={k} type="button" className={/[÷×−+=]/.test(k) ? "op" : k === "C" ? "c" : ""} onClick={() => appui(k)}>
+          <button key={k} type="button" data-son={k === "C" ? "effacer" : k === "=" ? "entree" : "touche"} className={/[÷×−+=]/.test(k) ? "op" : k === "C" ? "c" : ""} onClick={() => appui(k)}>
             {k}
           </button>
         ))}
