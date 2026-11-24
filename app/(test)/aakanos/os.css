@@ -652,3 +652,4 @@ a.app-ligne:active { background: var(--presse); }
 .sk-ops b { font-size: 13px; }
 .sk-actions { flex: none; margin: 8px 12px 0; gap: 6px; }
 .sk-actions .jb-bouton { min-height: 40px; font-size: 13px; }
+.sk-dernier { margin: 4px 0 0; font: 12px var(--font-roboto), Roboto, sans-serif; color: #8a97a4; } .sk-dernier b { color: #ff6b6b; font-weight: 700; }

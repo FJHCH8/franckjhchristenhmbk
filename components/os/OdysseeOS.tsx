@@ -23,6 +23,8 @@ import { IconeAncienne } from "./IconesAnciennes";
 import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
 import { AppSamTelecom } from "./SamTelecom";
+import { useLocale, type LocaleName } from "@/components/Locale";
+import { dtmf, prechargerSons, son, tonaliteRetour } from "./sonsAndroid";
 import { AppPeeporn, AppSharkobank } from "./HorsLigne";
 
 /* ---------------- Données ---------------- */
@@ -290,6 +292,7 @@ export function OdysseeOS() {
         setEcrit(null);
         setConvs((c) => ({ ...c, [qui]: [...c[qui], { id: Date.now(), de: "lui", texte: reponse, h: heureCourte() }] }));
         if (convOuverte.current !== qui) setNonLu((n) => ({ qui, n: n && n.qui === qui ? n.n + 1 : 1 }));
+        son("notif");
       }, 2200 + reponse.length * 35);
     }, vu + 900);
   }, []);
@@ -304,6 +307,7 @@ export function OdysseeOS() {
         setConvs((c) => ({ ...c, samtelecom: SMS_SAM_TELECOM.map((texte, i) => ({ id: Date.now() + i, de: "lui" as const, texte, h })) }));
         if (convOuverte.current !== "samtelecom") setNonLu({ qui: "samtelecom", n: SMS_SAM_TELECOM.length });
         setTicker(SMS_SAM_TELECOM[0]!);
+        son("notif");
         minuteurs.current.push(window.setTimeout(() => setTicker(null), 4200));
       }, 5000),
     );
@@ -392,7 +396,8 @@ export function OdysseeOS() {
     try {
       localStorage.setItem("fjch-apparence", "classique");
     } catch {}
-    window.location.assign("/");
+    son("verrou");
+    window.setTimeout(() => window.location.assign("/"), 250);
   };
 
   useEffect(() => {
@@ -458,7 +463,15 @@ export function OdysseeOS() {
 
   return (
     <RetourCtx.Provider value={{ poser }}>
-      <div className="os">
+      <div
+        className="os"
+        onPointerDownCapture={() => void prechargerSons()}
+        onClickCapture={(e) => {
+          // le « tick » d'Android à chaque toucher (le pavé du téléphone joue ses propres tonalités)
+          const el = (e.target as Element).closest("button, a, [role=button]");
+          if (el && !el.closest(".tel-pave")) son("tick", 0.8);
+        }}
+      >
         <div className="os-fond">
           <i />
           <i />
@@ -861,6 +874,7 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
   const verifier = useCallback(
     (code: string) => {
       if (code === CODE) {
+        son("deverrou");
         setPart(true);
         setTimeout(onOuvrir, 200);
       } else {
@@ -1367,7 +1381,13 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
             setTexte("");
           }}
         >
-          <input value={texte} onChange={(e) => setTexte(e.target.value)} placeholder={`Écrire un message à ${c.nom}`} enterKeyHint="send" />
+          <input
+            value={texte}
+            onChange={(e) => setTexte(e.target.value)}
+            onKeyDown={(e) => son(e.key === "Backspace" ? "effacer" : e.key === "Enter" ? "entree" : "touche", 0.7)}
+            placeholder={`Écrire un message à ${c.nom}`}
+            enterKeyHint="send"
+          />
           <button aria-label="Envoyer" disabled={!texte.trim()}>
             <svg viewBox="0 0 24 24" width="26" height="26" fill={texte.trim() ? "#33b5e5" : "#555"}>
               <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
@@ -1541,6 +1561,10 @@ function AppTelephone() {
   }, []);
   useEffect(() => {
     if (appel !== "sonne") return;
+    return tonaliteRetour();
+  }, [appel]);
+  useEffect(() => {
+    if (appel !== "sonne") return;
     const t1 = window.setTimeout(() => {
       setAppel("hs");
       sonHorsService();
@@ -1607,7 +1631,7 @@ function AppTelephone() {
       </div>
       <div className="tel-pave">
         {TOUCHES_TEL.map(([a, b]) => (
-          <button key={a} type="button" onClick={() => setNumero((n) => (n.length < 18 ? n + (a === "0" && n === "" ? "+" : a) : n))}>
+          <button key={a} type="button" onClick={() => (dtmf(a), setNumero((n) => (n.length < 18 ? n + (a === "0" && n === "" ? "+" : a) : n)))}>
             <b>{a}</b>
             <span>{b}</span>
           </button>
@@ -1639,6 +1663,14 @@ const ic = (d: string) => (
   </svg>
 );
 
+const LANGUES_TEL: [LocaleName, string][] = [
+  ["de", "Deutsch (Deutschland)"],
+  ["fr", "Français (Bretagne)"],
+  ["sv", "Svenska (Sverige)"],
+  ["br", "Brezhoneg (Breizh)"],
+  ["tavissiv", "Tavissiv (Aaka)"],
+];
+
 function AppReglages({ quitter }: { quitter: () => void }) {
   const act = useActivite<"liste" | "apropos">("liste");
   const ecran = act.ecran;
@@ -1652,20 +1684,12 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       setDialogueBrut(null);
     }, 220);
   };
-  const [langue, setLangue] = useState<"fr" | "tavissiv">(() => {
-    try {
-      return typeof window !== "undefined" && localStorage.getItem("fjch-lang") === "tavissiv" ? "tavissiv" : "fr";
-    } catch {
-      return "fr";
-    }
-  });
+  // La langue est celle du site (choisie avant d'entrer), et on peut la changer ici.
+  const { locale: langue, setLocale } = useLocale();
   useRetour(ecran !== "liste" || dialogue !== null, () => (dialogue ? setDialogue(null) : act.retour()));
 
-  const choisirLangue = (l: "fr" | "tavissiv") => {
-    setLangue(l);
-    try {
-      localStorage.setItem("fjch-lang", l);
-    } catch {}
+  const choisirLangue = (l: LocaleName) => {
+    setLocale(l);
     setDialogue(null);
   };
 
@@ -1713,7 +1737,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       <LigneReglage
         icone={ic("M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z")}
         titre="Langue"
-        sous={langue === "tavissiv" ? "Tavissiv (Aaka)" : "Français (Bretagne)"}
+        sous={LANGUES_TEL.find(([id]) => id === langue)?.[1] ?? "Deutsch"}
         onClick={() => setDialogue("langue")}
       />
       <Titre>APPAREIL</Titre>
@@ -1753,12 +1777,11 @@ function AppReglages({ quitter }: { quitter: () => void }) {
               </>
             ) : (
               <>
-                <button className="dlg-choix" onClick={() => choisirLangue("fr")}>
-                  Français (Bretagne) <i className={langue === "fr" ? "on" : ""} />
-                </button>
-                <button className="dlg-choix" onClick={() => choisirLangue("tavissiv")}>
-                  Tavissiv (Aaka) <i className={langue === "tavissiv" ? "on" : ""} />
-                </button>
+                {LANGUES_TEL.map(([id, nom]) => (
+                  <button key={id} className="dlg-choix" translate="no" onClick={() => choisirLangue(id)}>
+                    {nom} <i className={langue === id ? "on" : ""} />
+                  </button>
+                ))}
               </>
             )}
             <button className="dlg-annuler" onClick={() => setDialogue(null)}>

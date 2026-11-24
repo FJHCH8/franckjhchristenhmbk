@@ -4,6 +4,8 @@
  * ils sont repris tels quels à leur place (dates, comptes à rebours, versions…).
  * Les majuscules suivent le texte affiché : un titre en capitales reste en capitales.
  */
+import { JOURS, LIGNES_OS } from "./traductions-os";
+
 export type LangueEtrangere = "de" | "sv" | "br";
 
 const MOIS: [string, string, string, string][] = [
@@ -180,10 +182,14 @@ const LIGNES: [string, string, string, string][] = [
   ["le site classique", "Die klassische Seite", "Den klassiska webbplatsen", "Al lec’hienn klasel"],
 ];
 
+// Le téléphone AakanOS
+LIGNES.push(...LIGNES_OS);
+
 // Dates : « 24 novembre 2026 », « 3 juin »…
 for (const [fr, de, sv, br] of MOIS) {
   LIGNES.push([`# ${fr} #`, `#. ${de} #`, `# ${sv} #`, `# a viz ${br} #`]);
   LIGNES.push([`# ${fr}`, `#. ${de}`, `# ${sv}`, `# a viz ${br}`]);
+  LIGNES.push([`${fr} #`, `${de} #`, `${sv} #`, `${br} #`]);
 }
 
 const cle = (s: string) =>
@@ -213,13 +219,42 @@ function chercher(texte: string, l: LangueEtrangere): string | null {
   return casse(texte, t[RANG[l]].replace(/#/g, () => nombres[k++] ?? "#"));
 }
 
+const JOUR = new Map(JOURS.map(([fr, ...t]) => [fr, t as [string, string, string]]));
+const MOI = new Map(MOIS.map(([fr, ...t]) => [fr, t as [string, string, string]]));
+
+/** « mardi 24 novembre » → « Dienstag, 24. November » ; « // X · les plus coassées » → catégorie traduite. */
+function special(coeur: string, l: LangueEtrangere): string | null {
+  const d = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (\d{1,2}) ([a-zéû]+)$/i.exec(coeur);
+  if (d) {
+    const j = JOUR.get(d[1]!.toLowerCase());
+    const m = MOI.get(d[3]!.toLowerCase());
+    if (j && m) {
+      const i = RANG[l];
+      const r = l === "de" ? `${j[i]}, ${d[2]}. ${m[i]}` : l === "sv" ? `${j[i]} ${d[2]} ${m[i]}` : `${j[i]} ${d[2]} a viz ${m[i]}`;
+      return casse(coeur, r);
+    }
+  }
+  const g = /^«\s*([\s\S]+?)\s*»$/.exec(coeur);
+  if (g) {
+    const t = chercher(g[1]!, l);
+    if (t) return l === "de" ? `„${t}“` : l === "sv" ? `”${t}”` : `« ${t} »`;
+  }
+  const c = /^\/\/ (.+) · les plus coassées$/i.exec(coeur);
+  if (c) {
+    const cat = chercher(c[1]!, l) ?? c[1]!;
+    const fin = { de: "am meisten gequakt", sv: "mest kväkta", br: "ar re gragetañ" }[l];
+    return casse(coeur, `// ${cat} · ${fin}`);
+  }
+  return null;
+}
+
 /** Traduit un texte affiché ; s'il n'est pas dans le dictionnaire, il reste tel quel. */
 export function traduire(source: string, l: LangueEtrangere): string {
   const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(source);
   if (!m) return source;
   const [, avant, coeur, apres] = m;
   if (!/[A-Za-zÀ-ÿ]{2}/.test(coeur!)) return source;
-  let r = chercher(coeur!, l);
+  let r = special(coeur!, l) ?? chercher(coeur!, l);
   if (r === null) {
     // « // 01 · CITATIONS », « 02 · EXPLORER » : on garde le préfixe et on traduit le reste
     const p = /^((?:\/\/\s*)?(?:\d+\s*(?:·\s*)?)?)(.+)$/.exec(coeur!);
@@ -228,12 +263,12 @@ export function traduire(source: string, l: LangueEtrangere): string {
       if (reste !== null) r = p[1] + reste;
     }
   }
-  if (r === null && coeur!.endsWith("…") && coeur!.length > 20) {
-    // texte coupé à l'affichage : on traduit le texte entier puis on le recoupe
-    const debut = cle(coeur!.slice(0, -1));
+  if (r === null && coeur!.length > 30) {
+    // texte coupé à l'affichage (avec ou sans « … ») : on traduit le texte entier puis on le recoupe
+    const debut = cle(coeur!.replace(/…$/, ""));
     for (const [k, t] of TABLE) {
       if (k.startsWith(debut)) {
-        r = casse(coeur!, t[RANG[l]]).slice(0, coeur!.length - 1).trimEnd() + "…";
+        r = casse(coeur!, t[RANG[l]]).slice(0, Math.max(10, coeur!.replace(/…$/, "").length)).trimEnd() + "…";
         break;
       }
     }

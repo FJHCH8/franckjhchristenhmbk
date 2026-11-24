@@ -81,6 +81,9 @@ export function AppSharkobank() {
               — — —,— — <em>€</em>
             </div>
             <p className="sk-err">⚠ Solde indisponible : vous n’êtes pas connecté.</p>
+            <p className="sk-dernier">
+              Dernier solde enregistré (quand vous aviez internet) : <b>−9,18 €</b>
+            </p>
           </>
         )}
       </div>
@@ -141,7 +144,7 @@ export function AppSharkobank() {
 
 /* ---------------- Peeporn ---------------- */
 
-const RUBRIQUES = ["Tendances", "Nouveautés", "Grenouilles gays", "Grenouille et poney", "Live cam", "Crapauds musclés", "Cuisses de grenouille", "Nénuphars chauds", "Bave & ASMR", "Mouches en folie", "Spécial mare"];
+const RUBRIQUES = ["Tendances", "Nouveautés", "Gay", "Grenouille et poney", "Live cam", "Crapauds musclés", "Cuisses de grenouille", "Nénuphars chauds", "Bave & ASMR", "Mouches en folie", "Spécial mare"];
 const VIDEOS: { titre: string; duree: string; vues: string; badge?: "LIVE" | "HD" | "4K" }[] = [
   { titre: "Elle coasse toute la nuit", duree: "12:34", vues: "1,2 M", badge: "HD" },
   { titre: "La mare est chaude ce soir", duree: "EN DIRECT", vues: "8 412 spectateurs", badge: "LIVE" },

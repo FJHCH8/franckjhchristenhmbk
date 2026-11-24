@@ -33,7 +33,7 @@ const ORIGINE = new WeakMap<Text, string>();
 const POSE = new WeakMap<Text, string>();
 const ATTRS = ["aria-label", "placeholder", "title"] as const;
 const ORIGINE_ATTR = new WeakMap<Element, Record<string, [string, string]>>();
-const EXCLU = "script,style,textarea,input,.tavissiv,.os,[translate=no]";
+const EXCLU = "script,style,textarea,input,.tavissiv,[translate=no]";
 
 function versLangue(src: string, l: LocaleName) {
   return estEtrangere(l) ? traduire(src, l) : src;
@@ -118,9 +118,11 @@ function readLocale(): LocaleName {
       if (stored !== "tavissiv") localStorage.setItem(LOCALE_KEY, "tavissiv");
       return "tavissiv";
     }
-    return "fr";
+    if (stored === "fr") return "fr";
+    // Le site est officiellement en allemand : c'est la langue de tout nouveau visiteur.
+    return "de";
   } catch {
-    return "fr";
+    return "de";
   }
 }
 
