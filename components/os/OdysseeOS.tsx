@@ -68,16 +68,22 @@ const ALBUM = [
 ];
 
 type MsgGael = { id: number; de: "moi" | "lui"; texte: string; h: string; lu?: boolean };
-type Correspondant = "gael" | "celjo" | "pacifick";
+type Correspondant = "gael" | "celjo" | "pacifick" | "samtelecom";
 const CORRESPONDANTS: { id: Correspondant; nom: string; photo: string; accueil?: string }[] = [
   { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", accueil: "Salut ! Tu veux joindre Franck ? Son contact est dans l’appli Contacts." },
   { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.svg" },
   { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.svg" },
+  { id: "samtelecom", nom: "Sam-Telecom", photo: "/aakanos/sam-telecom-tete.png" },
+];
+/** Les SMS automatiques de l'opérateur, reçus 5 secondes après le déverrouillage. On ne peut pas y répondre. */
+const SMS_SAM_TELECOM = [
+  "Sam-Telecom : Bonjour, nous vous remercions de votre fidélité. Votre facture de novembre est disponible dans votre Espace Client, sur notre site internet et dans l’application Sam-Telecom. Téléchargez l’application sur Pulpüs market pour suivre votre consommation et modifier votre forfait.",
+  "Rappel : votre ligne bénéficie d’un forfait Enfant. Il ne comprend ni la connexion à internet ni les appels : seul l’envoi de SMS est inclus. Les appels d’urgence ne sont pas disponibles sur cette ligne, car la fonction a été désactivée ou n’a pas encore été activée. Pour l’activer ou faire évoluer votre forfait, rendez-vous dans votre Espace Client. Sam-Telecom vous souhaite une excellente journée. Ceci est un message automatique, merci de ne pas y répondre.",
 ];
 const REPONSE_CELJO = "Salut mon pote, écoute, je suis grave occupé à refaire ma moto, alors je te répondrai quand je pourrai.";
 const REPONSE_PACIFICK = "Tu me parles encore après m’avoir dit que j’avais faux ?! Va te faire voir !";
 /** Après combien de réponses la personne bloque la conversation (0 = jamais). */
-const BLOQUE_APRES: Record<Correspondant, number> = { gael: 3, celjo: 0, pacifick: 1 };
+const BLOQUE_APRES: Record<Correspondant, number> = { gael: 3, celjo: 0, pacifick: 1, samtelecom: 0 };
 const REPONSES_GAEL = [
   "Je suis désolé, mais moi, je ne peux pas te répondre. Il faut que tu envoies un mail à Franck.",
   "Je suis désolé. Mais je ne peux pas te répondre.",
@@ -244,7 +250,7 @@ export function OdysseeOS() {
   const [effacees, setEffacees] = useState<string[]>([]);
   const [etoiles, setEtoiles] = useState<Etoile[] | null>(null);
   // Le téléphone repart de zéro à chaque chargement : les conversations aussi.
-  const [convs, setConvs] = useState<Record<Correspondant, MsgGael[]>>({ gael: [], celjo: [], pacifick: [] });
+  const [convs, setConvs] = useState<Record<Correspondant, MsgGael[]>>({ gael: [], celjo: [], pacifick: [], samtelecom: [] });
   const [ecrit, setEcrit] = useState<Correspondant | null>(null);
   const [nonLu, setNonLu] = useState<{ qui: Correspondant; n: number } | null>(null);
   const minuteurs = useRef<number[]>([]);
@@ -272,6 +278,21 @@ export function OdysseeOS() {
         if (convOuverte.current !== qui) setNonLu((n) => ({ qui, n: n && n.qui === qui ? n.n + 1 : 1 }));
       }, 2200 + reponse.length * 35);
     }, vu + 900);
+  }, []);
+  const smsRecu = useRef(false);
+  const [ticker, setTicker] = useState<string | null>(null);
+  const recevoirSamTelecom = useCallback(() => {
+    if (smsRecu.current) return;
+    smsRecu.current = true;
+    minuteurs.current.push(
+      window.setTimeout(() => {
+        const h = heureCourte();
+        setConvs((c) => ({ ...c, samtelecom: SMS_SAM_TELECOM.map((texte, i) => ({ id: Date.now() + i, de: "lui" as const, texte, h })) }));
+        if (convOuverte.current !== "samtelecom") setNonLu({ qui: "samtelecom", n: SMS_SAM_TELECOM.length });
+        setTicker(SMS_SAM_TELECOM[0]!);
+        minuteurs.current.push(window.setTimeout(() => setTicker(null), 4200));
+      }, 5000),
+    );
   }, []);
   const vuConv = useCallback((qui: Correspondant | null) => {
     convOuverte.current = qui;
@@ -401,7 +422,13 @@ export function OdysseeOS() {
     },
     {
       id: "gael",
-      icone: <IconeAppli id="messages" taille={40} />,
+      icone:
+        nonLu?.qui === "samtelecom" ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/aakanos/sam-telecom-tete.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
+        ) : (
+          <IconeAppli id="messages" taille={40} />
+        ),
       titre: nonLu ? `${CORRESPONDANTS.find((c) => c.id === nonLu.qui)!.nom}${nonLu.n > 1 ? ` (${nonLu.n} messages)` : ""}` : "Gaël",
       texte: nonLu ? convs[nonLu.qui].filter((m) => m.de === "lui").at(-1)?.texte ?? "" : "Le contact de Franck est dans Contacts",
       h: nonLu ? convs[nonLu.qui].filter((m) => m.de === "lui").at(-1)?.h ?? "09:41" : "09:41",
@@ -442,6 +469,15 @@ export function OdysseeOS() {
             setTire(0);
           }}
         >
+          {ticker ? (
+            <span className="os-ticker" aria-live="polite">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/aakanos/sam-telecom-tete.png" alt="" width={18} height={18} />
+              <span>
+                <b>{ticker}</b>
+              </span>
+            </span>
+          ) : null}
           <span className="os-statut-g">
             {!verrou
               ? notifs.map((n) => (
@@ -467,7 +503,7 @@ export function OdysseeOS() {
         </div>
 
         {verrou ? (
-          <Verrouillage heure={heure} date={date} onOuvrir={() => setVerrou(false)} onQuitter={quitter} />
+          <Verrouillage heure={heure} date={date} onOuvrir={() => (setVerrou(false), recevoirSamTelecom())} onQuitter={quitter} />
         ) : (
           <>
             <div className={`os-bureau${tiroir ? " os-cache" : ""}`}>
@@ -850,8 +886,8 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
   return (
     <div className={`os-verrou${part ? " part" : ""}`}>
       <div className="os-operateur">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/aakanos/sam-telecom-tete.png" alt="" width={16} height={16} />
+        {/* Sam en cubes 3D, qui tourne sur lui-même (24 images calculées en 3D) */}
+        <i className="sam-tourne" aria-hidden="true" />
         Sam-Telecom
       </div>
       <div className="os-verrou-heure">
@@ -1218,7 +1254,10 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
   if (!conv) {
     return (
       <div className="app-defile os-act entre">
-        {CORRESPONDANTS.map((c) => {
+        {[...CORRESPONDANTS]
+          .filter((c) => c.id !== "samtelecom" || convs.samtelecom.length > 0)
+          .sort((a, b) => (convs[b.id].at(-1)?.id ?? 0) - (convs[a.id].at(-1)?.id ?? 0))
+          .map((c) => {
           const dernier = convs[c.id].at(-1);
           return (
             <button key={c.id} className="msg-conv" onClick={() => setConv(c.id)}>
@@ -1283,7 +1322,14 @@ function AppMessages({ convs, ecrit, envoyer, vu }: PropsGael) {
         ) : null}
       </div>
       {ecrit === conv ? <div className="msg-statut">{c.nom} est en train d’écrire…</div> : null}
-      {bloque ? (
+      {conv === "samtelecom" ? (
+        <div className="msg-bloque msg-noreply">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#888" aria-hidden="true">
+            <path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+          </svg>
+          Vous ne pouvez pas répondre à ce message.
+        </div>
+      ) : bloque ? (
         <div className="msg-bloque">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4444" aria-hidden="true">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0 1 20 12c0 4.42-3.58 8-8 8z" />
@@ -1514,8 +1560,6 @@ function AppTelephone() {
           )}
           {appel !== "sonne" ? (
             <div className="tel-hs">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="tel-hs-logo" src="/aakanos/sam-telecom.png" alt="Sam-Telecom" />
               <p>Désolé, mais votre forfait ne vous permet pas d’accéder à internet ou d’appeler.</p>
               <p>Merci de faire évoluer votre forfait avec Sam-Telecom.</p>
             </div>

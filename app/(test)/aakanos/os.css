@@ -493,3 +493,15 @@ a.app-ligne:active { background: var(--presse); }
 .tel-hs-logo { display: block; width: 74px; height: auto; margin: 0 0 8px; }
 .os-operateur img { width: 26px; height: 26px; }
 .os-operateur-r img { width: 20px; height: 20px; }
+/* Sam en cubes 3D qui tourne sur lui-même : 24 vues calculées en 3D, enchaînées */
+.sam-tourne { display: inline-block; width: 28px; height: 28px; background: url(/aakanos/sam-telecom-tourne.png) 0 0 / auto 100% no-repeat; animation: sam-tourne 3.2s steps(24) infinite; }
+@keyframes sam-tourne { to { background-position-x: -672px; } }
+@media (prefers-reduced-motion: reduce) { .sam-tourne { animation: none; } }
+/* le texte qui défile dans la barre d'état à l'arrivée d'un SMS (Jelly Bean) */
+.os-ticker { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 0 8px; background: #000; overflow: hidden; animation: os-ticker-entre .3s ease-out both; }
+.os-ticker img { flex: none; object-fit: contain; }
+.os-ticker span { flex: 1; overflow: hidden; white-space: nowrap; }
+.os-ticker b { display: inline-block; font-weight: 400; font-size: 13px; color: #fff; padding-left: 100%; animation: os-ticker-defile 4.2s linear both; }
+@keyframes os-ticker-entre { from { transform: translateY(100%); } }
+@keyframes os-ticker-defile { to { transform: translateX(-100%); } }
+.msg-noreply { color: #999 !important; }
