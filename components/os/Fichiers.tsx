@@ -14,6 +14,7 @@ import { creerStore } from "./session";
 import { Dlg, toast } from "./Systeme";
 import { ouvrirAppli } from "./Memoire";
 import { PISTES, usePistes, type Piste } from "./Musique";
+import { CAPACITE_TELEPHONE, SYSTEME_TELEPHONE } from "./stockageTelephone";
 
 const A = "/aakanos/aosp";
 
@@ -25,7 +26,7 @@ export function IconeFichiers({ taille = 56 }: { taille?: number }) {
 type Element_ = { nom: string; type: "dossier" | "audio" | "image" | "video"; date: string; octets?: number; enfants?: Element_[]; ouvrir?: () => void; piste?: number };
 
 const D = (nom: string, date: string, enfants: Element_[] = []): Element_ => ({ nom, type: "dossier", date, enfants });
-/** Music/<artiste>/<titre>.mp3 : suit les fiches modifiées par Franck (titre, artiste, pochette). */
+/** Music/<artiste>/<titre>.mp3. */
 const dossiersMusique = (pistes: Piste[]) =>
   pistes.map((p, k) => D(p.dossier, p.date, [{ nom: `${p.titre}.mp3`, type: "audio", date: p.date, octets: p.octets, piste: k, ouvrir: () => ouvrirAppli("musique", `jouer:${k}`) }]));
 const BASE: Element_ = D("sdcard0", "24/11/2026 09:12", [
@@ -54,9 +55,8 @@ const RAC = "/storage/sdcard0";
 
 const memoireFichiers = creerStore<{ chemin: string[]; historique: string[] }>("fichiers", { chemin: [], historique: [] });
 
-const racine = (pistes: Piste[]): Element_ => ({ ...BASE, enfants: BASE.enfants!.map((e) => (e.nom === "Music" ? { ...e, enfants: dossiersMusique(pistes) } : e)) });
-
-function trouver(RACINE: Element_, chemin: string[]): Element_ {
+function trouver(chemin: string[]): Element_ {
+  const RACINE = BASE;
   let e = RACINE;
   for (const n of chemin) e = e.enfants?.find((x) => x.nom === n) ?? e;
   return e;
@@ -66,9 +66,9 @@ function total(e: Element_): number {
 }
 const taille = (o: number) => (o >= 1_000_000 ? `${(o / 1_048_576).toFixed(2).replace(".", ",")} Mo` : o >= 1000 ? `${(o / 1024).toFixed(2).replace(".", ",")} Ko` : `${o} o`);
 
-// la capacité du stockage interne d'un téléphone de 2012 (« 16 Go »), presque vide
-const CAPACITE = 12_884_901_888;
-const SYSTEME = 1_932_735_283;
+// la capacité du stockage interne d'un téléphone de 2012 (« 16 Go » affichés, 12 Go utiles), presque vide
+const CAPACITE = CAPACITE_TELEPHONE;
+const SYSTEME = SYSTEME_TELEPHONE;
 
 function Ic({ n, t = 48 }: { n: string; t?: number }) {
   // eslint-disable-next-line @next/next/no-img-element
@@ -76,14 +76,17 @@ function Ic({ n, t = 48 }: { n: string; t?: number }) {
 }
 
 export function AppFichiers() {
+  const pistes = usePistes();
   const { chemin, historique } = memoireFichiers.useValeur();
   const [dlg, setDlg] = useState<null | "historique" | "favoris" | "infos">(null);
   const aller = (c: string[]) =>
     memoireFichiers.ecrire((m) => ({ chemin: c, historique: [RAC + (c.length ? "/" + c.join("/") : ""), ...m.historique.filter((h) => h !== RAC + (c.length ? "/" + c.join("/") : ""))].slice(0, 12) }));
   useRetour(chemin.length > 0 || dlg !== null, () => (dlg ? setDlg(null) : aller(chemin.slice(0, -1))));
-  const pistes = usePistes();
-  const RACINE = useMemo(() => racine(pistes), [pistes]);
-  const dossier = trouver(RACINE, chemin);
+  const RACINE = useMemo(() => ({
+    ...BASE,
+    enfants: (BASE.enfants ?? []).map((e) => (e.nom === "Music" ? { ...e, enfants: dossiersMusique(pistes) } : e)),
+  }), [pistes]);
+  const dossier = trouver(chemin);
   const liste = [...(dossier.enfants ?? [])].sort((a, b) => (a.type === "dossier") === (b.type === "dossier") ? a.nom.localeCompare(b.nom) : a.type === "dossier" ? -1 : 1);
   const occupe = SYSTEME + total(RACINE);
   const versChemin = (p: string) => p.replace(RAC, "").split("/").filter(Boolean);
