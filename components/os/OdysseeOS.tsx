@@ -27,7 +27,10 @@ import { LogoNounou, NavigateurNounou } from "./Nounou";
 import { AppPulpus, LogoPulpus } from "./Pulpus";
 import { AppSamTelecom } from "./SamTelecom";
 import { useLocale, type LocaleName } from "@/components/Locale";
-import { dtmf, prechargerSons, son, sonAppli, tonaliteRetour } from "./sonsAndroid";
+import { dtmf, prechargerSons, son, sonAppli, tonaliteRetour, type NomSon } from "./sonsAndroid";
+
+/** Les sons « clavier » suivent l'interrupteur « Sons des touches » ; les autres sons d'action jouent toujours (sauf en silencieux). */
+const TOUCHES_CLAVIER = new Set(["touche", "effacer", "entree", "espace", "tick"]);
 import { AppCalculatrice, AppHorloge } from "./Outils";
 import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
 import { estMuet, sonSynth } from "./sonsSynth";
@@ -441,6 +444,8 @@ export function OdysseeOS() {
     return () => window.removeEventListener("aakanos-appel", f);
   }, [ouvrir]);
   const fermerFenetre = useCallback(() => {
+    // la fermeture d'une appli : le petit son « Undock » d'Android (AOSP), discret
+    son("undock", 0.45);
     setFermeture(true);
     setTimeout(() => {
       setFenetre(null);
@@ -569,7 +574,23 @@ export function OdysseeOS() {
         onClickCapture={(e) => {
           // le « tick » d'Android à chaque toucher (le pavé du téléphone joue ses propres tonalités)
           const el = (e.target as Element).closest("button, a, [role=button]");
-          if (el && !el.closest(".tel-pave") && sys.sonsTouches) son("tick", 0.8);
+          if (!el || el.closest(".tel-pave") || (el as HTMLButtonElement).disabled) return;
+          // un bouton peut demander son propre son AOSP (data-son) : effacer, valider, verrouiller…
+          const propre = el.closest("[data-son]")?.getAttribute("data-son");
+          if (propre === "aucun") return;
+          if (propre && !TOUCHES_CLAVIER.has(propre)) return son(propre as NomSon);
+          if (!sys.sonsTouches) return;
+          if (propre) son(propre as NomSon);
+          else son("tick", 0.8);
+        }}
+        onKeyDownCapture={(e) => {
+          // le clavier d'Android : chaque touche tapée dans un champ a son son (KeypressStandard, Delete, Return, Spacebar)
+          const t = e.target as HTMLElement;
+          if (!sys.sonsTouches || e.repeat || !t.matches?.("input, textarea") || t.matches("[type=range], [type=checkbox]")) return;
+          if (e.key === "Backspace" || e.key === "Delete") son("effacer");
+          else if (e.key === "Enter") son("entree");
+          else if (e.key === " ") son("espace");
+          else if (e.key.length === 1) son("touche");
         }}
       >
         <div className={`os-fond fond-${sys.fond}`}>
@@ -774,7 +795,7 @@ export function OdysseeOS() {
                 <div className="os-recherche-barre">
                   <Loupe couleur="#33b5e5" />
                   <input autoFocus placeholder="Rechercher dans AakanOS" value={requete} onChange={(e) => setRequete(e.target.value)} />
-                  <button aria-label="Effacer" onClick={() => (requete ? setRequete("") : setRecherche(false))}>
+                  <button data-son="effacer" aria-label="Effacer" onClick={() => (requete ? setRequete("") : setRecherche(false))}>
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="#aaa"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
                   </button>
                 </div>
@@ -1142,7 +1163,7 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
       </button>
       <div className="os-clavier">
         {TOUCHES.map(([a, b]) => (
-          <button key={a} className={a === "OK" ? "ok" : a === "⌫" ? "eff" : ""} onClick={() => appui(a)} aria-label={a === "⌫" ? "Effacer" : a}>
+          <button key={a} data-son={a === "⌫" ? "effacer" : a === "OK" ? "entree" : "touche"} className={a === "OK" ? "ok" : a === "⌫" ? "eff" : ""} onClick={() => appui(a)} aria-label={a === "⌫" ? "Effacer" : a}>
             <b>{a}</b>
             <span>{b}</span>
           </button>
@@ -1301,7 +1322,7 @@ function AppAlbum() {
   if (vue !== null) {
     const el = ALBUM[vue]!;
     return (
-      <div className="album-plein" onClick={() => setVue((v) => ((v ?? 0) + 1) % ALBUM.length)}>
+      <div className="album-plein" onClick={() => (son("espace", 0.7), setVue((v) => ((v ?? 0) + 1) % ALBUM.length))}>
         {el.kind === "video" ? (
           <video key={el.src} src={el.src} poster={el.poster} autoPlay loop playsInline muted />
         ) : (
@@ -1436,7 +1457,7 @@ function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
     return (
       <div className="app-defile note-papier note-edition">
         <div className="note-barre">
-          <button onClick={fermerEdition}>
+          <button data-son="entree" onClick={fermerEdition}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="#6b5a1e" aria-hidden="true">
               <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
             </svg>
@@ -1453,7 +1474,7 @@ function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
             <p className="dlg-corps">Cette note sera supprimée.</p>
             <div className="dlg-boutons">
               <button onClick={() => setConfirmer(false)}>Annuler</button>
-              <button
+              <button data-son="effacer"
                 onClick={() => {
                   notesPerso.ecrire((l) => l.filter((x) => x.id !== edite.id));
                   setConfirmer(false);
@@ -1648,7 +1669,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
           Copier le numéro
         </button>
       ) : null}
-      <button className="dlg-choix" onClick={() => (setMenu(null), basculerBloque(x))}>
+      <button className="dlg-choix" data-son={bloc.includes(x.cle) ? "deverrou" : "verrou"} onClick={() => (setMenu(null), basculerBloque(x))}>
         {bloc.includes(x.cle) ? "Débloquer le contact" : "Bloquer le contact"}
       </button>
       <button className="dlg-choix" onClick={() => (setMenu(null), setConfirmer(x))}>
@@ -1664,7 +1685,7 @@ function AppMessages({ convs, ecrit, envoyer, vu, effacer }: PropsGael) {
           <p className="dlg-corps">Toute la conversation sera supprimée.</p>
           <div className="dlg-boutons">
             <button onClick={() => setConfirmer(null)}>Annuler</button>
-            <button onClick={() => (supprimer(confirmer), setConfirmer(null))}>Supprimer</button>
+            <button data-son="effacer" onClick={() => (supprimer(confirmer), setConfirmer(null))}>Supprimer</button>
           </div>
         </DlgFenetre>
       ) : null}
@@ -2048,7 +2069,7 @@ function AppContacts() {
       ) : null}
       {c.tel || c.perso ? <div className="os-titre-holo">OPTIONS</div> : null}
       {c.tel ? (
-        <button
+        <button data-son={bloc.includes(c.id) ? "deverrou" : "verrou"}
           className="ct-option"
           onClick={() => {
             const deja = bloc.includes(c.id);
@@ -2074,7 +2095,7 @@ function AppContacts() {
           <p className="dlg-corps">Ce contact sera supprimé de ce téléphone.</p>
           <div className="dlg-boutons">
             <button onClick={() => setSupprimer(false)}>Annuler</button>
-            <button
+            <button data-son="effacer"
               onClick={() => {
                 contactsPerso.ecrire((l) => l.filter((p) => p.id !== c.id));
                 convsPerso.ecrire((cv) => ({ ...cv, [c.id]: [] }));
@@ -2117,7 +2138,7 @@ function FormContact({ depart, fini }: { depart: ContactPerso | null; fini: (id:
       }}
     >
       <div className="ct-form-barre">
-        <button type="submit" disabled={!valide}>
+        <button type="submit" data-son="entree" disabled={!valide}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill={valide ? "#33b5e5" : "#555"} aria-hidden="true">
             <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
           </svg>
@@ -2272,7 +2293,7 @@ function AppTelephone() {
       <div className="tel-numero">
         <span>{numero || " "}</span>
         {numero ? (
-          <button type="button" aria-label="Effacer" onClick={() => setNumero((n) => n.slice(0, -1))}>
+          <button type="button" data-son="effacer" aria-label="Effacer" onClick={() => setNumero((n) => n.slice(0, -1))}>
             <svg viewBox="0 0 24 24" width="26" height="26" fill="#aaa">
               <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z" />
             </svg>
@@ -2552,7 +2573,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           <p className="dlg-corps">Tout ce que vous avez fait sur ce téléphone sera effacé : contacts créés, messages, notes, alarmes, contacts bloqués et réglages. Le téléphone redémarrera.</p>
           <div className="dlg-boutons">
             <button onClick={() => setRemise(false)}>Annuler</button>
-            <button onClick={reinitialiserTelephone}>Réinitialiser</button>
+            <button data-son="undock" onClick={reinitialiserTelephone}>Réinitialiser</button>
           </div>
         </DlgFenetre>
       ) : null}

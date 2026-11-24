@@ -5,6 +5,7 @@
  */
 import { estMuet } from "./sonsSynth";
 import { jouerNotification } from "./sonneries";
+import { sortie, type Canal } from "./volume";
 
 const FICHIERS = {
   tick: "Effect_Tick",
@@ -14,7 +15,24 @@ const FICHIERS = {
   verrou: "Lock",
   deverrou: "Unlock",
   notif: "Capella",
+  // effets AOSP ajoutés (fichiers *.mp3.b64)
+  espace: "KeypressSpacebar",
+  dock: "Dock",
+  undock: "Undock",
+  videoDebut: "VideoRecord",
+  videoFin: "VideoStop",
+  miseAuPoint: "camera_focus",
+  declencheur: "camera_click",
+  batterie: "LowBattery",
+  volume: "VolumeIncremental",
 } as const;
+const EN_B64 = new Set<string>(["KeypressSpacebar", "Dock", "Undock", "VideoRecord", "VideoStop", "camera_focus", "LowBattery", "VolumeIncremental"]);
+function versOctets(t: string): ArrayBuffer {
+  const bin = atob(t.trim());
+  const o = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+  return o.buffer;
+}
 export type NomSon = keyof typeof FICHIERS;
 
 let ctx: AudioContext | null = null;
@@ -45,29 +63,31 @@ export function prechargerSons() {
   chargement ??= Promise.all(
     (Object.keys(FICHIERS) as NomSon[]).map(async (nom) => {
       try {
-        const r = await fetch(`/aakanos/sons/${FICHIERS[nom]}.mp3`);
-        tampons[nom] = await c.decodeAudioData(await r.arrayBuffer());
+        const f = FICHIERS[nom];
+        const b64 = EN_B64.has(f);
+        const r = await fetch(`/aakanos/sons/${f}.mp3${b64 ? ".b64" : ""}`);
+        tampons[nom] = await c.decodeAudioData(b64 ? versOctets(await r.text()) : await r.arrayBuffer());
       } catch {}
     }),
   ).then(() => undefined);
   return chargement;
 }
 
-export function son(nom: NomSon, volume = 1) {
-  // La notification suit le choix des Réglages › Son (Capella par défaut).
+export function son(nom: NomSon, volume = 1, canal: Canal = "sonnerie") {
+  // La notification suit le choix des Réglages › Son (Pixie Dust par défaut).
   if (nom === "notif") return jouerNotification();
   const c = contexte();
   if (!c) return;
   const b = tampons[nom];
   if (!b) {
-    void prechargerSons().then(() => tampons[nom] && son(nom, volume));
+    void prechargerSons().then(() => tampons[nom] && son(nom, volume, canal));
     return;
   }
   const s = c.createBufferSource();
   const g = c.createGain();
   g.gain.value = volume;
   s.buffer = b;
-  s.connect(g).connect(c.destination);
+  s.connect(g).connect(sortie(c, canal));
   s.start();
 }
 
@@ -89,7 +109,7 @@ export function dtmf(touche: string) {
   g.gain.linearRampToValueAtTime(0.09, t0 + 0.01);
   g.gain.setValueAtTime(0.09, t0 + 0.14);
   g.gain.linearRampToValueAtTime(0, t0 + 0.16);
-  g.connect(c.destination);
+  g.connect(sortie(c));
   for (const hz of f) {
     const o = c.createOscillator();
     o.frequency.value = hz;
@@ -104,7 +124,7 @@ export function tonaliteRetour(): () => void {
   const c = contexte();
   if (!c) return () => {};
   const g = c.createGain();
-  g.connect(c.destination);
+  g.connect(sortie(c));
   const o = c.createOscillator();
   o.frequency.value = 440;
   o.connect(g);
@@ -151,7 +171,7 @@ export function sonPieces(n = 6) {
       o.frequency.value = f * mult;
       g.gain.setValueAtTime(vol, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18 + Math.random() * 0.1);
-      o.connect(g).connect(c.destination);
+      o.connect(g).connect(sortie(c, "media"));
       o.start(t);
       o.stop(t + 0.3);
     }
@@ -173,7 +193,7 @@ export function sonBillets() {
     const g = c.createGain();
     g.gain.setValueAtTime(0.16, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
-    s.connect(f).connect(g).connect(c.destination);
+    s.connect(f).connect(g).connect(sortie(c, "media"));
     s.start(t);
   }
   const t = t0 + 0.62;
@@ -183,7 +203,7 @@ export function sonBillets() {
     o.frequency.value = hz;
     g.gain.setValueAtTime(vol, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
-    o.connect(g).connect(c.destination);
+    o.connect(g).connect(sortie(c, "media"));
     o.start(t);
     o.stop(t + 1.2);
   }
@@ -218,7 +238,7 @@ export function sonTromboneTriste() {
       lfo.start(t + 0.3);
       lfo.stop(t + d);
     }
-    o.connect(f).connect(g).connect(c.destination);
+    o.connect(f).connect(g).connect(sortie(c, "media"));
     o.start(t);
     o.stop(t + d + 0.02);
     t += d;
@@ -256,7 +276,7 @@ export function sonWahWah() {
       g.gain.setValueAtTime(0, t);
       g.gain.linearRampToValueAtTime(wah ? 0.16 : 0.1, t + 0.015);
       g.gain.exponentialRampToValueAtTime(0.001, t + d);
-      o.connect(f).connect(g).connect(c.destination);
+      o.connect(f).connect(g).connect(sortie(c, "media"));
       o.start(t);
       o.stop(t + d + 0.02);
     }
@@ -294,7 +314,7 @@ export function sonProut() {
   fb.frequency.value = 160;
   const gb = c.createGain();
   gb.gain.value = 0.25;
-  o.connect(f).connect(g).connect(c.destination);
+  o.connect(f).connect(g).connect(sortie(c, "media"));
   s.connect(fb).connect(gb).connect(g);
   o.start(t);
   tremble.start(t);
@@ -339,7 +359,7 @@ export function sonChoc(force: number) {
   o.stop(t + 0.15);
 }
 
-function notes(seq: [number, number, OscillatorType?][], vol = 0.08, ecart = 0.09) {
+function notes(seq: [number, number, OscillatorType?][], vol = 0.08, ecart = 0.09, canal: Canal = "media") {
   const c = contexte();
   if (!c) return;
   seq.forEach(([hz, d, type], i) => {
@@ -351,7 +371,7 @@ function notes(seq: [number, number, OscillatorType?][], vol = 0.08, ecart = 0.0
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(vol, t + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0008, t + d);
-    o.connect(g).connect(c.destination);
+    o.connect(g).connect(sortie(c, canal));
     o.start(t);
     o.stop(t + d + 0.02);
   });
@@ -381,7 +401,7 @@ export function sonAppli(id: string) {
 
 /** La sonnerie du minuteur / de l'alarme : bip-bip-bip-bip. */
 export function sonSonnerie(fois = 4) {
-  for (let k = 0; k < fois; k++) setTimeout(() => notes([[1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"]], 0.05, 0.12), k * 900);
+  for (let k = 0; k < fois; k++) setTimeout(() => notes([[1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"], [1760, 0.09, "square"]], 0.05, 0.12, "alarme"), k * 900);
 }
 
 /*

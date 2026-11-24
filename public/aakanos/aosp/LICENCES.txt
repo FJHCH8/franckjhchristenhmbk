@@ -6,3 +6,7 @@ Icônes reprises telles quelles (PNG d'origine intégré dans un fichier SVG du 
   Copyright (C) The Android Open Source Project.
 - lockclock-weather_na.svg, lockclock-weather_30.svg : CyanogenMod LockClock (cm-10.1, Android 4.2), res/drawable-xhdpi.
   Copyright (C) 2012 The CyanogenMod Project.
+- dashclock-ic_weather_partly_cloudy.svg (icône de l'appli Météo) : DashClock Widget de Roman Nurik (Google), v1.2 (2013,
+  Android 4.2, style Holo), main/res/drawable-xhdpi/ic_weather_partly_cloudy.png. Copyright 2013 Google Inc.
+  Il n'existe pas d'appli météo dans AOSP ; les icônes météo de Google (Google Now, Actualités et météo) ne sont pas
+  sous licence libre, elles ne sont donc pas utilisées.

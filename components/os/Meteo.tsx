@@ -8,14 +8,14 @@
 import { useEffect, useState } from "react";
 import { LogoNounou } from "./Nounou";
 import { toast } from "./Systeme";
-import { sonSynth } from "./sonsSynth";
+import { son } from "./sonsAndroid";
 
 const A = "/aakanos/aosp";
 
 export function IconeMeteo({ taille = 56 }: { taille?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className="os-icone" src={`${A}/lockclock-weather_30.svg`} width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />
+    <img className="os-icone" src={`${A}/dashclock-ic_weather_partly_cloudy.svg`} width={taille} height={taille} alt="" draggable={false} style={{ objectFit: "contain" }} />
   );
 }
 
@@ -49,7 +49,8 @@ export function AppMeteo() {
       setEtat("horsligne");
       if (essais > 0) {
         toast(ECHECS[(essais - 1) % ECHECS.length]!);
-        sonSynth("erreur");
+        // l'alerte « batterie faible » d'Android (LowBattery, AOSP) : le son le plus triste de Jelly Bean
+        son("batterie", 0.6);
       }
     }, essais === 0 ? 2200 : 1600);
     return () => window.clearTimeout(t);

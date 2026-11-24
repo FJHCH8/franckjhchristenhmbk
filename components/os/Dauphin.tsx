@@ -5,6 +5,7 @@
  * de Nounou Browser quand Internet ne répond pas — sauter les mines, attraper les oiseaux.
  */
 import { useEffect, useRef } from "react";
+import { son } from "./sonsAndroid";
 
 type Palette = Record<string, string>;
 
@@ -232,6 +233,7 @@ export function JeuDauphin() {
       }
     };
     const finPartie = () => {
+      son("batterie", 0.5, "media"); // perdu : l'alerte « batterie faible » d'Android (AOSP)
       const s = Math.floor(j.score);
       if (s > record) {
         record = s;
@@ -247,6 +249,7 @@ export function JeuDauphin() {
       if (j.etat === "pret" || (j.etat === "fini" && j.tEtat > 30)) return depart();
       if (j.etat === "jeu" && !j.plonge && j.y >= SURFACE - 1) {
         j.vy = -9.2;
+        son("espace", 0.7, "media"); // le saut : la barre d'espace du clavier d'Android (AOSP)
         eclabousse(X + DW / 2, 10);
       }
     };

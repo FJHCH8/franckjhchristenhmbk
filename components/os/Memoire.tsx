@@ -164,7 +164,7 @@ export function GardienAlarmes({ actif }: { actif: boolean }) {
   }, [liste, actif]);
   useEffect(() => {
     if (!sonne) return;
-    const stop = jouerSonnerie(sonne.a.son ?? choixSons.lire().alarme, true);
+    const stop = jouerSonnerie(sonne.a.son ?? choixSons.lire().alarme, true, "alarme");
     // Personne ne répond : au bout d'une minute, alarme manquée.
     const t = window.setTimeout(() => {
       setSonne(null);

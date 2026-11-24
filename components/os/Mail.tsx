@@ -330,7 +330,7 @@ export function AppMail() {
       <div className="ml ml-lire os-act entre">
         <div className="ml-barre">
           <b className="ml-titre">Boîte d’envoi</b>
-          <button className="ml-ic" aria-label="Supprimer" onClick={() => (maj((x) => ({ ...x, envoyes: x.envoyes.filter((y) => y.id !== env.id) })), toast("Message supprimé"), setOuvert(null))}>
+          <button className="ml-ic" data-son="effacer" aria-label="Supprimer" onClick={() => (maj((x) => ({ ...x, envoyes: x.envoyes.filter((y) => y.id !== env.id) })), toast("Message supprimé"), setOuvert(null))}>
             <Ico n="ic_menu_delete" />
           </button>
         </div>
@@ -364,15 +364,15 @@ export function AppMail() {
       <div className="ml ml-lire os-act entre">
         <div className="ml-barre ml-barre-actions">
           {ici === "corbeille" || ici === "archives" ? (
-            <button className="ml-ic" aria-label="Déplacer vers la boîte de réception" onClick={() => deplacer(c.id, null, "Déplacé vers la boîte de réception")}>
+            <button className="ml-ic" data-son="entree" aria-label="Déplacer vers la boîte de réception" onClick={() => deplacer(c.id, null, "Déplacé vers la boîte de réception")}>
               <Ico n="ic_menu_back" />
             </button>
           ) : (
-            <button className="ml-ic" aria-label="Archiver" onClick={() => deplacer(c.id, "archives", "Conversation archivée")}>
+            <button className="ml-ic" data-son="entree" aria-label="Archiver" onClick={() => deplacer(c.id, "archives", "Conversation archivée")}>
               <Ico n="ic_menu_archive" />
             </button>
           )}
-          <button
+          <button data-son="effacer"
             className="ml-ic"
             aria-label={ici === "corbeille" ? "Supprimer définitivement" : "Supprimer"}
             onClick={() => (ici === "corbeille" ? deplacer(c.id, "supprime", "Message supprimé définitivement") : deplacer(c.id, "corbeille", "Message placé dans la corbeille"))}

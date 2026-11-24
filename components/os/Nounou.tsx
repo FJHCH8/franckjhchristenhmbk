@@ -6,6 +6,7 @@
  */
 import { useState, type FormEvent } from "react";
 import { DauphinPixel, JeuDauphin } from "./Dauphin";
+import { son } from "./sonsAndroid";
 
 const MENTHE = "#e2ecdd";
 const RAYURE = "#7aa7c4";
@@ -52,7 +53,8 @@ export function NavigateurNounou() {
     setAdresse(q);
     setVue("chargement");
     (document.activeElement as HTMLElement | null)?.blur();
-    window.setTimeout(() => setVue("horsligne"), 1300);
+    // page introuvable : l'alerte « batterie faible » d'Android (LowBattery, AOSP)
+    window.setTimeout(() => (setVue("horsligne"), son("batterie", 0.5)), 1300);
   };
 
   return (
