@@ -88,15 +88,13 @@ export function AppSharkobank() {
       <div className="sk-bloc">
         <small className="st-lab">{"// 02 · DERNIÈRES OPÉRATIONS"}</small>
         <ul className="sk-ops">
-          {Array.from({ length: essais }, (_, k) => (
-            <li key={`f${k}`} className="frais">
-              <span>
-                <b>Frais de tentative de connexion</b>
-                <em>AUJOURD’HUI · SHARKOBANK</em>
-              </span>
-              <strong>−{euros(FRAIS)}</strong>
-            </li>
-          ))}
+          <li className="frais">
+            <span>
+              <b>Frais de tentative de connexion{essais > 1 ? ` ×${essais}` : ""}</b>
+              <em>AUJOURD’HUI · SHARKOBANK</em>
+            </span>
+            <strong>−{euros(FRAIS * essais)}</strong>
+          </li>
           {[0, 1, 2, 3].map((k) =>
             charge ? (
               <li key={k} className="vide">
@@ -114,7 +112,6 @@ export function AppSharkobank() {
             ),
           )}
         </ul>
-        <small className="st-mono">TOTAL DES FRAIS AUJOURD’HUI · {euros(FRAIS * essais)}</small>
       </div>
 
       <div className="sk-actions">
@@ -144,7 +141,7 @@ export function AppSharkobank() {
 
 /* ---------------- Peeporn ---------------- */
 
-const RUBRIQUES = ["Tendances", "Nouveautés", "Grenouilles gays", "Live cam", "Crapauds musclés", "Cuisses de grenouille", "Nénuphars chauds", "Bave & ASMR", "Mouches en folie", "Spécial mare"];
+const RUBRIQUES = ["Tendances", "Nouveautés", "Grenouilles gays", "Grenouille et poney", "Live cam", "Crapauds musclés", "Cuisses de grenouille", "Nénuphars chauds", "Bave & ASMR", "Mouches en folie", "Spécial mare"];
 const VIDEOS: { titre: string; duree: string; vues: string; badge?: "LIVE" | "HD" | "4K" }[] = [
   { titre: "Elle coasse toute la nuit", duree: "12:34", vues: "1,2 M", badge: "HD" },
   { titre: "La mare est chaude ce soir", duree: "EN DIRECT", vues: "8 412 spectateurs", badge: "LIVE" },

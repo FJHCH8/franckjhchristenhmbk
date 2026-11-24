@@ -637,3 +637,18 @@ a.app-ligne:active { background: var(--presse); }
 .pp-miroir p b { color: #ff7ac0; text-shadow: 0 0 10px rgba(255, 60, 158, .6); }
 .pp-miroir p.pp-puce { margin: 2px 4px 10px; font: 700 20px var(--p2), sans-serif; letter-spacing: 1px; color: #fff; text-shadow: 0 0 10px #ff3c9e; }
 .pp-age .dlg-titre { color: #ff3c9e; border-bottom-color: #ff3c9e; } .pp-age { border-top-color: #ff3c9e; }
+/* Sharkobank : tout l'écran d'un coup, sans défiler */
+.hl.sk { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; }
+.hl.sk > .sk-bloc { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.sk-haut { padding: 8px 12px 10px; gap: 10px; }
+.sk-haut img { width: 48px; height: 48px; }
+.sk-haut b { font-size: 21px; }
+.sk-carte { margin: 10px 12px 0; padding: 8px 12px; }
+.sk-carte .sq-grand { height: 24px; margin: 6px 0; }
+.sk-solde { margin: 2px 0 0; font-size: 26px; } .sk-solde em { font-size: 18px; }
+.sk-bloc { margin: 10px 14px 0; }
+.sk-ops { flex: 1; min-height: 0; overflow: hidden; margin-top: 4px; }
+.sk-ops li { min-height: 42px; padding: 4px 2px; }
+.sk-ops b { font-size: 13px; }
+.sk-actions { flex: none; margin: 8px 12px 0; gap: 6px; }
+.sk-actions .jb-bouton { min-height: 40px; font-size: 13px; }
