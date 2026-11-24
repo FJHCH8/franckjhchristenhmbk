@@ -625,3 +625,32 @@ body { --f-titre: var(--p2), sans-serif !important; }
 .n-secret.vu .n-secret-encre { opacity: 0; transform: scale(1.6); filter: blur(3px); }
 @keyframes encre { to { background-position: 7px -6px, -5px 7px, 9px 5px; } }
 @keyframes encre-scintille { 50% { opacity: .65; } }
+
+/* barre de progression provisoire (choix de la nouvelle barre en cours) */
+.barre-p { position: relative; width: 100%; height: 4px; margin-top: 12px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+.barre-p i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(100deg, #6fbdf5 0%, #b9e3ff 25%, #f4fbff 50%, #b9e3ff 75%, #6fbdf5 100%) 0 0 / 200% 100% repeat-x; animation: reflet-bleu 3.2s linear infinite; transition: width .8s cubic-bezier(.1, .9, .2, 1); }
+
+/* code pixelisé */
+.n-secret { min-width: 0 !important; height: auto !important; padding: 2px 4px !important; border-radius: 0 !important; overflow: visible !important; }
+.n-secret canvas { display: block; width: 76px; height: 22px; image-rendering: pixelated; image-rendering: crisp-edges; transition: filter .2s; }
+.n-secret.net canvas { filter: drop-shadow(0 0 6px rgba(80, 230, 140, .6)); }
+.n-secret-encre, .n-secret-texte { display: none; }
+
+/* tuiles : le contenu tient dans la tuile (barre comprise) */
+.pt-btn { display: flex !important; flex-direction: column; }
+.pt-btn .pt-int { flex: 1; min-height: 0; height: auto; }
+.pt-btn .barre-p { margin-top: auto; flex: none; }
+.n .pt.large .pt-btn .pt-ligne { margin-top: 4px; }
+@media (max-width: 860px) {
+  .pts { grid-template-rows: 190px 160px; }
+  .n .pt-btn { padding: 16px 16px !important; }
+  .n .pt-btn .pt-n { font-size: 44px; }
+  .n .pt-btn b { font-size: 19px; letter-spacing: 2px; }
+  .n .pt-btn small { font-size: 10px; letter-spacing: 1.5px; }
+  .n .pt-btn em.cpt { font-size: 12px; }
+}
+
+/* haut de l'écran : le flou et le noir montent jusque sous la barre d'état du téléphone */
+.top-frost { top: -80px !important; height: calc(env(safe-area-inset-top) + 8.25rem + 80px) !important; }
+.top-frost-tint { background: linear-gradient(to bottom, #000 0, rgba(0, 0, 0, .9) 80px, rgba(0, 0, 0, .55) calc(80px + env(safe-area-inset-top) + 2rem), transparent 100%) !important; }
+html, body { background: #000; }

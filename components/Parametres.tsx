@@ -89,13 +89,10 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
 }
 
 function Segments({ p }: { p: number; n?: number; delai?: number }) {
-  // Barre de chargement façon Wii U : piste arrondie, remplissage cyan lumineux qui ondule, anneau qui tourne.
+  // Barre de progression provisoire (la nouvelle barre est en cours de choix).
   return (
-    <div className="wiiu" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
-      <div className="wiiu-piste">
-        <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
-      </div>
-      <span className="wiiu-anneau" aria-hidden="true" />
+    <div className="barre-p" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
+      <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
     </div>
   );
 }
@@ -143,6 +140,7 @@ function Matrice() {
 /* ---------------- panneaux ---------------- */
 
 function PanneauApparence() {
+  const [verrou, setVerrou] = useState(false);
   const [mode, setMode] = useState<"classique" | "aakanos">(() => {
     try {
       return typeof window !== "undefined" && localStorage.getItem(CLE_APPARENCE) === "aakanos" ? "aakanos" : "classique";
@@ -186,14 +184,16 @@ function PanneauApparence() {
         <Tq i={3}>
           <button
             type="button"
-            className="p2-action"
+            className={`p2-action${verrou ? " rouge" : ""}`}
             onClick={() => {
+              // 1er appui : l'avertissement en rouge ; 2e appui : on part vers AakanOS (qui demande le code).
+              if (!verrou) return setVerrou(true);
               choisir("aakanos");
               window.location.assign("/aakanos");
             }}
           >
-            <Icone nom="phone_iphone" />
-            <T>lancer AakanOS</T>
+            <Icone nom={verrou ? "info" : "phone_iphone"} />
+            {verrou ? <span className="p2-action-txt">Pour rentrer sur AakanOS, il vous faut un mot de passe caché sur le site.</span> : <T>lancer AakanOS</T>}
           </button>
         </Tq>
       ) : null}

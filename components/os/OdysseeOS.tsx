@@ -29,20 +29,18 @@ type Appli = { id: IdAppli; nom: string; externe?: string };
 
 const APPLIS: Appli[] = [
   { id: "contacts", nom: "Contacts" },
-  { id: "qui", nom: "Qui suis-je" },
-  { id: "projets", nom: "Projets" },
+  { id: "projets", nom: "Calendrier" },
   { id: "album", nom: "Album" },
-  { id: "citations", nom: "Citations" },
+  { id: "citations", nom: "Notes" },
   { id: "messages", nom: "Messages" },
   { id: "nounou", nom: "Nounou" },
   { id: "instagram", nom: "Instagram", externe: "https://instagram.com/fjhchristenhmbk" },
   { id: "endurreisen", nom: "Endurreisen" },
-  { id: "dauphin", nom: "Dauphin" },
   { id: "reglages", nom: "Réglages" },
 ];
 const par = (id: IdAppli) => APPLIS.find((a) => a.id === id)!;
-const PAGE1: IdAppli[] = ["qui", "projets", "album", "citations", "messages", "contacts", "nounou", "endurreisen"];
-const PAGE2: IdAppli[] = ["instagram", "dauphin", "reglages"];
+const PAGE1: IdAppli[] = ["projets", "album", "citations", "messages", "contacts", "nounou", "endurreisen", "instagram"];
+const PAGE2: IdAppli[] = ["reglages"];
 const DOCK: IdAppli[] = ["contacts", "messages", "nounou", "reglages"];
 
 const CODE = "6458";
@@ -368,7 +366,7 @@ export function OdysseeOS() {
   type Notif = { id: string; icone: ReactNode; titre: string; texte: string; auteur?: string; h: string; appli: Appli };
   const toutes: (Notif | null)[] = [
     derniere
-      ? { id: "citation", icone: <IconeAppli id="citations" taille={40} />, titre: "Nouvelle citation", texte: `« ${derniere.texte} »`, auteur: derniere.auteur, h: "11:20", appli: par("citations") }
+      ? { id: "citation", icone: <IconeAppli id="citations" taille={40} />, titre: "Nouvelle note", texte: `« ${derniere.texte} »`, auteur: derniere.auteur, h: "11:20", appli: par("citations") }
       : null,
     {
       id: "endurreisen",
@@ -909,13 +907,7 @@ function ContenuAppli({
       return <AppMessages {...gael} />;
     case "nounou":
       return (
-        <NavigateurNounou
-          raccourcis={(["qui", "projets", "album", "citations"] as IdAppli[]).map((i) => ({
-            nom: par(i).nom,
-            icone: <IconeAppli id={i} taille={34} />,
-            ouvrir: () => ouvrir(par(i)),
-          }))}
-        />
+        <NavigateurNounou />
       );
     case "dauphin":
       return (
@@ -1030,10 +1022,41 @@ function Chargement() {
   );
 }
 
+function MoisCalendrier({ t }: { t: number | null }) {
+  // Décembre 2026 : le 1er (Endurreisen) et le 3 (L’aube) sont marqués, aujourd’hui entouré.
+  const auj = t ? new Date(t) : null;
+  const premier = new Date(2026, 11, 1).getDay(); // 0 = dimanche
+  const decal = (premier + 6) % 7;
+  const cases = [...Array.from({ length: decal }, () => 0), ...Array.from({ length: 31 }, (_, i) => i + 1)];
+  return (
+    <div className="cal">
+      <div className="cal-tete">
+        <b>décembre 2026</b>
+      </div>
+      <div className="cal-grille">
+        {["L", "M", "M", "J", "V", "S", "D"].map((j, i) => (
+          <span key={i} className="cal-j">
+            {j}
+          </span>
+        ))}
+        {cases.map((n, i) => (
+          <span
+            key={i}
+            className={`cal-c${n === 1 ? " e1" : ""}${n === 3 ? " e2" : ""}${auj && auj.getFullYear() === 2026 && auj.getMonth() === 11 && auj.getDate() === n ? " auj" : ""}`}
+          >
+            {n || ""}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AppProjets({ t, etoiles }: { t: number | null; etoiles: Etoile[] | null }) {
   const projets = (etoiles ?? []).filter((e) => e.genre === "projet");
   return (
     <div className="app-defile">
+      <MoisCalendrier t={t} />
       <Titre>ÉVÉNEMENTS</Titre>
       <div className="agenda">
         <i style={{ background: "#33b5e5" }} />
@@ -1065,19 +1088,29 @@ function AppProjets({ t, etoiles }: { t: number | null; etoiles: Etoile[] | null
 }
 
 function AppCitations({ etoiles }: { etoiles: Etoile[] | null }) {
+  // Notes : chaque citation est une note sur papier jaune.
   const liste = (etoiles ?? []).filter((e) => e.genre !== "projet" && e.texte?.trim());
+  const [ouverte, setOuverte] = useState<string | null>(null);
+  useRetour(ouverte !== null, () => setOuverte(null));
+  const n = liste.find((c) => c.id === ouverte);
+  if (n) {
+    return (
+      <div className="app-defile note-papier">
+        <div className="note-date">{n.date}</div>
+        <p className="note-texte">{n.texte}</p>
+        <div className="note-signe">— {n.auteur}</div>
+      </div>
+    );
+  }
   return (
     <div className="app-defile">
-      <Titre>CITATIONS · {liste.length}</Titre>
+      <Titre>NOTES · {liste.length}</Titre>
       {etoiles === null ? <Chargement /> : null}
       {liste.map((c) => (
-        <figure key={c.id} className="citation">
-          <blockquote>« {c.texte} »</blockquote>
-          <figcaption>
-            {c.auteur}
-            {c.date ? ` · ${c.date}` : ""}
-          </figcaption>
-        </figure>
+        <button key={c.id} className="note-ligne" onClick={() => setOuverte(c.id)}>
+          <b>{c.texte.slice(0, 40)}{c.texte.length > 40 ? "…" : ""}</b>
+          <span>{c.date}</span>
+        </button>
       ))}
     </div>
   );
@@ -1231,59 +1264,97 @@ function AppMessages({ msgs, ecrit, envoyer, vu }: PropsGael) {
   );
 }
 
-/** Contacts : une seule fiche, celle de Franck. */
+type Contact = { id: string; nom: string; photo: string; tel?: string; mail?: string; insta?: string; note?: string };
+const CONTACTS: Contact[] = [
+  { id: "celjo", nom: "Celjo", photo: "/aakanos/celjo.svg", tel: "+0-20070600084", note: "Le lapin, toujours sur son scooter." },
+  { id: "franck", nom: "Franck J.H. Christen H.M.B.K.", photo: "/media/franck.jpg", mail: MAIL, insta: "@fjhchristenhmbk", note: "Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui." },
+  { id: "gael", nom: "Gaël", photo: "/aakanos/gael.jpg", tel: "+0-2003220008" },
+  { id: "pacifick", nom: "Pacifick", photo: "/aakanos/pacifick.svg", tel: "+0-43365470730", note: "L’orque. Il nage." },
+];
+
+/** Contacts : Celjo, Franck, Gaël, Pacifick. */
 function AppContacts() {
-  const act = useActivite<"liste" | "fiche">("liste");
-  useRetour(act.ecran === "fiche", act.retour);
-  if (act.ecran === "liste") {
+  const [choisi, setChoisi] = useState<string | null>(null);
+  useRetour(choisi !== null, () => setChoisi(null));
+  const c = CONTACTS.find((x) => x.id === choisi);
+  if (!c) {
     return (
-      <Activite act={act}>
-        <div className="app-defile">
-          <div className="ct-recherche">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="#888"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
-            <span>Rechercher des contacts</span>
-          </div>
-          <div className="os-titre-holo">F</div>
-          <button className="ct-ligne" onClick={() => act.aller("fiche")}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/media/franck.jpg" alt="" />
-            <b>Franck J.H. Christen H.M.B.K.</b>
-          </button>
-          <p className="os-vide">1 contact</p>
+      <div className="app-defile os-act entre">
+        <div className="ct-recherche">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#888"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
+          <span>Rechercher des contacts</span>
         </div>
-      </Activite>
+        {CONTACTS.map((x, i) => {
+          const l = x.nom[0]!.toUpperCase();
+          const titre = i === 0 || CONTACTS[i - 1]!.nom[0]!.toUpperCase() !== l ? <div className="os-titre-holo">{l}</div> : null;
+          return (
+            <div key={x.id}>
+              {titre}
+              <button className="ct-ligne" onClick={() => setChoisi(x.id)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={x.photo} alt="" />
+                <b>{x.nom}</b>
+              </button>
+            </div>
+          );
+        })}
+        <p className="os-vide">{CONTACTS.length} contacts</p>
+      </div>
     );
   }
   return (
-    <Activite act={act}>
-      <div className="app-defile">
-        <div className="ct-photo">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/media/franck.jpg" alt="" />
-          <b>Franck J.H. Christen H.M.B.K.</b>
-        </div>
-        <div className="os-titre-holo">E-MAIL</div>
-        <a className="ct-champ" href={`mailto:${MAIL}`}>
-          <span>
-            <b>{MAIL}</b>
-            <small>PERSONNEL</small>
-          </span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/aakanos/email.png" alt="" />
-        </a>
-        <div className="os-titre-holo">RÉSEAUX</div>
-        <a className="ct-champ" href={INSTA} target="_blank" rel="noopener noreferrer">
-          <span>
-            <b>@fjhchristenhmbk</b>
-            <small>INSTAGRAM</small>
-          </span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/aakanos/camera.png" alt="" />
-        </a>
-        <div className="os-titre-holo">NOTE</div>
-        <p className="app-texte">Une idée, une question, un projet à partager ? Deux chemins mènent jusqu’à lui.</p>
+    <div className="app-defile os-act entre" key={c.id}>
+      <div className="ct-photo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={c.photo} alt="" />
+        <b>{c.nom}</b>
       </div>
-    </Activite>
+      {c.tel ? (
+        <>
+          <div className="os-titre-holo">TÉLÉPHONE</div>
+          <a className="ct-champ" href={`tel:${c.tel}`}>
+            <span>
+              <b>{c.tel}</b>
+              <small>MOBILE</small>
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/aakanos/phone.png" alt="" />
+          </a>
+        </>
+      ) : null}
+      {c.mail ? (
+        <>
+          <div className="os-titre-holo">E-MAIL</div>
+          <a className="ct-champ" href={`mailto:${c.mail}`}>
+            <span>
+              <b>{c.mail}</b>
+              <small>PERSONNEL</small>
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/aakanos/email.png" alt="" />
+          </a>
+        </>
+      ) : null}
+      {c.insta ? (
+        <>
+          <div className="os-titre-holo">RÉSEAUX</div>
+          <a className="ct-champ" href={INSTA} target="_blank" rel="noopener noreferrer">
+            <span>
+              <b>{c.insta}</b>
+              <small>INSTAGRAM</small>
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/aakanos/camera.png" alt="" />
+          </a>
+        </>
+      ) : null}
+      {c.note ? (
+        <>
+          <div className="os-titre-holo">NOTE</div>
+          <p className="app-texte">{c.note}</p>
+        </>
+      ) : null}
+    </div>
   );
 }
 

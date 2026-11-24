@@ -40,7 +40,7 @@ export function LogoNounou({ taille = 56 }: { taille?: number }) {
 
 type Vue = "accueil" | "chargement" | "horsligne" | "jeu";
 
-export function NavigateurNounou({ raccourcis }: { raccourcis: { nom: string; icone: React.ReactNode; ouvrir: () => void }[] }) {
+export function NavigateurNounou() {
   const [saisie, setSaisie] = useState("");
   const [adresse, setAdresse] = useState("");
   const [vue, setVue] = useState<Vue>("accueil");
@@ -81,14 +81,10 @@ export function NavigateurNounou({ raccourcis }: { raccourcis: { nom: string; ic
             <LogoNounou taille={120} />
             <div className="nounou-nom">Nounou</div>
             <div className="nounou-sous">BROWSER</div>
-            <div className="nounou-tuiles">
-              {raccourcis.map((r) => (
-                <button key={r.nom} type="button" onClick={r.ouvrir}>
-                  <span>{r.icone}</span>
-                  {r.nom}
-                </button>
-              ))}
-            </div>
+            <form className="nounou-cherche" onSubmit={aller}>
+              <LogoNounou taille={28} />
+              <input value={saisie} onChange={(e) => setSaisie(e.target.value)} placeholder="Rechercher avec Nounou" enterKeyHint="search" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+            </form>
           </div>
         ) : null}
 

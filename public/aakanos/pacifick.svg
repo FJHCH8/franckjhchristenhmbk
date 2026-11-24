@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe4ff"/><stop offset="1" stop-color="#e8f6ff"/></linearGradient>
+    <linearGradient id="mer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a86c9"/><stop offset="1" stop-color="#0b3a66"/></linearGradient>
+    <linearGradient id="noir" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2f36"/><stop offset="1" stop-color="#0d1014"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#ciel)"/>
+  <circle cx="320" cy="80" r="34" fill="#fff6c8"/>
+  <rect y="210" width="400" height="190" fill="url(#mer)"/>
+  <path d="M0 214 Q25 202 50 214 T100 214 T150 214 T200 214 T250 214 T300 214 T350 214 T400 214 V230 H0z" fill="#5fb3ea"/>
+  <!-- orque qui sort de l'eau -->
+  <g transform="rotate(-18 200 220)">
+    <path d="M70 240 C110 150 250 120 330 170 C355 186 360 205 345 214 C300 240 170 262 70 240 Z" fill="url(#noir)"/>
+    <path d="M190 150 C196 108 214 84 236 70 C232 104 236 132 248 156 Z" fill="#14181d"/>
+    <path d="M150 232 C200 246 280 238 335 214 C320 236 250 258 180 254 C165 252 155 246 150 232 Z" fill="#f4f7fa"/>
+    <ellipse cx="300" cy="176" rx="22" ry="9" fill="#f4f7fa" transform="rotate(10 300 176)"/>
+    <circle cx="318" cy="186" r="4" fill="#0d1014"/>
+    <path d="M330 206 Q342 209 350 205" stroke="#5a636d" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M220 236 C226 262 214 284 196 292 C200 270 200 252 196 240 Z" fill="#14181d"/>
+    <path d="M70 240 C52 236 30 222 20 200 C40 208 58 212 72 214 C56 196 52 176 58 160 C70 186 84 206 100 220 Z" fill="#14181d"/>
+  </g>
+  <!-- éclaboussures -->
+  <g fill="#ffffff" opacity=".9">
+    <circle cx="60" cy="200" r="7"/><circle cx="40" cy="186" r="4"/><circle cx="84" cy="190" r="5"/>
+    <circle cx="300" cy="226" r="6"/><circle cx="330" cy="214" r="4"/><circle cx="276" cy="212" r="3"/>
+  </g>
+  <path d="M30 228 Q80 214 130 228 Q180 242 240 226 Q300 212 370 230" stroke="#ffffff" stroke-width="5" fill="none" opacity=".75" stroke-linecap="round"/>
+  <path d="M0 300 Q60 290 120 300 T240 300 T360 300 T480 300" stroke="#4fa3dc" stroke-width="3" fill="none" opacity=".6"/>
+  <path d="M0 350 Q60 340 120 350 T240 350 T360 350 T480 350" stroke="#3d8fca" stroke-width="3" fill="none" opacity=".5"/>
+</svg>

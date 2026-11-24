@@ -5,7 +5,7 @@
  * Fond noir pur, barre du haut (constellation + cheval + ODYSSÉE), menu numéroté,
  * Accueil, Qui suis-je, Projets (tuiles de mission + intérieur), recherche, vrais Paramètres.
  */
-import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { LocaleProvider } from "@/components/Locale";
 import { Parametres } from "@/components/Parametres";
@@ -125,13 +125,10 @@ function Tq({ i, children, className = "" }: { i: number; children: ReactNode; c
   );
 }
 function Segments({ p }: { p: number; n?: number; delai?: number }) {
-  // Barre de chargement façon Wii U : piste arrondie, remplissage cyan lumineux qui ondule, anneau qui tourne.
+  // Barre de progression provisoire (la nouvelle barre est en cours de choix).
   return (
-    <div className="wiiu" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
-      <div className="wiiu-piste">
-        <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
-      </div>
-      <span className="wiiu-anneau" aria-hidden="true" />
+    <div className="barre-p" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p * 100)}>
+      <i style={{ width: `${Math.max(0, Math.min(1, p)) * 100}%` }} />
     </div>
   );
 }
@@ -513,13 +510,47 @@ function Suivant({ nom, aller }: { nom: string; aller: () => void }) {
   );
 }
 
-/** Texte caché à l'encre invisible (comme sur Telegram ou iMessage) : un nuage de points qui scintille ; un toucher le révèle. */
+/** Code pixelisé (illisible) : un toucher le rend net une demi-seconde, puis il se repixelise. Reflet vert blanc verdâtre. */
 function Secret({ texte }: { texte: string }) {
-  const [vu, setVu] = useState(false);
+  const toile = useRef<HTMLCanvasElement>(null);
+  const [net, setNet] = useState(false);
+  useEffect(() => {
+    const c = toile.current;
+    if (!c) return;
+    const ctx = c.getContext("2d")!;
+    let raf = 0;
+    const W = 76;
+    const H = 22;
+    const peindre = (t: number) => {
+      const r = window.devicePixelRatio || 1;
+      const echelle = net ? r : 0.16; // très peu de pixels quand c'est caché
+      c.width = Math.max(1, Math.round(W * echelle));
+      c.height = Math.max(1, Math.round(H * echelle));
+      ctx.setTransform(echelle, 0, 0, echelle, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      const x = ((t / 1600) % 1) * W * 2 - W;
+      const g = ctx.createLinearGradient(x, 0, x + W, 0);
+      g.addColorStop(0, "#3fd47a");
+      g.addColorStop(0.5, "#f2fff6");
+      g.addColorStop(1, "#3fd47a");
+      ctx.fillStyle = g;
+      ctx.font = "16px 'Share Tech Mono', monospace";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(texte.split("").join(" "), W / 2, H / 2 + 1);
+      raf = requestAnimationFrame(peindre);
+    };
+    raf = requestAnimationFrame(peindre);
+    return () => cancelAnimationFrame(raf);
+  }, [net, texte]);
+  useEffect(() => {
+    if (!net) return;
+    const id = window.setTimeout(() => setNet(false), 500);
+    return () => window.clearTimeout(id);
+  }, [net]);
   return (
-    <button type="button" className={`n-secret${vu ? " vu" : ""}`} onClick={() => setVu((v) => !v)} aria-label={vu ? texte : "Texte caché : toucher pour l’afficher"}>
-      <span className="n-secret-texte">{texte}</span>
-      <span className="n-secret-encre" aria-hidden="true" />
+    <button type="button" className={`n-secret${net ? " net" : ""}`} onClick={() => setNet(true)} aria-label="Code caché : toucher pour l’afficher un instant">
+      <canvas ref={toile} />
     </button>
   );
 }
