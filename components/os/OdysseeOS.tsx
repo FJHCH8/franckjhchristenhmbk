@@ -1042,7 +1042,7 @@ function Grille({ ids, ouvrir, cle }: { ids: IdAppli[]; ouvrir: (a: Appli, el?: 
   return (
     <div className="os-grille" key={cle}>
       {ids.map((id, i) => (
-        <div key={id} className="os-grille-case" style={{ animationDelay: `${i * 22}ms` }}>
+        <div key={id} className="os-grille-case">
           <Icone a={par(id)} ouvrir={ouvrir} />
         </div>
       ))}
@@ -1268,7 +1268,7 @@ function FenetreAppli({ f, fermeture, onRetour, children }: { f: Fenetre; fermet
     ? { "--sx": sx, "--sy": sy, transformOrigin: fermeture ? "50% 50%" : `${px}px ${py}px` }
     : { "--sx": 0.8, "--sy": 0.8, transformOrigin: "50% 50%" }) as CSSProperties;
   return (
-    <div className={`os-fenetre${fermeture ? " ferme" : ""}`} style={style}>
+    <div className={`os-fenetre${fermeture ? " ferme" : ""}${f.appli.id === "opakaalt" ? " os-fenetre-opakaalt" : ""}`} style={style}>
       <div className="os-barre-action">
         <button className="os-barre-retour" onClick={onRetour} aria-label="Retour">
           <svg viewBox="0 0 12 24" width="10" height="22">

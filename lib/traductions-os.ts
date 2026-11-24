@@ -652,6 +652,7 @@ export const LIGNES_OS: [string, string, string, string][] = [
   ["un amour en 8 bits", "Eine Liebe in 8 Bit", "En kärlek i 8 bitar", "Ur garantez e 8 bit"],
   ["nouvelle partie", "Neues Spiel", "Nytt spel", "C’hoari nevez"],
   ["gagne au moins 2 jeux sur 3 contre le blond : morpion, puissance 4, échecs.", "Gewinne mindestens 2 von 3 Spielen gegen den Blonden: Tic-Tac-Toe, Vier gewinnt, Schach.", "Vinn minst 2 av 3 spel mot blondinen: luffarschack, fyra i rad, schack.", "Gounez da vihanañ 2 c’hoari war 3 a-enep ar melen: tik-tak-to, peder e renk, echedoù."],
+  ["gagne la majorité des jeux contre le blond : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.", "Gewinne die Mehrheit der Spiele gegen den Blonden: Tic-Tac-Toe, Vier gewinnt, Wer bin ich, Schiffe versenken, Tischfußball, dann Schach.", "Vinn majoriteten av spelen mot blondinen: luffarschack, fyra i rad, vem är jag, sänka skepp, bordfotboll, sedan schack.", "Gounez muianterc’h ar c’hoarioù a-enep ar melen: tik-tak-to, peder e renk, piv on-me, emgann listri, baby-foot, neuze an echedoù."],
   ["parties : #", "Spiele: #", "Spel: #", "C’hoarioù: #"],
   ["victoires : #", "Siege: #", "Vinster: #", "Trec’hioù: #"],
   ["défaites : #", "Niederlagen: #", "Förluster: #", "Kolloù: #"],
