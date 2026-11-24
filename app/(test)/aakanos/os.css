@@ -484,3 +484,7 @@ a.app-ligne:active { background: var(--presse); }
 .pulpus-z { animation: pp-z 2.4s ease-in-out infinite; } .pulpus-z.b { animation-delay: .6s; }
 @keyframes pp-z { 0% { opacity: 0; transform: translateY(6px); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
 .pulpus-reessayer { margin-top: 8px; padding: 10px 22px; border: 1px solid #ccc; background: #fff; color: #33b5e5; font-size: 13px; font-weight: 700; letter-spacing: 1px; }
+/* images fixes : Gypsy qui pleure et le poulpe qui dort ne bougent pas */
+.nounou-plage .larme, .pulpus-bulle, .pulpus-z { animation: none !important; }
+.pulpus-bulle { transform: none; opacity: 1; }
+.pulpus-z { opacity: 1; }
