@@ -4,7 +4,7 @@
  * Opakaalt : un jeu 8 bits de James-games (pixel art et chiptune faits maison).
  * Menu sur la ville (le jour tombe, la nuit vient), la rencontre dans la rue, le casino,
  * six jeux contre le blond, toujours dans cet ordre : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.
- * Règle : on joue les six jeux à chaque partie ; on gagne à la majorité (plus de jeux gagnés, puis les manches).
+ * Règle : il faut gagner les six jeux ; une défaite éjecte tout de suite ; une égalité se rejoue.
  * Dialogues : ceux de Franck, mot pour mot. Rien d'explicite à l'écran.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -59,14 +59,16 @@ type Gagnant = "toi" | "blond" | "nul";
 
 export const T_MERDE = "merde tu es en train de gagner mmmmmh….";
 export const T_NUL = "ahahah comment tu es trop une merde! Apart te faire enculer tu sais rien faire de plus?!";
+export const T_DEGAGE = "Tu es vraiment qu’un gros tat de merde, dégage j’ai des trous du culs bien plus intéressant que le tien à déboucher!";
 
 /* ---------------- La boîte de dialogue (texte qui s'écrit) ---------------- */
 
-function Dialogue({ qui, texte, suite }: { qui: Qui; texte: string; suite: () => void }) {
+function Dialogue({ qui, texte, suite, instant = false }: { qui: Qui; texte: string; suite: () => void; instant?: boolean }) {
   const tr = useTraduire();
   const plein = tr(texte);
-  const [n, setN] = useState(0);
+  const [n, setN] = useState(instant ? 10_000 : 0);
   useEffect(() => {
+    if (instant) return;
     const id = window.setInterval(() => {
       setN((x) => {
         if (x >= plein.length) {
@@ -78,7 +80,7 @@ function Dialogue({ qui, texte, suite }: { qui: Qui; texte: string; suite: () =>
       });
     }, 30);
     return () => window.clearInterval(id);
-  }, [plein, qui]);
+  }, [plein, qui, instant]);
   const fini = n >= plein.length;
   return (
     <button type="button" className={`op-dialogue op-${qui}`} onClick={() => (fini ? (bruitage("menu"), suite()) : setN(plein.length))}>
@@ -100,7 +102,7 @@ type Vue = {
   debout: boolean; coup: boolean; vol: boolean; coeurs: boolean; secousse: boolean; zoom: number; aTerre: boolean;
 };
 const VUE0: Vue = { fx: -15, bx: 115, fdir: 1, bdir: -1, t: 0, marche: false, boum: false, colere: false, bRougit: 0, fRougit: 0, bSourire: false, fSourire: false, fOpacite: 1, bOpacite: 1, debout: false, coup: false, vol: false, coeurs: false, secousse: false, zoom: 1, aTerre: false };
-type Etape = { qui?: Qui; texte?: string; ms?: number; vue?: Partial<Vue>; son?: Bruitage; musique?: NomPiste };
+type Etape = { qui?: Qui; texte?: string; ms?: number; vue?: Partial<Vue>; son?: Bruitage; musique?: NomPiste; instant?: boolean };
 
 function useMarche(actif: boolean) {
   const [pas, setPas] = useState<0 | 1>(0);
@@ -129,6 +131,10 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
     if (e.musique) musique(e.musique);
     if (!e.texte) {
       const id = window.setTimeout(suite, e.ms ?? 600);
+      return () => window.clearTimeout(id);
+    }
+    if (e.ms) {
+      const id = window.setTimeout(suite, e.ms);
       return () => window.clearTimeout(id);
     }
   }, [e, fin, suite]);
@@ -176,7 +182,7 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
       {decor === "hotel" ? <div className="op-enseigne op-enseigne-hotel">HÔTEL</div> : null}
       {children}
       <div className="op-bas">
-        {e?.texte && e.qui ? <Dialogue key={i} qui={e.qui} texte={e.texte} suite={suite} /> : null}
+        {e?.texte && e.qui ? <Dialogue key={i} qui={e.qui} texte={e.texte} suite={suite} instant={e.instant} /> : null}
       </div>
     </div>
   );
@@ -234,7 +240,7 @@ const VICTOIRE: Etape[] = [
   { vue: { marche: false, fOpacite: 0, bOpacite: 0 }, son: "porte", ms: 1000 },
 ];
 const DEFAITE: Etape[] = [
-  { musique: "defaite", vue: { fx: 36, bx: 62, fdir: 1, bdir: -1, t: 0, colere: true, debout: true }, qui: "blond", texte: "putain, tu commences à vraiment me faire chier, va te faire enculer." },
+  { musique: "defaite", vue: { fx: 36, bx: 62, fdir: 1, bdir: -1, t: 0, colere: true, debout: true }, qui: "blond", texte: T_DEGAGE, instant: true, ms: 1400 },
   { vue: { coup: true, secousse: true, boum: true }, son: "coup-de-pied", ms: 280 },
   { vue: { vol: true, secousse: false, boum: false }, son: "envol", ms: 1300 },
 ];
@@ -680,6 +686,7 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const [rougit, setRougit] = useState(0);
   const [bulle, setBulle] = useState<Bulle>(null);
   const [partie, setPartie] = useState(0);
+  const [egalite, setEgalite] = useState(false);
   useEffect(() => {
     const h = (ev: Event) => {
       const d = (ev as CustomEvent<{ vue?: string; i?: number }>).detail;
@@ -695,8 +702,6 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
 
   const gagnes = res.filter((r) => r.g === "toi").length;
   const perdus = res.filter((r) => r.g === "blond").length;
-  const mToi = res.reduce((s, r) => s + r.toi, 0);
-  const mBlond = res.reduce((s, r) => s + r.blond, 0);
   const avanceRef = useRef(0);
   const paroleRef = useRef<JeuParole>("morpion");
   useEffect(() => {
@@ -739,31 +744,32 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   }, []);
 
   const finJeu = useCallback((g: Gagnant, toi: number, blond: number) => {
-    setRes((l) => [...l, { g, toi, blond }]);
-    setVue("bilan");
-    bruitage(g === "toi" ? "jeu-gagne" : g === "blond" ? "jeu-perdu" : "nul");
-  }, []);
-
-  const restants = JEUX.length - res.length;
-  // Éliminé dès que le blond a trop de jeux d’avance : même en gagnant le reste, plus de majorité possible.
-  const elimine = gagnes + restants < perdus;
-  const finiTous = restants === 0;
-  let verdict: "toi" | "blond" | null = null;
-  if (elimine) verdict = "blond";
-  else if (finiTous) {
-    if (gagnes > perdus) verdict = "toi";
-    else if (perdus > gagnes) verdict = "blond";
-    else if (mToi > mBlond) verdict = "toi";
-    else if (mBlond > mToi) verdict = "blond";
-    else {
-      const dernier = [...res].reverse().find((r) => r.g === "toi" || r.g === "blond");
-      verdict = dernier?.g === "toi" ? "toi" : "blond";
+    if (g === "nul") {
+      bruitage("nul");
+      setEgalite(true);
+      setVue("bilan");
+      return;
     }
-  }
+    setEgalite(false);
+    setRes((l) => [...l, { g, toi, blond }]);
+    if (g === "blond") {
+      bruitage("jeu-perdu");
+      termine(false);
+      return;
+    }
+    bruitage("jeu-gagne");
+    setVue("bilan");
+  }, [termine]);
+
+  const gagneTous = res.length === JEUX.length && res.every((r) => r.g === "toi");
+  const perduUn = res.some((r) => r.g === "blond");
+  let verdict: "toi" | "blond" | null = null;
+  if (perduUn) verdict = "blond";
+  else if (gagneTous) verdict = "toi";
 
   useEffect(() => {
     if (vue === "bilan" && verdict === "blond") {
-      const id = window.setTimeout(() => termine(false), 900);
+      const id = window.setTimeout(() => termine(false), 400);
       return () => window.clearTimeout(id);
     }
   }, [vue, verdict, termine]);
@@ -831,13 +837,15 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
               ))}
             </div>
             <p className="op-dernier-jeu">
-              <span>{res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[res.length - 1]}</b>
+              <span>{egalite ? "Égalité :" : res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[egalite ? jeu : res.length - 1]}</b>
             </p>
-            {verdict === "blond" ? (
-              <p className="op-regle">Le blond a gagné…</p>
-            ) : verdict === "toi" ? (
+            {verdict === "toi" ? (
               <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(true))}>
                 Voir la fin
+              </button>
+            ) : egalite ? (
+              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setEgalite(false), setPartie((p) => p + 1), setVue("jeu"))}>
+                Rejouer
               </button>
             ) : (
               <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setJeu(res.length), setPartie((p) => p + 1), setVue("jeu"))}>
@@ -896,7 +904,7 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
         <button type="button" className="op-bouton op-nouvelle" onClick={() => (bruitage("valider"), setChoix(true))}>
           Nouvelle partie
         </button>
-        <p className="op-regle">Gagne la majorité des jeux contre le blond : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.</p>
+        <p className="op-regle">Gagne les six jeux contre le blond : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs. Une défaite et c’est fini.</p>
         {s.parties ? (
           <p className="op-stats">
             <span>{`Parties : ${s.parties}`}</span> · <span>{`Victoires : ${s.victoires}`}</span> · <span>{`Défaites : ${s.defaites}`}</span>

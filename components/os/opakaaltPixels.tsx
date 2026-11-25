@@ -164,7 +164,7 @@ export function CoeurPx({ taille = 3, couleur = "#ff4f8b", className, style }: {
 /** Le logo de James-games : chat les poings sur les hanches, pas content, brassard rouge au « # ». */
 export function ChatNeon({ taille = 6 }: { taille?: number }) {
   const w = 25;
-  const h = 21;
+  const h = 30;
   const W = w + 2;
   const H = h + 2;
   type Role = "poil" | "mine" | "oeilG" | "oeilD" | "nez" | "bande" | "diese";
@@ -189,6 +189,9 @@ export function ChatNeon({ taille = 6 }: { taille?: number }) {
     { x: 16, y: 9, rw: 7, rh: 7, role: "bande" },
     { x: 22, y: 16, rw: 2, rh: 3, role: "poil" }, { x: 21, y: 16, rw: 1, rh: 1, role: "poil" },
     { x: 18, y: 18, rw: 4, rh: 1, role: "poil" }, { x: 15, y: 17, rw: 5, rh: 3, role: "poil" },
+    // jambes : debout, les poings restent sur les hanches
+    { x: 8, y: 19, rw: 3, rh: 8, role: "poil" }, { x: 7, y: 27, rw: 5, rh: 2, role: "poil" },
+    { x: 14, y: 19, rw: 3, rh: 8, role: "poil" }, { x: 13, y: 27, rw: 5, rh: 2, role: "poil" },
   ];
   // « # » blanc, 5×7, directement sur le rouge (pas de pastille)
   const diese = [".#.#.", ".#.#.", "#####", ".#.#.", "#####", ".#.#.", ".#.#."];
