@@ -4,7 +4,7 @@
  * Opakaalt : un jeu 8 bits de James-games (pixel art et chiptune faits maison).
  * Menu sur la ville (le jour tombe, la nuit vient), la rencontre dans la rue, le casino,
  * six jeux contre le blond, toujours dans cet ordre : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs.
- * Règle : il faut gagner les six jeux ; une défaite éjecte tout de suite ; une égalité se rejoue.
+ * Règle : victoire par majorité (4 jeux sur 6). Dès que le blond rend la majorité inaccessible (3 victoires à lui), éjection immédiate. Une égalité se départage au pierre-feuille-ciseaux.
  * Dialogues : ceux de Franck, mot pour mot. Rien d'explicite à l'écran.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -142,9 +142,9 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
   const assis = decor === "casino" && !vue.debout;
   const style = (x: number, dir: 1 | -1, op: number, tombe = false): CSSProperties => ({
     left: `${x}%`,
-    transform: tombe ? `translateX(-50%) scaleX(${dir}) rotate(-82deg)` : `translateX(-50%) scaleX(${dir})`,
-    transformOrigin: tombe ? "55% 88%" : "50% 100%",
-    bottom: tombe ? "12%" : undefined,
+    transform: tombe ? `translateX(-50%) scaleX(${dir}) rotate(-72deg)` : `translateX(-50%) scaleX(${dir})`,
+    transformOrigin: tombe ? "50% 92%" : "50% 100%",
+    bottom: tombe ? "16%" : undefined,
     transition: `left ${vue.t}ms linear, opacity .5s, bottom .45s ease, transform ${Math.max(280, vue.t)}ms ease`,
     opacity: op,
   });
@@ -211,11 +211,11 @@ function Tapis() {
 const INTRO: Etape[] = [
   { musique: "intro", vue: { fx: 10, bx: 90, t: 0, zoom: 1, marche: true }, ms: 400 },
   { vue: { fx: 28, bx: 72, t: 1800, zoom: 1.12, marche: true }, ms: 1800 },
-  { vue: { fx: 45, bx: 55, t: 1400, zoom: 2.05, marche: true }, ms: 1400 },
-  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 47, bx: 53, zoom: 2.25, t: 120 }, son: "boum", ms: 400 },
-  { vue: { boum: false, secousse: false, aTerre: true, fx: 36, t: 480 }, ms: 800 },
-  { vue: { aTerre: true, t: 200 }, ms: 500 },
-  { vue: { aTerre: false, fx: 40, t: 580 }, ms: 720 },
+  { vue: { fx: 45, bx: 55, t: 1400, zoom: 1.85, marche: true }, ms: 1400 },
+  { vue: { marche: false, boum: true, secousse: true, colere: true, fx: 47, bx: 53, zoom: 1.85, t: 120 }, son: "boum", ms: 400 },
+  { vue: { boum: false, secousse: false, aTerre: true, fx: 47, bx: 53, zoom: 1.7, t: 480 }, ms: 800 },
+  { vue: { aTerre: true, fx: 47, bx: 53, zoom: 1.7, t: 200 }, ms: 500 },
+  { vue: { aTerre: false, fx: 47, bx: 53, zoom: 1.7, t: 580 }, ms: 720 },
   { vue: { boum: false, secousse: false }, qui: "blond", texte: "ragarde ou tu marches pd!" },
   { qui: "femboy", texte: "je m’excuse je n’ai pas vue ou j’allais je suis tellement désolé." },
   // le blond se calme et le regarde
@@ -679,14 +679,68 @@ const JEUX = ["Morpion", "Puissance 4", "Qui suis-je", "Bataille navale", "Baby-
 const PISTE_JEU: NomPiste[] = ["morpion", "puissance4", "quisuisje", "navale", "babyfoot", "echecs"];
 const PAROLE_JEU: JeuParole[] = ["morpion", "puissance4", "quisuisje", "navale", "babyfoot", "echecs"];
 
+
+const GESTES = ["pierre", "feuille", "ciseaux"] as const;
+type Geste = (typeof GESTES)[number];
+const GESTE_BAT: Record<Geste, Geste> = { pierre: "ciseaux", feuille: "pierre", ciseaux: "feuille" };
+const GESTE_NOM: Record<Geste, string> = { pierre: "Pierre", feuille: "Feuille", ciseaux: "Ciseaux" };
+
+function Chifoumi({ jeu, onFin }: { jeu: string; onFin: (g: "toi" | "blond") => void }) {
+  const tr = useTraduire();
+  const [toi, setToi] = useState<Geste | null>(null);
+  const [blond, setBlond] = useState<Geste | null>(null);
+  const [egalite, setEgalite] = useState(false);
+  const choisi = (g: Geste) => {
+    if (toi) return;
+    bruitage("valider");
+    const b = GESTES[Math.floor(Math.random() * GESTES.length)]!;
+    setToi(g);
+    setBlond(b);
+    const resultat: "toi" | "blond" | "nul" = g === b ? "nul" : GESTE_BAT[g] === b ? "toi" : "blond";
+    window.setTimeout(() => {
+      if (resultat === "nul") {
+        bruitage("nul");
+        setEgalite(true);
+        setToi(null);
+        setBlond(null);
+      } else {
+        onFin(resultat);
+      }
+    }, 900);
+  };
+  return (
+    <div className="op-chifoumi">
+      <b className="op-bilan-titre">{tr("Égalité :")} {jeu}</b>
+      <p className="op-chifoumi-regle">{tr("Pierre, feuille, ciseaux pour départager.")}</p>
+      <div className="op-chifoumi-mains">
+        <div>
+          <small>{tr("Toi")}</small>
+          <span className="op-chifoumi-geste">{toi ? tr(GESTE_NOM[toi]) : "…"}</span>
+        </div>
+        <div>
+          <small>{tr("Blond")}</small>
+          <span className="op-chifoumi-geste">{blond ? tr(GESTE_NOM[blond]) : "…"}</span>
+        </div>
+      </div>
+      {egalite && !toi ? <p className="op-chifoumi-nul">{tr("Égalité : on recommence.")}</p> : null}
+      <div className="op-chifoumi-choix">
+        {GESTES.map((g) => (
+          <button key={g} type="button" className="op-bouton op-petit" disabled={!!toi} onClick={() => choisi(g)}>
+            {tr(GESTE_NOM[g])}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const [jeu, setJeu] = useState(0);
   const [res, setRes] = useState<{ g: Gagnant; toi: number; blond: number }[]>([]);
-  const [vue, setVue] = useState<"jeu" | "bilan">("jeu");
+  const [vue, setVue] = useState<"jeu" | "bilan" | "chifoumi">("jeu");
   const [rougit, setRougit] = useState(0);
   const [bulle, setBulle] = useState<Bulle>(null);
   const [partie, setPartie] = useState(0);
-  const [egalite, setEgalite] = useState(false);
   useEffect(() => {
     const h = (ev: Event) => {
       const d = (ev as CustomEvent<{ vue?: string; i?: number }>).detail;
@@ -746,33 +800,25 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
   const finJeu = useCallback((g: Gagnant, toi: number, blond: number) => {
     if (g === "nul") {
       bruitage("nul");
-      setEgalite(true);
-      setVue("bilan");
+      setVue("chifoumi");
       return;
     }
-    setEgalite(false);
+    const apresGagnes = res.filter((r) => r.g === "toi").length + (g === "toi" ? 1 : 0);
+    const apresPerdus = res.filter((r) => r.g === "blond").length + (g === "blond" ? 1 : 0);
     setRes((l) => [...l, { g, toi, blond }]);
-    if (g === "blond") {
-      bruitage("jeu-perdu");
+    if (g === "blond") bruitage("jeu-perdu");
+    else bruitage("jeu-gagne");
+    if (apresPerdus >= 3) {
       termine(false);
       return;
     }
-    bruitage("jeu-gagne");
     setVue("bilan");
-  }, [termine]);
+  }, [termine, res]);
 
-  const gagneTous = res.length === JEUX.length && res.every((r) => r.g === "toi");
-  const perduUn = res.some((r) => r.g === "blond");
   let verdict: "toi" | "blond" | null = null;
-  if (perduUn) verdict = "blond";
-  else if (gagneTous) verdict = "toi";
+  if (perdus >= 3) verdict = "blond";
+  else if (gagnes >= 4) verdict = "toi";
 
-  useEffect(() => {
-    if (vue === "bilan" && verdict === "blond") {
-      const id = window.setTimeout(() => termine(false), 400);
-      return () => window.clearTimeout(id);
-    }
-  }, [vue, verdict, termine]);
 
   const entete = (manche: string, score: string, reflechit: boolean) => (
     <>
@@ -818,6 +864,11 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
           <div key={`${jeu}-${partie}`} className="op-jeu" data-jeu={JEUX[jeu]}>
             {plateau()}
           </div>
+        ) : vue === "chifoumi" ? (
+          <div className="op-bilan">
+            <Adversaire rougit={rougit} bulle={bulle} reflechit={false} />
+            <Chifoumi jeu={JEUX[jeu]!} onFin={(g) => finJeu(g, g === "toi" ? 1 : 0, g === "blond" ? 1 : 0)} />
+          </div>
         ) : (
           <div className="op-bilan">
             <Adversaire rougit={rougit} bulle={bulle} reflechit={false} />
@@ -837,15 +888,11 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
               ))}
             </div>
             <p className="op-dernier-jeu">
-              <span>{egalite ? "Égalité :" : res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[egalite ? jeu : res.length - 1]}</b>
+              <span>{res.at(-1)?.g === "toi" ? "Tu gagnes :" : res.at(-1)?.g === "blond" ? "Le blond gagne :" : "Égalité :"}</span> <b>{JEUX[res.length - 1]}</b>
             </p>
             {verdict === "toi" ? (
               <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), termine(true))}>
                 Voir la fin
-              </button>
-            ) : egalite ? (
-              <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setEgalite(false), setPartie((p) => p + 1), setVue("jeu"))}>
-                Rejouer
               </button>
             ) : (
               <button type="button" className="op-bouton op-continuer" onClick={() => (bruitage("valider"), setJeu(res.length), setPartie((p) => p + 1), setVue("jeu"))}>
@@ -904,7 +951,7 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
         <button type="button" className="op-bouton op-nouvelle" onClick={() => (bruitage("valider"), setChoix(true))}>
           Nouvelle partie
         </button>
-        <p className="op-regle">Gagne les six jeux contre le blond : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs. Une défaite et c’est fini.</p>
+        <p className="op-regle">Gagne contre le blond par majorité sur les six jeux : morpion, puissance 4, qui suis-je, bataille navale, baby-foot, puis les échecs. Une égalité se départage au pierre-feuille-ciseaux. Dès que tu ne peux plus gagner, c’est fini.</p>
         {s.parties ? (
           <p className="op-stats">
             <span>{`Parties : ${s.parties}`}</span> · <span>{`Victoires : ${s.victoires}`}</span> · <span>{`Défaites : ${s.defaites}`}</span>
@@ -969,18 +1016,20 @@ function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
           ))}
           <p className="op-neon" translate="no">© 1933 JAMES-GAMES</p>
           {gagne ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="op-credits-script"
-              src="/aakanos/opakaalt-script.svg"
-              alt=""
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              onAnimationEnd={(e) => {
-                e.stopPropagation();
-                setBouton(true);
-              }}
-            />
+            <div className="op-credits-script-cadre">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="op-credits-script"
+                src="/aakanos/opakaalt-script.svg"
+                alt=""
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+                onAnimationEnd={(e) => {
+                  e.stopPropagation();
+                  setBouton(true);
+                }}
+              />
+            </div>
           ) : null}
         </div>
       </div>
