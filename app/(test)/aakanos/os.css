@@ -1382,16 +1382,31 @@ a.app-ligne:active { background: var(--presse); }
   40% { opacity: 1; transform: scale(1.3); }
   70% { opacity: .35; transform: scale(.8); }
 }
+.op-credits-script-cadre {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  justify-self: center;
+}
 .op-credits-script {
   display: block;
-  width: min(86%, 280px);
+  width: min(92%, 320px);
+  max-width: 100%;
   height: auto;
   margin: 10px auto 0;
+  object-fit: contain;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
   opacity: 0;
 }
+.op-chifoumi { display: grid; justify-items: center; gap: 12px; padding: 8px 10px 16px; text-align: center; }
+.op-chifoumi-regle, .op-chifoumi-nul { margin: 0; font-size: 10px; color: #e8dcff; }
+.op-chifoumi-mains { display: flex; gap: 24px; align-items: end; }
+.op-chifoumi-mains div { display: grid; gap: 4px; justify-items: center; min-width: 72px; }
+.op-chifoumi-mains small { font-size: 8px; color: #c9b8e8; }
+.op-chifoumi-geste { font-size: 14px; color: #fff; }
+.op-chifoumi-choix { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .op-script-ecrit .op-credits-script { animation: op-script-ecrit 4.2s ease-out both; }
 @keyframes op-script-ecrit {
   0% { opacity: 0; clip-path: inset(0 100% 0 0); filter: brightness(1.6); }
@@ -1621,7 +1636,7 @@ a.app-ligne:active { background: var(--presse); }
 .op-scene-rue .op-perso { bottom: 18%; width: 13.5%; z-index: 3; }
 .op-scene-rue .op-perso svg { width: 100%; height: auto; }
 .op-scene-rue .op-boum { bottom: 28%; z-index: 6; }
-.op-scene-rue .op-perso.op-a-terre { z-index: 3; }
+.op-scene-rue .op-perso.op-a-terre { z-index: 5; overflow: visible; }
 
 .op-adversaire.op-adv-f { justify-content: flex-start; }
 .op-adv-f .op-bulle { left: 84px; right: 0; }
