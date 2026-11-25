@@ -1214,7 +1214,6 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
         {heure.slice(3)}
       </div>
       <div className="os-verrou-date">{date}</div>
-      <LogoAakanos icone taille={48} className="os-verrou-logo" />
       <NotifMusique compact />
       {etape === "anneau" ? (
         <>
@@ -2565,7 +2564,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
           ["Propriétaire", "Casto"],
           ["Modèle", "Hanck 7 Pro Max"],
           ["Navigateur", "Nounou Browser"],
-          ["Interface", "Holo · inspirée de Jelly Bean 4.1"],
+          ["Interface", "AakanOS"],
           ["Opérateur", "Sam-Telecom · forfait Connard"],
           ["Version de bande de base", "SAM-CONNARD-01"],
         ].map(([a, b]) => (
