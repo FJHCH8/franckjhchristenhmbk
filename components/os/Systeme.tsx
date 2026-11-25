@@ -550,7 +550,7 @@ function EcranWifi({
           ))}
           {etape?.phase === "loin" ? (
             <Dlg titre={etape.nom} fermer={() => setEtape(null)}>
-              <p className="dlg-corps">Distance du wifi trop loin, impossible de se connecter</p>
+              <p className="dlg-corps">Le wifi est trop loin, impossible de se connecter</p>
               <div className="dlg-boutons">
                 <button onClick={() => setEtape(null)}>OK</button>
               </div>
