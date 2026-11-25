@@ -232,6 +232,7 @@ let couches: CoucheMus[] = [];
 
 export function musique(nom: NomPiste | null) {
   if (nom !== null) arreterMusiqueFin();
+  if (nom !== "navale") arreterMusiqueNavale();
   if (couches.at(-1)?.nom === nom) return;
   const a = c();
   if (!a || !maitre) {
@@ -253,6 +254,10 @@ export function musique(nom: NomPiste | null) {
   couches = [];
   joue = null;
   if (!nom) return;
+  if (nom === "navale") {
+    musiqueNavale();
+    return;
+  }
   const g = a.createGain();
   g.gain.setValueAtTime(0.0001, maintenant);
   g.gain.linearRampToValueAtTime(1, maintenant + fondu);
@@ -570,5 +575,68 @@ export function arreterMusiqueFin() {
 export function silence() {
   musique(null);
   arreterMusiqueFin();
+  arreterMusiqueNavale();
   ambianceVille(false);
+}
+
+/** Bataille navale : le morceau de Franck, lo-fi, en morceaux base64. Boucle seulement pendant ce jeu. */
+const NAVALE_MORCEAUX = ["/aakanos/musique/navale-opakaalt.mp3.b64.1"];
+let navaleAudio: HTMLAudioElement | null = null;
+let navaleUrl: string | null = null;
+let navaleCharge: Promise<HTMLAudioElement | null> | null = null;
+
+async function chargerNavale(): Promise<HTMLAudioElement | null> {
+  if (navaleAudio) return navaleAudio;
+  try {
+    const parties: string[] = [];
+    for (const url of NAVALE_MORCEAUX) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(String(r.status));
+      parties.push((await r.text()).trim());
+    }
+    const bin = atob(parties.join(""));
+    const o = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+    const blob = new Blob([o], { type: "audio/mpeg" });
+    navaleUrl = URL.createObjectURL(blob);
+    const a = new Audio(navaleUrl);
+    a.preload = "auto";
+    a.controls = false;
+    a.setAttribute("controlsList", "nodownload nofullscreen noremoteplayback");
+    a.disableRemotePlayback = true;
+    a.loop = true;
+    a.addEventListener("contextmenu", (e) => e.preventDefault());
+    const aCtx = c();
+    if (aCtx && maitre) {
+      try { aCtx.createMediaElementSource(a).connect(maitre); } catch { /* déjà branché */ }
+    }
+    navaleAudio = a;
+    return a;
+  } catch {
+    navaleCharge = null;
+    return null;
+  }
+}
+
+function musiqueNavale() {
+  navaleCharge ??= chargerNavale();
+  void navaleCharge.then((a) => {
+    if (!a || navaleAudio !== a) return;
+    a.currentTime = a.currentTime || 0;
+    void a.play().catch(() => {});
+  });
+}
+
+export function arreterMusiqueNavale() {
+  if (navaleAudio) {
+    navaleAudio.pause();
+    navaleAudio.removeAttribute("src");
+    navaleAudio.load();
+    navaleAudio = null;
+  }
+  if (navaleUrl) {
+    URL.revokeObjectURL(navaleUrl);
+    navaleUrl = null;
+  }
+  navaleCharge = null;
 }

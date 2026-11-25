@@ -4,13 +4,17 @@
  * Qui suis-je, Bataille navale et Baby-foot : joués à chaque partie, avant les échecs.
  */
 import { useEffect, useRef, useState, type PointerEvent as PE, type ReactNode } from "react";
+import { useTraduire } from "@/components/Locale";
 import {
   NAV_N,
+  NAV_TAILLES,
   QUESTIONS_QUI,
   VISAGES,
   blondNavale,
+  cellulesBateau,
   etatTir,
   flotteCoulee,
+  flotteDe,
   placerFlotte,
   questionBlondQui,
   type CaseNav,
@@ -54,8 +58,10 @@ function PortraitQui({ t, taille = 3, off = false }: { t: TraitsQui; taille?: nu
 }
 
 export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
+  const tr = useTraduire();
   const d = memoireDiff.useValeur().d;
-  const [secretToi] = useState(() => Math.floor(Math.random() * VISAGES.length));
+  const [secretToi, setSecretToi] = useState<number | null>(null);
+  const [choisi, setChoisi] = useState<number | null>(null);
   const [secretBlond] = useState(() => Math.floor(Math.random() * VISAGES.length));
   const [restantsToi, setRestantsToi] = useState(() => VISAGES.map((_, i) => i));
   const [restantsBlond, setRestantsBlond] = useState(() => VISAGES.map((_, i) => i));
@@ -73,7 +79,7 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
   };
 
   const poser = (id: string) => {
-    if (tour !== "toi" || fini) return;
+    if (secretToi === null || tour !== "toi" || fini) return;
     const q = QUESTIONS_QUI.find((x) => x.id === id);
     if (!q || posees.has(id)) return;
     bruitage("carte");
@@ -86,7 +92,7 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
   };
 
   const deviner = (i: number) => {
-    if (tour !== "toi" || fini) return;
+    if (secretToi === null || tour !== "toi" || fini) return;
     if (i === secretBlond) { gagner("toi"); return; }
     bruitage("buzzer");
     setInfo("Non, ce n’est pas lui.");
@@ -97,7 +103,7 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
   };
 
   useEffect(() => {
-    if (tour !== "blond" || fini) return;
+    if (secretToi === null || tour !== "blond" || fini) return;
     const id = window.setTimeout(() => {
       const q = questionBlondQui(restantsBlond, posees, d);
       if (restantsBlond.length <= 2 || !q) {
@@ -124,7 +130,26 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
     }, 900);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tour, fini]);
+  }, [tour, fini, secretToi]);
+
+  if (secretToi === null) {
+    return (
+      <div className="op-qui">
+        {entete("QUI SUIS-JE", "—", false)}
+        <p className="op-qui-info">{tr("Choisis ton visage.")}</p>
+        <div className="op-qui-grille">
+          {VISAGES.map((t, i) => (
+            <button key={i} type="button" className={`op-qui-case${choisi === i ? " sel" : ""}`} onClick={() => (bruitage("carte"), setChoisi(i))}>
+              <PortraitQui t={t} />
+            </button>
+          ))}
+        </div>
+        <div className="op-nav-actions">
+          <button type="button" className="op-bouton" disabled={choisi === null} onClick={() => choisi !== null && (bruitage("valider"), setSecretToi(choisi))}>{tr("Valider")}</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="op-qui">
@@ -154,8 +179,13 @@ export function QuiSuisJe({ reagir, parler, fin, entete }: PropsMini) {
 }
 
 export function BatailleNavale({ reagir, parler, fin, entete }: PropsMini) {
+  const tr = useTraduire();
   const d = memoireDiff.useValeur().d;
-  const [flotteToi] = useState(() => placerFlotte());
+  const [phase, setPhase] = useState<"place" | "combat">("place");
+  const [bateaux, setBateaux] = useState<number[][]>([]);
+  const [horiz, setHoriz] = useState(true);
+  const [survol, setSurvol] = useState<number | null>(null);
+  const [flotteToi, setFlotteToi] = useState<Flotte | null>(null);
   const [flotteBlond] = useState(() => placerFlotte());
   const [tirsToi, setTirsToi] = useState<Set<number>>(new Set());
   const [tirsBlond, setTirsBlond] = useState<Set<number>>(new Set());
@@ -177,7 +207,7 @@ export function BatailleNavale({ reagir, parler, fin, entete }: PropsMini) {
   );
 
   const tirer = (i: number) => {
-    if (tour !== "toi" || fini || tirsToi.has(i)) return;
+    if (!flotteToi || tour !== "toi" || fini || tirsToi.has(i)) return;
     bruitage("tir");
     const n = new Set(tirsToi); n.add(i);
     const et = etatTir(flotteBlond, n, i);
@@ -194,7 +224,7 @@ export function BatailleNavale({ reagir, parler, fin, entete }: PropsMini) {
   };
 
   useEffect(() => {
-    if (tour !== "blond" || fini) return;
+    if (phase !== "combat" || !flotteToi || tour !== "blond" || fini) return;
     const id = window.setTimeout(() => {
       const i = blondNavale(tirsBlond, flotteToi, d);
       bruitage("tir");
@@ -212,7 +242,60 @@ export function BatailleNavale({ reagir, parler, fin, entete }: PropsMini) {
       setTour("toi");
     }, 800);
     return () => window.clearTimeout(id);
-  }, [tour, fini, tirsBlond, d, parler, reagir, fin, flotteToi]);
+  }, [phase, tour, fini, tirsBlond, d, parler, reagir, fin, flotteToi]);
+
+  if (phase === "place" || !flotteToi) {
+    const prochain = NAV_TAILLES[bateaux.length];
+    const occupees = new Set(bateaux.flat());
+    const fantome = prochain != null && survol != null ? cellulesBateau(survol, prochain, horiz) : null;
+    const fantomeOk = Boolean(fantome && !fantome.some((p) => occupees.has(p)));
+    const poser = (i: number) => {
+      const deja = bateaux.findIndex((b) => b.includes(i));
+      if (deja >= 0) {
+        bruitage("menu");
+        setBateaux((l) => l.filter((_, k) => k !== deja));
+        return;
+      }
+      if (prochain == null) return;
+      const pts = cellulesBateau(i, prochain, horiz);
+      if (!pts || pts.some((p) => occupees.has(p))) {
+        bruitage("erreur");
+        return;
+      }
+      bruitage("carte");
+      setBateaux((l) => [...l, pts]);
+    };
+    return (
+      <div className="op-nav">
+        {entete("BATAILLE NAVALE", "—", false)}
+        <p className="op-qui-info">{tr("Place tes bateaux.")}</p>
+        <div className="op-nav-place">
+          <div className="op-nav-grille op-nav-grille-place">
+            {Array.from({ length: NAV_N * NAV_N }, (_, i) => {
+              const pose = occupees.has(i);
+              const ghost = fantome?.includes(i);
+              const cls = pose ? "op-nav-bateau" : ghost ? (fantomeOk ? "op-nav-fantome" : "op-nav-interdit") : "op-nav-vide";
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  className={`op-nav-case ${cls}`}
+                  onPointerEnter={() => setSurvol(i)}
+                  onPointerLeave={() => setSurvol((s) => (s === i ? null : s))}
+                  onPointerDown={(e) => { e.preventDefault(); setSurvol(i); poser(i); }}
+                />
+              );
+            })}
+          </div>
+          <div className="op-nav-actions">
+            <button type="button" className="op-bouton op-petit" onClick={() => (bruitage("menu"), setHoriz((h) => !h))}>{tr("Pivoter")}</button>
+            <button type="button" className="op-bouton op-petit" onClick={() => { bruitage("valider"); setBateaux(placerFlotte().bateaux); }}>{tr("Au hasard")}</button>
+            <button type="button" className="op-bouton" disabled={bateaux.length !== NAV_TAILLES.length} onClick={() => { if (bateaux.length !== NAV_TAILLES.length) return; bruitage("valider"); setFlotteToi(flotteDe(bateaux)); setPhase("combat"); }}>{tr("Valider")}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="op-nav">

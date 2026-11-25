@@ -499,6 +499,21 @@ export function placerFlotte(rand: () => number = Math.random): Flotte {
   return { bateaux, cellules };
 }
 
+export function cellulesBateau(debut: number, len: number, horiz: boolean): number[] | null {
+  const r = Math.floor(debut / NAV_N);
+  const c = debut % NAV_N;
+  if (horiz) {
+    if (c + len > NAV_N) return null;
+    return Array.from({ length: len }, (_, i) => r * NAV_N + c + i);
+  }
+  if (r + len > NAV_N) return null;
+  return Array.from({ length: len }, (_, i) => (r + i) * NAV_N + c);
+}
+
+export function flotteDe(bateaux: number[][]): Flotte {
+  return { bateaux, cellules: new Set(bateaux.flat()) };
+}
+
 export function etatTir(flotte: Flotte, tirs: Set<number>, i: number): CaseNav {
   if (!flotte.cellules.has(i)) return "eau";
   const bateau = flotte.bateaux.find((b) => b.includes(i));

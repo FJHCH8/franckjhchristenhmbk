@@ -647,7 +647,7 @@ function EditionTitre({ k, fermer }: { k: number; fermer: () => void }) {
   const p = usePistes()[k] ?? TITRE;
   const origine = PISTES[k] ?? TITRE;
   const [jeton, setJeton] = useState<string | null>(null);
-  const [verif, setVerif] = useState(true);
+  const [verif] = useState(false);
   const [code, setCode] = useState("");
   const [erreur, setErreur] = useState("");
   const [occupe, setOccupe] = useState(false);
@@ -656,17 +656,6 @@ function EditionTitre({ k, fermer }: { k: number; fermer: () => void }) {
   const [apercu, setApercu] = useState<string | null>(null);
   const [sansPochette, setSansPochette] = useState(false);
   const ouvert = Boolean(jeton);
-  useEffect(() => {
-    let vivant = true;
-    fetch("/api/edition/session", { credentials: "same-origin", cache: "no-store" })
-      .then((r) => r.json())
-      .then((d: { ok?: boolean; jeton?: string }) => vivant && d.ok && d.jeton && setJeton(d.jeton))
-      .catch(() => {})
-      .finally(() => vivant && setVerif(false));
-    return () => {
-      vivant = false;
-    };
-  }, []);
   useEffect(() => {
     if (!image) return;
     const u = URL.createObjectURL(image);
