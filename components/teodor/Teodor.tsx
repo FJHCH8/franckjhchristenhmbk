@@ -5,14 +5,15 @@
  * Six étoiles font son corps, deux ses yeux, une sa bouche. Les étoiles sont invisibles,
  * mais elles bougent : Teodor respire, cligne des yeux, suit ton doigt du regard.
  *
- * Ouverture : le logo se dessine sous l'anneau PS2, puis chaque morceau de sa ligne se
- * détache et rentre dans ses étoiles ; une nouvelle ligne repart du sommet, des deux côtés,
- * et vient avaler les étoiles du tour ; le bleu coule depuis le visage. Teodor se réveille.
+ * Ouverture, sobre et fluide (courbes « Metro » : départ franc, arrivée très douce) :
+ * le logo se dessine sous l'anneau PS2, puis sa ligne se retire ; une nouvelle ligne part du
+ * sommet, des deux côtés, et entoure les étoiles du tour ; le bleu apparaît en fondu, puis
+ * le visage. Teodor ouvre les yeux.
  *
  * Son corps est souple : chaque coin est tenu par un ressort, il ondule et rebondit.
  * Une caresse (glisser le doigt ou la souris sur lui) le rend heureux : il ferme les yeux,
- * rosit et se blottit contre le doigt. Une tape le fait sursauter puis pleurer 5 secondes ;
- * les larmes glissent sur son corps. Une caresse le console.
+ * rosit et se blottit contre le doigt. Une tape le fait sursauter : il est vexé, fronce les
+ * yeux et détourne le regard un moment (il ne pleure jamais). Une caresse le réconcilie.
  *
  * Il écoute aussi l'événement « teodor-espoir » (detail : { x, y } à l'écran, ou null) :
  * sur la page 404, il regarde le bouton qui ramène à l'accueil et reprend un peu espoir.
@@ -41,6 +42,8 @@ const BLANC = [255, 255, 255];
 const NUIT = [10, 10, 10];
 
 const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+/** La courbe Metro : départ franc, arrivée très douce. */
+const metro = (x: number) => 1 - (1 - x) ** 4;
 const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 const sortie = (x: number) => 1 - (1 - x) ** 3;
 const ressort = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : 1 + 2.4 * (x - 1) ** 3 + 1.4 * (x - 1) ** 2);
@@ -85,9 +88,7 @@ function dedans(poly: V[], x: number, y: number) {
   return c;
 }
 
-type Goutte = { x: number; y: number; vx: number; vy: number; vie: number };
 type Coeur = { x: number; y: number; vie: number; d: number };
-type Etincelle = { x: number; y: number; vx: number; vy: number; vie: number };
 type Ressort = { x: number; y: number; vx: number; vy: number };
 
 export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?: () => void; className?: string }) {
@@ -120,27 +121,23 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     window.addEventListener("load", surCharge, { once: true });
     let tDefait = calme ? -10 : -1;
     let annonce = false;
-    const etincelles: Etincelle[] = [];
-    let etincellesFaites = false;
 
     // ---- l'état de Teodor ----
-    const e = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, sanglot: 0, aie: 0, espoir: 0, ouvert: 1 };
+    const e = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, fache: 0, aie: 0, espoir: 0, ouvert: 1 };
     let clignement = 3;
     let clin = -1;
     let doubleClin = false;
     let paupiere = 0;
     let etatAvant = -1;
     const vit: Record<string, number> = {};
-    let pleureJusque = 0;
+    let facheJusque = 0;
     let aieJusque = 0;
     let caresseA = -10;
     let heureuxJusque = 0;
     let calinX = 100;
     let calinY = 100;
-    let prochaineLarme = 0;
     let prochainCoeur = 0;
     let prochainNon = 5;
-    const larmes: Goutte[] = [];
     const coeurs: Coeur[] = [];
     let corpsActuel: V[] = [];
     let echelle = 0.66;
@@ -170,10 +167,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       caresseA = now;
       calinX = p[0];
       calinY = p[1];
-      if (now < pleureJusque) pleureJusque = now; // une caresse console
+      if (now < facheJusque) facheJusque = now; // une caresse le réconcilie
     };
     const tape = (p: V, now: number) => {
-      pleureJusque = now + 5000;
+      facheJusque = now + 2600; // vexé, pas triste : il ne pleure jamais
       aieJusque = now + 420;
       heureuxJusque = 0;
       caresseA = -10;
@@ -283,22 +280,23 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       const t = (now - debut) / 1000;
       if (tDefait < 0 && t > 2.4 && (charge || t > 6)) tDefait = t;
       const tv = tDefait < 0 ? -1 : t - tDefait; // temps depuis le début de la transformation
-      const pDefait = tv < 0 ? 0 : clamp(tv / 0.7);
-      const pRelie = clamp((tv - 0.6) / 1.15);
-      const pCouleur = clamp((tv - 1.65) / 0.85);
-      const vivant = tv >= 2.5;
-      const vie = vivant ? tv - 2.5 : -1; // temps depuis qu'il est « né »
-      if (vie >= 0.9 && !annonce) {
+      const pDefait = tv < 0 ? 0 : clamp(tv / 0.55); // la ligne du logo se retire
+      const pRelie = clamp((tv - 0.25) / 0.85); // le contour se dessine
+      const pCouleur = clamp((tv - 0.85) / 0.55); // le bleu apparaît en fondu
+      const pVisage = metro(clamp((tv - 1.05) / 0.5)); // puis le visage
+      const vivant = tv >= 1.55;
+      const vie = vivant ? tv - 1.55 : -1; // temps depuis qu'il est « né »
+      if (vie >= 0.35 && !annonce) {
         annonce = true;
         pret.current?.();
       }
-      if (anneau.current) anneau.current.style.opacity = String(tv < 0 ? 1 : clamp(1 - tv / 0.45));
+      if (anneau.current) anneau.current.style.opacity = String(tv < 0 ? 1 : 1 - metro(clamp(tv / 0.35)));
 
       const W = c.width;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, W, W);
-      // il grandit en se formant, avec un léger rebond
-      echelle = 0.66 + 0.34 * ease(clamp((tv - 0.1) / 2.1));
+      // il grandit en se formant, d'un seul mouvement
+      echelle = 0.66 + 0.34 * metro(clamp(tv / 1.5));
       const s = (W / 200) * echelle;
       ctx.setTransform(s, 0, 0, s, W / 2 - CENTRE[0] * s, W / 2 - CENTRE[1] * s);
       ctx.lineCap = "round";
@@ -308,74 +306,36 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         c.style.setProperty("--lueur", pCouleur.toFixed(2));
       }
 
-      // ===== 1. le logo se dessine, comme d'habitude, puis sa ligne se détache =====
+      // ===== 1. le logo se dessine, comme d'habitude, puis sa ligne se retire =====
       if (pDefait < 1) {
-        const trace = calme ? 1 : ease(clamp((t - 0.2) / 1.6));
+        const trace = (calme ? 1 : ease(clamp((t - 0.2) / 1.6))) * (1 - ease(pDefait));
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 1.8;
         const longs = ETOILES.slice(1).map((p, i) => Math.hypot(p[0] - ETOILES[i]![0], p[1] - ETOILES[i]![1]));
         const total = longs.reduce((a, b) => a + b, 0);
         let parcouru = 0;
+        ctx.beginPath();
         longs.forEach((L, i) => {
           const a = ETOILES[i]!;
           const b = ETOILES[i + 1]!;
           const vu = clamp((trace * total - parcouru) / L);
           parcouru += L;
           if (vu <= 0) return;
-          // chaque morceau casse en son milieu et ses deux moitiés rentrent dans leurs étoiles
-          const k = sortie(clamp(pDefait * 1.5 - i * 0.06));
-          const moitie = 0.5 * (1 - k);
-          ctx.globalAlpha = 1;
-          ctx.beginPath();
           ctx.moveTo(a[0], a[1]);
-          ctx.lineTo(a[0] + (b[0] - a[0]) * Math.min(vu, moitie), a[1] + (b[1] - a[1]) * Math.min(vu, moitie));
-          if (vu > 1 - moitie) {
-            ctx.moveTo(b[0], b[1]);
-            ctx.lineTo(b[0] + (a[0] - b[0]) * moitie, b[1] + (a[1] - b[1]) * moitie);
-          }
-          ctx.stroke();
+          ctx.lineTo(a[0] + (b[0] - a[0]) * vu, a[1] + (b[1] - a[1]) * vu);
         });
-      }
-      // les étincelles de la cassure
-      if (pDefait > 0 && !etincellesFaites) {
-        etincellesFaites = true;
-        ETOILES.slice(1).forEach((b, i) => {
-          const a = ETOILES[i]!;
-          for (let k = 0; k < 3; k++) {
-            const an = Math.random() * Math.PI * 2;
-            const v = 10 + Math.random() * 18;
-            etincelles.push({ x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2, vx: Math.cos(an) * v, vy: Math.sin(an) * v, vie: -i * 0.05 });
-          }
-        });
-      }
-      for (let i = etincelles.length - 1; i >= 0; i--) {
-        const p = etincelles[i]!;
-        p.vie += dt;
-        if (p.vie < 0) continue;
-        if (p.vie > 0.7) {
-          etincelles.splice(i, 1);
-          continue;
-        }
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.vx *= 0.92;
-        p.vy *= 0.92;
-        ctx.fillStyle = `rgba(255,255,255,${0.9 * (1 - p.vie / 0.7)})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 0.9, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.stroke();
       }
 
       // ===== l'humeur et les réactions =====
-      const enPleurs = now < pleureJusque;
-      const finPleurs = enPleurs && pleureJusque - now < 1200; // il renifle, ça se calme
+      const fache = now < facheJusque;
       const aie = now < aieJusque;
       const caressé = now - caresseA < 650;
       if (caressé) heureuxJusque = now + 1400;
       const content = now < heureuxJusque;
-      const fete = humeur === "joie" && vie >= 0.9 && vie < 2.5;
-      const reveil = vivant && vie < 0.9;
-      const cible = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, sanglot: 0, aie: 0, espoir: 0 };
+      const fete = humeur === "joie" && vie >= 0.5 && vie < 2.1;
+      const reveil = vivant && vie < 0.5;
+      const cible = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, fache: 0, aie: 0, espoir: 0 };
       if (humeur === "joie") Object.assign(cible, { sourire: 0.8, bouche: 0.12, rose: 0.3 });
       else {
         // perdu et apeuré : il tremble, cherche partout du regard, la bouche tordue
@@ -383,9 +343,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         Object.assign(cible, { sourire: -0.7, triste: 0.75, grand: 0.55, frisson: 0.5, regard: cherche });
         if (espoirVers) Object.assign(cible, { sourire: 0.15, triste: 0.35, grand: 0.75, frisson: 0.12, regard: 0, espoir: 1 });
       }
-      if (fete) Object.assign(cible, { sourire: 1, bouche: 0.8, heureux: vie < 1.9 ? 1 : 0, rose: 0.7 });
+      if (fete) Object.assign(cible, { sourire: 1, bouche: 0.8, heureux: vie < 1.5 ? 1 : 0, rose: 0.7 });
       if (content) Object.assign(cible, { sourire: 1, bouche: 0.1, heureux: 1, triste: 0, grand: 0, rose: 1, frisson: 0, regard: 0, calin: caressé ? 1 : 0, espoir: 0 });
-      if (enPleurs) Object.assign(cible, { sourire: -1, bouche: finPleurs ? 0.15 : 0.6, heureux: 0, triste: 1, grand: 0, rose: 0.4, frisson: 0.15, regard: 0, calin: 0, sanglot: finPleurs ? 0.3 : 1, espoir: 0 });
+      // vexé : les yeux froncés, la bouche pincée, il détourne le regard (il ne pleure pas)
+      if (fache) Object.assign(cible, { sourire: -0.45, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 1.1, calin: 0, fache: 1, espoir: 0 });
       if (aie) Object.assign(cible, { aie: 1, sourire: -0.6, bouche: 0.3 });
       if (!vivant || reveil) Object.assign(cible, { sourire: reveil ? 0.35 : 0.2, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0 });
       (Object.keys(cible) as (keyof typeof cible)[]).forEach((k) => {
@@ -396,7 +357,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         e[k] += v * dt;
       });
       // quand l'humeur change, il cligne (comme nous)
-      const etat = enPleurs ? 3 : aie ? 4 : content ? 2 : fete ? 1 : 0;
+      const etat = fache ? 3 : aie ? 4 : content ? 2 : fete ? 1 : 0;
       if (etat !== etatAvant) {
         if (etatAvant >= 0 && clignement > 0.25) clignement = 0.12;
         etatAvant = etat;
@@ -419,10 +380,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         }
       }
       // le réveil : les yeux restent fermés, s'entrouvrent, se referment, puis s'ouvrent grand
-      if (reveil) paupiere = vie < 0.3 ? 1 : vie < 0.5 ? 1 - 0.6 * sortie((vie - 0.3) / 0.2) : vie < 0.6 ? 0.4 + 0.6 * ((vie - 0.5) / 0.1) ** 2 : 1 - sortie(clamp((vie - 0.6) / 0.25));
+      if (reveil) paupiere = vie < 0.15 ? 1 : 1 - metro(clamp((vie - 0.15) / 0.35)); // il ouvre les yeux, simplement
       // sur la 404, de temps en temps, un « non » de la tête : il ne sait pas où il est
       let non = 0;
-      if (humeur === "peur" && vivant && !enPleurs && !content && !espoirVers) {
+      if (humeur === "peur" && vivant && !fache && !content && !espoirVers) {
         if (vie > prochainNon + 1.3) prochainNon = vie + 4 + Math.random() * 3;
         if (vie > prochainNon) non = Math.sin(((vie - prochainNon) / 1.3) * Math.PI * 4) * Math.sin(((vie - prochainNon) / 1.3) * Math.PI);
       }
@@ -443,7 +404,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       regardY = vers(regardY, ly, dt, 9);
 
       // le petit saut de joie (deux fois)
-      const saut = fete ? -6 * Math.abs(Math.sin((vie - 0.9) * Math.PI * 2.5)) * clamp(1 - (vie - 0.9) / 1.6) : 0;
+      const saut = fete ? -6 * Math.abs(Math.sin((vie - 0.5) * Math.PI * 2.5)) * clamp(1 - (vie - 0.5) / 1.6) : 0;
 
       // ===== les étoiles du tour et la respiration =====
       const souffle = calme ? 0 : Math.sin((t * 2 * Math.PI) / 3.6);
@@ -454,7 +415,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         let x = CENTRE[0] + (p[0] - CENTRE[0]) * (1 - inspire * 0.45) + 0.6 * Math.sin(t * 1.7 + k * 1.3);
         let y = SOL + (p[1] - SOL) * (1 + inspire);
         x += e.frisson * 0.9 * tremble(k);
-        y += e.frisson * 0.6 * tremble(k + 4) + e.sanglot * 1.8 * Math.abs(Math.sin(t * 8.5)) + saut;
+        y += e.frisson * 0.6 * tremble(k + 4) + saut;
         if (k === 0) x += non * 5; // la pointe suit la tête qui dit non
         // le câlin : il se penche et ses coins viennent entourer le doigt
         if (e.calin > 0.001) {
@@ -510,31 +471,12 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       // ===== 3. une nouvelle ligne part du sommet et entoure les étoiles du tour =====
       if (pRelie > 0) {
         if (pCouleur > 0) {
-          // 4. le bleu coule depuis le visage, avec un bord liquide
-          ctx.save();
-          const R = 6 + 150 * ease(pCouleur);
-          ctx.beginPath();
-          for (let k = 0; k <= 48; k++) {
-            const a = (k / 48) * Math.PI * 2;
-            const rr = R + (pCouleur < 1 ? 3.5 * Math.sin(a * 5 + t * 9) + 2 * Math.sin(a * 3 - t * 6) : 0);
-            const x = FACE[0] + Math.cos(a) * rr;
-            const y = FACE[1] + Math.sin(a) * rr;
-            if (k) ctx.lineTo(x, y);
-            else ctx.moveTo(x, y);
-          }
-          ctx.clip();
-          ctx.fillStyle = couleurCorps;
+          // 4. le bleu apparaît en fondu
+          ctx.globalAlpha = metro(pCouleur);
+          ctx.fillStyle = mix(BLEU, BLEU, 1);
           chemin();
           ctx.fill();
-          ctx.restore();
-          // l'onde de lumière qui accompagne la couleur
-          if (pCouleur < 1) {
-            ctx.strokeStyle = `rgba(150,170,255,${0.55 * (1 - pCouleur)})`;
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.arc(FACE[0], FACE[1], 10 + 170 * sortie(pCouleur), 0, Math.PI * 2);
-            ctx.stroke();
-          }
+          ctx.globalAlpha = 1;
         }
         ctx.strokeStyle = couleurCorps;
         ctx.lineWidth = 3.6;
@@ -542,24 +484,14 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           chemin();
           ctx.stroke();
         } else {
-          // des deux côtés à la fois, avec une tête lumineuse au bout de chaque trait
+          // des deux côtés à la fois
           const N = tour.length;
-          const m = Math.round((N * ease(pRelie)) / 2);
+          const m = Math.max(1, Math.round((N * ease(pRelie)) / 2));
           const at = (i: number) => tour[(i + 4 + N) % N]!; // l'indice 4 : le milieu du coin du sommet
           ctx.beginPath();
           ctx.moveTo(at(-m)[0], at(-m)[1]);
           for (let i = -m + 1; i <= m; i++) ctx.lineTo(at(i)[0], at(i)[1]);
           ctx.stroke();
-          [at(-m), at(m)].forEach(([x, y]) => {
-            ctx.fillStyle = "rgba(255,255,255,.18)";
-            ctx.beginPath();
-            ctx.arc(x, y, 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(x, y, 2.6, 0, Math.PI * 2);
-            ctx.fill();
-          });
         }
       }
 
@@ -569,10 +501,8 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         const visage = i >= 1 && i <= 3;
         const k = CORPS.indexOf(i);
         const atteint = k <= 0 ? 0 : Math.min(k, 6 - k) / 3; // le trait les atteint dans cet ordre
-        const fond = visage ? clamp((pRelie - 0.5) / 0.25) : clamp((ease(pRelie) - atteint * 0.92) / 0.06 + (k === 0 ? 0.5 : 0));
-        const gonfle = 1 + 0.35 * Math.sin(clamp(pDefait * 1.2) * Math.PI); // ils gonflent en avalant leur ligne
-        const eclat = !visage && fond > 0 && fond < 1 ? 1 + 0.8 * Math.sin(fond * Math.PI) : 1; // un éclat quand le trait les touche
-        const r = 4 * apparu * gonfle * eclat * (1 - fond * fond);
+        const fond = visage ? pVisage : metro(clamp((ease(pRelie) - atteint * 0.9) / 0.18 + (k === 0 ? 0.4 : 0)));
+        const r = 4 * apparu * (1 - fond);
         if (r <= 0.05) return;
         ctx.fillStyle = "#fff";
         ctx.beginPath();
@@ -581,14 +511,14 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       });
 
       // ===== le visage =====
-      if (pRelie > 0.4) {
-        const apparition = ease(clamp((pRelie - 0.4) / 0.45));
+      if (pVisage > 0) {
+        const apparition = pVisage;
         const fx = visageR.x;
         const fy = visageR.y;
         ctx.save();
         ctx.translate(fx, fy);
         ctx.rotate(ANGLE);
-        const sv = VISAGE * (0.75 + 0.25 * apparition);
+        const sv = VISAGE * (0.88 + 0.12 * apparition);
         ctx.scale(sv, sv);
         ctx.globalAlpha = apparition;
         const yeux: [number, number][] = [
@@ -603,8 +533,9 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           ctx.save();
           ctx.translate(ox + regardX * 0.4, regardY * 0.3);
           // la paupière du haut : elle descend pour cligner, et penche quand il est triste
-          const pente = e.triste * 1.4;
-          const haut = -ry - 0.6 + e.triste * 1.8 + ferme * (2 * ry + 0.6);
+          // triste : le coin intérieur remonte ; vexé : il descend (les yeux froncés)
+          const pente = e.triste * 1.4 - e.fache * 1.9;
+          const haut = -ry - 0.6 + e.triste * 1.8 + e.fache * 1.6 + ferme * (2 * ry + 0.6);
           // la joue du bas : elle remonte quand il sourit des yeux (yeux en croissant)
           ctx.beginPath();
           ctx.moveTo(-9, 12);
@@ -668,10 +599,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         }
         // la bouche (sur l'étoile de la bouche) : une seule forme qui s'ouvre et se ferme en continu
         const mx = ((BOUCHE[0] - FACE[0]) * Math.cos(-ANGLE) - (BOUCHE[1] - FACE[1]) * Math.sin(-ANGLE)) * 0.3 + regardX * 0.25;
-        const mw = 7.4 * (1 - 0.15 * e.triste) * (1 + 0.15 * e.heureux) * (1 - 0.25 * e.aie);
+        const mw = 7.4 * (1 - 0.15 * e.triste) * (1 + 0.15 * e.heureux) * (1 - 0.25 * e.aie) * (1 - 0.3 * e.fache);
         const my = 8.4 + regardY * 0.2;
         const courbe = e.sourire * 4.2;
-        const tremblote = (enPleurs || humeur === "peur" ? 0.45 : 0) * Math.sin(t * 29) * (0.5 + 0.5 * Math.sin(t * 3.3));
+        const tremblote = (humeur === "peur" && !fache ? 0.45 : 0) * Math.sin(t * 29) * (0.5 + 0.5 * Math.sin(t * 3.3));
         const ouv = clamp(e.bouche, 0, 1.2) * 5.5;
         const bout = my - courbe * 0.25;
         ctx.strokeStyle = couleurVisage;
@@ -685,48 +616,6 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         ctx.stroke();
         ctx.restore();
 
-        // ===== les larmes : elles glissent sur son corps, et seulement sur lui =====
-        if (enPleurs && now > prochaineLarme) {
-          prochaineLarme = now + (finPleurs ? 420 : 170) + Math.random() * 140;
-          const cote = Math.random() < 0.5 ? -1 : 1;
-          const [x, y] = depuisVisage([fx, fy], cote * (ECART / 2 + 2.2), 3.2);
-          larmes.push({ x, y, vx: cote * (1 + Math.random() * 2.5), vy: 4 + Math.random() * 4, vie: 0 });
-        }
-        ctx.save();
-        chemin();
-        ctx.clip();
-        for (let i = larmes.length - 1; i >= 0; i--) {
-          const l = larmes[i]!;
-          l.vie += dt;
-          l.vy = Math.min(l.vy + 40 * dt, 30);
-          l.vx *= 1 - dt * 1.5;
-          l.x += l.vx * dt;
-          l.y += l.vy * dt;
-          if (l.vie > 3.2 || !dedans(tour, l.x, l.y - 2)) {
-            larmes.splice(i, 1);
-            continue;
-          }
-          const a = clamp(3.2 - l.vie) * 0.9;
-          ctx.strokeStyle = `rgba(170,220,255,${0.22 * a})`;
-          ctx.lineWidth = 1.9;
-          ctx.beginPath();
-          ctx.moveTo(l.x - l.vx * 0.35, l.y - Math.min(12, l.vie * 9));
-          ctx.lineTo(l.x, l.y);
-          ctx.stroke();
-          ctx.save();
-          ctx.translate(l.x, l.y);
-          ctx.rotate(Math.atan2(l.vy, l.vx) - Math.PI / 2);
-          ctx.scale(1.6, 1.6);
-          ctx.fillStyle = `rgba(170,220,255,${a})`;
-          ctx.beginPath();
-          ctx.moveTo(0, -3.2);
-          ctx.quadraticCurveTo(1.7, -0.2, 1.4, 0.6);
-          ctx.arc(0, 0.6, 1.4, 0, Math.PI);
-          ctx.quadraticCurveTo(-1.7, -0.2, 0, -3.2);
-          ctx.fill();
-          ctx.restore();
-        }
-        ctx.restore();
       }
 
       // ===== les petits cœurs quand on le caresse =====

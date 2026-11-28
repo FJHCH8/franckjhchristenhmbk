@@ -6,22 +6,23 @@
 
 .teo-page { position: fixed; inset: 0; z-index: 2147483000; overflow: hidden; overscroll-behavior: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(12px, 3svh, 28px); padding: max(24px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom)); box-sizing: border-box; background: #0a0a0a; color: #fff; font-family: "Helvetica Neue", Helvetica, system-ui, sans-serif; }
 .teo-texte { max-width: 34rem; text-align: center; }
-.teo-texte > * { opacity: 0; translate: 0 14px; filter: blur(8px); transition: opacity .8s ease, translate .9s cubic-bezier(.16, 1, .3, 1), filter .8s ease; }
-.teo-page.est-pret .teo-texte > * { opacity: 1; translate: 0 0; filter: blur(0); }
-.teo-page.est-pret .teo-texte > :nth-child(2) { transition-delay: .25s; }
-.teo-page.est-pret .teo-texte > :nth-child(3) { transition-delay: .55s; }
-.teo-page.est-pret .teo-texte > :nth-child(4) { transition-delay: .8s; }
+/* entrée « Metro » : chaque ligne glisse de la droite, l'une après l'autre, et se pose en douceur */
+.teo-texte > * { opacity: 0; translate: 48px 0; transition: opacity .45s linear, translate .8s cubic-bezier(.1, .9, .2, 1); }
+.teo-page.est-pret .teo-texte > * { opacity: 1; translate: 0 0; }
+.teo-page.est-pret .teo-texte > :nth-child(2) { transition-delay: .09s; }
+.teo-page.est-pret .teo-texte > :nth-child(3) { transition-delay: .18s; }
+.teo-page.est-pret .teo-texte > :nth-child(4) { transition-delay: .27s; }
 .teo-texte h1 { margin: 0; font-size: clamp(32px, 9vw, 56px); line-height: 1.05; font-weight: 600; letter-spacing: -.02em; }
 .teo-texte .teo-sous { margin: 10px 0 0; font-size: clamp(15px, 4vw, 18px); color: #b9c2ff; }
 .teo-texte .teo-bas { margin: 26px 0 0; font: 13px/1.5 var(--f-mono), "Courier New", monospace; letter-spacing: .04em; color: #8a8f99; }
 .teo-texte .teo-bas::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 10px; border-radius: 50%; background: #3550ff; box-shadow: 0 0 10px #3550ff; vertical-align: 1px; animation: teo-pouls 1.8s ease-in-out infinite; }
 @keyframes teo-pouls { 50% { opacity: .35; } }
-.teo-aide { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; text-align: center; font: 11px var(--f-mono), "Courier New", monospace; letter-spacing: .12em; color: #4a4f59; opacity: 0; transition: opacity 1s ease 2.4s; }
+.teo-aide { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; text-align: center; font: 11px var(--f-mono), "Courier New", monospace; letter-spacing: .12em; color: #4a4f59; opacity: 0; transition: opacity .6s linear 1.2s; }
 .teo-page.est-pret .teo-aide { opacity: 1; }
 
 /* 404 : le terminal en verre en haut, le texte et le bouton en bas */
-.teo-terminal { position: absolute; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 520px; margin: 0 auto; padding: 12px 16px; border-radius: 18px; font: 13px/1.6 var(--f-mono), "Courier New", monospace; color: #e8e8e8; background: rgba(255, 255, 255, .1); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255, 255, 255, .25); box-shadow: inset 0 1px rgba(255, 255, 255, .5), 0 10px 30px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .6s ease; }
-.teo-page.est-pret .teo-terminal { opacity: 1; }
+.teo-terminal { position: absolute; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 520px; margin: 0 auto; padding: 12px 16px; border-radius: 18px; font: 13px/1.6 var(--f-mono), "Courier New", monospace; color: #e8e8e8; background: rgba(255, 255, 255, .1); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255, 255, 255, .25); box-shadow: inset 0 1px rgba(255, 255, 255, .5), 0 10px 30px rgba(0, 0, 0, .35); opacity: 0; translate: 0 -12px; transition: opacity .45s linear, translate .8s cubic-bezier(.1, .9, .2, 1); }
+.teo-page.est-pret .teo-terminal { opacity: 1; translate: 0 0; }
 .teo-terminal p { margin: 0; height: 1.6em; }
 .teo-terminal span { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: top; width: 0; }
 .teo-page.est-pret .teo-terminal span { animation: teo-tape calc(var(--n) * 45ms) steps(var(--n), end) calc(.2s + var(--i) * .9s) forwards; }
