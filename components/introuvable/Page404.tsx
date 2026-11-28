@@ -6,7 +6,7 @@
  * Les textes suivent la langue du visiteur (l'allemand par défaut).
  */
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties, type SyntheticEvent } from "react";
 import { useTraduire } from "@/components/Locale";
 import { Teodor } from "@/components/teodor/Teodor";
 import "@/components/teodor/teodor.css";
@@ -21,6 +21,11 @@ export function Page404() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- l'adresse n'existe que dans le navigateur
     setChemin(p.length > 26 ? `${p.slice(0, 25)}…` : p);
   }, []);
+  // quand on vise le bouton du retour, Teodor le regarde et reprend espoir
+  const espoir = (ev: SyntheticEvent<HTMLElement> | null) => {
+    const r = ev?.currentTarget.getBoundingClientRect();
+    window.dispatchEvent(new CustomEvent("teodor-espoir", { detail: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null }));
+  };
   const lignes = [`$ open ${chemin}`, "error 404: not found", "$ cd ~"];
   return (
     <main className={`teo-page e404${pret ? " est-pret" : ""}`}>
@@ -37,7 +42,7 @@ export function Page404() {
         <small className="teo-bas" style={{ marginTop: 0 }}>404</small>
         <h1>{t("Cette page n’existe pas.")}</h1>
         <div>
-          <Link className="teo-btn" href="/">
+          <Link className="teo-btn" href="/" onPointerEnter={espoir} onFocus={espoir} onPointerLeave={() => espoir(null)} onBlur={() => espoir(null)}>
             {t("Retour à l’accueil")} <em aria-hidden="true">→</em>
           </Link>
         </div>
