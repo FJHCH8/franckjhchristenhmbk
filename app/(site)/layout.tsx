@@ -42,6 +42,7 @@ import "./metro.css";
 import "./metro-plus.css";
 import "./animations.css";
 import "./parametres-tactique.css";
+import { Protection } from "@/components/Protection";
 
 /*
  * Famille Noto : dessinée pour couvrir toutes les écritures du monde.
@@ -190,6 +191,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${polices} ${chrono.variable}`}>
+        <Protection />
         <Script id="theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>

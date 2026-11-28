@@ -450,10 +450,9 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         ctx.closePath();
       };
 
-      // le reflet sur un sol brillant : Teodor à l'envers, qui s'efface en s'éloignant du sol,
-      // plus une ombre de contact là où il touche. Quand il saute, son reflet s'éloigne.
+      // le reflet sur un sol brillant : Teodor à l'envers, qui s'efface en s'éloignant du sol.
+      // Quand il saute, son reflet s'éloigne.
       if (pCouleur > 0) {
-        const haut = clamp(-saut / 6);
         // le sol est là où il pose son point le plus bas (sans compter le saut)
         const MIROIR = tour.reduce((m, [, y]) => Math.max(m, y), 0) - saut;
         ctx.save();
@@ -469,22 +468,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         tour.forEach(([x, y], i) => (i ? ctx.lineTo(x, 2 * MIROIR - y) : ctx.moveTo(x, 2 * MIROIR - y)));
         ctx.closePath();
         ctx.fill();
-        // une fine ligne de lumière là où le sol renvoie le bord du corps
-        ctx.strokeStyle = `rgba(120,140,255,${0.18 * metro(pCouleur) * (1 - haut)})`;
-        ctx.lineWidth = 0.6;
-        ctx.beginPath();
-        ctx.moveTo(60, MIROIR + 0.4);
-        ctx.lineTo(176, MIROIR + 0.4);
-        ctx.stroke();
         ctx.restore();
-        // l'ombre de contact, serrée sous lui (elle pâlit quand il quitte le sol)
-        const ombre = ctx.createRadialGradient(150, MIROIR, 0, 150, MIROIR, 34);
-        ombre.addColorStop(0, `rgba(0,0,0,${0.55 * pCouleur * (1 - 0.7 * haut)})`);
-        ombre.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = ombre;
-        ctx.beginPath();
-        ctx.ellipse(150, MIROIR, 34 * (1 - 0.2 * haut), 2.6, 0, 0, Math.PI * 2);
-        ctx.fill();
       }
 
       // ===== 3. une nouvelle ligne part du sommet et entoure les étoiles du tour =====

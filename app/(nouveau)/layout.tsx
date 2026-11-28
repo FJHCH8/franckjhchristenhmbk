@@ -9,6 +9,7 @@ import "../(site)/parametres-tactique.css";
 import "./intro.css";
 import "./panorama.css";
 import "./nouveau.css";
+import { Protection } from "@/components/Protection";
 
 /* Le site Odyssée : interface « tactique » × Metro, fond noir, police Chakra Petch. */
 const titre = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["500", "600", "700"], variable: "--p2" });
@@ -50,6 +51,7 @@ export default function DispositionOdyssee({ children }: { children: ReactNode }
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={[titre, metro, mono].map((f) => f.variable).join(" ")}>
+        <Protection />
         <Script id="intro-init" strategy="beforeInteractive">
           {introScript}
         </Script>

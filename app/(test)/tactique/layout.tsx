@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Rajdhani, Share_Tech_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import "./tactique.css";
+import { Protection } from "@/components/Protection";
 
 // Page test : le site en interface « tactique » × animations Metro. À part du site, non indexée.
 const rajdhani = Rajdhani({ subsets: ["latin", "latin-ext"], weight: ["400", "500", "600", "700"], variable: "--f-titre" });
@@ -13,7 +14,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default function DispositionTactique({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
-      <body className={`${rajdhani.variable} ${mono.variable}`}>{children}</body>
+      <body className={`${rajdhani.variable} ${mono.variable}`}>
+        <Protection />{children}</body>
     </html>
   );
 }
