@@ -12,7 +12,7 @@
  *
  * Son corps est souple : chaque coin est tenu par un ressort, il ondule et rebondit.
  * Une caresse (glisser le doigt ou la souris sur lui) le rend heureux : il ferme les yeux,
- * rosit et se blottit contre le doigt. Une tape le fait sursauter : il est vexé, fronce les
+ * rosit et se blottit contre le doigt (sans cœurs : il reste sobre). Une tape le fait sursauter : il est vexé, fronce les
  * yeux et détourne le regard un moment (il ne pleure jamais). Une caresse le réconcilie.
  *
  * Il écoute aussi l'événement « teodor-espoir » (detail : { x, y } à l'écran, ou null) :
@@ -88,7 +88,6 @@ function dedans(poly: V[], x: number, y: number) {
   return c;
 }
 
-type Coeur = { x: number; y: number; vie: number; d: number };
 type Ressort = { x: number; y: number; vx: number; vy: number };
 
 export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?: () => void; className?: string }) {
@@ -136,9 +135,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     let heureuxJusque = 0;
     let calinX = 100;
     let calinY = 100;
-    let prochainCoeur = 0;
     let prochainNon = 5;
-    const coeurs: Coeur[] = [];
     let corpsActuel: V[] = [];
     let echelle = 0.66;
     // le corps souple : un ressort par coin, et un pour le visage
@@ -616,35 +613,6 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         ctx.stroke();
         ctx.restore();
 
-      }
-
-      // ===== les petits cœurs quand on le caresse =====
-      if (caressé && now > prochainCoeur && pCouleur >= 1) {
-        prochainCoeur = now + 520;
-        const [x, y] = depuisVisage([visageR.x, visageR.y], (Math.random() - 0.5) * 20, -14);
-        coeurs.push({ x, y, vie: 0, d: Math.random() * 6.28 });
-      }
-      for (let i = coeurs.length - 1; i >= 0; i--) {
-        const h = coeurs[i]!;
-        h.vie += dt;
-        if (h.vie > 1.6) {
-          coeurs.splice(i, 1);
-          continue;
-        }
-        const k = h.vie / 1.6;
-        const x = h.x + Math.sin(h.d + h.vie * 4) * 3;
-        const y = h.y - 26 * sortie(k);
-        const r = 2.4 * ressort(clamp(h.vie / 0.35));
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(r, r);
-        ctx.fillStyle = `rgba(255,122,184,${1 - k * k})`;
-        ctx.beginPath();
-        ctx.moveTo(0, 1);
-        ctx.bezierCurveTo(-2, -0.2, -1.2, -1.8, 0, -0.8);
-        ctx.bezierCurveTo(1.2, -1.8, 2, -0.2, 0, 1);
-        ctx.fill();
-        ctx.restore();
       }
     };
     frame = requestAnimationFrame(dessine);
