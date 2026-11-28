@@ -50,9 +50,18 @@ export function Page404() {
   return (
     <main className={`teo-page e404${pret ? " est-pret" : ""}`}>
       <div className="teo-terminal" translate="no" aria-label="error: strange">
+        <div className="teo-fenetre" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <span>teodor — zsh</span>
+        </div>
         {lignes.map((l, i) => (
           <p key={i} className={i === 1 ? "err" : undefined}>
-            <span>{vus[i]}</span>
+            <span>
+              {vus[i]!.startsWith("$") ? <em className="invite">$</em> : null}
+              {vus[i]!.startsWith("$") ? vus[i]!.slice(1) : vus[i]}
+            </span>
             {i === ligneCurseur && pret ? <b className={`teo-curseur${tape >= total ? " clignote" : ""}`} /> : null}
           </p>
         ))}

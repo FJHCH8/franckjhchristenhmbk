@@ -27,7 +27,7 @@
 .teo-aide { opacity: 1; }
 
 /* 404 : le terminal en verre en haut, le texte et le bouton en bas */
-.teo-terminal { position: absolute; z-index: 2; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 520px; margin: 0 auto; padding: 14px 18px; border-radius: 22px; font: 13px/1.6 var(--f-mono), "Courier New", monospace; color: #f2f4ff; opacity: 0; translate: 0 -12px; transition: opacity .45s linear, translate .8s cubic-bezier(.1, .9, .2, 1); }
+.teo-terminal { position: relative; z-index: 2; width: min(100%, 520px); box-sizing: border-box; padding: 0 18px 14px; border-radius: 18px; font: 13px/1.65 var(--f-mono), "Courier New", monospace; color: #e9ecff; opacity: 0; translate: 0 -12px; transition: opacity .45s linear, translate .8s cubic-bezier(.1, .9, .2, 1); }
 .teo-page.est-pret .teo-terminal { opacity: 1; translate: 0 0; }
 .teo-terminal p { margin: 0; height: 1.6em; }
 .teo-terminal span { white-space: pre; }
@@ -35,8 +35,8 @@
 .teo-curseur { display: inline-block; width: .6em; height: 1.15em; margin-left: 2px; vertical-align: -2px; background: #f2f4ff; }
 .teo-curseur.clignote { animation: teo-clignote 1s steps(2) infinite; }
 @keyframes teo-clignote { 50% { opacity: 0; } }
-.teo-btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; padding: 14px 24px; border-radius: 26px; color: #fff; text-decoration: none; font: 600 14px system-ui, sans-serif; transition: transform .2s cubic-bezier(.1, .9, .2, 1), background .2s; }
-.teo-btn:hover { background-color: rgba(255, 255, 255, .08); }
+.teo-btn { position: relative; display: inline-flex; align-items: center; gap: 10px; margin-top: 22px; padding: 14px 24px; border-radius: 26px; color: #fff; text-decoration: none; font: 600 14px system-ui, sans-serif; transition: transform .25s cubic-bezier(.1, .9, .2, 1), box-shadow .3s ease; }
+.teo-btn:hover { box-shadow: 0 0 0 1px rgba(125, 147, 255, .45), 0 14px 40px rgba(53, 80, 255, .35), inset 0 1px 0 rgba(255, 255, 255, .08); }
 .teo-btn:active { transform: scale(.97); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -47,45 +47,37 @@
 .teo-question { margin: 18px 0 0; font-size: clamp(17px, 4.6vw, 22px); font-weight: 600; color: #dfe3ff; }
 .teo-texte .teo-indice { margin: 6px 0 0; font-size: 14px; color: #8a8f99; }
 
-/* ===== Liquid Glass (comme Apple) : très transparent, flou fort et saturé, reflet sur le dessus,
-   bord lumineux qui accroche la lumière, ombre douce. Le fond (Teodor) se voit à travers. ===== */
+/* ===== Surface « acrylique » stable : sans flou (rien ne peut buguer sur iPhone),
+   un dégradé sombre, un grain très fin, une lueur bleue qui monte du bas comme si Teodor
+   l'éclairait, un liseré de lumière en haut et une ombre douce. ===== */
 .teo-terminal, .teo-btn {
-  position: relative;
+  background:
+    radial-gradient(120% 160% at 50% 150%, rgba(53, 80, 255, .26), rgba(53, 80, 255, .06) 45%, transparent 70%),
+    linear-gradient(180deg, #20222d 0%, #16171f 100%);
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 0 0 1px rgba(0, 0, 0, .35), 0 20px 50px rgba(0, 0, 0, .55);
   isolation: isolate;
-  background: linear-gradient(160deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .04) 38%, rgba(255, 255, 255, .02) 62%, rgba(255, 255, 255, .08) 100%);
-  -webkit-backdrop-filter: blur(22px) saturate(210%) brightness(1.12);
-  backdrop-filter: blur(22px) saturate(210%) brightness(1.12);
-  border: 0;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .55),
-    inset 0 -1px 0 rgba(255, 255, 255, .14),
-    inset 1px 0 0 rgba(255, 255, 255, .12),
-    inset -1px 0 0 rgba(255, 255, 255, .08),
-    inset 0 0 22px rgba(255, 255, 255, .05),
-    0 18px 50px rgba(0, 0, 0, .45);
+  overflow: hidden;
 }
-.teo-terminal { position: absolute; }
-/* le bord : un liseré dégradé, plus vif en haut à gauche et en bas à droite */
-.teo-terminal::before, .teo-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .08) 35%, rgba(255, 255, 255, .02) 60%, rgba(255, 255, 255, .45));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  pointer-events: none;
-}
-/* le reflet spéculaire : une lueur douce sur le haut du verre */
 .teo-terminal::after, .teo-btn::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: radial-gradient(120% 70% at 25% -10%, rgba(255, 255, 255, .22), transparent 55%), radial-gradient(80% 60% at 100% 120%, rgba(255, 255, 255, .08), transparent 60%);
+  opacity: .11;
+  mix-blend-mode: overlay;
   pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+/* la barre de la fenêtre : trois petits ronds et le nom */
+.teo-fenetre { display: flex; align-items: center; gap: 6px; height: 30px; margin: 0 -18px 10px; padding: 0 14px; border-bottom: 1px solid rgba(255, 255, 255, .06); background: rgba(255, 255, 255, .025); }
+.teo-fenetre i { width: 9px; height: 9px; border-radius: 50%; background: #3a3d4a; }
+.teo-fenetre i:first-child { background: #ff5f57; }
+.teo-fenetre span { margin-left: auto; margin-right: auto; translate: -14px 0; font-size: 10px; letter-spacing: .14em; color: #6c7186; }
+.teo-terminal .invite { color: #7d93ff; }
+.teo-terminal .err span { color: #ff7a70; }
+/* 404 : tout tient en colonne, rien ne se chevauche */
+.e404 .teodor { width: min(72vw, 34svh, 360px); }
+.e404 { gap: clamp(8px, 2svh, 20px); }
+.teo-terminal em { font-style: normal; }
