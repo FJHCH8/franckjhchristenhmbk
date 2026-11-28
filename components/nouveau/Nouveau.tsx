@@ -17,6 +17,7 @@ import { Logo } from "@/components/Logo";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { CompteEndur } from "@/components/Countdown";
 import { ProjetsPanorama } from "@/components/ProjetsPanorama";
+import { HanckTerrain } from "@/components/nouveau/HanckTerrain";
 import { TopBlur } from "@/components/TopBlur";
 
 type Vue = "accueil" | "qui" | "projets";
@@ -950,7 +951,7 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
 
 /* ---------- Projets : intérieur ---------- */
 
-type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string }; image?: string; dossiers?: string[] };
+type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string }; hanck?: boolean; dossiers?: string[] };
 
 function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubrique: Rubrique; citations: Etoile[]; projets: Etoile[] }) {
   const [sel, setSel] = useState(0);
@@ -975,7 +976,7 @@ function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubr
               texte:
                 "Du 24 au 28 novembre 2026, un téléphone entier a vécu caché dans ce site. Il avait son propre système, son réseau, ses habitants, ses secrets… et un code pour l’allumer, dissimulé quelque part sous vos yeux. Ceux qui l’ont trouvé savent ce qu’il y avait dedans. Les autres ne le sauront jamais : il a été effacé, et il ne reviendra pas.",
               date: "24.11 → 28.11.2026",
-              image: "/media/aakanos-pub.webp",
+              hanck: true,
               dossiers: ["MISES À JOUR", "VERSION DU SITE · ODYSSÉE 0.2", "EASTER EGG"],
             },
           ];
@@ -1038,9 +1039,10 @@ function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubr
                 ))}
               </div>
             ) : null}
-            {e.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="n-affiche" src={e.image} alt="Affiche : AakanOS, Odyssée 0.2" />
+            {e.hanck ? (
+              <div className="n-affiche-hanck">
+                <HanckTerrain />
+              </div>
             ) : null}
             {e.medias?.length ? (
               <div className="n-medias">

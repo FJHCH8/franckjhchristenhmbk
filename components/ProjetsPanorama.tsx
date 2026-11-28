@@ -1,6 +1,5 @@
 "use client";
 
-import { HanckTerrain } from "@/components/nouveau/HanckTerrain";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Countdown, useCompte } from "@/components/Countdown";
 import { LogoProgression } from "@/components/LogoProgression";
@@ -158,12 +157,12 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
     if (node) node.scrollTo({ left: i * node.clientWidth, behavior: "smooth" });
   };
 
-  const VOLETS = ["hanck 7 pro max", "endurreisen", "l'aube", "cadran"];
+  const VOLETS = ["endurreisen", "l'aube", "cadran"];
   const finis = maintenant == null ? 0 : EVENEMENTS.filter((e) => maintenant >= e.fin).length;
   const tousComptes = [...comptes, { nom: "événements", nombre: finis, couleur: "#339933" }];
 
   return (
-    <section className="pano" ref={scene} aria-label="Actualité : Hanck 7 Pro Max, endurreisen, l'aube et le cadran">
+    <section className="pano" ref={scene} aria-label="Actualité : endurreisen, l'aube et le cadran">
       <div className="pano-fond" aria-hidden="true">
         <span className="pano-mot tavissiv" lang="x-tavissiv">vayak</span>
         <div className="pano-logo" style={{ ["--taille" as string]: (0.45 + 0.55 * courant).toFixed(3) } as CSSProperties}>
@@ -183,9 +182,6 @@ export function ProjetsPanorama({ comptes }: { comptes: { nom: string; nombre: n
         ))}
       </nav>
       <div className="pano-piste" ref={piste}>
-        <div className="pano-volet pano-volet-hanck">
-          <HanckTerrain />
-        </div>
         <div className="pano-volet">
           <LogoProgression id="pano-endur" progress={vue.progress} className="pano-logo-principal" />
           <div className="pano-chrono">
