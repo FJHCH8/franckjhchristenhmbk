@@ -1828,3 +1828,27 @@ a.app-ligne:active { background: var(--presse); }
 .os-verrou-notifs { box-sizing: border-box; width: calc(100% - 44px); max-width: 360px; align-self: center; }
 .os-verrou-notifs div { display: grid; grid-template-columns: 26px auto minmax(0, 1fr); overflow: hidden; }
 .os-verrou-notifs span { display: block; }
+
+/* ---------- Opakaalt en 3D (années PS2) ---------- */
+.o3 { position: absolute; inset: 0; overflow: hidden; background: #000; touch-action: none; }
+.o3-rendu, .o3-rendu canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; }
+.o3-attente { position: absolute; inset: 0; display: grid; place-items: center; background: #05060f; color: #ffc33a; font: 10px var(--f-pixel), monospace; }
+.o3-bande { position: absolute; left: 0; right: 0; height: 11%; background: #000; z-index: 2; animation: o3-bande .6s ease-out both; }
+.o3-bande.h { top: 0; } .o3-bande.b { bottom: 0; }
+@keyframes o3-bande { from { height: 0; } }
+.op-menu-3d .op-titre { text-shadow: 0 4px 0 #b03a48, 0 8px 24px rgba(0, 0, 0, .6); }
+.op-menu-3d .op-menu-bas { background: linear-gradient(transparent, rgba(0, 0, 0, .75) 30%); }
+/* balade : mini-carte, objectif, joystick */
+.o3-carte { position: absolute; left: 12px; top: 12px; z-index: 3; width: 92px; height: 92px; border-radius: 50%; overflow: hidden; border: 3px solid #111; box-shadow: 0 0 0 2px #ffc33a; background: radial-gradient(circle, #2b3a55, #1a2338 70%); }
+.o3-rue-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 9px; margin-left: -4px; background: #4a5a7a; }
+.o3-rue-h { position: absolute; left: 0; right: 0; top: 30%; height: 8px; background: #4a5a7a; display: none; }
+.o3-casino { position: absolute; transform: translate(-50%, -50%); font: 9px var(--f-pixel), monospace; color: #ffc33a; text-shadow: 0 0 4px #000; }
+.o3-moi { position: absolute; left: 50%; top: 50%; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 13px solid #ff5fa8; }
+.o3-objectif { position: absolute; left: 112px; right: 10px; top: 22px; z-index: 3; font: 700 15px var(--p2), "Chakra Petch", sans-serif; color: #fff; text-shadow: 0 2px 4px #000; }
+.o3-objectif span { color: #ffc33a; }
+.o3-joy-zone { position: absolute; left: 0; right: 0; bottom: 0; height: 45%; z-index: 3; touch-action: none; }
+.o3-joy { position: absolute; left: 50%; bottom: 40px; width: 120px; height: 120px; margin-left: -60px; border-radius: 50%; background: rgba(255, 255, 255, .12); border: 2px solid rgba(255, 255, 255, .4); }
+.o3-joy i { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 255, 255, .55); }
+.o3-aide { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font: 8px var(--f-pixel), monospace; color: #fff; opacity: .7; }
+.op-arrive::after { content: ""; position: absolute; inset: 0; z-index: 5; background: #000; animation: o3-fondu .9s ease-in both; }
+@keyframes o3-fondu { from { opacity: 0; } }

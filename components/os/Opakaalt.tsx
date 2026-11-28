@@ -8,6 +8,7 @@
  * Dialogues : ceux de Franck, mot pour mot. Rien d'explicite à l'écran.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { useTraduire } from "@/components/Locale";
 import { useRetour } from "./OdysseeOS";
 import { creerStore } from "./session";
@@ -59,7 +60,10 @@ type Gagnant = "toi" | "blond" | "nul";
 
 export const T_MERDE = "merde tu es en train de gagner mmmmmh….";
 export const T_NUL = "ahahah comment tu es trop une merde! Apart te faire enculer tu sais rien faire de plus?!";
-export const T_DEGAGE = "Tu es vraiment qu’un gros tat de merde, dégage j’ai des trous du culs bien plus intéressant que le tien à déboucher!";
+export /** Le monde en 3D (Three.js), chargé seulement quand on ouvre le jeu. */
+const Monde3D = dynamic(() => import("./Opakaalt3D"), { ssr: false, loading: () => <div className="o3-attente">Chargement de la ville…</div> });
+
+const T_DEGAGE = "Tu es vraiment qu’un gros tat de merde, dégage j’ai des trous du culs bien plus intéressant que le tien à déboucher!";
 
 /* ---------------- La boîte de dialogue (texte qui s'écrit) ---------------- */
 
@@ -160,7 +164,8 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
       </div>
     </>
   );
-  const monde = decor === "rue" ? (
+  const monde3d = decor === "rue" || decor === "casino" ? <Monde3D mode={decor} vue={vue} parle={e?.texte ? (e.qui ?? null) : null} /> : null;
+  const monde = monde3d ?? (decor === "rue" ? (
     <div className="op-camera" style={{ transform: `translateX(-50%) scale(${vue.zoom})`, transition: `transform ${Math.max(400, vue.t)}ms ease-in-out` }}>
       <Ville couche="fond" anime={false} />
       {persos}
@@ -174,11 +179,12 @@ function Cinematique({ decor, etapes, fin, children }: { decor: "rue" | "casino"
       {decor === "casino" ? <Tapis /> : null}
       {vue.boum ? <div className="op-boum">BAM!</div> : null}
     </>
-  );
+  ));
   return (
     <div className={`op-scene op-scene-${decor}${vue.secousse ? " op-secousse" : ""}`}>
       {monde}
-      {decor === "casino" ? <div className="op-enseigne" translate="no">CASINO</div> : null}
+      {monde3d && vue.boum ? <div className="op-boum">BAM!</div> : null}
+      {decor === "casino" && !monde3d ? <div className="op-enseigne" translate="no">CASINO</div> : null}
       {decor === "hotel" ? <div className="op-enseigne op-enseigne-hotel">HÔTEL</div> : null}
       {children}
       <div className="op-bas">
@@ -911,8 +917,8 @@ function Tournoi({ termine }: { termine: (victoire: boolean) => void }) {
 function ChoixDifficulte({ onChoix }: { onChoix: (d: Difficulte) => void }) {
   const actuel = memoireDiff.useValeur().d;
   return (
-    <div className="op-scene op-menu">
-      <Ville anime />
+    <div className="op-scene op-menu op-menu-3d">
+      <Monde3D mode="menu" />
       <div className="op-menu-haut">
         <h1 className="op-titre op-titre-petit" translate="no">OPAKAALT</h1>
         <small className="op-sous-titre">Difficulté</small>
@@ -939,8 +945,8 @@ function Menu({ jouer: lancer }: { jouer: () => void }) {
   }, []);
   if (choix) return <ChoixDifficulte onChoix={() => lancer()} />;
   return (
-    <div className="op-scene op-menu">
-      <Ville anime />
+    <div className="op-scene op-menu op-menu-3d">
+      <Monde3D mode="menu" />
       <div className="op-menu-haut">
         <h1 className="op-titre" translate="no">
           OPAKAALT
@@ -971,6 +977,26 @@ const CREDITS = [
   "Remerciement : Partenariat avec Pulpüs market et Nounou browser.",
   "À bientôt.",
 ];
+
+/** Après la rencontre : tu rejoins le casino à pied, en 3D, pendant que la nuit tombe. */
+function Balade({ fin }: { fin: () => void }) {
+  const [arrive, setArrive] = useState(false);
+  useEffect(() => {
+    ambianceVille(true);
+    return () => ambianceVille(false);
+  }, []);
+  useEffect(() => {
+    if (!arrive) return;
+    bruitage("porte");
+    const id = window.setTimeout(fin, 900);
+    return () => window.clearTimeout(id);
+  }, [arrive, fin]);
+  return (
+    <div className={`op-scene op-balade${arrive ? " op-arrive" : ""}`}>
+      <Monde3D mode="balade" onArrivee={() => setArrive(true)} />
+    </div>
+  );
+}
 
 function Credits({ fin, gagne = false }: { fin: () => void; gagne?: boolean }) {
   const [scriptPret, setScriptPret] = useState(false);
@@ -1082,7 +1108,7 @@ function Espace({ fin }: { fin: () => void }) {
 
 /* ---------------- L'appli ---------------- */
 
-type Phase = "menu" | "intro" | "chargement" | "casino" | "tournoi" | "victoire" | "coeur-gagne" | "defaite" | "espace" | "coeur-perdu" | "credits";
+type Phase = "menu" | "intro" | "balade" | "chargement" | "casino" | "tournoi" | "victoire" | "coeur-gagne" | "defaite" | "espace" | "coeur-perdu" | "credits";
 
 export function AppOpakaalt() {
   const [phase, setPhase] = useState<Phase>("menu");
@@ -1106,7 +1132,8 @@ export function AppOpakaalt() {
   const aller = useCallback((p: Phase) => () => setPhase(p), []);
   const fins = useMemo(
     () => ({
-      intro: aller("chargement"),
+      intro: aller("balade"),
+      balade: aller("chargement"),
       chargement: aller("casino"),
       casino: aller("tournoi"),
       victoire: aller("coeur-gagne"),
@@ -1129,11 +1156,12 @@ export function AppOpakaalt() {
   useEffect(() => {
     if (phase === "menu") arreterMusiqueFin();
   }, [phase]);
-  const passer = phase === "intro" || phase === "casino" ? fins[phase] : null;
+  const passer = phase === "intro" || phase === "casino" || phase === "balade" ? fins[phase] : null;
   return (
     <div className="op" data-son="aucun" data-phase={phase}>
       {phase === "menu" ? <Menu key={tour} jouer={() => setPhase("intro")} /> : null}
       {phase === "intro" ? <Cinematique decor="rue" etapes={INTRO} fin={fins.intro} /> : null}
+      {phase === "balade" ? <Balade fin={fins.balade} /> : null}
       {phase === "chargement" ? <Chargement fin={fins.chargement} /> : null}
       {phase === "casino" ? <Cinematique decor="casino" etapes={CASINO} fin={fins.casino} /> : null}
       {phase === "tournoi" ? <Tournoi termine={termine} /> : null}
