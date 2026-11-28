@@ -1,30 +1,43 @@
-/* Page 404 : l'UI Odyssée (noir, Chakra Petch, bleu clair qui scintille, coins en équerre) */
-html, body { margin: 0; background: #000; color: #fff; }
-.e404 { min-height: 100svh; box-sizing: border-box; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 32px 18px; text-align: center; font-family: var(--p2), "Chakra Petch", system-ui, sans-serif; background: radial-gradient(circle at 50% 30%, #0b1a2a 0, #000 60%); }
-.e404-cadre { position: relative; width: min(340px, 82vw); aspect-ratio: 640 / 536; border: 1px solid #1d2a35; }
-.e404-cadre img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(.35) contrast(1.08); animation: e404-saute 4s steps(1) infinite; }
-.e404-lignes { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .28) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
-.e404-rec { position: absolute; left: 8px; top: 6px; font: 10px var(--f-mono), monospace; letter-spacing: 2px; color: #8fd0ff; text-shadow: 0 1px 2px #000; animation: e404-clignote 1s steps(2) infinite; }
-@keyframes e404-clignote { 50% { opacity: .2; } }
-@keyframes e404-saute { 0%, 91%, 100% { transform: none; filter: grayscale(.35) contrast(1.08); } 92% { transform: translateX(-6px) skewX(4deg); filter: grayscale(1) contrast(1.6) hue-rotate(160deg); } 94% { transform: translateX(5px); } 96% { transform: translateY(-3px) skewX(-3deg); filter: grayscale(.35) contrast(1.4); } }
-.e404-co { position: absolute; width: 12px; height: 12px; border: 0 solid #8fd0ff; z-index: 1; }
-.e404-co.a { left: -2px; top: -2px; border-left-width: 2px; border-top-width: 2px; } .e404-co.b { right: -2px; top: -2px; border-right-width: 2px; border-top-width: 2px; }
-.e404-co.c { left: -2px; bottom: -2px; border-left-width: 2px; border-bottom-width: 2px; } .e404-co.d { right: -2px; bottom: -2px; border-right-width: 2px; border-bottom-width: 2px; }
-/* « Erreur 404 » qui bugue */
-.e404-titre { position: relative; margin: 6px 0 0; font-size: clamp(38px, 11vw, 72px); font-weight: 700; letter-spacing: 4px; text-transform: uppercase; line-height: 1; background: linear-gradient(100deg, #6fbdf5, #f4fbff 30%, #6fbdf5 60%, #f4fbff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: e404-reflet 4s linear infinite, e404-tremble 2.6s steps(1) infinite; }
-.e404-titre::before, .e404-titre::after { content: attr(data-texte); position: absolute; inset: 0; -webkit-text-fill-color: currentColor; background: none; }
-.e404-titre::before { color: #ff2b6a; clip-path: inset(0 0 62% 0); transform: translate(-3px, -1px); animation: e404-coupe-a 1.7s steps(2) infinite; mix-blend-mode: screen; opacity: .85; }
-.e404-titre::after { color: #2ad1ff; clip-path: inset(58% 0 0 0); transform: translate(3px, 1px); animation: e404-coupe-b 2.3s steps(2) infinite; mix-blend-mode: screen; opacity: .85; }
-@keyframes e404-reflet { to { background-position: -200% 0; } }
-@keyframes e404-tremble { 0%, 86%, 100% { transform: none; } 87% { transform: translate(2px, -1px) skewX(6deg); } 89% { transform: translate(-3px, 1px); } 91% { transform: none; } }
-@keyframes e404-coupe-a { 0% { clip-path: inset(0 0 70% 0); transform: translate(-4px, -1px); } 25% { clip-path: inset(20% 0 45% 0); transform: translate(3px, 0); } 50% { clip-path: inset(60% 0 10% 0); transform: translate(-2px, 1px); } 75% { clip-path: inset(35% 0 40% 0); transform: translate(5px, -1px); } }
-@keyframes e404-coupe-b { 0% { clip-path: inset(65% 0 0 0); transform: translate(4px, 1px); } 33% { clip-path: inset(10% 0 70% 0); transform: translate(-5px, 0); } 66% { clip-path: inset(45% 0 30% 0); transform: translate(2px, -1px); } }
-.e404-texte { margin: 0; max-width: 30em; font-size: 17px; line-height: 1.45; color: #cfd8df; }
-/* le bouton : une ligne numérotée du site, sélectionnée */
-.e404-btn { position: relative; display: flex; align-items: center; gap: 14px; min-width: min(320px, 86vw); height: 56px; padding: 0 16px; margin-top: 6px; box-sizing: border-box; text-decoration: none; color: #000; background: linear-gradient(90deg, #f4fbff, #6fbdf5); transition: transform .15s, box-shadow .3s; }
-.e404-btn:hover { box-shadow: 0 0 18px rgba(111, 189, 245, .5); }
-.e404-btn:active { transform: scale(.98); }
-.e404-btn b { font: 12px var(--f-mono), monospace; color: #0b2a40; }
-.e404-btn span { flex: 1; text-align: left; font-weight: 700; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; }
-.e404-btn em { font-style: normal; font-size: 22px; color: #0b2a40; }
-@media (prefers-reduced-motion: reduce) { .e404-titre, .e404-titre::before, .e404-titre::after, .e404-cadre img, .e404-rec { animation: none; } }
+/* Page 404 : trame de points, terminal en verre, grand texte (mélange Terminal × Verre × Trame × Texte) */
+html, body { margin: 0; background: #0a0a0a; color: #fff; }
+.e404 { position: relative; min-height: 100svh; overflow: hidden; box-sizing: border-box; font-family: "Helvetica Neue", Helvetica, system-ui, sans-serif; background: #0a0a0a; }
+
+/* le robot en trame : l'image très contrastée, recouverte d'une grille de trous ronds */
+.e404-trame { position: absolute; inset: 0 0 auto; height: 64svh; overflow: hidden; }
+.e404-trame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 35% 20%; filter: grayscale(1) contrast(2) brightness(1.1); animation: e404-respire 9s ease-in-out infinite alternate; }
+.e404-trame i { position: absolute; inset: 0; background: radial-gradient(circle, transparent 1.3px, #0a0a0a 1.9px) 0 0 / 5px 5px; }
+.e404-trame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, #0a0a0a 98%); }
+@keyframes e404-respire { from { transform: scale(1); } to { transform: scale(1.06) translateY(-1.5%); } }
+
+/* le verre */
+.e404-terminal, .e404-btn {
+  background: rgba(255, 255, 255, .12);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, .33);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .65), 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+/* le terminal : les lignes se tapent l'une après l'autre */
+.e404-terminal { position: absolute; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 520px; margin: 0 auto; padding: 12px 16px; border-radius: 18px; font: 13px/1.6 var(--f-mono), "Courier New", monospace; color: #e8e8e8; }
+.e404-terminal p { margin: 0; height: 1.6em; }
+.e404-terminal span { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: top; width: 0; animation: e404-tape calc(var(--n) * 45ms) steps(var(--n), end) calc(.3s + var(--i) * .9s) forwards; }
+.e404-terminal .err span { color: #ff5f57; }
+@keyframes e404-tape { to { width: calc(var(--n) * 1ch); } }
+.e404-curseur { position: absolute; left: calc(16px + 7ch); bottom: 12px; width: 1ch; height: 1.6em; background: #e8e8e8; opacity: 0; animation: e404-arrive 0s 2.4s forwards, e404-clignote 1s steps(2) 2.4s infinite; }
+@keyframes e404-arrive { to { opacity: 1; } }
+@keyframes e404-clignote { 50% { opacity: 0; } }
+
+/* le texte */
+.e404-bas { position: absolute; left: 26px; right: 26px; bottom: max(40px, calc(env(safe-area-inset-bottom) + 24px)); max-width: 520px; margin: 0 auto; }
+.e404-bas small { font: 12px var(--f-mono), "Courier New", monospace; color: #888; }
+.e404-bas h1 { margin: 8px 0 28px; font-size: clamp(38px, 11vw, 64px); line-height: 1.05; font-weight: 600; letter-spacing: -.02em; max-width: 7.5em; }
+.e404-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 24px; color: #fff; text-decoration: none; font: 600 14px system-ui, sans-serif; transition: transform .15s, background .2s; }
+.e404-btn:hover { background: rgba(255, 255, 255, .2); }
+.e404-btn:active { transform: scale(.97); }
+.e404-btn em { font-style: normal; }
+
+@media (prefers-reduced-motion: reduce) {
+  .e404-trame img, .e404-curseur { animation: none; opacity: 1; }
+  .e404-terminal span { animation: none; width: auto; }
+}
