@@ -50,6 +50,10 @@ const LIGNES: [string, string, string, string][] = [
   // page 404
   ["erreur 404", "Fehler 404", "Fel 404", "Fazi 404"],
   ["la page que vous voulez n’existe pas.", "Die Seite, die Sie suchen, existiert nicht.", "Sidan du letar efter finns inte.", "N’eus ket eus ar bajenn a fell deoc’h."],
+  ["site en maintenance", "Seite in Wartung", "Webbplatsen underhålls", "Lec’hienn o vezañ kempennet"],
+  ["(votre site va revenir encore plus beau)", "(Ihre Seite kommt noch schöner zurück)", "(din webbplats kommer tillbaka ännu vackrare)", "(distreiñ a raio ho lec’hienn bravoc’h c’hoazh)"],
+  ["votre site devrait être prêt en fin de journée.", "Ihre Seite sollte bis zum Ende des Tages fertig sein.", "Din webbplats bör vara klar i slutet av dagen.", "Prest e vefe ho lec’hienn a-benn fin an devezh."],
+  ["caresse teodor. ne le tape pas.", "Streichle Teodor. Schlag ihn nicht.", "Klappa Teodor. Slå honom inte.", "Flour Teodor. Na skoit ket warnañ."],
   ["cette page n’existe pas.", "Diese Seite existiert nicht.", "Den här sidan finns inte.", "N’eus ket eus ar bajenn-mañ."],
   ["retour à l’accueil", "Zurück zur Startseite", "Tillbaka till startsidan", "Distreiñ d’an degemer"],
   ["// signal perdu", "// Signal verloren", "// Signal förlorad", "// Arouez kollet"],

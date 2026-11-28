@@ -1,43 +1,4 @@
-/* Page 404 : trame de points, terminal en verre, grand texte (mélange Terminal × Verre × Trame × Texte) */
+/* Page 404 : tout est dans components/teodor/teodor.css ; ici, juste le fond de la page. */
 html, body { margin: 0; background: #0a0a0a; color: #fff; }
-.e404 { position: relative; min-height: 100svh; overflow: hidden; box-sizing: border-box; font-family: "Helvetica Neue", Helvetica, system-ui, sans-serif; background: #0a0a0a; }
-
-/* le robot en trame : l'image très contrastée, recouverte d'une grille de trous ronds */
-.e404-trame { position: absolute; inset: 0 0 auto; height: 64svh; overflow: hidden; }
-.e404-trame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 35% 20%; filter: grayscale(1) contrast(2) brightness(1.1); animation: e404-respire 9s ease-in-out infinite alternate; }
-.e404-trame i { position: absolute; inset: 0; background: radial-gradient(circle, transparent 1.3px, #0a0a0a 1.9px) 0 0 / 5px 5px; }
-.e404-trame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 45%, #0a0a0a 98%); }
-@keyframes e404-respire { from { transform: scale(1); } to { transform: scale(1.06) translateY(-1.5%); } }
-
-/* le verre */
-.e404-terminal, .e404-btn {
-  background: rgba(255, 255, 255, .12);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  backdrop-filter: blur(18px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, .33);
-  box-shadow: inset 0 1px rgba(255, 255, 255, .65), 0 10px 30px rgba(0, 0, 0, .35);
-}
-
-/* le terminal : les lignes se tapent l'une après l'autre */
-.e404-terminal { position: absolute; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; max-width: 520px; margin: 0 auto; padding: 12px 16px; border-radius: 18px; font: 13px/1.6 var(--f-mono), "Courier New", monospace; color: #e8e8e8; }
-.e404-terminal p { margin: 0; height: 1.6em; }
-.e404-terminal span { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: top; width: 0; animation: e404-tape calc(var(--n) * 45ms) steps(var(--n), end) calc(.3s + var(--i) * .9s) forwards; }
-.e404-terminal .err span { color: #ff5f57; }
-@keyframes e404-tape { to { width: calc(var(--n) * 1ch); } }
-.e404-curseur { position: absolute; left: calc(16px + 7ch); bottom: 12px; width: 1ch; height: 1.6em; background: #e8e8e8; opacity: 0; animation: e404-arrive 0s 2.4s forwards, e404-clignote 1s steps(2) 2.4s infinite; }
-@keyframes e404-arrive { to { opacity: 1; } }
-@keyframes e404-clignote { 50% { opacity: 0; } }
-
-/* le texte */
-.e404-bas { position: absolute; left: 26px; right: 26px; bottom: max(40px, calc(env(safe-area-inset-bottom) + 24px)); max-width: 520px; margin: 0 auto; }
-.e404-bas small { font: 12px var(--f-mono), "Courier New", monospace; color: #888; }
-.e404-bas h1 { margin: 8px 0 28px; font-size: clamp(38px, 11vw, 64px); line-height: 1.05; font-weight: 600; letter-spacing: -.02em; max-width: 7.5em; }
-.e404-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 24px; color: #fff; text-decoration: none; font: 600 14px system-ui, sans-serif; transition: transform .15s, background .2s; }
-.e404-btn:hover { background: rgba(255, 255, 255, .2); }
-.e404-btn:active { transform: scale(.97); }
-.e404-btn em { font-style: normal; }
-
-@media (prefers-reduced-motion: reduce) {
-  .e404-trame img, .e404-curseur { animation: none; opacity: 1; }
-  .e404-terminal span { animation: none; width: auto; }
-}
+.e404 .teo-texte .teo-bas::before { display: none; }
+.e404 .teo-texte .teo-bas { display: block; margin: 0 0 8px; }
