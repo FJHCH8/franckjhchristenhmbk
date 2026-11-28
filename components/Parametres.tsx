@@ -15,10 +15,9 @@ import { Icone, type NomIcone } from "@/components/Icone";
 import { LogoOdyssee } from "@/components/LogoOdyssee";
 import { clic } from "@/lib/sons";
 
-type Choix = "apparence" | "langue" | "contact" | "apropos" | "systeme" | "edition" | "oeuf";
+type Choix = "langue" | "contact" | "apropos" | "systeme" | "edition" | "oeuf";
 
 const RUBRIQUES: { id: Choix; nom: string; icone: NomIcone; aide: string }[] = [
-  { id: "apparence", nom: "apparence", icone: "palette", aide: "LE SITE CLASSIQUE, OU AAKANOS : LE SITE COMME UN TÉLÉPHONE." },
   { id: "langue", nom: "langue", icone: "language", aide: "CHOISIS LA LANGUE DU SITE." },
   { id: "contact", nom: "contact", icone: "mail", aide: "DEUX CHEMINS MÈNENT JUSQU’À FRANCK." },
   { id: "apropos", nom: "à propos", icone: "info", aide: "CE QU’EST CE SITE, ET COMMENT IL ÉVOLUE." },
@@ -160,68 +159,6 @@ function Matrice() {
 }
 
 /* ---------------- panneaux ---------------- */
-
-function PanneauApparence() {
-  const [verrou, setVerrou] = useState(false);
-  const [mode, setMode] = useState<"classique" | "aakanos">(() => {
-    try {
-      return typeof window !== "undefined" && localStorage.getItem(CLE_APPARENCE) === "aakanos" ? "aakanos" : "classique";
-    } catch {
-      return "classique";
-    }
-  });
-  const dansAakanOS = typeof window !== "undefined" && window.top !== window.self;
-  const choisir = (m: "classique" | "aakanos") => {
-    clic();
-    setMode(m);
-    try {
-      localStorage.setItem(CLE_APPARENCE, m);
-    } catch {}
-    if (m === "classique" && dansAakanOS && window.top) window.top.location.assign("/");
-  };
-  return (
-    <>
-      <h3>
-        <Decode texte="Le site, ou AakanOS" duree={500} />
-      </h3>
-      {(
-        [
-          { id: "classique", nom: "site classique", sous: "Odyssée" },
-          { id: "aakanos", nom: "AakanOS", sous: "le site comme un téléphone" },
-        ] as const
-      ).map((o, k) => (
-        <Tq key={o.id} i={k + 1}>
-          <button type="button" role="radio" aria-checked={mode === o.id} className={`p2-radio${mode === o.id ? " sel" : ""}`} onClick={() => choisir(o.id)}>
-            <i />
-            <span>
-              <T>{o.nom}</T>
-            </span>
-            <em>
-              <T>{o.sous}</T>
-            </em>
-          </button>
-        </Tq>
-      ))}
-      {!dansAakanOS ? (
-        <Tq i={3}>
-          <button
-            type="button"
-            className={`p2-action${verrou ? " rouge" : ""}`}
-            onClick={() => {
-              // 1er appui : l'avertissement en rouge ; 2e appui : on part vers AakanOS (qui demande le code).
-              if (!verrou) return setVerrou(true);
-              choisir("aakanos");
-              window.location.assign("/aakanos");
-            }}
-          >
-            <Icone nom={verrou ? "info" : "phone_iphone"} />
-            {verrou ? <span className="p2-action-txt">Pour rentrer sur AakanOS, il vous faut un mot de passe caché sur le site. Appuyez une nouvelle fois pour entrer.</span> : <T>lancer AakanOS</T>}
-          </button>
-        </Tq>
-      ) : null}
-    </>
-  );
-}
 
 function PanneauLangue() {
   const { locale, setLocale } = useLocale();
@@ -532,16 +469,6 @@ export function Parametres() {
     }, 320);
   };
 
-  // Apparence AakanOS choisie : le site s'ouvre directement dans le système (sauf depuis ses propres applis).
-  useEffect(() => {
-    try {
-      if (!demande && window.top === window.self && localStorage.getItem(CLE_APPARENCE) === "aakanos") window.location.replace("/aakanos");
-    } catch {
-      /* navigation privée */
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Un lien « /?parametres=contact » (ou les anciennes pages) ouvre directement la bonne rubrique.
   useEffect(() => {
     if (!demande) return;
@@ -711,7 +638,6 @@ export function Parametres() {
                           {`// ${deux(rang(choix) + 1)} · `}
                           <T>{RUBRIQUES[rang(choix)]!.nom}</T>
                         </small>
-                        {choix === "apparence" ? <PanneauApparence /> : null}
                         {choix === "langue" ? <PanneauLangue /> : null}
                         {choix === "contact" ? <PanneauContact /> : null}
                         {choix === "apropos" ? <PanneauAPropos /> : null}

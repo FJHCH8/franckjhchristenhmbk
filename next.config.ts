@@ -47,7 +47,9 @@ const nextConfig: NextConfig = {
       // À propos et Contact vivent désormais dans les paramètres.
       { source: "/a-propos", destination: "/?parametres=apropos", permanent: false },
       { source: "/contact", destination: "/?parametres=contact", permanent: false },
-      { source: "/odyssee-test", destination: "/aakanos", permanent: false },
+      { source: "/odyssee-test", destination: "/", permanent: false },
+      { source: "/aakanos/:chemin*", destination: "/projets", permanent: false },
+      { source: "/aakanos", destination: "/projets", permanent: false },
       { source: "/nouveau", destination: "/", permanent: false },
       {
         source: "/:path*",

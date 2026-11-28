@@ -352,7 +352,7 @@ function Accueil({ t, citations, aller }: { t: number | null; citations: Etoile[
         <T i={2}>
           <a className="tuile t-noir t-msg" href="mailto:franckjhchristen@gmail.com">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/aakanos/gael.jpg" alt="" />
+            <img src="/media/gael.jpg" alt="" />
             <div>
               <small>TRANSMISSION</small>
               <b>CONTACT</b>

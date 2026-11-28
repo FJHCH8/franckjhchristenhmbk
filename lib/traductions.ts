@@ -4,9 +4,18 @@
  * ils sont repris tels quels à leur place (dates, comptes à rebours, versions…).
  * Les majuscules suivent le texte affiché : un titre en capitales reste en capitales.
  */
-import { JOURS, LIGNES_OS } from "./traductions-os";
 
 export type LangueEtrangere = "de" | "sv" | "br";
+
+const JOURS: [string, string, string, string][] = [
+  ["lundi", "Montag", "måndag", "Lun"],
+  ["mardi", "Dienstag", "tisdag", "Meurzh"],
+  ["mercredi", "Mittwoch", "onsdag", "Merc’her"],
+  ["jeudi", "Donnerstag", "torsdag", "Yaou"],
+  ["vendredi", "Freitag", "fredag", "Gwener"],
+  ["samedi", "Samstag", "lördag", "Sadorn"],
+  ["dimanche", "Sonntag", "söndag", "Sul"],
+];
 
 const MOIS: [string, string, string, string][] = [
   ["janvier", "Januar", "januari", "Genver"],
@@ -26,10 +35,18 @@ const MOIS: [string, string, string, string][] = [
 const LIGNES: [string, string, string, string][] = [
   // actualité : Hanck 7 Pro Max
   ["// nouveau", "// Neu", "// Nytt", "// Nevez"],
-  ["le téléphone de casto, sous aakanos", "das Telefon von Casto, mit AakanOS", "Castos telefon, med AakanOS", "pellgomz Casto, dindan AakanOS"],
+  ["archives d’odyssée #.#", "Archiv von Odyssée #.#", "Arkiv från Odyssée #.#", "Dielloù Odyssée #.#"],
   ["↻ lâcher encore", "↻ nochmal fallen lassen", "↻ släpp igen", "↻ laoskel adarre"],
   ["attrape les logos, déplace-les, lance-les.", "Schnapp dir die Logos, schieb sie herum, wirf sie.", "Fånga logotyperna, flytta dem, kasta dem.", "Pak al logoioù, fiñv anezho, strink anezho."],
   ["actualité : hanck # pro max, endurreisen, l'aube et le cadran", "Aktuelles: Hanck # Pro Max, Endurreisen, die Morgendämmerung und das Zifferblatt", "Aktuellt: Hanck # Pro Max, Endurreisen, gryningen och urtavlan", "Keleier: Hanck # Pro Max, Endurreisen, ar gouloù-deiz hag ar c’hadran"],
+  // événements : l'archive d'AakanOS
+  ["du # au # novembre #, un téléphone entier a vécu caché dans ce site. il avait son propre système, son réseau, ses habitants, ses secrets… et un code pour l’allumer, dissimulé quelque part sous vos yeux. ceux qui l’ont trouvé savent ce qu’il y avait dedans. les autres ne le sauront jamais : il a été effacé, et il ne reviendra pas.",
+    "Vom # bis # November # lebte ein ganzes Telefon versteckt auf dieser Seite. Es hatte sein eigenes System, sein Netz, seine Bewohner, seine Geheimnisse… und einen Code zum Einschalten, irgendwo vor Ihren Augen versteckt. Wer ihn gefunden hat, weiß, was darin war. Die anderen werden es nie erfahren: Es wurde gelöscht und kommt nicht wieder.",
+    "Från # till # november # levde en hel telefon gömd på den här webbplatsen. Den hade sitt eget system, sitt nät, sina invånare, sina hemligheter… och en kod för att slå på den, gömd någonstans framför era ögon. De som hittade den vet vad som fanns där inne. De andra får aldrig veta: den har raderats och kommer inte tillbaka.",
+    "Eus an # d’an # a viz Du #, ur pellgomz a-bezh a zo bet o vevañ kuzhet el lec’hienn-mañ. E reizhiad, e rouedad, e annezidi, e sekredoù en doa… hag ur c’hod evit e enaouiñ, kuzhet en ul lec’h bennak dirak ho taoulagad. Ar re o deus e gavet a oar petra a oa e-barzh. Ar re all ne ouezint biken : diverket eo bet ha ne zeuio ket en-dro."],
+  ["mises à jour", "Updates", "Uppdateringar", "Hizivadurioù"],
+  ["version du site · odyssée #.#", "Version der Seite · Odyssée #.#", "Webbplatsversion · Odyssée #.#", "Stumm al lec’hienn · Odyssée #.#"],
+  ["affiche : aakanos, odyssée #.#", "Plakat: AakanOS, Odyssée #.#", "Affisch: AakanOS, Odyssée #.#", "Skritell: AakanOS, Odyssée #.#"],
   // page 404
   ["erreur 404", "Fehler 404", "Fel 404", "Fazi 404"],
   ["la page que vous voulez n’existe pas.", "Die Seite, die Sie suchen, existiert nicht.", "Sidan du letar efter finns inte.", "N’eus ket eus ar bajenn a fell deoc’h."],
@@ -63,7 +80,6 @@ const LIGNES: [string, string, string, string][] = [
   ["le blason des christen · la constellation de franck", "Das Wappen der Christen · Das Sternbild von Franck", "Christens vapen · Francks stjärnbild", "Ardamez ar Christen · Steredeg Franck"],
   ["blason des christen", "Wappen der Christen", "Christens vapen", "Ardamez ar Christen"],
   ["la constellation de franck", "Das Sternbild von Franck", "Francks stjärnbild", "Steredeg Franck"],
-  ["code d’aakanos ·", "AakanOS-Code ·", "AakanOS-kod ·", "Kod AakanOS ·"],
   ["code caché : toucher pour l’afficher un instant", "Versteckter Code: tippen, um ihn kurz zu zeigen", "Dold kod: tryck för att visa den en stund", "Kod kuzh: stekiñ evit e welet ur pennadig"],
   ["la polymathie", "Die Polymathie", "Polymatin", "Ar polimatiezh"],
   ["l’autoromantisme", "Die Autoromantik", "Autoromantiken", "An autoromantelezh"],
@@ -157,11 +173,6 @@ const LIGNES: [string, string, string, string][] = [
   ["mise à jour", "Update", "Uppdatering", "Hizivadur"],
   ["site classique", "Klassische Seite", "Klassisk webbplats", "Lec’hienn klasel"],
   ["le site comme un téléphone", "Die Seite als Telefon", "Webbplatsen som en telefon", "Al lec’hienn evel ur pellgomz"],
-  ["lancer aakanos", "AakanOS starten", "Starta AakanOS", "Lañsañ AakanOS"],
-  ["le site, ou aakanos", "Die Seite oder AakanOS", "Webbplatsen, eller AakanOS", "Al lec’hienn, pe AakanOS"],
-  ["pour rentrer sur aakanos, il vous faut un mot de passe caché sur le site. appuyez une nouvelle fois pour entrer.", "Um AakanOS zu betreten, brauchen Sie ein Passwort, das auf der Seite versteckt ist. Tippen Sie noch einmal, um hineinzugehen.", "För att komma in i AakanOS behöver du ett lösenord som är gömt på webbplatsen. Tryck en gång till för att gå in.", "Evit mont en AakanOS ho po ezhomm eus ur ger-tremen kuzhet war al lec’hienn. Stokit adarre evit mont e-barzh."],
-  ["pour rentrer sur aakanos, il vous faut un mot de passe caché sur le site.", "Um AakanOS zu betreten, brauchen Sie ein Passwort, das auf der Seite versteckt ist.", "För att komma in i AakanOS behöver du ett lösenord som är gömt på webbplatsen.", "Evit mont en AakanOS ho po ezhomm eus ur ger-tremen kuzhet war al lec’hienn."],
-  ["le site classique, ou aakanos : le site comme un téléphone.", "Die klassische Seite oder AakanOS: die Seite als Telefon.", "Den klassiska webbplatsen, eller AakanOS: webbplatsen som en telefon.", "Al lec’hienn klasel, pe AakanOS: al lec’hienn evel ur pellgomz."],
   ["choisis la langue du site", "Wähle die Sprache der Seite", "Välj webbplatsens språk", "Dibab yezh al lec’hienn"],
   ["choisis la langue du site.", "Wähle die Sprache der Seite.", "Välj webbplatsens språk.", "Dibab yezh al lec’hienn."],
   ["bretagne", "Bretagne", "Bretagne", "Breizh"],
@@ -193,8 +204,6 @@ const LIGNES: [string, string, string, string][] = [
   ["le site classique", "Die klassische Seite", "Den klassiska webbplatsen", "Al lec’hienn klasel"],
 ];
 
-// Le téléphone AakanOS
-LIGNES.push(...LIGNES_OS);
 
 // Dates : « 24 novembre 2026 », « 3 juin »…
 for (const [fr, de, sv, br] of MOIS) {

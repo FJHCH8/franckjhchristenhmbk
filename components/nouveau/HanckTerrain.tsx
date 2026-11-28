@@ -6,9 +6,7 @@
  * Ils rebondissent, roulent, se cognent ; on les attrape du doigt, on les déplace, on les lance.
  */
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
-import { DauphinPixel } from "@/components/os/Dauphin";
-import { LogoNounou } from "@/components/os/Nounou";
-import { sonChoc, sonLancer } from "@/components/os/sonsAndroid";
+import { sonChoc, sonLancer } from "@/lib/sonsHanck";
 
 const muet = () => {
   try {
@@ -31,8 +29,10 @@ const OBJETS: { id: string; taille: number; rendu: ReactNode }[] = [
   { id: "peepo", taille: 60, rendu: <img src="/media/hanck/peepo.png" alt="Peeporn" draggable={false} /> },
   // eslint-disable-next-line @next/next/no-img-element
   { id: "pulpus", taille: 54, rendu: <img src="/media/hanck/pulpus.png" alt="Pulpüs market" draggable={false} /> },
-  { id: "nounou", taille: 54, rendu: <LogoNounou taille={54} /> },
-  { id: "gypsy", taille: 66, rendu: <DauphinPixel largeur={66} /> },
+  // eslint-disable-next-line @next/next/no-img-element
+  { id: "nounou", taille: 54, rendu: <img src="/media/hanck/nounou.svg" alt="Nounou" draggable={false} /> },
+  // eslint-disable-next-line @next/next/no-img-element
+  { id: "gypsy", taille: 66, rendu: <img src="/media/hanck/gypsy.svg" alt="Gypsy" draggable={false} /> },
 ];
 
 const G = 1900; // gravité, px/s²
@@ -218,7 +218,7 @@ export function HanckTerrain() {
         <div className="hanck-titre">
           <small>{"// NOUVEAU"}</small>
           <b>HANCK 7 PRO MAX</b>
-          <span>le téléphone de Casto, sous AakanOS</span>
+          <span>archives d’Odyssée 0.2</span>
         </div>
         <button type="button" className="hanck-relancer" onClick={() => ((aJoue.current = true), lacher())}>
           ↻ lâcher encore

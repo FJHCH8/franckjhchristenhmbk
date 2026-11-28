@@ -687,60 +687,12 @@ function Suivant({ nom, aller }: { nom: string; aller: () => void }) {
   );
 }
 
-/** Code pixelisé (illisible) : un toucher le rend net une demi-seconde, puis il se repixelise. Reflet vert blanc verdâtre. */
-function Secret({ texte }: { texte: string }) {
-  const toile = useRef<HTMLCanvasElement>(null);
-  const [net, setNet] = useState(false);
-  useEffect(() => {
-    const c = toile.current;
-    if (!c) return;
-    const ctx = c.getContext("2d")!;
-    let raf = 0;
-    const W = 76;
-    const H = 22;
-    const peindre = (t: number) => {
-      const r = window.devicePixelRatio || 1;
-      const echelle = net ? r : 0.16; // très peu de pixels quand c'est caché
-      c.width = Math.max(1, Math.round(W * echelle));
-      c.height = Math.max(1, Math.round(H * echelle));
-      ctx.setTransform(echelle, 0, 0, echelle, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      const x = ((t / 1600) % 1) * W * 2 - W;
-      const g = ctx.createLinearGradient(x, 0, x + W, 0);
-      g.addColorStop(0, "#3fd47a");
-      g.addColorStop(0.5, "#f2fff6");
-      g.addColorStop(1, "#3fd47a");
-      ctx.fillStyle = g;
-      ctx.font = "16px 'Share Tech Mono', monospace";
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      ctx.fillText(texte.split("").join(" "), W / 2, H / 2 + 1);
-      raf = requestAnimationFrame(peindre);
-    };
-    raf = requestAnimationFrame(peindre);
-    return () => cancelAnimationFrame(raf);
-  }, [net, texte]);
-  useEffect(() => {
-    if (!net) return;
-    const id = window.setTimeout(() => setNet(false), 500);
-    return () => window.clearTimeout(id);
-  }, [net]);
-  return (
-    <button type="button" className={`n-secret${net ? " net" : ""}`} onClick={() => setNet(true)} aria-label="Code caché : toucher pour l’afficher un instant">
-      <canvas ref={toile} />
-    </button>
-  );
-}
-
 function Pied() {
   return (
     <footer className="n-pied">
       <Matrice />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/blason-christen.jpg" alt="" className="n-blason" />
-      <p className="n-code">
-        CODE D’AAKANOS · <Secret texte="6458" />
-      </p>
       <p>© FRANCK J.H. CHRISTEN H.M.B.K. · ODYSSÉE 0.2</p>
     </footer>
   );
@@ -998,7 +950,7 @@ function Tuiles({ t, citations, projets, charge, initial }: { t: number | null; 
 
 /* ---------- Projets : intérieur ---------- */
 
-type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string } };
+type Element = { id: string; titre: string; texte: string; date?: string; auteur?: string; medias?: Media[]; coeurs?: number; compte?: { cible: number; avant: string }; image?: string; dossiers?: string[] };
 
 function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubrique: Rubrique; citations: Etoile[]; projets: Etoile[] }) {
   const [sel, setSel] = useState(0);
@@ -1016,6 +968,15 @@ function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubr
               texte: "Six mois, du 3 décembre 2026 au 3 juin 2027.",
               date: "03.12.2026 → 03.06.2027",
               compte: t != null && t >= AUBE_DEBUT ? { cible: AUBE_FIN, avant: "FIN DANS" } : { cible: AUBE_DEBUT, avant: "DÉBUT DANS" },
+            },
+            {
+              id: "aakanos",
+              titre: "AAKANOS",
+              texte:
+                "Du 24 au 28 novembre 2026, un téléphone entier a vécu caché dans ce site. Il avait son propre système, son réseau, ses habitants, ses secrets… et un code pour l’allumer, dissimulé quelque part sous vos yeux. Ceux qui l’ont trouvé savent ce qu’il y avait dedans. Les autres ne le sauront jamais : il a été effacé, et il ne reviendra pas.",
+              date: "24.11 → 28.11.2026",
+              image: "/media/aakanos-pub.webp",
+              dossiers: ["MISES À JOUR", "VERSION DU SITE · ODYSSÉE 0.2", "EASTER EGG"],
             },
           ];
   const titre = rubrique === "citations" ? "CITATIONS" : rubrique === "projets" ? "PROJETS" : "ÉVÉNEMENTS";
@@ -1068,6 +1029,19 @@ function Interieur({ t, rubrique, citations, projets }: { t: number | null; rubr
                 <Decode texte={e.titre} duree={500} />
               </h3>
             )}
+            {e.dossiers ? (
+              <div className="n-dossiers">
+                {e.dossiers.map((d) => (
+                  <span key={d}>
+                    <Icone nom="folder" /> {d}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {e.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="n-affiche" src={e.image} alt="Affiche : AakanOS, Odyssée 0.2" />
+            ) : null}
             {e.medias?.length ? (
               <div className="n-medias">
                 {e.medias.slice(0, 4).map((m) =>
