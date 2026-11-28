@@ -53,6 +53,8 @@ const LIGNES: [string, string, string, string][] = [
   ["site en maintenance", "Seite in Wartung", "Webbplatsen underhålls", "Lec’hienn o vezañ kempennet"],
   ["(votre site va revenir encore plus beau)", "(Ihre Seite kommt noch schöner zurück)", "(din webbplats kommer tillbaka ännu vackrare)", "(distreiñ a raio ho lec’hienn bravoc’h c’hoazh)"],
   ["votre site devrait être prêt en fin de journée.", "Ihre Seite sollte bis zum Ende des Tages fertig sein.", "Din webbplats bör vara klar i slutet av dagen.", "Prest e vefe ho lec’hienn a-benn fin an devezh."],
+  ["vous avez un android ? dommage.", "Sie haben ein Android? Schade.", "Har du en Android? Synd.", "Un Android hoc’h eus? Domaj."],
+  ["(le site n’est accessible qu’avec un iphone ou un ordinateur.)", "(Die Seite ist nur mit einem iPhone oder einem Computer erreichbar.)", "(Webbplatsen är bara tillgänglig med en iPhone eller en dator.)", "(N’eus tu da dizhout al lec’hienn nemet gant un iPhone pe un urzhiataer.)"],
   ["erreur étrange", "Seltsamer Fehler", "Konstigt fel", "Fazi iskis"],
   ["qu’essayez-vous de faire ?", "Was versuchen Sie zu tun?", "Vad försöker du göra?", "Petra a glaskit ober?"],
   ["tout ce à quoi vous pouvez accéder se trouve sur le site.", "Alles, worauf Sie zugreifen können, finden Sie auf der Seite.", "Allt du kan komma åt finns på webbplatsen.", "Kement tra a c’hellit tizhout a zo war al lec’hienn."],

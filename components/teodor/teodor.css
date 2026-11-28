@@ -1,6 +1,6 @@
 /* Teodor et ses deux pages : la maintenance (il est content) et la 404 (il a peur). Fond nuit. */
 .teodor { position: relative; z-index: 0; touch-action: none; width: min(84vw, 46svh, 420px); aspect-ratio: 1; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-.teodor-toile { --lueur: 0; position: absolute; left: -45%; top: -45%; width: 190%; height: 190%; pointer-events: none; touch-action: none; -webkit-touch-callout: none; filter: drop-shadow(0 0 calc(var(--lueur) * 12px) rgba(43, 70, 255, calc(var(--lueur) * .85))); }
+.teodor-toile { --lueur: 0; position: absolute; left: -45%; top: -45%; width: 190%; height: 190%; pointer-events: none; touch-action: none; -webkit-touch-callout: none; filter: drop-shadow(0 0 calc(var(--lueur) * 12px) rgba(var(--teinte, 43, 70, 255), calc(var(--lueur) * .85))); }
 .teodor-anneau { position: absolute; left: 50%; bottom: -6%; width: clamp(64px, 18vw, 88px); translate: -50% 0; pointer-events: none; transition: opacity .2s linear; }
 .teodor-anneau canvas { width: 100% !important; height: auto !important; }
 
@@ -81,3 +81,7 @@
 .e404 .teodor { width: min(72vw, 34svh, 360px); }
 .e404 { gap: clamp(8px, 2svh, 20px); }
 .teo-terminal em { font-style: normal; }
+
+/* page « banni » : Teodor rouge */
+.teo-banni .teo-texte h1 { font-size: clamp(30px, 8.5vw, 52px); }
+.teo-banni .teo-sous { color: #ff9a9a; }

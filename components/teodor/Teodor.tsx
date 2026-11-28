@@ -22,7 +22,7 @@ import { useEffect, useRef } from "react";
 import { AnneauPS2 } from "@/components/AnneauPS2";
 import { RONDS } from "@/components/Logo";
 
-export type Humeur = "joie" | "curieux";
+export type Humeur = "joie" | "curieux" | "non";
 
 type V = [number, number];
 const ETOILES: V[] = RONDS.map(([x, y]) => [x, y]);
@@ -85,7 +85,7 @@ function dedans(poly: V[], x: number, y: number) {
 
 type Ressort = { x: number; y: number; vx: number; vy: number };
 
-export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?: () => void; className?: string }) {
+export function Teodor({ humeur, onPret, className, teinte = BLEU }: { humeur: Humeur; onPret?: () => void; className?: string; teinte?: number[] }) {
   const toile = useRef<HTMLCanvasElement>(null);
   const cadre = useRef<HTMLDivElement>(null);
   const anneau = useRef<HTMLDivElement>(null);
@@ -107,6 +107,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       c.height = Math.round(c.clientWidth * dpr);
     };
     mesure();
+    c.style.setProperty("--teinte", teinte.map((v) => Math.round(v * 0.85)).join(", "));
     const ro = new ResizeObserver(mesure);
     ro.observe(c);
 
@@ -330,7 +331,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       const reveil = vivant && vie < 0.5;
       const cible = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, fache: 0, aie: 0, espoir: 0, mefiance: 0, penche: 0 };
       if (humeur === "joie") Object.assign(cible, { sourire: 0.8, bouche: 0.12, rose: 0.3 });
-      else {
+      else if (humeur === "non") {
+        // « Dommage. » : déçu mais ferme, il secoue la tête (voir plus bas)
+        Object.assign(cible, { sourire: -0.45, triste: 0.35, mefiance: 0.25 });
+      } else {
         // curieux mais méfiant : il plisse un œil, te surveille du coin de l'œil, puis la curiosité
         // l'emporte (yeux grands ouverts, tête penchée, petite bouche en « o »), puis il se méfie à nouveau
         const cycle = 7.5;
@@ -383,6 +387,12 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       }
       // le réveil : les yeux restent fermés, s'entrouvrent, se referment, puis s'ouvrent grand
       if (reveil) paupiere = vie < 0.15 ? 1 : 1 - metro(clamp((vie - 0.15) / 0.35)); // il ouvre les yeux, simplement
+      // « non » de la tête : deux allers-retours en 1,2 s, puis une pause d'1,3 s
+      let non = 0;
+      if (humeur === "non" && vivant && !fache && !content) {
+        const k = (vie % 2.5) / 1.2;
+        if (k < 1) non = Math.sin(k * Math.PI * 4) * Math.sin(k * Math.PI);
+      }
       // le regard : vers le bouton d'espoir, sinon vers le doigt s'il a bougé récemment
       let lx = 0;
       let ly = 0;
@@ -396,7 +406,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         lx = ((dx * Math.cos(-ANGLE) - dy * Math.sin(-ANGLE)) / d) * 1.6 * f;
         ly = ((dx * Math.sin(-ANGLE) + dy * Math.cos(-ANGLE)) / d) * 1.3 * f;
       }
-      regardX = vers(regardX, lx + e.regard * 1.3, dt, 9);
+      regardX = vers(regardX, lx + e.regard * 1.3 + non * 1.8, dt, 9);
       regardY = vers(regardY, ly, dt, 9);
 
       // le petit saut de joie (deux fois)
@@ -412,7 +422,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         let y = SOL + (p[1] - SOL) * (1 + inspire);
         x += e.frisson * 0.9 * tremble(k);
         y += e.frisson * 0.6 * tremble(k + 4) + saut;
-        if (k === 0) x += e.penche * 4.5; // la pointe suit la tête qui se penche
+        if (k === 0) x += e.penche * 4.5 + non * 6; // la pointe suit la tête
         // le câlin : il se penche et ses coins viennent entourer le doigt
         if (e.calin > 0.001) {
           const dx = calinX - x;
@@ -438,7 +448,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           r.y += r.vy * h;
         });
         const [vx0, vy0] = cibleCorps(FACE, 1.5);
-        const fx0 = vx0 + e.penche * 2.2;
+        const fx0 = vx0 + e.penche * 2.2 + non * 3.6;
         visageR.vx += ((fx0 - visageR.x) * raideur * 0.8 - visageR.vx * amorti) * h;
         visageR.vy += ((vy0 - visageR.y) * raideur * 0.8 - visageR.vy * amorti) * h;
         visageR.x += visageR.vx * h;
@@ -447,7 +457,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       const pts: V[] = ressorts.map((r) => [r.x, r.y]);
       const tour = contour(pts, 12);
       corpsActuel = tour;
-      const couleurCorps = mix(BLANC, BLEU, pCouleur);
+      const couleurCorps = mix(BLANC, teinte, pCouleur);
       const couleurVisage = mix(BLANC, NUIT, pCouleur);
       const chemin = () => {
         ctx.beginPath();
@@ -465,9 +475,9 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         ctx.rect(-50, MIROIR, 300, 60);
         ctx.clip();
         const fondu = ctx.createLinearGradient(0, MIROIR, 0, MIROIR + 32);
-        fondu.addColorStop(0, `rgba(53,80,255,${0.34 * metro(pCouleur)})`);
-        fondu.addColorStop(0.35, `rgba(53,80,255,${0.12 * metro(pCouleur)})`);
-        fondu.addColorStop(1, "rgba(53,80,255,0)");
+        fondu.addColorStop(0, `rgba(${teinte.join(",")},${0.34 * metro(pCouleur)})`);
+        fondu.addColorStop(0.35, `rgba(${teinte.join(",")},${0.12 * metro(pCouleur)})`);
+        fondu.addColorStop(1, `rgba(${teinte.join(",")},0)`);
         ctx.fillStyle = fondu;
         ctx.beginPath();
         tour.forEach(([x, y], i) => (i ? ctx.lineTo(x, 2 * MIROIR - y) : ctx.moveTo(x, 2 * MIROIR - y)));
@@ -481,7 +491,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         if (pCouleur > 0) {
           // 4. le bleu apparaît en fondu
           ctx.globalAlpha = metro(pCouleur);
-          ctx.fillStyle = mix(BLEU, BLEU, 1);
+          ctx.fillStyle = mix(teinte, teinte, 1);
           chemin();
           ctx.fill();
           ctx.globalAlpha = 1;
@@ -643,7 +653,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       z.removeEventListener("touchend", toucheFin);
       z.removeEventListener("touchcancel", toucheFin);
     };
-  }, [humeur]);
+  }, [humeur, teinte]);
 
   return (
     <div ref={cadre} className={["teodor", className].filter(Boolean).join(" ")}>
