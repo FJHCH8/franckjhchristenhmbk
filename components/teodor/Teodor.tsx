@@ -33,7 +33,7 @@ const CORPS = [0, 4, 5, 6, 7, 8]; // le tour : sommet, gauche, gauche-bas, bas, 
 const FACE: V = [(OEIL_G[0] + OEIL_D[0]) / 2, (OEIL_G[1] + OEIL_D[1]) / 2];
 const ANGLE = Math.atan2(OEIL_D[1] - OEIL_G[1], OEIL_D[0] - OEIL_G[0]);
 const ECART = Math.hypot(OEIL_D[0] - OEIL_G[0], OEIL_D[1] - OEIL_G[1]);
-const CENTRE: V = [100, 98];
+const CENTRE: V = [100, 110]; // un peu bas dans le cadre, pour laisser la place au reflet
 const SOL = 184; // la ligne du sol, pour l'ombre et l'ancrage de la respiration
 const VISAGE = 1.3; // le visage, un peu plus grand que les étoiles pour bien lire ses émotions
 
@@ -450,12 +450,40 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         ctx.closePath();
       };
 
-      // l'ombre au sol : elle respire, et rétrécit quand il saute
+      // le reflet sur un sol brillant : Teodor à l'envers, qui s'efface en s'éloignant du sol,
+      // plus une ombre de contact là où il touche. Quand il saute, son reflet s'éloigne.
       if (pCouleur > 0) {
         const haut = clamp(-saut / 6);
-        ctx.fillStyle = `rgba(53,80,255,${0.16 * pCouleur * (1 - 0.5 * haut)})`;
+        // le sol est là où il pose son point le plus bas (sans compter le saut)
+        const MIROIR = tour.reduce((m, [, y]) => Math.max(m, y), 0) - saut;
+        ctx.save();
         ctx.beginPath();
-        ctx.ellipse(112, SOL + 6, 58 * (1 - 0.18 * haut) * (1 - 0.02 * souffle), 4.2, 0, 0, Math.PI * 2);
+        ctx.rect(-50, MIROIR, 300, 60);
+        ctx.clip();
+        const fondu = ctx.createLinearGradient(0, MIROIR, 0, MIROIR + 32);
+        fondu.addColorStop(0, `rgba(53,80,255,${0.34 * metro(pCouleur)})`);
+        fondu.addColorStop(0.35, `rgba(53,80,255,${0.12 * metro(pCouleur)})`);
+        fondu.addColorStop(1, "rgba(53,80,255,0)");
+        ctx.fillStyle = fondu;
+        ctx.beginPath();
+        tour.forEach(([x, y], i) => (i ? ctx.lineTo(x, 2 * MIROIR - y) : ctx.moveTo(x, 2 * MIROIR - y)));
+        ctx.closePath();
+        ctx.fill();
+        // une fine ligne de lumière là où le sol renvoie le bord du corps
+        ctx.strokeStyle = `rgba(120,140,255,${0.18 * metro(pCouleur) * (1 - haut)})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(60, MIROIR + 0.4);
+        ctx.lineTo(176, MIROIR + 0.4);
+        ctx.stroke();
+        ctx.restore();
+        // l'ombre de contact, serrée sous lui (elle pâlit quand il quitte le sol)
+        const ombre = ctx.createRadialGradient(150, MIROIR, 0, 150, MIROIR, 34);
+        ombre.addColorStop(0, `rgba(0,0,0,${0.55 * pCouleur * (1 - 0.7 * haut)})`);
+        ombre.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = ombre;
+        ctx.beginPath();
+        ctx.ellipse(150, MIROIR, 34 * (1 - 0.2 * haut), 2.6, 0, 0, Math.PI * 2);
         ctx.fill();
       }
 
