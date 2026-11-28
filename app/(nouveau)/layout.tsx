@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   ...(googleVerification ? { verification: { google: googleVerification } } : {}),
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#000000" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: "cover", themeColor: "#000000" };
 
 // Le chargement PS2 se joue à chaque ouverture (sauf mouvements réduits).
 const introScript = `(function(){var d=document.documentElement;d.classList.add("js");try{var calme=matchMedia("(prefers-reduced-motion: reduce)").matches;d.classList.add(calme?"intro-vue":"intro-joue");if(!calme)setTimeout(function(){d.classList.remove("intro-joue");},9000);}catch(e){d.classList.add("intro-vue");}})();`;

@@ -35,6 +35,7 @@ const ANGLE = Math.atan2(OEIL_D[1] - OEIL_G[1], OEIL_D[0] - OEIL_G[0]);
 const ECART = Math.hypot(OEIL_D[0] - OEIL_G[0], OEIL_D[1] - OEIL_G[1]);
 const CENTRE: V = [100, 110]; // un peu bas dans le cadre, pour laisser la place au reflet
 const SOL = 184; // la ligne du sol, pour l'ombre et l'ancrage de la respiration
+const MARGE = 1.9; // la toile est 1,9 fois plus grande que le cadre de Teodor : rien n'est coupé
 const VISAGE = 1.3; // le visage, un peu plus grand que les étoiles pour bien lire ses émotions
 
 const BLEU = [53, 80, 255];
@@ -86,6 +87,7 @@ type Ressort = { x: number; y: number; vx: number; vy: number };
 
 export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?: () => void; className?: string }) {
   const toile = useRef<HTMLCanvasElement>(null);
+  const cadre = useRef<HTMLDivElement>(null);
   const anneau = useRef<HTMLDivElement>(null);
   const pret = useRef(onPret);
   useEffect(() => {
@@ -94,12 +96,13 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
 
   useEffect(() => {
     const c = toile.current;
+    const z = cadre.current;
     const ctx = c?.getContext("2d");
-    if (!c || !ctx) return;
+    if (!c || !z || !ctx) return;
     const calme = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let dpr = 1;
     const mesure = () => {
-      dpr = Math.min(2, window.devicePixelRatio || 1);
+      dpr = Math.min(2, window.devicePixelRatio || 1) * (c.clientWidth > 600 ? 0.85 : 1);
       c.width = Math.round(c.clientWidth * dpr);
       c.height = Math.round(c.clientWidth * dpr);
     };
@@ -145,7 +148,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     let appui: { x: number; y: number; t: number; dist: number; px: number; py: number } | null = null;
     let survol = 0;
     const versMonde = (cx: number, cy: number): V => {
-      const r = c.getBoundingClientRect();
+      const r = z.getBoundingClientRect();
       const s = (r.width / 200) * echelle;
       return [CENTRE[0] + (cx - r.left - r.width / 2) / s, CENTRE[1] + (cy - r.top - r.height / 2) / s];
     };
@@ -207,13 +210,13 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     const bas = (ev: PointerEvent) => {
       if (!commence(ev.clientX, ev.clientY)) return;
       try {
-        c.setPointerCapture(ev.pointerId);
+        z.setPointerCapture(ev.pointerId);
       } catch {}
     };
     const bouge = (ev: PointerEvent) => {
       const p = versMonde(ev.clientX, ev.clientY);
       const now = performance.now();
-      c.style.cursor = surLui(p) ? "grab" : "";
+      z.style.cursor = surLui(p) ? "grab" : "";
       if (avance(ev.clientX, ev.clientY)) return;
       // à la souris, sans cliquer : passer doucement sur lui est aussi une caresse
       if (ev.pointerType === "mouse" && surLui(p)) {
@@ -247,15 +250,15 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       const d = (ev as CustomEvent<{ x: number; y: number } | null>).detail;
       espoirVers = d ? versMonde(d.x, d.y) : null;
     };
-    c.addEventListener("pointerdown", bas);
-    c.addEventListener("pointermove", bouge);
-    c.addEventListener("pointerup", haut);
-    c.addEventListener("pointercancel", annule);
-    c.addEventListener("pointerleave", quitte);
-    c.addEventListener("touchstart", toucheDebut, { passive: false });
-    c.addEventListener("touchmove", toucheBouge, { passive: false });
-    c.addEventListener("touchend", toucheFin);
-    c.addEventListener("touchcancel", toucheFin);
+    z.addEventListener("pointerdown", bas);
+    z.addEventListener("pointermove", bouge);
+    z.addEventListener("pointerup", haut);
+    z.addEventListener("pointercancel", annule);
+    z.addEventListener("pointerleave", quitte);
+    z.addEventListener("touchstart", toucheDebut, { passive: false });
+    z.addEventListener("touchmove", toucheBouge, { passive: false });
+    z.addEventListener("touchend", toucheFin);
+    z.addEventListener("touchcancel", toucheFin);
     window.addEventListener("pointermove", regarde, { passive: true });
     window.addEventListener("pointerdown", regarde, { passive: true });
     window.addEventListener("teodor-espoir", espoir);
@@ -288,7 +291,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       ctx.clearRect(0, 0, W, W);
       // il grandit en se formant, d'un seul mouvement
       echelle = 0.66 + 0.34 * metro(clamp(tv / 1.5));
-      const s = (W / 200) * echelle;
+      const s = (W / MARGE / 200) * echelle;
       ctx.setTransform(s, 0, 0, s, W / 2 - CENTRE[0] * s, W / 2 - CENTRE[1] * s);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -629,20 +632,20 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       window.removeEventListener("pointermove", regarde);
       window.removeEventListener("pointerdown", regarde);
       window.removeEventListener("teodor-espoir", espoir);
-      c.removeEventListener("pointerdown", bas);
-      c.removeEventListener("pointermove", bouge);
-      c.removeEventListener("pointerup", haut);
-      c.removeEventListener("pointercancel", annule);
-      c.removeEventListener("pointerleave", quitte);
-      c.removeEventListener("touchstart", toucheDebut);
-      c.removeEventListener("touchmove", toucheBouge);
-      c.removeEventListener("touchend", toucheFin);
-      c.removeEventListener("touchcancel", toucheFin);
+      z.removeEventListener("pointerdown", bas);
+      z.removeEventListener("pointermove", bouge);
+      z.removeEventListener("pointerup", haut);
+      z.removeEventListener("pointercancel", annule);
+      z.removeEventListener("pointerleave", quitte);
+      z.removeEventListener("touchstart", toucheDebut);
+      z.removeEventListener("touchmove", toucheBouge);
+      z.removeEventListener("touchend", toucheFin);
+      z.removeEventListener("touchcancel", toucheFin);
     };
   }, [humeur]);
 
   return (
-    <div className={["teodor", className].filter(Boolean).join(" ")}>
+    <div ref={cadre} className={["teodor", className].filter(Boolean).join(" ")}>
       <canvas ref={toile} className="teodor-toile" role="img" aria-label="Teodor" />
       <div ref={anneau} className="teodor-anneau" aria-hidden="true">
         <AnneauPS2 taille={88} />

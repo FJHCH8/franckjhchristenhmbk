@@ -9,7 +9,7 @@ const rajdhani = Rajdhani({ subsets: ["latin", "latin-ext"], weight: ["400", "50
 const mono = Share_Tech_Mono({ subsets: ["latin"], weight: "400", variable: "--f-mono" });
 
 export const metadata: Metadata = { title: "Odyssée · test tactique", robots: { index: false, follow: false } };
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#000000" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1, userScalable: false, themeColor: "#000000" };
 
 export default function DispositionTactique({ children }: { children: ReactNode }) {
   return (

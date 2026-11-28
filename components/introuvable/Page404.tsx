@@ -29,10 +29,10 @@ export function Page404() {
     const r = ev?.currentTarget.getBoundingClientRect();
     window.dispatchEvent(new CustomEvent("teodor-espoir", { detail: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null }));
   };
-  const lignes = [`$ open ${chemin}`, "error 404: not found", "$ cd ~"];
+  const lignes = [`$ open ${chemin}`, "error: strange", "$ cd ~"];
   return (
     <main className={`teo-page e404${pret ? " est-pret" : ""}`}>
-      <div className="teo-terminal" translate="no" aria-label="error 404: not found">
+      <div className="teo-terminal" translate="no" aria-label="error: strange">
         {lignes.map((l, i) => (
           <p key={i} className={i === 1 ? "err" : undefined} style={{ "--n": l.length, "--i": i } as CSSProperties}>
             <span>{l}</span>
@@ -42,8 +42,10 @@ export function Page404() {
       </div>
       <Teodor humeur="peur" onPret={() => setPret(true)} />
       <div className="teo-texte">
-        <small className="teo-bas" style={{ marginTop: 0 }}>404</small>
+        <small className="teo-bas" style={{ marginTop: 0 }}>{t("Erreur étrange")}</small>
         <h1>{t("Cette page n’existe pas.")}</h1>
+        <p className="teo-question">{t("Qu’essayez-vous de faire ?")}</p>
+        <p className="teo-indice">{t("Tout ce à quoi vous pouvez accéder se trouve sur le site.")}</p>
         <div>
           <Link className="teo-btn" href="/" onPointerEnter={espoir} onFocus={espoir} onPointerLeave={() => espoir(null)} onBlur={() => espoir(null)}>
             {t("Retour à l’accueil")} <em aria-hidden="true">→</em>

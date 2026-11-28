@@ -3,6 +3,8 @@
 /** La page d'accueil pendant la maintenance : Teodor content, et un mot pour les visiteurs. */
 import { useEffect, useState } from "react";
 import { LocaleProvider, useTraduire } from "@/components/Locale";
+import { Logo } from "@/components/Logo";
+import { PERSON_NAME } from "@/lib/site";
 import { Teodor } from "./Teodor";
 import "./teodor.css";
 
@@ -22,7 +24,10 @@ function Contenu() {
         <p className="teo-sous">{t("(Votre site va revenir encore plus beau)")}</p>
         <p className="teo-bas">{t("Votre site devrait être prêt en fin de journée.")}</p>
       </div>
-      <p className="teo-aide">{t("Caresse Teodor. Ne le tape pas.")}</p>
+      <p className="teo-marque" translate="no">
+        <Logo />
+        <span>{PERSON_NAME.toUpperCase()}</span>
+      </p>
     </main>
   );
 }
