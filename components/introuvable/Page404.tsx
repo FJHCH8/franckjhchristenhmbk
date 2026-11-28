@@ -2,7 +2,7 @@
 
 /**
  * La page 404 : la même ouverture que le site (le logo et l'anneau PS2), puis le logo
- * devient Teodor, perdu et apeuré. Le terminal en verre tape l'adresse introuvable.
+ * devient Teodor, curieux et méfiant. Le terminal en verre tape l'adresse introuvable.
  * Les textes suivent la langue du visiteur (l'allemand par défaut).
  */
 import Link from "next/link";
@@ -66,7 +66,7 @@ export function Page404() {
           </p>
         ))}
       </div>
-      <Teodor humeur="peur" onPret={() => setPret(true)} />
+      <Teodor humeur="curieux" onPret={() => setPret(true)} />
       <div className="teo-texte">
         <small className="teo-bas" style={{ marginTop: 0 }}>{t("Erreur étrange")}</small>
         <h1>{t("Cette page n’existe pas.")}</h1>
