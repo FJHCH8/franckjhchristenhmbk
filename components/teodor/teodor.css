@@ -1,10 +1,10 @@
 /* Teodor et ses deux pages : la maintenance (il est content) et la 404 (il a peur). Fond nuit. */
 .teodor { position: relative; width: min(78vw, 46svh, 380px); aspect-ratio: 1; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-.teodor-toile { display: block; width: 100%; height: 100%; }
+.teodor-toile { display: block; width: 100%; height: 100%; touch-action: none; -webkit-touch-callout: none; }
 .teodor-anneau { position: absolute; left: 50%; bottom: -6%; width: clamp(64px, 18vw, 88px); translate: -50% 0; pointer-events: none; transition: opacity .2s linear; }
 .teodor-anneau canvas { width: 100% !important; height: auto !important; }
 
-.teo-page { position: fixed; inset: 0; z-index: 2147483000; overflow: hidden auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(12px, 3svh, 28px); padding: max(24px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom)); box-sizing: border-box; background: #0a0a0a; color: #fff; font-family: "Helvetica Neue", Helvetica, system-ui, sans-serif; }
+.teo-page { position: fixed; inset: 0; z-index: 2147483000; overflow: hidden; overscroll-behavior: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(12px, 3svh, 28px); padding: max(24px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom)); box-sizing: border-box; background: #0a0a0a; color: #fff; font-family: "Helvetica Neue", Helvetica, system-ui, sans-serif; }
 .teo-texte { max-width: 34rem; text-align: center; }
 .teo-texte > * { opacity: 0; translate: 0 14px; filter: blur(8px); transition: opacity .8s ease, translate .9s cubic-bezier(.16, 1, .3, 1), filter .8s ease; }
 .teo-page.est-pret .teo-texte > * { opacity: 1; translate: 0 0; filter: blur(0); }

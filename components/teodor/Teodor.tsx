@@ -186,35 +186,63 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         navigator.vibrate?.(30);
       } catch {}
     };
-    const bas = (ev: PointerEvent) => {
-      const p = versMonde(ev.clientX, ev.clientY);
-      if (!surLui(p)) return;
-      c.setPointerCapture(ev.pointerId);
+    let derniereTape = 0;
+    const commence = (x: number, y: number) => {
+      const p = versMonde(x, y);
+      if (!surLui(p)) return false;
       appui = { x: p[0], y: p[1], t: performance.now(), dist: 0, px: p[0], py: p[1] };
+      return true;
+    };
+    const avance = (x: number, y: number) => {
+      if (!appui) return false;
+      const p = versMonde(x, y);
+      appui.dist += Math.hypot(p[0] - appui.px, p[1] - appui.py);
+      appui.px = p[0];
+      appui.py = p[1];
+      if (appui.dist > 24 && performance.now() - appui.t > 140) caresse(p, performance.now());
+      return true;
+    };
+    // une tape : appui court, doigt presque immobile (un vrai doigt bouge toujours un peu)
+    const finit = () => {
+      const now = performance.now();
+      if (appui && appui.dist <= 24 && now - appui.t < 700 && now - derniereTape > 250) {
+        derniereTape = now;
+        tape([appui.x, appui.y], now);
+      }
+      appui = null;
+    };
+    const bas = (ev: PointerEvent) => {
+      if (!commence(ev.clientX, ev.clientY)) return;
+      try {
+        c.setPointerCapture(ev.pointerId);
+      } catch {}
     };
     const bouge = (ev: PointerEvent) => {
       const p = versMonde(ev.clientX, ev.clientY);
       const now = performance.now();
       c.style.cursor = surLui(p) ? "grab" : "";
-      if (appui) {
-        appui.dist += Math.hypot(p[0] - appui.px, p[1] - appui.py);
-        appui.px = p[0];
-        appui.py = p[1];
-        if (appui.dist > 24 && now - appui.t > 140) caresse(p, now);
-        return;
-      }
+      if (avance(ev.clientX, ev.clientY)) return;
       // à la souris, sans cliquer : passer doucement sur lui est aussi une caresse
       if (ev.pointerType === "mouse" && surLui(p)) {
         survol += Math.min(12, Math.hypot(ev.movementX, ev.movementY)); // un grand saut de souris n'est pas une caresse
         if (survol > 160) caresse(p, now);
       } else survol = 0;
     };
-    const haut = () => {
-      const now = performance.now();
-      if (appui && appui.dist <= 24 && now - appui.t < 650 && now - caresseA > 400) tape([appui.x, appui.y], now);
-      appui = null;
+    const haut = () => finit();
+    // Safari peut annuler le geste au lieu de le finir : un appui court compte quand même
+    const annule = () => finit();
+    // en plus des « pointer events », les événements tactiles (certains téléphones ne donnent que ceux-là)
+    const toucheDebut = (ev: TouchEvent) => {
+      const t0 = ev.changedTouches[0];
+      if (t0 && !appui) commence(t0.clientX, t0.clientY);
+      if (appui) ev.preventDefault();
     };
-    const annule = () => (appui = null);
+    const toucheBouge = (ev: TouchEvent) => {
+      const t0 = ev.changedTouches[0];
+      if (t0) avance(t0.clientX, t0.clientY);
+      if (appui) ev.preventDefault();
+    };
+    const toucheFin = () => finit();
     const quitte = () => (survol = 0);
     // il suit du regard le doigt ou la souris, partout sur la page
     let dernierGeste = 0;
@@ -231,6 +259,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     c.addEventListener("pointerup", haut);
     c.addEventListener("pointercancel", annule);
     c.addEventListener("pointerleave", quitte);
+    c.addEventListener("touchstart", toucheDebut, { passive: false });
+    c.addEventListener("touchmove", toucheBouge, { passive: false });
+    c.addEventListener("touchend", toucheFin);
+    c.addEventListener("touchcancel", toucheFin);
     window.addEventListener("pointermove", regarde, { passive: true });
     window.addEventListener("pointerdown", regarde, { passive: true });
     window.addEventListener("teodor-espoir", espoir);
@@ -699,6 +731,10 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       c.removeEventListener("pointerup", haut);
       c.removeEventListener("pointercancel", annule);
       c.removeEventListener("pointerleave", quitte);
+      c.removeEventListener("touchstart", toucheDebut);
+      c.removeEventListener("touchmove", toucheBouge);
+      c.removeEventListener("touchend", toucheFin);
+      c.removeEventListener("touchcancel", toucheFin);
     };
   }, [humeur]);
 
