@@ -49,12 +49,6 @@ const sortie = (x: number) => 1 - (1 - x) ** 3;
 const ressort = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : 1 + 2.4 * (x - 1) ** 3 + 1.4 * (x - 1) ** 2);
 const mix = (a: number[], b: number[], k: number) => `rgb(${a.map((v, i) => Math.round(v + (b[i]! - v) * k)).join(",")})`;
 const vers = (cur: number, cible: number, dt: number, vitesse: number) => cur + (cible - cur) * (1 - Math.exp(-dt * vitesse));
-/** Passe un point du repère du visage (penché comme les yeux) au repère du monde. */
-const depuisVisage = (o: V, x: number, y: number): V => {
-  const c = Math.cos(ANGLE);
-  const s = Math.sin(ANGLE);
-  return [o[0] + (x * c - y * s) * VISAGE, o[1] + (x * s + y * c) * VISAGE];
-};
 
 /** Le contour aux coins arrondis, échantillonné en points (tracé partiel, remplissage, toucher). */
 function contour(pts: V[], r: number): V[] {
