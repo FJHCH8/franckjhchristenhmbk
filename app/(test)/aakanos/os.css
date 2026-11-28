@@ -713,12 +713,17 @@ a.app-ligne:active { background: var(--presse); }
 .calc-ecran { flex: 1; min-height: 120px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; gap: 6px; padding: 16px; border-bottom: 1px solid #333; }
 .calc-expr { font-weight: 200; font-size: 36px; color: #ddd; word-break: break-all; text-align: right; }
 .calc-res { font-weight: 300; font-size: 30px; color: var(--holo); text-align: right; }
-.calc-pave { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); background: #151515; }
-.calc-pave button { height: 76px; font-weight: 200; font-size: 30px; color: #fff; border: 1px solid #222; background: #1c1c1c; }
-.calc-pave button.op { background: #262626; color: var(--holo); }
-.calc-pave button.c { color: #ff6b6b; }
-.calc-pave button:active { background: var(--presse); }
-.calc-pave button { display: grid; place-items: center; text-align: center; padding: 0; }
+/* pavé Jelly Bean : chiffres sur noir, opérateurs en gris, colonne de fonctions sur le côté */
+.calc-pave { flex: none; display: flex; height: 340px; }
+.calc-num { flex: 3; display: grid; grid-template-columns: repeat(4, 1fr); background: #111; }
+.calc-cote { flex: 1; display: grid; background: #3a3f47; }
+.calc-pave button { display: grid; place-items: center; padding: 0; font-weight: 200; font-size: 30px; color: #fff; border: 1px solid #1c1c1c; background: none; }
+.calc-cote button { font-size: 18px; font-weight: 400; border-color: #2e3238; }
+.calc-k-op { background: #2a2a2a !important; color: #ddd !important; }
+.calc-k-egal { background: var(--holo) !important; color: #000 !important; }
+.calc-pave button:active { background: var(--presse) !important; }
+.calc-res { font-size: 56px; font-weight: 200; color: #fff; }
+.calc-certif { font-size: 11px; color: var(--holo); letter-spacing: 1px; }
 
 /* =====================================================================
    Ajouts Jelly Bean : démarrage, anneau, réglages rapides,
@@ -1731,3 +1736,95 @@ a.app-ligne:active { background: var(--presse); }
   .op-chat-oeil-d { animation: none !important; fill: #40a8ff; }
   .op-chat-neon { animation: none !important; filter: drop-shadow(0 0 6px #c8e8ff) drop-shadow(0 0 16px #ffffff); }
 }
+
+/* ---------- Accueil vivant : widgets ---------- */
+.os-horloge.w-horloge { display: block; width: 100%; margin: 10px 0 6px; background: none; border: 0; color: inherit; }
+.w-meteo { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: #ccc; }
+.w-meteo .os-icone { width: 18px; height: 18px; }
+.w-pile { display: grid; gap: 10px; margin: 6px 12px 0; }
+.w-carte { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; text-align: left; color: #fff; background: rgba(0, 0, 0, .55); border: 0; border-left: 3px solid var(--holo); }
+.w-carte.rouge { border-left-color: #ff4444; }
+.w-carte:active { background: var(--presse); }
+.w-carte img { flex: none; width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
+.w-carte span { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.w-carte small { font-size: 10px; letter-spacing: 1px; color: var(--holo); }
+.w-carte.rouge small { color: #ff6b6b; }
+.w-carte b { font-weight: 300; font-size: 24px; line-height: 1; color: #ff6b6b; animation: w-solde .6s ease-out; }
+@keyframes w-solde { from { color: #fff; transform: translateX(-4px); } }
+.w-carte em { font-style: normal; font-size: 11px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-jauge { display: block; height: 5px; background: #333; } .w-jauge i { display: block; height: 100%; background: var(--holo); }
+.w-favoris { display: flex; justify-content: space-around; padding: 8px 4px; background: rgba(0, 0, 0, .4); }
+.w-favoris button { display: grid; justify-items: center; gap: 3px; font-size: 11px; color: #ddd; background: none; border: 0; }
+.w-favoris img { width: 46px; height: 46px; object-fit: cover; }
+.w-favoris .w-plus { width: 46px; height: 46px; place-items: center; align-self: start; border: 1px dashed #777; font-size: 22px; color: #aaa; }
+@media (max-height: 760px) { .w-favoris { display: none; } }
+
+/* ---------- Verrouillage qui parle ---------- */
+.os-verrou-modele { margin-top: 6px; font: 12px var(--p2, "Chakra Petch"), sans-serif; letter-spacing: 4px; color: var(--holo); }
+.os-verrou-notifs { display: grid; gap: 6px; width: calc(100% - 44px); margin-top: 16px; }
+.os-verrou-notifs div { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: rgba(0, 0, 0, .5); border-left: 2px solid var(--holo); animation: os-monte .35s both; }
+.os-verrou-notifs i { flex: none; display: grid; width: 26px; height: 26px; } .os-verrou-notifs i > * { width: 26px !important; height: 26px !important; }
+.os-verrou-notifs b { flex: none; font-weight: 400; font-size: 14px; }
+.os-verrou-notifs span { flex: 1; min-width: 0; font-size: 11px; color: #aaa; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Peeporn : les aperçus deviennent des mosaïques pixelisées floutées */
+.pp-img.ko { overflow: hidden; }
+.pp-mosaique { position: absolute; inset: -6px; filter: blur(1.6px) saturate(1.2); image-rendering: pixelated;
+  background:
+    conic-gradient(from 0deg at 50% 50%, var(--c1) 0 25%, var(--c2) 0 50%, var(--c3) 0 75%, var(--c4) 0) 0 0 / 22px 22px,
+    var(--c1);
+  animation: pp-grouille 1.4s steps(4) infinite; }
+.pp-img.ko { --c1: #4cbf48; --c2: #2f8f36; --c3: #e9a7a0; --c4: #7fd86c; }
+@keyframes pp-grouille { 25% { background-position: 11px 0; } 50% { background-position: 11px 11px; } 75% { background-position: 0 11px; } }
+.pp-badge { z-index: 1; animation: pp-badge 1.2s steps(2) infinite; } .pp-duree { z-index: 1; }
+@keyframes pp-badge { 50% { opacity: .55; } }
+
+/* ---------- Téléphone à onglets (clavier, journal, contacts, favoris) ---------- */
+.tel-onglets { flex: none; display: flex; background: #1e1e1e; border-bottom: 1px solid #333; }
+.tel-onglets button { flex: 1; display: grid; place-items: center; height: 50px; color: #999; background: none; border: 0; border-bottom: 3px solid transparent; }
+.tel-onglets button.on { color: #fff; border-bottom-color: var(--holo); }
+.tel-onglets button:active { background: var(--presse); }
+.tel-liste { flex: 1; min-height: 0; overflow-y: auto; }
+.tel-sous { margin: 0 12px; padding: 10px 4px 6px; font-size: 12px; font-weight: 500; color: var(--holo); border-bottom: 1px solid var(--holo); }
+.tel-ligne { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; text-align: left; color: #fff; background: none; border: 0; border-bottom: 1px solid #222; }
+.tel-ligne:active { background: var(--presse); }
+.tel-ligne img { flex: none; width: 54px; height: 54px; object-fit: cover; }
+.tel-ligne span { flex: 1; min-width: 0; display: grid; }
+.tel-ligne b { font-weight: 400; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tel-ligne small { font-size: 12px; color: #999; }
+.tel-ligne small i { font-style: normal; font-weight: 700; }
+.tel-entrant { color: var(--holo); } .tel-manque { color: #ff4444; } .tel-sortant { color: #99cc00; } .tel-rejete { color: #888; }
+.tel-ligne em { flex: none; font-style: normal; font-size: 20px; color: var(--holo); padding-left: 12px; border-left: 1px solid #333; }
+.tel-vide { margin: 14px; text-align: center; font-size: 12px; color: #ff6b6b; }
+
+/* ---------- Thèmes du téléphone ---------- */
+.dlg-themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-bottom: 1px solid #333; }
+.dlg-theme { display: grid; justify-items: center; gap: 2px; padding: 6px; background: none; border: 1px solid #333; color: #eee; }
+.dlg-theme.on { border-color: var(--holo); background: rgba(51, 181, 229, .12); }
+.dlg-theme i { width: 100%; height: 70px; margin-bottom: 4px; }
+.dlg-theme b { font-weight: 400; font-size: 14px; } .dlg-theme small { font-size: 10px; color: #999; }
+.apercu-holo { background: linear-gradient(#222 0 18%, #33b5e5 18% 21%, #111 21%); }
+.apercu-odyssee { background: linear-gradient(90deg, #f4fbff, #6fbdf5) 8px 26px / 62% 12px no-repeat, linear-gradient(#000, #0b1a2a); outline: 1px solid #8fd0ff; }
+.apercu-pixel { background: repeating-conic-gradient(#ee2a22 0 25%, #ffc33a 0 50%) 0 0 / 14px 14px; image-rendering: pixelated; }
+
+/* Odyssée : l'UI du site (noir, Chakra Petch, bleu clair qui scintille, coins en équerre) */
+.os.theme-odyssee { --holo: #8fd0ff; }
+.theme-odyssee .os-barre-action { background: #000; border-bottom: 1px solid #8fd0ff; }
+.theme-odyssee .os-barre-action b, .theme-odyssee .dlg-titre, .theme-odyssee .reg-t b, .theme-odyssee .os-app span, .theme-odyssee .tel-sous, .theme-odyssee .titre, .theme-odyssee .hz-onglets button { font-family: var(--p2), "Chakra Petch", sans-serif; letter-spacing: 1px; }
+.theme-odyssee .os-barre-action b { text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(100deg, #6fbdf5, #f4fbff 30%, #6fbdf5 60%, #f4fbff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: st-reflet 4s linear infinite; }
+.theme-odyssee .os-fenetre-corps, .theme-odyssee .os-tiroir { background-color: #000; }
+.theme-odyssee .dlg { background: #05080c; border: 1px solid #1d2a35; border-top: 2px solid #8fd0ff; }
+.theme-odyssee .jb-bouton { background: linear-gradient(90deg, #f4fbff, #6fbdf5); color: #000; border: 0; font-family: var(--p2), "Chakra Petch", sans-serif; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+.theme-odyssee .w-carte, .theme-odyssee .os-widget { border-left: 0; outline: 1px solid #1d2a35; box-shadow: inset 2px 2px 0 -0px transparent; }
+
+/* 8 bits : police pixel, couleurs franches, angles carrés */
+.os.theme-pixel { --holo: #ffc33a; }
+.theme-pixel .os-barre-action { background: #101018; border-bottom: 4px solid #ffc33a; }
+.theme-pixel .os-barre-action b, .theme-pixel .dlg-titre, .theme-pixel .os-app span, .theme-pixel .reg-t b, .theme-pixel .tel-sous, .theme-pixel .titre, .theme-pixel .os-horloge-h, .theme-pixel .os-verrou-heure, .theme-pixel .hz-onglets button { font-family: var(--f-pixel), "Press Start 2P", monospace; font-weight: 400; letter-spacing: 0; }
+.theme-pixel .os-barre-action b { font-size: 12px; } .theme-pixel .os-app span { font-size: 7px; line-height: 1.4; } .theme-pixel .reg-t b { font-size: 10px; } .theme-pixel .dlg-titre { font-size: 12px; }
+.theme-pixel .os-horloge-h { font-size: 44px; } .theme-pixel .os-verrou-heure { font-size: 48px; letter-spacing: 0; }
+.theme-pixel .os-icone { image-rendering: pixelated; }
+.theme-pixel .dlg { border: 4px solid #fff; border-top-color: #ffc33a; box-shadow: 6px 6px 0 #000; }
+.theme-pixel .jb-bouton { border: 3px solid #fff; background: #000; box-shadow: 4px 4px 0 #ffc33a; border-radius: 0; font-family: var(--f-pixel), monospace; font-size: 10px; }
+.os-verrou-notifs { box-sizing: border-box; width: calc(100% - 44px); max-width: 360px; align-self: center; }
+.os-verrou-notifs div { display: grid; grid-template-columns: 26px auto minmax(0, 1fr); overflow: hidden; }
+.os-verrou-notifs span { display: block; }

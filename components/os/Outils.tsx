@@ -322,7 +322,7 @@ function Chrono() {
 const TOUCHES = ["7", "8", "9", "÷", "4", "5", "6", "×", "1", "2", "3", "−", "C", "0", "=", "+"];
 
 function calculer(expr: string): number | null {
-  const m = expr.match(/\d+(?:[.,]\d+)?|[+−×÷]/g);
+  const m = expr.replace(/[()√]/g, "").match(/\d+(?:[.,]\d+)?|[+−×÷]/g);
   if (!m) return null;
   // d'abord × et ÷, puis + et −
   const pile: (number | string)[] = [];
@@ -384,14 +384,29 @@ export function AppCalculatrice() {
     <div className="calc">
       <div className="calc-ecran">
         <span className="calc-expr">{expr || "0"}</span>
-        <b className="calc-res">{res === null ? "" : `= ${res}`}</b>
+        <b className="calc-res">{res === null ? "" : res}</b>
+        {res !== null ? <small className="calc-certif">Résultat certifié par Pacifick</small> : null}
       </div>
       <div className="calc-pave">
-        {TOUCHES.map((k) => (
-          <button key={k} type="button" data-son={k === "C" ? "effacer" : k === "=" ? "entree" : "touche"} className={/[÷×−+=]/.test(k) ? "op" : k === "C" ? "c" : ""} onClick={() => appui(k)}>
-            {k}
-          </button>
-        ))}
+        <div className="calc-num">
+          {["7", "8", "9", "÷", "4", "5", "6", "×", "1", "2", "3", "−", ".", "0", "=", "+"].map((k) => (
+            <button key={k} type="button" data-son={k === "=" ? "entree" : "touche"} className={k === "=" ? "calc-k-egal" : /[÷×−+]/.test(k) ? "calc-k-op" : ""} onClick={() => appui(k)}>
+              {k}
+            </button>
+          ))}
+        </div>
+        <div className="calc-cote">
+          {[
+            ["EFF", "C"],
+            ["(", "("],
+            [")", ")"],
+            ["√", "√"],
+          ].map(([t, k]) => (
+            <button key={t} type="button" data-son={k === "C" ? "effacer" : "touche"} onClick={() => appui(k!)}>
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

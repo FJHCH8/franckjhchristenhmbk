@@ -24,6 +24,14 @@ function bipVolume(k: Canal) {
 }
 
 export type Fond = "faisceaux" | "savane" | "holo" | "nebuleuse";
+/** Le thème du téléphone : Holo (Jelly Bean), Odyssée (comme le site) ou 8 bits. */
+export type Theme = "holo" | "odyssee" | "pixel";
+export const THEMES: { id: Theme; nom: string; sous: string }[] = [
+  { id: "holo", nom: "Holo", sous: "Jelly Bean" },
+  { id: "odyssee", nom: "Odyssée", sous: "comme le site" },
+  { id: "pixel", nom: "8 bits", sous: "Pulpüs & Sam" },
+];
+
 export const FONDS: { id: Fond; nom: string }[] = [
   { id: "faisceaux", nom: "Faisceaux" },
   { id: "savane", nom: "Savane de nuit" },
@@ -39,6 +47,7 @@ export type Systeme = {
   sonsTouches: boolean;
   lum: number;
   fond: Fond;
+  theme: Theme;
   dev: boolean;
   touches: boolean;
   limites: boolean;
@@ -46,7 +55,7 @@ export type Systeme = {
   regler: (p: Partial<Omit<Systeme, "regler">>) => void;
 };
 
-const defaut: Omit<Systeme, "regler"> = { wifi: true, bt: false, avion: false, muet: false, sonsTouches: true, lum: 0.8, fond: "faisceaux", dev: false, touches: false, limites: false, h24: true };
+const defaut: Omit<Systeme, "regler"> = { wifi: true, bt: false, avion: false, muet: false, sonsTouches: true, lum: 0.8, fond: "faisceaux", theme: "holo", dev: false, touches: false, limites: false, h24: true };
 export const SystemeCtx = createContext<Systeme>({ ...defaut, regler: () => {} });
 export const useSysteme = () => useContext(SystemeCtx);
 

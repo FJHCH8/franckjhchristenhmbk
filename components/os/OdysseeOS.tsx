@@ -19,7 +19,8 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { AppMail, GardienMail, IconeMail } from "./Mail";
+import { AppMail, GardienMail, IconeMail, etatMail } from "./Mail";
+import { eurosCentimes, releve } from "./banque";
 import { AppMeteo, IconeMeteo } from "./Meteo";
 import { AppFichiers, IconeFichiers } from "./Fichiers";
 import { AppMusique, IconeMusique, NotifMusique, StatutMusique, memoireMusique, useLecteur } from "./Musique";
@@ -41,7 +42,7 @@ const TOUCHES_CLAVIER = new Set(["touche", "effacer", "entree", "espace", "tick"
 import { AppCalculatrice, AppHorloge } from "./Outils";
 import { AppAppareilPhoto, AppPeeporn, AppSharkobank } from "./HorsLigne";
 import { estMuet, sonSynth } from "./sonsSynth";
-import { Demarrage, Dlg, Interrupteur, SousReglage, SystemeCtx, Toasts, Touches, toast, useEtatSysteme, useSysteme, type EcranReglage } from "./Systeme";
+import { Demarrage, Dlg, Interrupteur, SousReglage, SystemeCtx, THEMES, Toasts, Touches, toast, useEtatSysteme, useSysteme, type EcranReglage } from "./Systeme";
 import { creerStore } from "./session";
 import { Bandeau, GardienAlarmes, bloques, contactsPerso, convsPerso, ecrireSession, lireSession, notesPerso, notifier, notifsSup, ouvrirAppli, prendreCible, reinitialiserTelephone, type ContactPerso, type NotePerso } from "./Memoire";
 
@@ -630,7 +631,7 @@ export function OdysseeOS() {
     <PastillesCtx.Provider value={pastilles}>
     <RetourCtx.Provider value={{ poser }}>
       <div
-        className={`os${sys.limites ? " os-limites" : ""}`}
+        className={`os theme-${sys.theme ?? "holo"}${sys.limites ? " os-limites" : ""}`}
         onPointerDownCapture={(e) => {
           void prechargerSons();
           const t = (e.target as HTMLElement).closest("button, .app-ligne, .ml-ligne, .mu-ligne, .fi-ligne, .os-notif, .reg2-reseau");
@@ -735,7 +736,7 @@ export function OdysseeOS() {
         </div>
 
         {verrou ? (
-          <Verrouillage heure={heure} date={date} onOuvrir={() => (setVerrou(false), recevoirSamTelecom())} onQuitter={quitter} />
+          <Verrouillage heure={heure} date={date} notifs={notifs} onOuvrir={() => (setVerrou(false), recevoirSamTelecom())} onQuitter={quitter} />
         ) : (
           <>
             <div className={`os-bureau${tiroir ? " os-cache" : ""}`}>
@@ -765,10 +766,14 @@ export function OdysseeOS() {
                 style={{ "--page": page, "--dx": `${decalage}px` } as CSSProperties}
               >
                 <div className="os-page">
-                  <div className="os-horloge">
+                  <button type="button" className="os-horloge w-horloge" onClick={(e) => ouvrir(par("endurreisen"), e.currentTarget)}>
                     <div className="os-horloge-h">{heure}</div>
                     <div className="os-horloge-d">{date.split(" ").slice(0, 3).join(" ")}</div>
-                  </div>
+                    <span className="w-meteo" onClick={(e) => (e.stopPropagation(), ouvrir(par("meteo"), e.currentTarget))}>
+                      <IconeAppli id="meteo" taille={18} /> --° · Ciel inconnu
+                    </span>
+                  </button>
+                  <WidgetsAccueil ouvrir={ouvrir} />
                   <Grille ids={PAGE1} ouvrir={ouvrir} />
                 </div>
                 <div className="os-page">
@@ -1151,7 +1156,62 @@ function AnneauVerrou({ onFini }: { onFini: () => void }) {
   );
 }
 
-function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; date: string; onOuvrir: () => void; onQuitter: () => void }) {
+/** Les widgets de l'accueil : la conso Sam-Telecom, le solde Sharkobank (en direct) et les contacts favoris. */
+function WidgetsAccueil({ ouvrir }: { ouvrir: (a: Appli, el?: Element | null) => void }) {
+  const mail = etatMail.useValeur();
+  const { solde, operations } = releve(mail.arrives);
+  const dernier = operations.find((o) => o.statut !== "rejete");
+  return (
+    <div className="w-pile">
+      <button type="button" className="w-carte" onClick={(e) => ouvrir(par("samtelecom"), e.currentTarget)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/aakanos/sam-telecom-tete.png" alt="" draggable={false} />
+        <span>
+          <small>SAM-TELECOM · FORFAIT CONNARD</small>
+          <i className="w-jauge">
+            <i style={{ width: "72%" }} />
+          </i>
+          <em>142 SMS · Internet 0 Mo · Appels 0 min</em>
+        </span>
+      </button>
+      <button type="button" className="w-carte rouge" onClick={(e) => ouvrir(par("sharkobank"), e.currentTarget)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/aakanos/sharkobank.png" alt="" draggable={false} />
+        <span>
+          <small>SHARKOBANK · COMPTE COURANT</small>
+          <b key={solde}>{eurosCentimes(solde)}</b>
+          <em>{dernier ? `⚠ À découvert · dernier prélèvement ${eurosCentimes(dernier.montant)}` : "⚠ À découvert"}</em>
+        </span>
+      </button>
+      <div className="w-favoris">
+        {CORRESPONDANTS.filter((c) => c.id !== "samtelecom").map((c) => (
+          <button key={c.id} type="button" onClick={(e) => ouvrir(par("messages"), e.currentTarget)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={c.photo} alt="" draggable={false} />
+            <span>{c.nom}</span>
+          </button>
+        ))}
+        <button type="button" className="w-plus" onClick={(e) => ouvrir(par("contacts"), e.currentTarget)} aria-label="Contacts">
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Verrouillage({
+  heure,
+  date,
+  onOuvrir,
+  onQuitter,
+  notifs = [],
+}: {
+  heure: string;
+  date: string;
+  onOuvrir: () => void;
+  onQuitter: () => void;
+  notifs?: { id: string; icone: ReactNode; titre: string; texte: string }[];
+}) {
   const [saisi, setSaisi] = useState("");
   const [erreur, setErreur] = useState(false);
   const [part, setPart] = useState(false);
@@ -1214,7 +1274,19 @@ function Verrouillage({ heure, date, onOuvrir, onQuitter }: { heure: string; dat
         {heure.slice(3)}
       </div>
       <div className="os-verrou-date">{date}</div>
+      <div className="os-verrou-modele">HANCK 7 PRO MAX</div>
       <NotifMusique compact />
+      {etape === "anneau" && notifs.length ? (
+        <div className="os-verrou-notifs">
+          {notifs.slice(0, 3).map((n) => (
+            <div key={n.id}>
+              <i>{n.icone}</i>
+              <b>{n.titre}</b>
+              <span>{n.texte}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {etape === "anneau" ? (
         <>
           <AnneauVerrou onFini={() => setEtape("code")} />
@@ -2303,13 +2375,26 @@ const TOUCHES_TEL: [string, string][] = [
   ["#", ""],
 ];
 
+/** Le journal d'appels de Casto (la session y ajoute ses propres appels, tous hors service). */
+type Appel = { id: number | string; num: string; quand: string; type: "entrant" | "manque" | "sortant" | "rejete"; note: string };
+const journalAppels: Appel[] = [
+  { id: "j1", num: "700", quand: "Hier 09:41", type: "entrant", note: "message vocal" },
+  { id: "j2", num: "700", quand: "Hier 09:40", type: "manque", note: "service client" },
+  { id: "j3", num: "+0-2003220008", quand: "Mar.", type: "sortant", note: "hors service" },
+  { id: "j4", num: "+0-20070600084", quand: "Lun.", type: "manque", note: "×3" },
+  { id: "j5", num: "+0-43365470730", quand: "Lun.", type: "rejete", note: "il t’a bloqué" },
+];
+const FAVORIS_TEL = ["gael", "celjo", "pacifick"];
+
 function AppTelephone() {
   // Ouvert depuis un contact : l'appel part tout de suite.
   const [numero, setNumero] = useState(() => appelEnAttente ?? "");
   const [appel, setAppel] = useState<null | "sonne" | "hs" | "fin">(() => (appelEnAttente ? "sonne" : null));
   const [duree, setDuree] = useState(0);
+  const [onglet, setOnglet] = useState<"clavier" | "journal" | "contacts" | "favoris">("clavier");
   const lancer = useCallback((n: string) => {
     if (!n) return;
+    journalAppels.unshift({ id: Date.now(), num: n, quand: `Aujourd’hui ${heureCourte()}`, type: "sortant", note: "hors service" });
     setNumero(n);
     setAppel("sonne");
     setDuree(0);
@@ -2379,8 +2464,59 @@ function AppTelephone() {
       </div>
     );
   }
+  const onglets = (
+    <div className="tel-onglets" role="tablist">
+      {(
+        [
+          ["clavier", "M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1 17 17 0 0 0 17 17 1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"],
+          ["journal", "M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"],
+          ["contacts", "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"],
+          ["favoris", "M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"],
+        ] as const
+      ).map(([id, d]) => (
+        <button key={id} type="button" role="tab" aria-selected={onglet === id} className={onglet === id ? "on" : ""} onClick={() => setOnglet(id)} aria-label={id}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+            <path d={d} />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+  const nomDe = (n: string) => fiches.find((c) => c.tel && norme(c.tel) === norme(n));
+  if (onglet !== "clavier") {
+    const liste =
+      onglet === "journal"
+        ? journalAppels.map((j) => ({ ...j, fiche: nomDe(j.num) }))
+        : fiches
+            .filter((c) => c.tel && (onglet === "contacts" || FAVORIS_TEL.includes(c.id)))
+            .map((c) => ({ id: c.id, num: c.tel!, quand: c.tel!, type: "" as const, note: "", fiche: c }));
+    return (
+      <div className="tel">
+        {onglets}
+        <div className="tel-liste">
+          <div className="tel-sous">{onglet === "journal" ? "JOURNAL D’APPELS" : onglet === "contacts" ? "CONTACTS" : "FAVORIS"}</div>
+          {liste.map((l) => (
+            <button key={l.id} type="button" className="tel-ligne" onClick={() => (setOnglet("clavier"), lancer(l.num))}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img draggable={false} src={l.fiche?.photo ?? (l.num === "700" ? "/aakanos/sam-telecom-tete.png" : "/aakanos/avatar.png")} alt="" />
+              <span>
+                <b>{l.fiche?.nom ?? (l.num === "700" ? "Sam-Telecom" : l.num)}</b>
+                <small>
+                  {l.type ? <i className={`tel-${l.type}`}>{l.type === "manque" ? "↙" : l.type === "entrant" ? "↙" : l.type === "rejete" ? "⊘" : "↗"}</i> : null}
+                  {` ${l.quand}${l.note ? ` · ${l.note}` : ""}`}
+                </small>
+              </span>
+              <em aria-hidden="true">☎</em>
+            </button>
+          ))}
+          {onglet === "journal" ? <p className="tel-vide">Les appels sortants sont coupés : forfait Connard.</p> : null}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="tel">
+      {onglets}
       <div className="tel-numero">
         <span>{numero || " "}</span>
         {numero ? (
@@ -2615,7 +2751,7 @@ function AppReglages({ quitter }: { quitter: () => void }) {
       <LigneReglage
         icone={ic("M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a2.5 2.5 0 0 0 2.5-2.5c0-.61-.23-1.2-.64-1.67a.528.528 0 0 1-.13-.33c0-.28.22-.5.5-.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm5.5 11c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm-3-4c-.83 0-1.5-.67-1.5-1.5S13.67 6 14.5 6s1.5.67 1.5 1.5S15.33 9 14.5 9zM5 11.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S7.33 13 6.5 13 5 12.33 5 11.5zm6-4c0 .83-.67 1.5-1.5 1.5S8 8.33 8 7.5 8.67 6 9.5 6s1.5.67 1.5 1.5z")}
         titre="Apparence"
-        sous="AakanOS"
+        sous={`Thème ${THEMES.find((th) => th.id === (sys.theme ?? "holo"))?.nom ?? "Holo"}`}
         onClick={() => setDialogue("apparence")}
       />
       <LigneReglage
@@ -2675,6 +2811,15 @@ function AppReglages({ quitter }: { quitter: () => void }) {
             <div className="dlg-titre">{dialogue === "apparence" ? "Apparence" : "Langue"}</div>
             {dialogue === "apparence" ? (
               <>
+                <div className="dlg-themes">
+                  {THEMES.map((th) => (
+                    <button key={th.id} type="button" className={`dlg-theme${(sys.theme ?? "holo") === th.id ? " on" : ""}`} onClick={() => (sys.regler({ theme: th.id }), toast(`Thème : ${th.nom}`))}>
+                      <i className={`apercu-${th.id}`} />
+                      <b>{th.nom}</b>
+                      <small>{th.sous}</small>
+                    </button>
+                  ))}
+                </div>
                 <button className="dlg-choix" onClick={() => setDialogue(null)}>
                   AakanOS <i className="on" />
                 </button>

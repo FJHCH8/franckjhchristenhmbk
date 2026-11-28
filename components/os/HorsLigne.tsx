@@ -5,7 +5,7 @@
  * L'UI du site (Odyssée : Chakra Petch, « // 01 », coins en équerre) avec les boutons de Jelly Bean.
  * Sharkobank facture chaque tentative ; Peeporn conseille un miroir.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { son, sonBillets, sonPieces, sonProut, sonWahWah } from "./sonsAndroid";
 import { etatMail } from "./Mail";
 import { eurosCentimes, releve } from "./banque";
@@ -201,6 +201,18 @@ export function AppAppareilPhoto() {
 /* ---------------- Peeporn ---------------- */
 
 const RUBRIQUES = ["Tendances", "Nouveautés", "Gay", "Grenouille et poney", "Live cam", "Crapauds musclés", "Cuisses de grenouille", "Nénuphars chauds", "Bave & ASMR", "Mouches en folie", "Spécial mare"];
+/** Les aperçus « censurés » : une mosaïque de gros pixels colorés, floutée — on ne devine rien. */
+const MOSAIQUES = [
+  "#4cbf48,#2f8f36,#7fd86c,#e9a7a0",
+  "#ff5a8a,#c4381a,#ff9ab8,#7a1030",
+  "#7fd86c,#1e9ad6,#4cbf48,#f2c0b8",
+  "#3e8a2a,#e9a7a0,#5fae4a,#d98c86",
+  "#1e9ad6,#4cbf48,#ffc33a,#2f8f36",
+  "#e0105a,#ff7ac0,#4cbf48,#3a1434",
+  "#c9941a,#4cbf48,#e9a7a0,#2f8f36",
+  "#8fd0ff,#4cbf48,#ff5a8a,#1a0a1a",
+];
+
 const VIDEOS: { titre: string; duree: string; vues: string; badge?: "LIVE" | "HD" | "4K" }[] = [
   { titre: "Elle coasse toute la nuit", duree: "12:34", vues: "1,2 M", badge: "HD" },
   { titre: "La mare est chaude ce soir", duree: "EN DIRECT", vues: "8 412 spectateurs", badge: "LIVE" },
@@ -242,10 +254,10 @@ export function AppPeeporn() {
       </div>
       <small className="pp-titre-rub">{`// ${RUBRIQUES[rub]!.toUpperCase()} · LES PLUS COASSÉES`}</small>
       <div className="pp-grille">
-        {VIDEOS.map((v) => (
+        {VIDEOS.map((v, k) => (
           <div key={v.titre} className="pp-vignette">
-            <div className={`pp-img${charge ? " charge" : " ko"}`}>
-              {charge ? <i className="pp-spin" /> : <span>⚠</span>}
+            <div className={`pp-img${charge ? " charge" : " ko"}`} style={Object.fromEntries(MOSAIQUES[k % MOSAIQUES.length]!.split(",").map((c, i) => [`--c${i + 1}`, c])) as CSSProperties}>
+              {charge ? <i className="pp-spin" /> : <i className="pp-mosaique" />}
               {v.badge ? <em className={`pp-badge ${v.badge === "LIVE" ? "live" : ""}`}>{v.badge === "LIVE" ? "● LIVE" : v.badge}</em> : null}
               <em className="pp-duree">{v.duree}</em>
             </div>
