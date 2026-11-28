@@ -1,6 +1,6 @@
 /* Teodor et ses deux pages : la maintenance (il est content) et la 404 (il a peur). Fond nuit. */
 .teodor { position: relative; width: min(78vw, 46svh, 380px); aspect-ratio: 1; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-.teodor-toile { display: block; width: 100%; height: 100%; touch-action: none; -webkit-touch-callout: none; }
+.teodor-toile { --lueur: 0; display: block; width: 100%; height: 100%; touch-action: none; -webkit-touch-callout: none; filter: drop-shadow(0 0 calc(var(--lueur) * 12px) rgba(43, 70, 255, calc(var(--lueur) * .85))); }
 .teodor-anneau { position: absolute; left: 50%; bottom: -6%; width: clamp(64px, 18vw, 88px); translate: -50% 0; pointer-events: none; transition: opacity .2s linear; }
 .teodor-anneau canvas { width: 100% !important; height: auto !important; }
 

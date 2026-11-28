@@ -125,7 +125,12 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
 
     // ---- l'état de Teodor ----
     const e = { sourire: 0, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0, calin: 0, sanglot: 0, aie: 0, espoir: 0, ouvert: 1 };
-    let clignement = 2.5;
+    let clignement = 3;
+    let clin = -1;
+    let doubleClin = false;
+    let paupiere = 0;
+    let etatAvant = -1;
+    const vit: Record<string, number> = {};
     let pleureJusque = 0;
     let aieJusque = 0;
     let caresseA = -10;
@@ -268,9 +273,11 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     window.addEventListener("teodor-espoir", espoir);
 
     let avant = debut;
+    let lueurPosee = -1;
     let frame = 0;
-    const dessine = (now: number) => {
+    const dessine = () => {
       frame = requestAnimationFrame(dessine);
+      const now = performance.now();
       const dt = Math.min(0.04, (now - avant) / 1000);
       avant = now;
       const t = (now - debut) / 1000;
@@ -291,12 +298,15 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, W, W);
       // il grandit en se formant, avec un léger rebond
-      echelle = 0.66 + 0.34 * ressort(clamp((tv - 0.6) / 1.5));
+      echelle = 0.66 + 0.34 * ease(clamp((tv - 0.1) / 2.1));
       const s = (W / 200) * echelle;
       ctx.setTransform(s, 0, 0, s, W / 2 - CENTRE[0] * s, W / 2 - CENTRE[1] * s);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      const lueur = (px: number) => px * dpr * (W / dpr / 340) * echelle; // flou en px de la toile
+      if (Math.abs(pCouleur - lueurPosee) > 0.01 || (pCouleur === 1 && lueurPosee !== 1)) {
+        lueurPosee = pCouleur;
+        c.style.setProperty("--lueur", pCouleur.toFixed(2));
+      }
 
       // ===== 1. le logo se dessine, comme d'habitude, puis sa ligne se détache =====
       if (pDefait < 1) {
@@ -378,12 +388,38 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       if (enPleurs) Object.assign(cible, { sourire: -1, bouche: finPleurs ? 0.15 : 0.6, heureux: 0, triste: 1, grand: 0, rose: 0.4, frisson: 0.15, regard: 0, calin: 0, sanglot: finPleurs ? 0.3 : 1, espoir: 0 });
       if (aie) Object.assign(cible, { aie: 1, sourire: -0.6, bouche: 0.3 });
       if (!vivant || reveil) Object.assign(cible, { sourire: reveil ? 0.35 : 0.2, bouche: 0, heureux: 0, triste: 0, grand: 0, rose: 0, frisson: 0, regard: 0 });
-      (Object.keys(cible) as (keyof typeof cible)[]).forEach((k) => (e[k] = vers(e[k], cible[k], dt, k === "regard" ? 8 : k === "calin" ? 5 : k === "aie" ? 16 : 6)));
-      // clignements (et le réveil : les yeux s'ouvrent, clignent deux fois)
+      (Object.keys(cible) as (keyof typeof cible)[]).forEach((k) => {
+        // raideur : vite pour le sursaut, lent pour le câlin, naturel pour le reste
+        const raid = k === "aie" ? 520 : k === "regard" ? 160 : k === "calin" ? 45 : k === "rose" ? 30 : 90;
+        const v = (vit[k] ?? 0) + ((cible[k] - e[k]) * raid - 2 * Math.sqrt(raid) * (vit[k] ?? 0)) * dt;
+        vit[k] = v;
+        e[k] += v * dt;
+      });
+      // quand l'humeur change, il cligne (comme nous)
+      const etat = enPleurs ? 3 : aie ? 4 : content ? 2 : fete ? 1 : 0;
+      if (etat !== etatAvant) {
+        if (etatAvant >= 0 && clignement > 0.25) clignement = 0.12;
+        etatAvant = etat;
+      }
+      // le clignement : la paupière tombe vite (70 ms), reste un instant, remonte plus lentement
       clignement -= dt;
-      if (clignement < 0) clignement = 2.2 + Math.random() * 3.2;
-      e.ouvert = clignement < 0.16 && e.heureux < 0.5 ? Math.abs(clignement / 0.08 - 1) : 1;
-      if (reveil) e.ouvert = vie < 0.25 ? 0.05 : vie < 0.45 ? clamp((vie - 0.25) / 0.2) : vie < 0.6 ? Math.abs((vie - 0.525) / 0.075) : 1;
+      if (clignement < 0 && clin < 0) {
+        clin = 0;
+        clignement = 2.4 + Math.random() * 3.4;
+        doubleClin = Math.random() < 0.18;
+      }
+      if (clin >= 0) {
+        clin += dt;
+        const dure = doubleClin ? 0.5 : 0.25;
+        const k = doubleClin && clin > 0.25 ? clin - 0.25 : clin;
+        paupiere = k < 0.07 ? (k / 0.07) ** 2 : k < 0.1 ? 1 : 1 - sortie(clamp((k - 0.1) / 0.14));
+        if (clin > dure) {
+          clin = -1;
+          paupiere = 0;
+        }
+      }
+      // le réveil : les yeux restent fermés, s'entrouvrent, se referment, puis s'ouvrent grand
+      if (reveil) paupiere = vie < 0.3 ? 1 : vie < 0.5 ? 1 - 0.6 * sortie((vie - 0.3) / 0.2) : vie < 0.6 ? 0.4 + 0.6 * ((vie - 0.5) / 0.1) ** 2 : 1 - sortie(clamp((vie - 0.6) / 0.25));
       // sur la 404, de temps en temps, un « non » de la tête : il ne sait pas où il est
       let non = 0;
       if (humeur === "peur" && vivant && !enPleurs && !content && !espoirVers) {
@@ -487,8 +523,6 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
             else ctx.moveTo(x, y);
           }
           ctx.clip();
-          ctx.shadowColor = `rgba(43,70,255,${0.85 * pCouleur})`;
-          ctx.shadowBlur = lueur(16);
           ctx.fillStyle = couleurCorps;
           chemin();
           ctx.fill();
@@ -516,16 +550,16 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           ctx.moveTo(at(-m)[0], at(-m)[1]);
           for (let i = -m + 1; i <= m; i++) ctx.lineTo(at(i)[0], at(i)[1]);
           ctx.stroke();
-          ctx.save();
-          ctx.shadowColor = "#fff";
-          ctx.shadowBlur = lueur(10);
-          ctx.fillStyle = "#fff";
           [at(-m), at(m)].forEach(([x, y]) => {
+            ctx.fillStyle = "rgba(255,255,255,.18)";
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#fff";
             ctx.beginPath();
             ctx.arc(x, y, 2.6, 0, Math.PI * 2);
             ctx.fill();
           });
-          ctx.restore();
         }
       }
 
@@ -548,100 +582,106 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
 
       // ===== le visage =====
       if (pRelie > 0.4) {
-        const apparition = clamp((pRelie - 0.4) / 0.35);
+        const apparition = ease(clamp((pRelie - 0.4) / 0.45));
         const fx = visageR.x;
         const fy = visageR.y;
         ctx.save();
         ctx.translate(fx, fy);
         ctx.rotate(ANGLE);
-        ctx.scale(VISAGE * (0.55 + 0.45 * ressort(apparition)), VISAGE * (0.55 + 0.45 * ressort(apparition)));
+        const sv = VISAGE * (0.75 + 0.25 * apparition);
+        ctx.scale(sv, sv);
         ctx.globalAlpha = apparition;
         const yeux: [number, number][] = [
           [-ECART / 2, 1],
           [ECART / 2, -1],
         ];
+        // fermeture totale de l'œil : clignement, sursaut
+        const ferme = clamp(Math.max(paupiere, e.aie));
         yeux.forEach(([ox, cote]) => {
-          const rx = 3.5 * (1 + 0.14 * e.grand);
-          const ry = 4.3 * (1 + 0.18 * e.grand) * (1 - e.heureux) * (1 - e.aie) * e.ouvert;
+          const rx = 3.5 * (1 + 0.12 * e.grand);
+          const ry = 4.3 * (1 + 0.16 * e.grand);
           ctx.save();
           ctx.translate(ox + regardX * 0.4, regardY * 0.3);
-          if (ry > 0.15) {
-            // paupière triste : le coin intérieur remonte, l'extérieur tombe
+          // la paupière du haut : elle descend pour cligner, et penche quand il est triste
+          const pente = e.triste * 1.4;
+          const haut = -ry - 0.6 + e.triste * 1.8 + ferme * (2 * ry + 0.6);
+          // la joue du bas : elle remonte quand il sourit des yeux (yeux en croissant)
+          ctx.beginPath();
+          ctx.moveTo(-9, 12);
+          ctx.lineTo(9, 12);
+          ctx.lineTo(9, haut - pente * cote);
+          ctx.lineTo(-9, haut + pente * cote);
+          ctx.closePath();
+          ctx.clip();
+          ctx.fillStyle = couleurVisage;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // la pupille brillante bouge avec le regard
+          ctx.fillStyle = couleurCorps;
+          ctx.beginPath();
+          ctx.arc(-1.1 + regardX * 0.9, -1.6 + regardY * 0.8, 1 + 0.4 * e.grand + 0.3 * e.espoir, 0, Math.PI * 2);
+          ctx.fill();
+          if (e.espoir > 0.3) {
             ctx.beginPath();
-            const lid = -ry - 1 + e.triste * 2.2;
-            const pente = e.triste * 1.3;
-            ctx.moveTo(-9, 9);
-            ctx.lineTo(9, 9);
-            ctx.lineTo(9, lid - pente * cote);
-            ctx.lineTo(-9, lid + pente * cote);
-            ctx.closePath();
-            ctx.clip();
-            ctx.fillStyle = couleurVisage;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+            ctx.arc(1.2 + regardX * 0.9, 1.2 + regardY * 0.8, 0.5 * e.espoir, 0, Math.PI * 2);
             ctx.fill();
-            // la pupille brillante bouge avec le regard
-            ctx.fillStyle = couleurCorps;
+          }
+          // sourire des yeux : la joue (couleur du corps) remonte et ne laisse qu'un croissant
+          if (e.heureux > 0.01) {
             ctx.beginPath();
-            ctx.arc(-1.1 + regardX * 0.9, -1.6 * (ry / 4.3) + regardY * 0.8, 1 + 0.4 * e.grand + 0.3 * e.espoir, 0, Math.PI * 2);
+            ctx.ellipse(0, ry * (2.25 - 1.75 * e.heureux), rx * 1.5, ry * 1.25, 0, 0, Math.PI * 2);
             ctx.fill();
-            if (e.espoir > 0.3) {
-              ctx.beginPath();
-              ctx.arc(1.2 + regardX * 0.9, 1.2 + regardY * 0.8, 0.5 * e.espoir, 0, Math.PI * 2);
-              ctx.fill();
-            }
           }
           ctx.restore();
-          ctx.strokeStyle = couleurVisage;
-          ctx.lineWidth = 2;
-          if (e.heureux > 0.05) {
-            // yeux fermés de bonheur : ^ ^
-            ctx.globalAlpha = apparition * e.heureux;
+          // œil fermé : un trait fin et courbe à la place (il apparaît à la fin de la fermeture)
+          const trait = clamp((ferme - 0.75) / 0.25);
+          if (trait > 0) {
+            ctx.save();
+            ctx.translate(ox, 0);
+            ctx.strokeStyle = couleurVisage;
+            ctx.lineWidth = 1.7;
+            ctx.globalAlpha = apparition * trait;
             ctx.beginPath();
-            ctx.moveTo(ox - 3.4, 1.4);
-            ctx.quadraticCurveTo(ox, -3.6, ox + 3.4, 1.4);
+            if (e.aie > 0.5) {
+              // le sursaut : > <, les yeux plissés fort
+              ctx.moveTo(-2.6 * cote, -2.6);
+              ctx.lineTo(2.2 * cote, 0);
+              ctx.lineTo(-2.6 * cote, 2.6);
+            } else {
+              ctx.moveTo(-rx, ry * 0.25);
+              ctx.quadraticCurveTo(0, ry * 0.25 + 2.2 - 3.4 * e.heureux, rx, ry * 0.25);
+            }
             ctx.stroke();
-            ctx.globalAlpha = apparition;
-          }
-          if (e.aie > 0.05) {
-            // le sursaut : > <
-            ctx.globalAlpha = apparition * e.aie;
-            ctx.beginPath();
-            ctx.moveTo(ox - 2.8 * cote, -3);
-            ctx.lineTo(ox + 2.4 * cote, 0);
-            ctx.lineTo(ox - 2.8 * cote, 3);
-            ctx.stroke();
+            ctx.restore();
             ctx.globalAlpha = apparition;
           }
         });
         // joues roses
         if (e.rose > 0.02) {
-          ctx.fillStyle = `rgba(255,122,184,${0.55 * e.rose * pCouleur})`;
+          ctx.fillStyle = `rgba(255,122,184,${0.55 * clamp(e.rose) * pCouleur})`;
           [-1, 1].forEach((k) => {
             ctx.beginPath();
-            ctx.ellipse(k * (ECART / 2 + 2.6), 5.6, 2.6, 1.4, 0, 0, Math.PI * 2);
+            ctx.ellipse(k * (ECART / 2 + 2.6), 5.6 - 0.8 * e.heureux, 2.6, 1.4, 0, 0, Math.PI * 2);
             ctx.fill();
           });
         }
-        // la bouche (sur l'étoile de la bouche)
-        const mo: V = [((BOUCHE[0] - FACE[0]) * Math.cos(-ANGLE) - (BOUCHE[1] - FACE[1]) * Math.sin(-ANGLE)) / 1, 0];
-        const mx = mo[0] * 0.3 + regardX * 0.25;
+        // la bouche (sur l'étoile de la bouche) : une seule forme qui s'ouvre et se ferme en continu
+        const mx = ((BOUCHE[0] - FACE[0]) * Math.cos(-ANGLE) - (BOUCHE[1] - FACE[1]) * Math.sin(-ANGLE)) * 0.3 + regardX * 0.25;
         const mw = 7.4 * (1 - 0.15 * e.triste) * (1 + 0.15 * e.heureux) * (1 - 0.25 * e.aie);
         const my = 8.4 + regardY * 0.2;
         const courbe = e.sourire * 4.2;
-        const tremblote = (enPleurs || humeur === "peur" ? 0.5 : 0) * Math.sin(t * 31);
-        const ouv = e.bouche * 5.5;
+        const tremblote = (enPleurs || humeur === "peur" ? 0.45 : 0) * Math.sin(t * 29) * (0.5 + 0.5 * Math.sin(t * 3.3));
+        const ouv = clamp(e.bouche, 0, 1.2) * 5.5;
+        const bout = my - courbe * 0.25;
         ctx.strokeStyle = couleurVisage;
         ctx.fillStyle = couleurVisage;
         ctx.lineWidth = 3.1;
         ctx.beginPath();
-        ctx.moveTo(mx - mw / 2, my - courbe * 0.25);
-        ctx.quadraticCurveTo(mx, my + courbe + tremblote, mx + mw / 2, my - courbe * 0.25);
-        if (ouv > 0.4) {
-          // bouche ouverte : un creux sous la lèvre (en riant) ou au-dessus (en pleurant)
-          ctx.quadraticCurveTo(mx, my + courbe + tremblote + (e.sourire >= 0 ? ouv : -ouv), mx - mw / 2, my - courbe * 0.25);
-          ctx.fill();
-        }
+        ctx.moveTo(mx - mw / 2, bout);
+        ctx.quadraticCurveTo(mx, my + courbe + tremblote, mx + mw / 2, bout);
+        ctx.quadraticCurveTo(mx, my + courbe + tremblote + (e.sourire >= 0 ? ouv : -ouv * 0.8), mx - mw / 2, bout);
+        ctx.fill();
         ctx.stroke();
         ctx.restore();
 

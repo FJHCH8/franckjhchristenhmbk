@@ -1,7 +1,7 @@
 "use client";
 
 /** La page d'accueil pendant la maintenance : Teodor content, et un mot pour les visiteurs. */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LocaleProvider, useTraduire } from "@/components/Locale";
 import { Teodor } from "./Teodor";
 import "./teodor.css";
@@ -9,6 +9,11 @@ import "./teodor.css";
 function Contenu() {
   const t = useTraduire();
   const [pret, setPret] = useState(false);
+  // Teodor a sa propre ouverture : on retire celle du site, qui jouait en double en dessous
+  useEffect(() => {
+    document.documentElement.classList.remove("intro-joue");
+    document.querySelector(".intro")?.remove();
+  }, []);
   return (
     <main className={`teo-page${pret ? " est-pret" : ""}`}>
       <Teodor humeur="joie" onPret={() => setPret(true)} />
