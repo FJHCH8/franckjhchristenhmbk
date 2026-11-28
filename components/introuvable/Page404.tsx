@@ -6,7 +6,7 @@
  * Les textes suivent la langue du visiteur (l'allemand par défaut).
  */
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties, type SyntheticEvent } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { useTraduire } from "@/components/Locale";
 import { Teodor } from "@/components/teodor/Teodor";
 import "@/components/teodor/teodor.css";
@@ -29,14 +29,31 @@ export function Page404() {
     const r = ev?.currentTarget.getBoundingClientRect();
     window.dispatchEvent(new CustomEvent("teodor-espoir", { detail: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null }));
   };
-  const lignes = [`$ open ${chemin}`, "error: strange", "$ cd ~"];
+  const lignes = useMemo(() => [`$ open ${chemin}`, "error: strange", "$ cd ~"], [chemin]);
+  // la frappe, lettre par lettre (en JavaScript : aucune police ne peut couper un mot)
+  const [tape, setTape] = useState(0);
+  const total = lignes.reduce((n, l) => n + l.length, 0);
+  useEffect(() => {
+    if (!pret || tape >= total) return;
+    // une petite pause en fin de ligne, comme quelqu'un qui tape
+    const finLigne = lignes.reduce<number[]>((a, l) => [...a, (a.at(-1) ?? 0) + l.length], []).includes(tape);
+    const id = window.setTimeout(() => setTape((n) => n + 1), tape === 0 ? 250 : finLigne ? 420 : 38 + Math.random() * 30);
+    return () => window.clearTimeout(id);
+  }, [pret, tape, total, lignes]);
+  let reste = tape;
+  const vus = lignes.map((l) => {
+    const k = Math.max(0, Math.min(l.length, reste));
+    reste -= l.length;
+    return l.slice(0, k);
+  });
+  const ligneCurseur = Math.min(lignes.length - 1, vus.findIndex((v, i) => v.length < lignes[i]!.length) === -1 ? lignes.length - 1 : vus.findIndex((v, i) => v.length < lignes[i]!.length));
   return (
     <main className={`teo-page e404${pret ? " est-pret" : ""}`}>
       <div className="teo-terminal" translate="no" aria-label="error: strange">
         {lignes.map((l, i) => (
-          <p key={i} className={i === 1 ? "err" : undefined} style={{ "--n": l.length, "--i": i } as CSSProperties}>
-            <span>{l}</span>
-            {i === 2 ? <b className="teo-curseur" /> : null}
+          <p key={i} className={i === 1 ? "err" : undefined}>
+            <span>{vus[i]}</span>
+            {i === ligneCurseur && pret ? <b className={`teo-curseur${tape >= total ? " clignote" : ""}`} /> : null}
           </p>
         ))}
       </div>
