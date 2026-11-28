@@ -17,6 +17,9 @@ export function Page404() {
   const [pret, setPret] = useState(false);
   const [chemin, setChemin] = useState("/seite");
   useEffect(() => {
+    // Teodor a sa propre ouverture : on retire celle du site, qui jouait en double en dessous
+    document.documentElement.classList.remove("intro-joue");
+    document.querySelector(".intro")?.remove();
     const p = decodeURIComponent(window.location.pathname || "/");
     // eslint-disable-next-line react-hooks/set-state-in-effect -- l'adresse n'existe que dans le navigateur
     setChemin(p.length > 26 ? `${p.slice(0, 25)}…` : p);
