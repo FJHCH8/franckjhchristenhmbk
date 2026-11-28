@@ -116,6 +116,9 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     let prochaineLarme = 0;
     const larmes: Larme[] = [];
     let corpsActuel: V[] = [];
+    let choc = 0;
+    let chocX = 100;
+    let chocY = 100;
     let echelle = 1;
 
     // ---- le toucher ----
@@ -126,7 +129,12 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       const s = (r.width / 200) * echelle;
       return [CENTRE[0] + (ev.clientX - r.left - r.width / 2) / s, CENTRE[1] + (ev.clientY - r.top - r.height / 2) / s];
     };
-    const surLui = (p: V) => corpsActuel.length > 0 && dedans(corpsActuel, p[0], p[1]);
+    const surLui = (p: V) => {
+      if (corpsActuel.length === 0) return false;
+      if (dedans(corpsActuel, p[0], p[1])) return true;
+      // tout près du bord compte aussi (un doigt est large)
+      return corpsActuel.some(([x, y]) => Math.hypot(x - p[0], y - p[1]) < 9);
+    };
     const caresse = (p: V, now: number) => {
       caresseA = now;
       calinX = p[0];
@@ -147,7 +155,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         appui.dist += Math.hypot(p[0] - appui.px, p[1] - appui.py);
         appui.px = p[0];
         appui.py = p[1];
-        if (appui.dist > 14) caresse(p, now);
+        if (appui.dist > 24 && now - appui.t > 140) caresse(p, now);
         return;
       }
       // à la souris, sans cliquer : passer doucement sur lui est aussi une caresse
@@ -158,8 +166,14 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
     };
     const haut = () => {
       const now = performance.now();
-      if (appui && appui.dist < 10 && now - appui.t < 350) {
+      if (appui && appui.dist <= 24 && now - appui.t < 650 && now - caresseA > 400) {
         pleureJusque = now + 5000; // une tape : il pleure 5 secondes
+        choc = 1;
+        chocX = appui.x;
+        chocY = appui.y;
+        try {
+          navigator.vibrate?.(30);
+        } catch {}
         heureuxJusque = 0;
         caresseA = -10;
       }
@@ -240,6 +254,15 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
         let y = CENTRE[1] + (p[1] - CENTRE[1]) * (1 + a) - 1.4 * souffle * (p[1] < 60 ? 1 : 0.35);
         x += e.frisson * 0.9 * tremble(k);
         y += e.frisson * 0.6 * tremble(k + 4) + e.sanglot * 1.6 * Math.abs(Math.sin(t * 8.5));
+        if (choc > 0.002) {
+          const dx = x - chocX;
+          const dy = y - chocY;
+          const d = Math.hypot(dx, dy) || 1;
+          const w = Math.exp(-(d * d) / (2 * 40 * 40));
+          const rebond = Math.cos(choc * 11) * choc;
+          x += (dx / d) * 7 * w * rebond;
+          y += (dy / d) * 7 * w * rebond + 2.5 * rebond;
+        }
         // le câlin : il se penche et ses coins viennent entourer le doigt
         if (e.calin > 0.001) {
           const dx = calinX - x;
@@ -309,6 +332,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
       });
 
       // ===== l'humeur et les réactions =====
+      choc = Math.max(0, choc - dt * 1.6);
       const enPleurs = now < pleureJusque;
       const caressé = now - caresseA < 650;
       if (caressé) heureuxJusque = now + 1400;
@@ -444,7 +468,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           }
           // une traînée mouillée derrière la goutte
           ctx.strokeStyle = `rgba(170,220,255,${0.22 * clamp(3.2 - l.vie)})`;
-          ctx.lineWidth = 1.3;
+          ctx.lineWidth = 1.9;
           ctx.beginPath();
           ctx.moveTo(l.x - l.vx * 0.35, l.y - Math.min(10, l.vie * 9));
           ctx.lineTo(l.x, l.y);
@@ -454,6 +478,7 @@ export function Teodor({ humeur, onPret, className }: { humeur: Humeur; onPret?:
           ctx.save();
           ctx.translate(l.x, l.y);
           ctx.rotate(ang);
+          ctx.scale(1.6, 1.6); // des larmes bien visibles sur un téléphone
           ctx.fillStyle = `rgba(170,220,255,${a})`;
           ctx.beginPath();
           ctx.moveTo(0, -3.2);
